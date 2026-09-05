@@ -1,0 +1,9 @@
+[project]
+name = "yahya-ai-trading-lab"
+version = "0.1.0"
+description = "P0: reproducible, public market-data connectivity and collection"
+requires-python = ">=3.12,<3.13"
+dependencies = []
+
+[tool.uv]
+package = false
