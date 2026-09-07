@@ -37,3 +37,14 @@ Scope: public market data plus authenticated read-only Spot Testnet account acce
 - GitHub remote/CI and historical-data quality checks remain future work.
 
 Reference: [Official Spot Testnet REST API](https://github.com/binance/binance-spot-api-docs/blob/master/testnet/rest-api.md)
+
+## Project position reconciliation — 2026-09-07
+
+P0 remains IN PROGRESS / CLOSURE PENDING. Authenticated account access has passed;
+P0 as a whole has not been accepted. See [MASTER-PLAN.md](MASTER-PLAN.md) for the
+recovered phase sequence, P0 item status and source limitations.
+Next: P0-007/008/010 onboarding and manual Paper workflow, then P0 final audit.
+No completed Paper trade or verified TradingView Paper session is recorded yet.
+Scaffold/config scope and private repository status require reconciliation in that audit.
+The previous suggestion to move straight to candle quality (P1) was premature.
+This documentation update does not change code, credentials, permissions or execution locks.
