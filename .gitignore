@@ -9,3 +9,5 @@ data/
 .coverage
 htmlcov/
 .ruff_cache/
+
+!.env.example
