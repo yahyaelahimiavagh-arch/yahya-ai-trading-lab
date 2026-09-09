@@ -115,3 +115,20 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT COMMIT PENDING**.
 - P1-003 has not started. P1 as a whole is not accepted; P2 remains unopened.
 
 Reference: https://developers.binance.com/en/docs/products/spot/rest-api
+
+## P1-003 evidence — 2026-09-09
+
+Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT COMMIT PENDING**.
+
+- P1-002 checkpoint: `bff4d24` with a clean working tree.
+- Added explicit half-open `[start, end)` historical ranges aligned to 15m/1h/4h UTC grids.
+- Binance requests use inclusive `endTime=end-1`, pages of at most 1000 and a hard range cap
+  of 100,000 candles. Pagination must advance monotonically and stops on an empty page.
+- Rows outside the range, malformed timestamps, wrong close boundaries, duplicates and
+  out-of-order pages fail closed before any persistence.
+- Known open timestamps can be supplied so a repeated/resumed collection returns only new rows.
+- Full suite: **56 passed, 0 failed**.
+- Live `python -m yatl history-check`: PASS. For each of BTCUSDT/ETHUSDT and 15m/1h/4h,
+  two closed-range candles were fetched in two pages with `page_limit=1`.
+- Runtime check performed no persistence, loaded no credentials and exposed no execution path.
+- P1-004 has not started. P1 as a whole is not accepted; P2 remains unopened.

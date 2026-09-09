@@ -9,6 +9,7 @@ from .config import (
 )
 from .models import Candle, CandleValidationError
 from .rest import BinancePublicRestClient, PublicRestError
+from .history import HistoricalBatch, HistoricalDownloadError, download_range
 
 __all__ = [
     "BINANCE_PUBLIC_BASE_URL",
@@ -17,7 +18,10 @@ __all__ = [
     "CandleValidationError",
     "DATA_SOURCE",
     "INTERVAL_MILLISECONDS",
+    "HistoricalBatch",
+    "HistoricalDownloadError",
     "PublicRestError",
     "SYMBOLS",
     "TIMEFRAME_POLICY",
+    "download_range",
 ]

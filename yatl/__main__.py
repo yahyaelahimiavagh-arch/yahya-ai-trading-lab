@@ -5,7 +5,8 @@ from datetime import datetime, timezone
 from .market_data import HOSTS, INTERVALS, MarketDataError, candles, ping, save_csv
 from .account import AccountError, read_account
 from .paper_workflow import PaperWorkflowError, load_and_validate
-from .data import BinancePublicRestClient, PublicRestError, SYMBOLS
+from .data import (BinancePublicRestClient, HistoricalDownloadError,
+                   INTERVAL_MILLISECONDS, PublicRestError, SYMBOLS, download_range)
 
 
 def main():
@@ -18,6 +19,7 @@ def main():
     paper = commands.add_parser("paper-check", help="Validate the local P0 paper workflow fixture")
     paper.add_argument("--fixture", default="fixtures/p0-paper-workflows.json")
     commands.add_parser("data-check", help="Check credential-free Binance Spot public data")
+    commands.add_parser("history-check", help="Check bounded historical pagination for P1")
     collect = commands.add_parser("candles", help="Save recent candles to CSV")
     collect.add_argument("--symbol", default="BTCUSDT")
     collect.add_argument("--interval", choices=sorted(INTERVALS), default="1h")
@@ -50,6 +52,16 @@ def main():
                 rows = client.klines(symbol, "1h", limit=2)
                 print(f"{symbol}: status={info['status']} 1h_klines={len(rows)}")
             print("PUBLIC DATA ONLY | No credentials | No execution endpoints")
+        elif args.command == "history-check":
+            client = BinancePublicRestClient()
+            server_time = client.server_time()
+            for symbol in SYMBOLS:
+                for interval, duration in INTERVAL_MILLISECONDS.items():
+                    end = (server_time // duration) * duration
+                    start = end - (2 * duration)
+                    batch = download_range(client, symbol, interval, start, end, page_limit=1)
+                    print(f"{symbol} {interval}: rows={len(batch.rows)} pages={batch.pages}")
+            print("PUBLIC CLOSED-RANGE CHECK | No persistence | No credentials | No execution")
         else:
             rows = candles(args.environment, args.symbol, args.interval, args.limit)
             stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
@@ -57,7 +69,8 @@ def main():
             path = save_csv(rows, output)
             print(f"Saved {len(rows)} candles to {path}")
             print("The latest candle may still be open; timestamps are Unix milliseconds (UTC).")
-    except (AccountError, MarketDataError, PaperWorkflowError, PublicRestError, ValueError, OSError) as exc:
+    except (AccountError, HistoricalDownloadError, MarketDataError, PaperWorkflowError,
+            PublicRestError, ValueError, OSError) as exc:
         # OSError messages can expose local paths; keep their display generic.
         message = "Cannot create output file; check permissions or use a new filename" if isinstance(exc, OSError) else str(exc)
         print(f"Error: {message}", file=sys.stderr)

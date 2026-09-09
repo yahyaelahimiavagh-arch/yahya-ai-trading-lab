@@ -1,6 +1,6 @@
 # P1 — Market Data Layer implementation plan
 
-Status: **IN PROGRESS — P1-002 IMPLEMENTED, CHECKPOINT PENDING**
+Status: **IN PROGRESS — P1-003 IMPLEMENTED, CHECKPOINT PENDING**
 Entry condition: P0 baseline commit accepted and working tree clean.  
 Exit condition: public BTCUSDT/ETHUSDT datasets and health reports pass deterministic tests and live runtime checks.
 
@@ -45,8 +45,10 @@ Download explicit `[start_time, end_time)` ranges in pages of at most 1000 candl
 Advance by interval boundaries, verify page monotonicity and stop deterministically at
 the requested boundary. A resumed download must be idempotent.
 
-Acceptance: pagination boundary tests, empty/partial page tests and a bounded live sample
-for BTCUSDT and ETHUSDT on 15m, 1h and 4h.
+Acceptance: **PASS in working tree, 2026-09-09.** Tests cover pagination boundaries,
+empty/partial pages, invalid order and resumable idempotency. The bounded live check fetched
+two closed-range rows in two one-row pages for BTCUSDT and ETHUSDT on 15m, 1h and 4h.
+Checkpoint commit remains required before P1-004 starts.
 
 ### P1-004 — Normalization and candle state
 
