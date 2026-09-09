@@ -1,6 +1,6 @@
 # P1 — Market Data Layer implementation plan
 
-Status: **IN PROGRESS — P1-008 IMPLEMENTED, RUNTIME VERIFIED, CHECKPOINT PENDING**
+Status: **IN PROGRESS — P1-009 IMPLEMENTED, LIVE DATA VERIFIED, CHECKPOINT PENDING**
 Entry condition: P0 baseline commit accepted and working tree clean.  
 Exit condition: public BTCUSDT/ETHUSDT datasets and health reports pass deterministic tests and live runtime checks.
 
@@ -104,10 +104,10 @@ Report per source/symbol/interval: requested and stored ranges, first/last candl
 rows, closed/open counts, duplicates, gaps, malformed/conflicting rows, freshness and
 whether the dataset is backtest-ready. Exit nonzero when required health gates fail.
 
-Acceptance: **PASS in working tree, 2026-09-09.** Deterministic JSON and human-readable
+Acceptance: **PASS, checkpoint `fd7eb63`, 2026-09-09.** Deterministic JSON and human-readable
 reports cover healthy/current-open and unhealthy gap/duplicate/stale/malformed/conflicting
 cases. Required gate failure returns nonzero. Both runtime output formats passed. Checkpoint
-commit remains required before P1-009 starts.
+The clean checkpoint was accepted before P1-009 started.
 
 ### P1-009 — BTCUSDT and ETHUSDT datasets
 
@@ -115,8 +115,11 @@ Build bounded public-real datasets for 15m, 1h and 4h with a recorded range and 
 time. Database artifacts remain ignored; manifests and health summaries contain no secrets
 and may be committed when stable.
 
-Acceptance: both symbols have zero unresolved historical gaps/duplicates/conflicts and no
-open candle in the backtest-ready view.
+Acceptance: **PASS in working tree, 2026-09-09.** A 30-day public-real build produced
+7,560 closed candles across all six datasets: 2,880/720/180 rows per symbol for 15m/1h/4h.
+All reports have zero gaps, duplicates, malformed rows, conflicts and open candles, with
+`backtest_ready=true`. A second run preserved the same database count. Checkpoint commit
+remains required before P1-010 starts.
 
 ### P1-010 — P1 final audit and checkpoint
 

@@ -15,6 +15,7 @@ from .storage import CandleStore, ClosedCandleConflict, StorageError
 from .quality import QualityError, RangeQualityReport, analyze_open_times, duplicate_candle_keys
 from .stream import PublicKlineStream, StreamError, StreamRunResult, stream_url
 from .health import DataHealthReport, HealthError, build_health_report
+from .dataset import DatasetError, build_datasets, manifest_json, write_manifest
 
 __all__ = [
     "BINANCE_PUBLIC_BASE_URL",
@@ -25,6 +26,7 @@ __all__ = [
     "ClosedCandleConflict",
     "DATA_SOURCE",
     "DataHealthReport",
+    "DatasetError",
     "INTERVAL_MILLISECONDS",
     "HistoricalBatch",
     "HistoricalDownloadError",
@@ -42,8 +44,11 @@ __all__ = [
     "download_range",
     "analyze_open_times",
     "build_health_report",
+    "build_datasets",
     "duplicate_candle_keys",
     "normalize_rest_kline",
     "normalize_websocket_kline",
+    "manifest_json",
     "stream_url",
+    "write_manifest",
 ]

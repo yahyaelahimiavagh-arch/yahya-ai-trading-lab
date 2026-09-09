@@ -38,9 +38,9 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 
 مرجع ترتیب اجرا: [نقشه پروژه](docs/MASTER-PLAN.md).
 وضعیت جاری **P0 پذیرفته‌شده و P1 در حال اجرا** است.
-P1-007 در `ab1fa24` checkpoint شده و P1-008 گزارش deterministic سلامت داده را
-تکمیل کرده است. قدم بعدی پس از checkpoint تمیز، P1-009 (ساخت datasetهای واقعی
-BTCUSDT و ETHUSDT) است. P2 هنوز شروع نشده است.
+P1-008 در `fd7eb63` checkpoint شده و P1-009 datasetهای واقعی BTCUSDT و ETHUSDT
+را تکمیل کرده است. قدم بعدی پس از checkpoint تمیز، P1-010 (ممیزی و پذیرش نهایی
+کل P1) است. P2 هنوز شروع نشده است.
 
 وضعیت تست‌های همین تحویل در `docs/STATUS.md` ثبت شده است.
 
@@ -188,3 +188,15 @@ uv run --locked python -m yatl health-check --json
 
 این مرحله از fixture محلی canonical استفاده می‌کند. اتصال گزارش به dataset واقعی در
 P1-009 انجام می‌شود.
+
+P1-009 با فرمان زیر ۳۰ روز کندل بسته عمومی واقعی را برای هر دو نماد و هر سه
+تایم‌فریم می‌سازد:
+
+```powershell
+uv run --locked python -m yatl dataset-build --days 30
+```
+
+SQLite در `data/p1/market.sqlite3` و خارج از Git است. manifest قابل‌ممیزی در
+`manifests/p1-market-data.json` ثبت می‌شود. اجرای مجدد idempotent است و فقط
+timestampهای گمشده را دریافت می‌کند. هر dataset باید بدون open candle، duplicate، gap،
+malformed یا conflict و با `backtest_ready=true` باشد.

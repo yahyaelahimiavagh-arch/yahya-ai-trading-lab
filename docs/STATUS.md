@@ -224,7 +224,7 @@ and https://pypi.org/project/websockets/
 
 ## P1-008 evidence — 2026-09-09
 
-Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT COMMIT PENDING**.
+Status: **CHECKPOINT ACCEPTED — `fd7eb63`**.
 
 - P1-007 checkpoint: `ab1fa24` with a clean working tree.
 - Added immutable health reports with requested/stored boundaries, total/unique rows,
@@ -246,3 +246,25 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT COMMIT PENDING**.
   persisted health manifests belong to P1-009 and have not started.
 - No network call, credential, order endpoint or execution logic was added.
 - P1 as a whole is not accepted; P2 remains unopened.
+
+## P1-009 evidence — 2026-09-09
+
+Status: **IMPLEMENTED AND LIVE DATA VERIFIED — CHECKPOINT COMMIT PENDING**.
+
+- P1-008 checkpoint: `fd7eb63` with a clean working tree.
+- Added a bounded dataset builder that uses verified Binance server time, downloads exact
+  closed half-open ranges, normalizes every REST row, persists idempotently and runs the
+  P1-008 health gate before publishing an atomic manifest.
+- Live 30-day public-real build at `2026-09-09T16:23:41.450Z`: **PASS**.
+- BTCUSDT: 2,880 15m + 720 1h + 180 4h closed candles.
+- ETHUSDT: 2,880 15m + 720 1h + 180 4h closed candles.
+- SQLite direct audit: **7,560 total rows**, all 7,560 closed. Every dataset has zero
+  duplicates, historical gaps, malformed rows, conflicts and unexpected open candles;
+  all six report `fresh=true` and `backtest_ready=true`.
+- An immediate second live build preserved 7,560 rows and all six health gates, confirming
+  runtime idempotency for the same interval boundaries.
+- The SQLite artifact remains ignored. The path-free deterministic manifest is tracked at
+  `manifests/p1-market-data.json`.
+- Full suite: **111 passed, 0 failed** before the final documentation/manifest audit.
+- No `.env`, credential, Testnet account, user stream, order endpoint or execution logic was used.
+- P1-010 has not started. P1 as a whole is not yet accepted; P2 remains unopened.

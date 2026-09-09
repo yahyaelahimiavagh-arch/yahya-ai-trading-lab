@@ -194,6 +194,30 @@ class CandleStore:
         except sqlite3.Error:
             raise StorageError("Cannot read known candle timestamps") from None
 
+    def candles_between(self, source, symbol, interval, start_time_ms, end_time_ms):
+        try:
+            rows = self._connection.execute(
+                """SELECT source, symbol, interval, open_time_ms, close_time_ms,
+                          open, high, low, close, base_volume, quote_volume,
+                          trade_count, is_closed
+                   FROM candles
+                   WHERE source = ? AND symbol = ? AND interval = ?
+                     AND open_time_ms >= ? AND open_time_ms < ?
+                   ORDER BY open_time_ms""",
+                (source, symbol, interval, start_time_ms, end_time_ms),
+            ).fetchall()
+        except sqlite3.Error:
+            raise StorageError("Cannot read the candle range") from None
+        candles = []
+        for row in rows:
+            values = {name: row[name] for name in CANDLE_COLUMNS}
+            values["is_closed"] = bool(values["is_closed"])
+            try:
+                candles.append(Candle(**values))
+            except (TypeError, ValueError):
+                raise StorageError("Stored candle violates the canonical contract") from None
+        return tuple(candles)
+
     def schema_version(self):
         try:
             return self._connection.execute(
