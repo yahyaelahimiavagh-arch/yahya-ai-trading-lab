@@ -369,3 +369,24 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
 - Runtime ETHUSDT 24-hour replay: PASS with the same event boundaries and equality gate.
 - No network, credential, random wall-clock input or exchange order was used.
 - P2-004 has not started. P2 as a whole is not accepted; P3 remains unopened.
+
+## P2-004 evidence — 2026-09-09
+
+Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
+
+- P2-003 checkpoint: `275a163` with a clean working tree.
+- Added strict HOLD, ENTER_LONG and EXIT_LONG paper intents. Entry requires positive Decimal
+  quantity and a Stop/Target bracket around the next 1h open; Short and overlapping long
+  positions have no representation and are rejected.
+- FillReference records are explicitly uncosted inputs for P2-005. They can only use the
+  event's eligible next-primary-open time and must match the engine, snapshot and candle symbol.
+- Scripted exit fills at the next open. Protective Stop/Target processing then uses known
+  opening gaps first; when both thresholds are touched intrabar, Stop wins conservatively.
+- Same-bar entry protection is supported. Total reference quantity cannot exceed the candle's
+  base volume; any failure restores the preceding engine position state.
+- Focused fill suite: **9 passed, 0 failed**.
+- Full suite after implementation: **145 passed, 0 failed**; lock and compile checks passed.
+- `python -m yatl backtest-fill-check`: PASS; two local references ended with
+  `AMBIGUOUS_STOP_PRIORITY` and explicitly reported `costs_pending=P2-005`.
+- No network, credential, account transport or exchange order was used.
+- P2-005 has not started. P2 as a whole is not accepted; P3 remains unopened.

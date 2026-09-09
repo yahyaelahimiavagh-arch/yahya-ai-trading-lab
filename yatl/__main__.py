@@ -10,7 +10,8 @@ from .account import AccountError, read_account
 from .paper_workflow import PaperWorkflowError, load_and_validate
 from .backtest import (BacktestClock, BacktestClockError, BacktestConfigError,
                        BacktestContractError, BacktestLoadError, BacktestSpec,
-                       EXECUTION_PRICE_POLICY, MarketSnapshot,
+                       DecisionEvent, EXECUTION_PRICE_POLICY, FillModelError,
+                       IntentAction, MarketSnapshot, PaperFillEngine, PaperIntent,
                        latest_spec_from_manifest, load_accepted_dataset)
 from .data import (BinancePublicRestClient, Candle, CandleStore,
                    ClosedCandleConflict, DATA_SOURCE, HistoricalDownloadError,
@@ -88,6 +89,28 @@ def _backtest_contract_runtime_check():
                           regime=completed("4h"))
     if view.latest_primary.close_time_ms >= view.decision_time_ms:
         raise BacktestContractError("Point-in-time boundary failed")
+    return spec, view
+
+
+def _backtest_fill_runtime_check():
+    spec, view = _backtest_contract_runtime_check()
+    event = DecisionEvent(0, view.decision_time_ms, view.decision_time_ms, view)
+    duration = INTERVAL_MILLISECONDS["1h"]
+    bar = Candle(
+        source=DATA_SOURCE, symbol=spec.symbol, interval="1h",
+        open_time_ms=view.decision_time_ms,
+        close_time_ms=view.decision_time_ms + duration - 1,
+        open="100", high="111", low="94", close="105",
+        base_volume="10", quote_volume="1000", trade_count=20,
+        is_closed=True,
+    )
+    fills = PaperFillEngine(spec.symbol).process(
+        event, PaperIntent(IntentAction.ENTER_LONG, view.decision_time_ms,
+                           "1", "95", "110"), bar,
+    )
+    if len(fills) != 2 or fills[-1].reason.value != "AMBIGUOUS_STOP_PRIORITY":
+        raise FillModelError("Conservative fill lifecycle failed")
+    return fills
 
 
 def main():
@@ -106,6 +129,8 @@ def main():
     commands.add_parser("quality-check", help="Verify deterministic gap and duplicate detection")
     commands.add_parser("backtest-contract-check",
                         help="Verify the local point-in-time P2 contract")
+    commands.add_parser("backtest-fill-check",
+                        help="Verify the local conservative P2 fill lifecycle")
     loader = commands.add_parser("backtest-load-check",
                                  help="Load accepted P1 data read-only for P2")
     loader.add_argument("--database", default="data/p1/market.sqlite3")
@@ -208,6 +233,11 @@ def main():
             _backtest_contract_runtime_check()
             print(f"OK: point-in-time backtest contract; price_policy={EXECUTION_PRICE_POLICY}")
             print("PAPER ONLY | LIVE_MASTER_LOCK=OFF | No exchange order")
+        elif args.command == "backtest-fill-check":
+            fills = _backtest_fill_runtime_check()
+            print(f"OK: paper fill-reference lifecycle; references={len(fills)} "
+                  f"exit_reason={fills[-1].reason.value} costs_pending=P2-005")
+            print("PAPER ONLY | Local simulation | No credentials | No exchange order")
         elif args.command == "backtest-load-check":
             spec = latest_spec_from_manifest(args.manifest, args.symbol, hours=args.hours)
             loaded = load_accepted_dataset(args.database, args.manifest, spec)
@@ -285,7 +315,7 @@ def main():
             print("The latest candle may still be open; timestamps are Unix milliseconds (UTC).")
     except (AccountError, AuditError, BacktestClockError, BacktestConfigError,
             BacktestContractError,
-            BacktestLoadError,
+            BacktestLoadError, FillModelError,
             HistoricalDownloadError, MarketDataError, NormalizationError,
             DatasetError, HealthError, PaperWorkflowError, PublicRestError, QualityError,
             StorageError, StreamError,

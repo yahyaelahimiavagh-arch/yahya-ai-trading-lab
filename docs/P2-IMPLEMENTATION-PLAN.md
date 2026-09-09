@@ -1,6 +1,6 @@
 # P2 — Backtesting Engine implementation plan
 
-Status: **IN PROGRESS — P2-003 IMPLEMENTED AND RUNTIME VERIFIED, CHECKPOINT PENDING**
+Status: **IN PROGRESS — P2-004 IMPLEMENTED AND RUNTIME VERIFIED, CHECKPOINT PENDING**
 Entry baseline: P1 accepted in commit `4e77e34` with a clean working tree.
 Exit condition: deterministic BTCUSDT/ETHUSDT Spot simulations pass unit, invariant,
 reproducibility and real-dataset runtime gates with explicit fees and slippage.
@@ -50,10 +50,10 @@ Advance one aligned primary boundary at a time. Emit the same ordered sequence f
 inputs and seed. Expose only the snapshot legal at that instant and queue decisions for the
 next primary open.
 
-Acceptance: **PASS in working tree, 2026-09-09.** Tests cover exact half-open boundaries,
+Acceptance: **PASS, checkpoint `275a163`, 2026-09-09.** Tests cover exact half-open boundaries,
 sequence numbers, next-open eligibility, multi-timeframe visibility, lazy failure and
 deterministic replay. Live read-only 24-hour clocks produced the same 24-event replay for
-BTCUSDT and ETHUSDT. Checkpoint remains required before P2-004.
+BTCUSDT and ETHUSDT. The clean checkpoint was accepted before P2-004 started.
 
 ### P2-004 — Paper intent and fill model
 
@@ -61,7 +61,12 @@ Define ENTER_LONG, EXIT_LONG and HOLD intents for scripted engine tests. Fill on
 next 1h open, reject Short and overlapping positions, and define a conservative deterministic
 rule for bars where stop and target are both touched.
 
-Acceptance: exact lifecycle tests with no exchange transport or order endpoint.
+Acceptance: **PASS in working tree, 2026-09-09.** Exact lifecycle tests cover next-open
+entry/scripted exit, Stop, Target, known opening gaps, ambiguous Stop-first handling,
+same-bar protection, overlap rejection, candle volume bounds and transactional rollback.
+The local runtime scenario produced an entry reference followed by
+`AMBIGUOUS_STOP_PRIORITY`. These are uncosted references; P2-005 must apply costs before
+portfolio accounting. Checkpoint remains required before P2-005.
 
 ### P2-005 — Fees, slippage and precision
 

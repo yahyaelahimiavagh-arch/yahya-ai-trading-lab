@@ -74,6 +74,18 @@ uv run --locked python -m yatl backtest-clock-check --symbol BTCUSDT --hours 24
 PASS می‌شود. زمان fill مجاز، open کندل اصلی بعد از داده مشاهده‌شده است؛ قیمت آن کندل
 داخل snapshot تصمیم قرار نمی‌گیرد.
 
+P2-004 چرخه محلی ENTER_LONG / HOLD / EXIT_LONG را بدون اتصال به صرافی شبیه‌سازی
+می‌کند. اگر Stop و Target در یک کندل لمس شوند و ترتیب درون کندل معلوم نباشد، Stop
+به‌صورت محافظه‌کارانه مقدم است. gap شناخته‌شده در open پیش از حرکت درون کندل بررسی
+می‌شود و fillهای یک کندل نمی‌توانند از base volume آن بیشتر باشند.
+
+```powershell
+uv run --locked python -m yatl backtest-fill-check
+```
+
+خروجی P2-004 فقط `FillReference` است. fee و slippage هنوز روی آن اعمال نشده‌اند و
+در P2-005 پیش از ورود به حسابداری اجباری خواهند شد.
+
 ## تمرین دستی و قابل‌تکرار Paper
 
 فایل `fixtures/p0-paper-workflows.json` دو سناریوی آموزشی ثابت برای BTCUSDT و
