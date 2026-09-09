@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "mode": "PAPER_ONLY",
+  "live_master_lock": "OFF",
+  "exchange_order_submission": false,
+  "policy": {
+    "market": "SPOT",
+    "direction": "LONG_ONLY",
+    "primary_analysis_timeframe": "1h",
+    "higher_timeframe_regime": "4h",
+    "entry_context_timeframe": "15m",
+    "execution_timeframe": "NOT_ENABLED"
+  },
+  "workflows": [
+    {
+      "workflow_id": "P0-BTCUSDT-001",
+      "symbol": "BTCUSDT",
+      "entry": "60000",
+      "stop": "59400",
+      "target": "61200",
+      "position_size": "0.08",
+      "account_equity": "10000",
+      "risk_percent": "0.5",
+      "max_loss": "48.00",
+      "potential_reward": "96.00",
+      "risk_reward_ratio": "2",
+      "status": "MANUAL_PAPER_FIXTURE",
+      "notes": "Deterministic teaching scenario; prices are fixtures, not market signals."
+    },
+    {
+      "workflow_id": "P0-ETHUSDT-001",
+      "symbol": "ETHUSDT",
+      "entry": "3000",
+      "stop": "2940",
+      "target": "3120",
+      "position_size": "0.8",
+      "account_equity": "10000",
+      "risk_percent": "0.5",
+      "max_loss": "48.0",
+      "potential_reward": "96.0",
+      "risk_reward_ratio": "2",
+      "status": "MANUAL_PAPER_FIXTURE",
+      "notes": "Deterministic teaching scenario; prices are fixtures, not market signals."
+    }
+  ]
+}

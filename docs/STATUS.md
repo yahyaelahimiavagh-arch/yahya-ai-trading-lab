@@ -48,3 +48,34 @@ No completed Paper trade or verified TradingView Paper session is recorded yet.
 Scaffold/config scope and private repository status require reconciliation in that audit.
 The previous suggestion to move straight to candle quality (P1) was premature.
 This documentation update does not change code, credentials, permissions or execution locks.
+
+## P0 closure evidence — 2026-09-09 (supersedes earlier current-status sections)
+
+Status: **P0 RUNTIME ACCEPTED**. P1 is planned but implementation has not started.
+
+- Pre-change audit: HEAD `a11f854`; branch `main`; working tree clean; no Git remote configured.
+- Pre-change full suite: 22 passed, 0 failed.
+- P0 closure full suite: **28 passed, 0 failed**.
+- `python -m yatl paper-check`: PASS for deterministic BTCUSDT and ETHUSDT fixtures.
+  Both define Entry, Stop, Target and Position Size; each uses 0.5% risk, R:R 2,
+  Spot Long-only and notional no greater than paper equity.
+- Fail-closed tests reject live mode, LIVE_MASTER_LOCK other than OFF, exchange submission,
+  Futures, Short, unapproved symbols/timeframes, risk above 1%, leverage, inconsistent
+  arithmetic, schema changes, malformed/oversized fixture files and invalid decimal values.
+- Live `python -m yatl ping`: PASS against Binance Spot Testnet.
+- Live authenticated `GET /api/v3/account`: **PASS**; validated SPOT summary contained
+  502 assets with nonzero test balances at this run. No key, secret, signature, signed URL,
+  account identifier or balance amount was printed or persisted.
+- `.env` is ignored and untracked. No order endpoint or permission-changing call exists.
+- The default uv cache was inaccessible in this managed session. All tests and runtime commands
+  used the locked project with an explicit writable uv cache; this is an environment permission
+  issue, not a project test failure.
+- Manual Paper is accepted through the repository fixture. TradingView remains optional and
+  was not claimed as runtime-tested. The fixture is a teaching calculation, not a market trade.
+- Private GitHub remote/CI is not configured and moves to the P1 engineering backlog; it does
+  not block the local P0 runtime or safety gate.
+
+Safety baseline remains: PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE;
+NO WITHDRAWAL API; NO AI DIRECT EXECUTION; current API key remains USER_DATA only.
+
+P1 exact plan: [P1-IMPLEMENTATION-PLAN.md](P1-IMPLEMENTATION-PLAN.md). P2 remains unopened.

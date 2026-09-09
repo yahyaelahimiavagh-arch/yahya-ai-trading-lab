@@ -1,7 +1,7 @@
 [project]
 name = "yahya-ai-trading-lab"
 version = "0.1.0"
-description = "P0: reproducible, public market-data connectivity and collection"
+description = "P0 accepted: safe public data, read-only Testnet account, and paper workflow"
 requires-python = ">=3.12,<3.13"
 dependencies = []
 

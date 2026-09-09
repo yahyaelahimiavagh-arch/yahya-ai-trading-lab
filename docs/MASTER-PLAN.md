@@ -1,8 +1,8 @@
 # YATL — نقشه مرجع اجرا و وضعیت پروژه
 
-نسخه بازیابی‌شده از گفت‌وگوها: 2026-09-07
-وضعیت جاری: **P0 IN PROGRESS — CLOSURE PENDING**
-قدم جاری: **YATL-P0-007/008/010 — آموزش و تمرین دستی Paper**
+نسخه بازیابی و supersede‌شده: 2026-09-09
+وضعیت جاری: **P0 RUNTIME ACCEPTED**
+قدم جاری: **P1 PLANNED — IMPLEMENTATION NOT STARTED**
 
 ## منشأ و حدود سند
 
@@ -32,8 +32,8 @@ NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only ب�
 
 | فاز | خروجی مورد انتظار | وضعیت امروز |
 |---|---|---|
-| P0 Foundation | محیط، Git، امنیت، Testnet، آموزش و تمرین دستی Paper | در حال تکمیل؛ ممیزی پایان باز است |
-| P1 Market Data Layer | REST، دانلود تاریخی، WebSocket، نرمال‌سازی، SQLite، حذف تکرار، تشخیص شکاف، گزارش سلامت BTC/ETH | شروع رسمی نشده؛ نمونه CSV موجود است |
+| P0 Foundation | محیط، Git، امنیت، Testnet، آموزش و تمرین دستی Paper | **RUNTIME ACCEPTED — 2026-09-09** |
+| P1 Market Data Layer | REST، دانلود تاریخی، WebSocket، نرمال‌سازی، SQLite، حذف تکرار، تشخیص شکاف، گزارش سلامت BTC/ETH | برنامه دقیق آماده؛ پیاده‌سازی شروع نشده |
 | P2 Backtesting Engine | آزمون تاریخی تکرارپذیر با کارمزد، لغزش و جلوگیری از استفاده از آینده | شروع نشده |
 | P3 Strategy Framework | چارچوب مشترک استراتژی و قواعد روشن سیگنال/عدم معامله | شروع نشده |
 | P4 Risk Manager | اندازه موقعیت، محدودیت ریسک و Kill Switch مستقل | شروع نشده |
@@ -54,34 +54,34 @@ NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only ب�
 
 | شناسه اصلی | موضوع | ارزیابی فعلی |
 |---|---|---|
-| YATL-P0-001 | Master Plan | نقشه از گفت‌وگوها بازیابی شد؛ تطبیق فایل اصلی هنوز ممکن نشده |
-| YATL-P0-002 | Project scaffold | مخزن محلی موجود؛ اسکلت کامل ZIP قدیمی در این مخزن تأیید نشده |
+| YATL-P0-001 | Master Plan | PASS؛ این سند نسخه مرجع supersede‌شده است و محدودیت منبع را حفظ می‌کند |
+| YATL-P0-002 | Project scaffold | PASS؛ مخزن محلی، package، tests، docs و fixture برای محدوده P0 اجرا شدند |
 | YATL-P0-003 | Python environment | PASS؛ uv و اجرای تست‌ها تأیید شده |
 | YATL-P0-004 | .gitignore | PASS؛ .env نادیده گرفته می‌شود |
 | YATL-P0-005 | .env.example | PASS؛ نمونه بدون Secret در Git |
-| YATL-P0-006 | Config architecture | محدودیت testnet/OFF پیاده شده؛ تطبیق گستره config اصلی در ممیزی باقی است |
-| YATL-P0-007 | Trading basics onboarding | توضیح مفاهیم در چت موجود؛ درک عملی هنوز ثبت و پذیرفته نشده |
-| YATL-P0-008 | TradingView Paper | راه‌اندازی/استفاده با شواهد تأیید نشده |
+| YATL-P0-006 | Config architecture | PASS؛ testnet/OFF و میزبان/روش/endpoint دقیق fail-closed هستند |
+| YATL-P0-007 | Trading basics onboarding | PASS؛ Entry/Stop/Target/Position Size/Risk/R:R در fixture و README تعریف و محاسبه شدند |
+| YATL-P0-008 | Paper environment | PASS؛ fixture محلی قابل‌تکرار جای وابستگی UI به TradingView را برای Gate P0 گرفت |
 | YATL-P0-009 | Binance Spot Testnet | اتصال عمومی و خواندن احرازهویت‌شده PASS |
-| YATL-P0-010 | First BTC/USDT paper trade | تمرین و گزارش تکمیل‌شده در شواهد موجود نیست |
+| YATL-P0-010 | Manual BTC/ETH paper workflow | PASS؛ دو سناریوی آموزشی ثابت validate شدند؛ هیچ سفارش یا ادعای معامله بازار ثبت نشد |
 
-شواهد فنی: commit 6ef791a؛ 22/22 تست؛ خواندن واقعی حساب SPOT با 504 دارایی آزمایشی؛
-اجرای مستقل همان فرمان توسط کاربر نیز موفق است. این اعداد معیار سود یا تکمیل ربات نیستند.
-گزارش جزئی‌تر اجرا در STATUS.md است. این نوبت سازمان‌دهی اسناد است؛ تست شبکه تکرار نشده است.
+شواهد فنی نهایی در `STATUS.md` ثبت شده‌اند: 28/28 تست، اجرای fixture محلی، ping زنده
+Testnet و خواندن احرازهویت‌شده حساب SPOT در 2026-09-09. اجرای مستقل فرمان حساب توسط
+کاربر نیز ثبت شده است. این اعداد معیار سود یا تکمیل ربات نیستند.
 
-## تنها بسته بعدی: بستن P0
+## P0 Closure — accepted 2026-09-09
 
-1. آموزش کوتاه و ثبت درک Entry، Stop، Target، Position Size، Fee و Risk/Reward.
-2. آماده‌سازی و تأیید محیط Paper؛ TradingView Paper همان گزینه ثبت‌شده در برنامه اصلی است.
-3. تمرین دستی BTC/USDT مطابق P0-010، با ثبت زمان، فرض‌ها، ورود، توقف، هدف، اندازه و نتیجه.
-   سناریوی ETH/USDT نیز طبق آخرین پیشنهاد چت برنامه اضافه شود.
-   تا زمان اجرای واقعی تمرین، برچسب نمونه/فرضی حفظ شود؛ PASS ساختگی ثبت نشود.
-4. ممیزی P0: اجراپذیری محلی، امنیت Secret، config، دسترسی Testnet، محیط Paper و درک مفاهیم.
-   وضعیت اسکلت قدیمی و GitHub خصوصی نیز روشن شود؛ موارد تأییدنشده خودکار PASS نیستند.
-5. پس از وجود شواهد همه الزامات، P0 = RUNTIME ACCEPTED و سپس شروع رسمی P1.
+P0 با workflow محلی و deterministic بسته شد. TradingView Paper از Gate اجباری P0
+به ابزار اختیاری آموزشی supersede شد، زیرا fixture داخل مخزن قابل نسخه‌بندی، تست و تکرار است.
+این تغییر به معنی اجرای معامله نیست: قیمت‌ها فرضی‌اند، وضعیت هر سناریو
+`MANUAL_PAPER_FIXTURE` است و `exchange_order_submission=false` باید باقی بماند.
 
-در این بسته endpoint سفارش یا مجوز TRADE اضافه نمی‌شود. موتور اجرای خودکار متعلق به P5 است.
-این ترتیب با آخرین تصمیم گفت‌وگوی برنامه هماهنگ است و پیشنهادهای قدیمی سفارش‌گذاری زودهنگام را کنار می‌گذارد.
+Gate مخزن محلی به عنوان PASS پذیرفته شد؛ remote خصوصی و CI به P1 engineering backlog
+منتقل شدند و شرط ایمنی یا اجرای P0 نبودند. فایل Master Plan/ZIP اولیه قابل بازیابی نبود؛
+این محدودیت منشأ حفظ شده و نسخه حاضر مرجع authoritative ادامه پروژه است.
+
+هیچ endpoint سفارش یا مجوز TRADE اضافه نشد. موتور اجرای خودکار متعلق به P5 است.
+برنامه دقیق و معیارهای پذیرش P1 در `P1-IMPLEMENTATION-PLAN.md` قرار دارد. P2 باز نشده است.
 
 ## روش ادامه کار
 
@@ -97,3 +97,11 @@ NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only ب�
 پیشنهاد مستقیم «کنترل کیفیت کندل‌ها» در چت اجرای حساب، مربوط به P1 و زودهنگام بود.
 قدم بعدی اصلاح شد: P0 manual Paper workflow → P0 final audit → P1.
 هیچ فاز جدیدی در این نوبت اجرا یا پذیرفته نشده است.
+
+## Supersession record — 2026-09-09
+
+- `P0 IN PROGRESS` با شواهد runtime جدید به `P0 RUNTIME ACCEPTED` supersede شد.
+- TradingView Paper برای Gate P0 با fixture محلی قابل‌تکرار جایگزین شد؛ TradingView حذف نشده و اختیاری است.
+- workflowها تمرین محاسباتی هستند؛ معامله واقعی، Testnet order یا نتیجه سود/زیان ادعا نمی‌شود.
+- سیاست بازار تثبیت شد: BTCUSDT + ETHUSDT، Spot، 1h اصلی، 4h regime، 15m context؛ 5m غیرفعال.
+- گام بعد فقط P1 Market Data Layer است؛ برنامه‌ریزی آن completion فاز P1 محسوب نمی‌شود.
