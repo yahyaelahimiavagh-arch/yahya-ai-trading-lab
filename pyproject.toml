@@ -3,7 +3,7 @@ name = "yahya-ai-trading-lab"
 version = "0.1.0"
 description = "P0 accepted: safe public data, read-only Testnet account, and paper workflow"
 requires-python = ">=3.12,<3.13"
-dependencies = []
+dependencies = ["websockets==17.1"]
 
 [tool.uv]
 package = false

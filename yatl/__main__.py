@@ -12,7 +12,8 @@ from .data import (BinancePublicRestClient, Candle, CandleStore,
                    ClosedCandleConflict, DATA_SOURCE, HistoricalDownloadError,
                    INTERVAL_MILLISECONDS, NormalizationError, PublicRestError,
                    QualityError, StorageError, SYMBOLS, analyze_open_times,
-                   download_range, normalize_rest_kline)
+                   PublicKlineStream, StreamError, download_range,
+                   normalize_rest_kline)
 
 
 def _storage_runtime_check():
@@ -76,6 +77,10 @@ def main():
     commands.add_parser("normalize-check", help="Normalize live public REST klines for P1")
     commands.add_parser("storage-check", help="Verify temporary SQLite candle storage for P1")
     commands.add_parser("quality-check", help="Verify deterministic gap and duplicate detection")
+    stream = commands.add_parser("stream-check", help="Read bounded public Spot kline messages")
+    stream.add_argument("--symbol", choices=SYMBOLS, default="BTCUSDT")
+    stream.add_argument("--interval", choices=INTERVAL_MILLISECONDS, default="1h")
+    stream.add_argument("--messages", type=int, choices=range(1, 11), default=1)
     collect = commands.add_parser("candles", help="Save recent candles to CSV")
     collect.add_argument("--symbol", default="BTCUSDT")
     collect.add_argument("--interval", choices=sorted(INTERVALS), default="1h")
@@ -150,6 +155,15 @@ def main():
                 raise QualityError("Quality classification failed")
             print("OK: duplicate, historical gap and expected open interval classified")
             print("BOUNDED REPAIR RANGES ONLY | No network | No credentials | No execution")
+        elif args.command == "stream-check":
+            with CandleStore(":memory:") as store:
+                result = PublicKlineStream(
+                    [(args.symbol, args.interval)], store, max_reconnects=1,
+                ).run(args.messages)
+                rows = store.count()
+            print(f"OK: public Spot kline stream messages={result.messages} stored_rows={rows} "
+                  f"reconnects={result.reconnects} backfilled={result.backfilled_rows}")
+            print("PUBLIC MARKET DATA ONLY | Memory storage | No credentials | No execution")
         else:
             rows = candles(args.environment, args.symbol, args.interval, args.limit)
             stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
@@ -158,7 +172,7 @@ def main():
             print(f"Saved {len(rows)} candles to {path}")
             print("The latest candle may still be open; timestamps are Unix milliseconds (UTC).")
     except (AccountError, HistoricalDownloadError, MarketDataError, NormalizationError,
-            PaperWorkflowError, PublicRestError, QualityError, StorageError,
+            PaperWorkflowError, PublicRestError, QualityError, StorageError, StreamError,
             ValueError, OSError) as exc:
         # OSError messages can expose local paths; keep their display generic.
         message = "Cannot create output file; check permissions or use a new filename" if isinstance(exc, OSError) else str(exc)

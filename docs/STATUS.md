@@ -178,7 +178,7 @@ Status: **CHECKPOINT ACCEPTED — `a02acb4`**.
 
 ## P1-006 evidence — 2026-09-09
 
-Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT COMMIT PENDING**.
+Status: **CHECKPOINT ACCEPTED — `c63d88e`**.
 
 - P1-005 checkpoint: `a02acb4` with a clean working tree.
 - Added deterministic inspection of half-open UTC ranges for BTCUSDT/ETHUSDT and
@@ -197,3 +197,27 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT COMMIT PENDING**.
   repair range and one expected missing current-open interval without network or persistence.
 - No credential, network request, automatic repair, order endpoint or execution logic was added.
 - P1-007 has not started. P1 as a whole is not accepted; P2 remains unopened.
+
+## P1-007 evidence — 2026-09-09
+
+Status: **IMPLEMENTED AND LIVE RUNTIME VERIFIED — CHECKPOINT COMMIT PENDING**.
+
+- P1-006 checkpoint: `c63d88e` with a clean working tree.
+- Added one combined public kline stream restricted to the market-data-only
+  `wss://data-stream.binance.vision` host and the six approved symbol/interval pairs.
+- Connection settings disable ambient proxies and compression, cap messages at 64 KiB,
+  bound the receive/open/close waits and rely on the protocol library for server ping replies.
+- Normalized candles persist idempotently. Duplicate events are harmless, open candles update
+  and finalize, and older or unsubscribed events fail closed.
+- Disconnect/server-shutdown handling allows at most two reconnects with 1/2-second backoff.
+  Before resuming it REST-backfills only completed intervals from the last observed candle,
+  with a hard 1,000-candle limit and no unbounded retry loop.
+- Added and locked the single dependency `websockets==17.1`, compatible with Python 3.12.
+- Full suite: **93 passed, 0 failed**.
+- Live `python -m yatl stream-check --symbol BTCUSDT --interval 1h --messages 1`: PASS.
+  One public message normalized and stored as one in-memory SQLite row with zero reconnects.
+- No `.env`, API key, account/user stream, order endpoint or execution logic was used.
+- P1-008 has not started. P1 as a whole is not accepted; P2 remains unopened.
+
+References: https://github.com/binance/binance-spot-api-docs/blob/master/web-socket-streams.md
+and https://pypi.org/project/websockets/

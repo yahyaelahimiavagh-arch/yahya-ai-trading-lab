@@ -1,6 +1,6 @@
 # P1 — Market Data Layer implementation plan
 
-Status: **IN PROGRESS — P1-006 IMPLEMENTED, RUNTIME VERIFIED, CHECKPOINT PENDING**
+Status: **IN PROGRESS — P1-007 IMPLEMENTED, LIVE RUNTIME VERIFIED, CHECKPOINT PENDING**
 Entry condition: P0 baseline commit accepted and working tree clean.  
 Exit condition: public BTCUSDT/ETHUSDT datasets and health reports pass deterministic tests and live runtime checks.
 
@@ -80,11 +80,11 @@ Detect duplicate keys before/at persistence and identify gaps from the exact int
 grid within requested ranges. Distinguish an expected current open interval from a true
 historical gap. Produce repair ranges without automatically looping forever.
 
-Acceptance: **PASS in working tree, 2026-09-09.** Synthetic tests cover duplicate canonical
+Acceptance: **PASS, checkpoint `c63d88e`, 2026-09-09.** Synthetic tests cover duplicate canonical
 keys, contiguous and separated historical gaps, all approved UTC interval grids across a DST
 date, the expected current-open exception, future/oversized ranges and a 1,000 repair-range cap.
 The deterministic local runtime check classified duplicate, historical gap and expected open
-interval correctly. Checkpoint commit remains required before P1-007 starts.
+interval correctly. The clean checkpoint was accepted before P1-007 started.
 
 ### P1-007 — WebSocket market stream
 
@@ -92,8 +92,11 @@ Subscribe only to Binance Spot public kline streams for the approved symbol/time
 pairs. Normalize events, persist updates idempotently, reconnect with capped backoff and
 REST-backfill the bounded disconnect range. No credentials are loaded by this process.
 
-Acceptance: recorded-event tests for reconnect, duplicate events, out-of-order updates,
-open-to-close transitions and backfill handoff; then a time-bounded live stream check.
+Acceptance: **PASS in working tree, 2026-09-09.** Recorded-event tests cover exact URL and
+transport limits, duplicate events, open updates/finalization, out-of-order rejection,
+server shutdown, capped reconnect/backoff and bounded REST backfill handoff. A live public
+BTCUSDT 1h stream message normalized and persisted in memory. Checkpoint commit remains
+required before P1-008 starts.
 
 ### P1-008 — Data health report
 

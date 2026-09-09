@@ -13,6 +13,7 @@ from .history import HistoricalBatch, HistoricalDownloadError, download_range
 from .normalize import NormalizationError, normalize_rest_kline, normalize_websocket_kline
 from .storage import CandleStore, ClosedCandleConflict, StorageError
 from .quality import QualityError, RangeQualityReport, analyze_open_times, duplicate_candle_keys
+from .stream import PublicKlineStream, StreamError, StreamRunResult, stream_url
 
 __all__ = [
     "BINANCE_PUBLIC_BASE_URL",
@@ -27,9 +28,12 @@ __all__ = [
     "HistoricalDownloadError",
     "NormalizationError",
     "PublicRestError",
+    "PublicKlineStream",
     "QualityError",
     "RangeQualityReport",
     "StorageError",
+    "StreamError",
+    "StreamRunResult",
     "SYMBOLS",
     "TIMEFRAME_POLICY",
     "download_range",
@@ -37,4 +41,5 @@ __all__ = [
     "duplicate_candle_keys",
     "normalize_rest_kline",
     "normalize_websocket_kline",
+    "stream_url",
 ]

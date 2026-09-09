@@ -1,7 +1,8 @@
 # Yahya AI Trading Lab
 
 P0 پذیرفته شده است و P1 لایه داده عمومی Binance Spot را مرحله‌به‌مرحله می‌سازد.
-Python پروژه **3.12.14** است و هیچ وابستگی خارجی Python ندارد.
+Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
+صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
 ## شروع در PowerShell
 
@@ -37,9 +38,9 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 
 مرجع ترتیب اجرا: [نقشه پروژه](docs/MASTER-PLAN.md).
 وضعیت جاری **P0 پذیرفته‌شده و P1 در حال اجرا** است.
-P1-005 در `a02acb4` checkpoint شده و P1-006 تشخیص داده تکراری، کندل گمشده و
-repair range محدود را تکمیل کرده است. قدم بعدی پس از checkpoint تمیز، P1-007
-(WebSocket عمومی بازار) است. P2 هنوز شروع نشده است.
+P1-006 در `c63d88e` checkpoint شده و P1-007 WebSocket عمومی بازار را تکمیل کرده
+است. قدم بعدی پس از checkpoint تمیز، P1-008 (گزارش سلامت داده) است. P2 هنوز
+شروع نشده است.
 
 وضعیت تست‌های همین تحویل در `docs/STATUS.md` ثبت شده است.
 
@@ -161,3 +162,16 @@ uv run --locked python -m yatl quality-check
 ```
 
 این بررسی کاملاً محلی و deterministic است و شبکه، credential یا اجرای معامله ندارد.
+
+P1-007 فقط از combined kline stream عمومی و market-data-only روی
+`data-stream.binance.vision` استفاده می‌کند. subscriptionها به BTCUSDT/ETHUSDT و
+15m/1h/4h محدودند. پیام‌ها normalize و idempotent ذخیره می‌شوند؛ پیام عقب‌افتاده
+رد می‌شود. قطع اتصال حداکثر دو reconnect با backoff سقف‌دار دارد و فاصله بسته‌شده
+را با REST در حداکثر ۱۰۰۰ کندل backfill می‌کند.
+
+```powershell
+uv run --locked python -m yatl stream-check --symbol BTCUSDT --interval 1h --messages 1
+```
+
+این بررسی یک پیام زنده عمومی را در SQLite حافظه‌ای ثبت می‌کند و سپس اتصال را می‌بندد.
+هیچ `.env`، API key، user stream یا endpoint اجرایی استفاده نمی‌شود.
