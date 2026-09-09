@@ -310,3 +310,22 @@ Accepted scope remains BTCUSDT + ETHUSDT, Spot only, 1h primary, 4h regime and 1
 context. 5m remains disabled. PAPER ONLY, LIVE_MASTER_LOCK=OFF, NO FUTURES, NO LEVERAGE,
 NO WITHDRAWAL API and NO AI DIRECT EXECUTION remain enforced. TRADE permission remains
 disabled and no execution endpoint was added.
+
+## P2-001 evidence — 2026-09-09
+
+Status: **IMPLEMENTED — CHECKPOINT PENDING**.
+
+- Entry baseline: P1 final checkpoint `4e77e34`; branch `main`; working tree clean.
+- Added an immutable BacktestSpec for BTCUSDT/ETHUSDT with aligned 1h ranges, explicit
+  initial cash, fee and slippage Decimal strings, and a bounded deterministic seed.
+- Safety fields fail closed unless paper-only, Spot-only, long-only, unleveraged and
+  `LIVE_MASTER_LOCK=OFF`. The execution-price policy is fixed to `NEXT_PRIMARY_OPEN`.
+- Added a point-in-time MarketSnapshot for synchronized 1h primary, 15m context and 4h
+  regime histories. Inputs must be closed, contiguous, ordered, current at the decision
+  boundary and strictly earlier than the decision time.
+- Focused contract suite: **7 passed, 0 failed**.
+- Full suite after implementation: **124 passed, 0 failed**; lock and compile checks passed.
+- `python -m yatl backtest-contract-check`: PASS; verified a local point-in-time snapshot
+  and next-primary-open policy without network, credentials or exchange orders.
+- P2 delivery order and acceptance gates are fixed in `P2-IMPLEMENTATION-PLAN.md`.
+- P2-002 has not started. P2 as a whole is not accepted; P3 remains unopened.

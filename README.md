@@ -1,6 +1,6 @@
 # Yahya AI Trading Lab
 
-P0 و P1 با شواهد runtime پذیرفته شده‌اند. P2 هنوز شروع نشده است.
+P0 و P1 با شواهد runtime پذیرفته شده‌اند. P2 اکنون طبق برنامه ثابت در حال اجراست.
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
@@ -39,9 +39,20 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 مرجع ترتیب اجرا: [نقشه پروژه](docs/MASTER-PLAN.md).
 وضعیت جاری **P0 و P1 پذیرفته‌شده در runtime** است. P1-009 در `fa4de2d`
 checkpoint شد و P1-010 بازسازی تمیز، اجرای تکراری، REST، WebSocket، گزارش سلامت،
-manifest و مرزهای امنیتی را تأیید کرد. P2 هنوز شروع نشده است.
+manifest و مرزهای امنیتی را تأیید کرد. P1 در `4e77e34` بسته شد و P2-001 قرارداد
+point-in-time موتور بک‌تست را آغاز کرده است. ترتیب دقیق در
+`docs/P2-IMPLEMENTATION-PLAN.md` ثبت شده و P3 هنوز شروع نشده است.
 
 وضعیت تست‌های همین تحویل در `docs/STATUS.md` ثبت شده است.
+
+بررسی محلی قرارداد P2-001:
+
+```powershell
+uv run --locked python -m yatl backtest-contract-check
+```
+
+این بررسی ثابت می‌کند تصمیم فقط داده بسته و قابل‌مشاهده در همان لحظه را می‌بیند و
+سیاست fill روی open بعدی 1h قفل است. هیچ سفارش صرافی یا credential استفاده نمی‌شود.
 
 ## تمرین دستی و قابل‌تکرار Paper
 

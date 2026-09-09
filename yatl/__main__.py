@@ -8,6 +8,8 @@ from uuid import uuid4
 from .market_data import HOSTS, INTERVALS, MarketDataError, candles, ping, save_csv
 from .account import AccountError, read_account
 from .paper_workflow import PaperWorkflowError, load_and_validate
+from .backtest import (BacktestConfigError, BacktestContractError, BacktestSpec,
+                       EXECUTION_PRICE_POLICY, MarketSnapshot)
 from .data import (BinancePublicRestClient, Candle, CandleStore,
                    ClosedCandleConflict, DATA_SOURCE, HistoricalDownloadError,
                    INTERVAL_MILLISECONDS, NormalizationError, PublicRestError,
@@ -64,6 +66,28 @@ def _storage_runtime_check():
                 raise StorageError("Cannot remove temporary storage-check data") from None
 
 
+def _backtest_contract_runtime_check():
+    decision = 1_699_999_200_000
+
+    def completed(interval):
+        duration = INTERVAL_MILLISECONDS[interval]
+        opened = (decision // duration) * duration - duration
+        return (Candle(
+            source=DATA_SOURCE, symbol="BTCUSDT", interval=interval,
+            open_time_ms=opened, close_time_ms=opened + duration - 1,
+            open="100", high="110", low="90", close="105",
+            base_volume="10", quote_volume="1000", trade_count=20,
+            is_closed=True,
+        ),)
+
+    spec = BacktestSpec("BTCUSDT", decision, decision + 86_400_000)
+    view = MarketSnapshot(symbol=spec.symbol, decision_time_ms=decision,
+                          primary=completed("1h"), context=completed("15m"),
+                          regime=completed("4h"))
+    if view.latest_primary.close_time_ms >= view.decision_time_ms:
+        raise BacktestContractError("Point-in-time boundary failed")
+
+
 def main():
     parser = argparse.ArgumentParser(description="YATL paper-only data and Testnet account tools")
     parser.add_argument("--environment", choices=HOSTS, default="testnet")
@@ -78,6 +102,8 @@ def main():
     commands.add_parser("normalize-check", help="Normalize live public REST klines for P1")
     commands.add_parser("storage-check", help="Verify temporary SQLite candle storage for P1")
     commands.add_parser("quality-check", help="Verify deterministic gap and duplicate detection")
+    commands.add_parser("backtest-contract-check",
+                        help="Verify the local point-in-time P2 contract")
     stream = commands.add_parser("stream-check", help="Read bounded public Spot kline messages")
     stream.add_argument("--symbol", choices=SYMBOLS, default="BTCUSDT")
     stream.add_argument("--interval", choices=INTERVAL_MILLISECONDS, default="1h")
@@ -164,6 +190,10 @@ def main():
                 raise QualityError("Quality classification failed")
             print("OK: duplicate, historical gap and expected open interval classified")
             print("BOUNDED REPAIR RANGES ONLY | No network | No credentials | No execution")
+        elif args.command == "backtest-contract-check":
+            _backtest_contract_runtime_check()
+            print(f"OK: point-in-time backtest contract; price_policy={EXECUTION_PRICE_POLICY}")
+            print("PAPER ONLY | LIVE_MASTER_LOCK=OFF | No exchange order")
         elif args.command == "stream-check":
             with CandleStore(":memory:") as store:
                 result = PublicKlineStream(
@@ -211,7 +241,8 @@ def main():
             path = save_csv(rows, output)
             print(f"Saved {len(rows)} candles to {path}")
             print("The latest candle may still be open; timestamps are Unix milliseconds (UTC).")
-    except (AccountError, AuditError, HistoricalDownloadError, MarketDataError, NormalizationError,
+    except (AccountError, AuditError, BacktestConfigError, BacktestContractError,
+            HistoricalDownloadError, MarketDataError, NormalizationError,
             DatasetError, HealthError, PaperWorkflowError, PublicRestError, QualityError,
             StorageError, StreamError,
             ValueError, OSError) as exc:
