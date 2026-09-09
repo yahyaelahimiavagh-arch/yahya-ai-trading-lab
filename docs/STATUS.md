@@ -329,3 +329,23 @@ Status: **IMPLEMENTED — CHECKPOINT PENDING**.
   and next-primary-open policy without network, credentials or exchange orders.
 - P2 delivery order and acceptance gates are fixed in `P2-IMPLEMENTATION-PLAN.md`.
 - P2-002 has not started. P2 as a whole is not accepted; P3 remains unopened.
+
+## P2-002 evidence — 2026-09-09
+
+Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
+
+- P2-001 checkpoint: `30a6e6d` with a clean working tree.
+- Added manifest-gated, read-only SQLite loading. The accepted P1 manifest is snapshotted,
+  passed through `p1-audit` and checked for changes before any candle is exposed.
+- The loader verifies schema version, exact report range/count/grid, canonical identity and
+  closed state. It rejects missing data, open rows, corrupt candle state, invalid paths,
+  out-of-range specifications and database/manifest disagreement.
+- `snapshot_at(t)` returns only candles with `close_time_ms < t`; future database rows remain
+  outside the returned point-in-time view.
+- Focused loader suite: **5 passed, 0 failed**.
+- Full suite after implementation: **130 passed, 0 failed**; lock and compile checks passed.
+- Runtime BTCUSDT load: PASS; stored 720/2,880/180 rows for 1h/15m/4h and the first
+  24-hour-run snapshot exposed only the legal 696/2,783/174-row prefixes.
+- Runtime ETHUSDT load: PASS with the same stored and visible counts.
+- SQLite was opened with `mode=ro`; no network, credential or exchange order was used.
+- P2-003 has not started. P2 as a whole is not accepted; P3 remains unopened.

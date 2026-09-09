@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 و P1 RUNTIME ACCEPTED**
-قدم جاری: **P2-001 IMPLEMENTED — CHECKPOINT PENDING**
+قدم جاری: **P2-002 IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**
 
 ## منشأ و حدود سند
 
@@ -34,7 +34,7 @@ NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only ب�
 |---|---|---|
 | P0 Foundation | محیط، Git، امنیت، Testnet، آموزش و تمرین دستی Paper | **RUNTIME ACCEPTED — 2026-09-09** |
 | P1 Market Data Layer | REST، دانلود تاریخی، WebSocket، نرمال‌سازی، SQLite، حذف تکرار، تشخیص شکاف، گزارش سلامت BTC/ETH | **RUNTIME ACCEPTED — checkpoint `4e77e34`** |
-| P2 Backtesting Engine | آزمون تاریخی تکرارپذیر با کارمزد، لغزش و جلوگیری از استفاده از آینده | در حال اجرا؛ P2-001 runtime PASS، checkpoint pending |
+| P2 Backtesting Engine | آزمون تاریخی تکرارپذیر با کارمزد، لغزش و جلوگیری از استفاده از آینده | در حال اجرا؛ P2-001 checkpoint شد، P2-002 runtime PASS است |
 | P3 Strategy Framework | چارچوب مشترک استراتژی و قواعد روشن سیگنال/عدم معامله | شروع نشده |
 | P4 Risk Manager | اندازه موقعیت، محدودیت ریسک و Kill Switch مستقل | شروع نشده |
 | P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | شروع نشده؛ مجوز TRADE فعلی خاموش |

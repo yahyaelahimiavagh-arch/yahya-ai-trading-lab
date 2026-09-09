@@ -8,8 +8,9 @@ from uuid import uuid4
 from .market_data import HOSTS, INTERVALS, MarketDataError, candles, ping, save_csv
 from .account import AccountError, read_account
 from .paper_workflow import PaperWorkflowError, load_and_validate
-from .backtest import (BacktestConfigError, BacktestContractError, BacktestSpec,
-                       EXECUTION_PRICE_POLICY, MarketSnapshot)
+from .backtest import (BacktestConfigError, BacktestContractError, BacktestLoadError,
+                       BacktestSpec, EXECUTION_PRICE_POLICY, MarketSnapshot,
+                       latest_spec_from_manifest, load_accepted_dataset)
 from .data import (BinancePublicRestClient, Candle, CandleStore,
                    ClosedCandleConflict, DATA_SOURCE, HistoricalDownloadError,
                    INTERVAL_MILLISECONDS, NormalizationError, PublicRestError,
@@ -104,6 +105,12 @@ def main():
     commands.add_parser("quality-check", help="Verify deterministic gap and duplicate detection")
     commands.add_parser("backtest-contract-check",
                         help="Verify the local point-in-time P2 contract")
+    loader = commands.add_parser("backtest-load-check",
+                                 help="Load accepted P1 data read-only for P2")
+    loader.add_argument("--database", default="data/p1/market.sqlite3")
+    loader.add_argument("--manifest", default="manifests/p1-market-data.json")
+    loader.add_argument("--symbol", choices=SYMBOLS, default="BTCUSDT")
+    loader.add_argument("--hours", type=int, default=24)
     stream = commands.add_parser("stream-check", help="Read bounded public Spot kline messages")
     stream.add_argument("--symbol", choices=SYMBOLS, default="BTCUSDT")
     stream.add_argument("--interval", choices=INTERVAL_MILLISECONDS, default="1h")
@@ -194,6 +201,14 @@ def main():
             _backtest_contract_runtime_check()
             print(f"OK: point-in-time backtest contract; price_policy={EXECUTION_PRICE_POLICY}")
             print("PAPER ONLY | LIVE_MASTER_LOCK=OFF | No exchange order")
+        elif args.command == "backtest-load-check":
+            spec = latest_spec_from_manifest(args.manifest, args.symbol, hours=args.hours)
+            loaded = load_accepted_dataset(args.database, args.manifest, spec)
+            view = loaded.snapshot_at(spec.start_time_ms)
+            print(f"OK: accepted P1 dataset loaded read-only; symbol={spec.symbol} "
+                  f"stored={len(loaded.primary)}/{len(loaded.context)}/{len(loaded.regime)} "
+                  f"visible={len(view.primary)}/{len(view.context)}/{len(view.regime)}")
+            print("PAPER ONLY | Point-in-time data | No credentials | No exchange order")
         elif args.command == "stream-check":
             with CandleStore(":memory:") as store:
                 result = PublicKlineStream(
@@ -242,6 +257,7 @@ def main():
             print(f"Saved {len(rows)} candles to {path}")
             print("The latest candle may still be open; timestamps are Unix milliseconds (UTC).")
     except (AccountError, AuditError, BacktestConfigError, BacktestContractError,
+            BacktestLoadError,
             HistoricalDownloadError, MarketDataError, NormalizationError,
             DatasetError, HealthError, PaperWorkflowError, PublicRestError, QualityError,
             StorageError, StreamError,

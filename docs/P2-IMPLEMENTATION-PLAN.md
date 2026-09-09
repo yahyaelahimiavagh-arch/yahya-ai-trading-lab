@@ -1,6 +1,6 @@
 # P2 — Backtesting Engine implementation plan
 
-Status: **IN PROGRESS — P2-001 IMPLEMENTED, CHECKPOINT PENDING**
+Status: **IN PROGRESS — P2-002 IMPLEMENTED AND RUNTIME VERIFIED, CHECKPOINT PENDING**
 Entry baseline: P1 accepted in commit `4e77e34` with a clean working tree.
 Exit condition: deterministic BTCUSDT/ETHUSDT Spot simulations pass unit, invariant,
 reproducibility and real-dataset runtime gates with explicit fees and slippage.
@@ -29,8 +29,8 @@ Define immutable simulation configuration and a synchronized 1h/15m/4h market sn
 Reject open, future, stale, gapped, unordered, wrong-symbol or wrong-timeframe inputs. Lock
 paper-only, Spot, long-only, no-leverage and next-primary-open behavior.
 
-Acceptance: unit tests for every boundary, a local runtime contract check, full-suite PASS,
-documentation update and clean checkpoint.
+Acceptance: **PASS, checkpoint `30a6e6d`, 2026-09-09.** Unit tests cover every boundary;
+the local runtime contract check and full suite passed before a clean checkpoint.
 
 ### P2-002 — Accepted dataset loader
 
@@ -38,7 +38,11 @@ Load exact half-open ranges from the P1 SQLite store only after the P1 manifest 
 Build point-in-time snapshots without leaking later rows. Reject incomplete coverage, schema
 drift, open candles and a database/manifest range mismatch.
 
-Acceptance: temporary-database tests plus a read-only runtime load from the accepted P1 data.
+Acceptance: **PASS in working tree, 2026-09-09.** Temporary-database tests cover exact
+manifest matching, read-only behavior, point-in-time visibility, missing/open rows, schema
+mismatch, invalid paths/ranges and bounded selection. Runtime loads passed against the
+accepted P1 SQLite database for both BTCUSDT and ETHUSDT over the latest 24-hour run range.
+Checkpoint remains required before P2-003.
 
 ### P2-003 — Deterministic event clock
 

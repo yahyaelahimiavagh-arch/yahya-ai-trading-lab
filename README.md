@@ -54,6 +54,16 @@ uv run --locked python -m yatl backtest-contract-check
 این بررسی ثابت می‌کند تصمیم فقط داده بسته و قابل‌مشاهده در همان لحظه را می‌بیند و
 سیاست fill روی open بعدی 1h قفل است. هیچ سفارش صرافی یا credential استفاده نمی‌شود.
 
+P2-002 دیتابیس پذیرفته‌شده P1 را فقط read-only و پس از قبولی manifest بارگذاری می‌کند:
+
+```powershell
+uv run --locked python -m yatl backtest-load-check --symbol BTCUSDT --hours 24
+uv run --locked python -m yatl backtest-load-check --symbol ETHUSDT --hours 24
+```
+
+هر snapshot فقط کندل‌هایی را برمی‌گرداند که پیش از زمان تصمیم بسته شده‌اند. اختلاف
+schema، بازه، تعداد، gap، کندل باز یا manifest باعث توقف می‌شود.
+
 ## تمرین دستی و قابل‌تکرار Paper
 
 فایل `fixtures/p0-paper-workflows.json` دو سناریوی آموزشی ثابت برای BTCUSDT و
