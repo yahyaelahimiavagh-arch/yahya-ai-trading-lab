@@ -126,4 +126,12 @@ uv run --locked python -m yatl history-check
 
 این بررسی برای هر دو symbol و هر سه تایم‌فریم، دو کندل بسته را با صفحه‌های یک‌ردیفی
 می‌گیرد تا pagination واقعی آزمایش شود. چیزی ذخیره نمی‌شود. نرمال‌سازی REST/WebSocket
-و تعیین نهایی وضعیت کندل مرحله P1-004 است.
+و تعیین نهایی وضعیت کندل در P1-004 پیاده‌سازی شده است. بررسی زنده:
+
+```powershell
+uv run --locked python -m yatl normalize-check
+```
+
+REST با زمان سرور Binance و WebSocket با فیلد رسمی `x` وضعیت کندل را تعیین می‌کند.
+payload خام و combined stream به قرارداد Candle یکسان تبدیل می‌شوند. اتصال زنده WebSocket
+هنوز شروع نشده و متعلق به P1-007 است؛ P1-004 فقط قالب ثبت‌شده آن را تست می‌کند.

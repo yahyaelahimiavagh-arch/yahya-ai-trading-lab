@@ -132,3 +132,22 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT COMMIT PENDING**.
   two closed-range candles were fetched in two pages with `page_limit=1`.
 - Runtime check performed no persistence, loaded no credentials and exposed no execution path.
 - P1-004 has not started. P1 as a whole is not accepted; P2 remains unopened.
+
+## P1-004 evidence — 2026-09-09
+
+Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT COMMIT PENDING**.
+
+- P1-003 checkpoint: `c5d6f0e` with a clean working tree.
+- Added one normalizer for REST rows and public raw/combined WebSocket kline events.
+- Both transports produce the same frozen Candle contract and preserve exchange decimal strings.
+- REST closed/open state uses Binance server time: a candle becomes closed only when server time
+  is greater than its inclusive close timestamp. WebSocket state uses the exchange `x` boolean.
+- Stream wrapper name, event type/time, outer/inner symbol, interval, required fields, reserved REST
+  field and canonical Candle invariants fail closed. Upstream invalid values are not echoed.
+- Full suite: **64 passed, 0 failed**.
+- Live `python -m yatl normalize-check`: PASS. For BTCUSDT/ETHUSDT on 15m/1h/4h,
+  the latest two rows normalized as `closed,open` in every case.
+- No local clock decision, persistence, credential, authenticated stream or execution path added.
+- P1-005 has not started. P1 as a whole is not accepted; P2 remains unopened.
+
+Reference: https://developers.binance.com/en/docs/products/spot/testnet/web-socket-streams

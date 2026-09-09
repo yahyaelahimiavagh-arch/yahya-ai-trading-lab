@@ -6,7 +6,8 @@ from .market_data import HOSTS, INTERVALS, MarketDataError, candles, ping, save_
 from .account import AccountError, read_account
 from .paper_workflow import PaperWorkflowError, load_and_validate
 from .data import (BinancePublicRestClient, HistoricalDownloadError,
-                   INTERVAL_MILLISECONDS, PublicRestError, SYMBOLS, download_range)
+                   INTERVAL_MILLISECONDS, NormalizationError, PublicRestError,
+                   SYMBOLS, download_range, normalize_rest_kline)
 
 
 def main():
@@ -20,6 +21,7 @@ def main():
     paper.add_argument("--fixture", default="fixtures/p0-paper-workflows.json")
     commands.add_parser("data-check", help="Check credential-free Binance Spot public data")
     commands.add_parser("history-check", help="Check bounded historical pagination for P1")
+    commands.add_parser("normalize-check", help="Normalize live public REST klines for P1")
     collect = commands.add_parser("candles", help="Save recent candles to CSV")
     collect.add_argument("--symbol", default="BTCUSDT")
     collect.add_argument("--interval", choices=sorted(INTERVALS), default="1h")
@@ -62,6 +64,17 @@ def main():
                     batch = download_range(client, symbol, interval, start, end, page_limit=1)
                     print(f"{symbol} {interval}: rows={len(batch.rows)} pages={batch.pages}")
             print("PUBLIC CLOSED-RANGE CHECK | No persistence | No credentials | No execution")
+        elif args.command == "normalize-check":
+            client = BinancePublicRestClient()
+            server_time = client.server_time()
+            for symbol in SYMBOLS:
+                for interval in INTERVAL_MILLISECONDS:
+                    rows = client.klines(symbol, interval, limit=2)
+                    candles = [normalize_rest_kline(symbol, interval, row, server_time)
+                               for row in rows]
+                    states = ",".join("closed" if candle.is_closed else "open" for candle in candles)
+                    print(f"{symbol} {interval}: rows={len(candles)} states={states}")
+            print("CANONICAL PUBLIC CANDLES | No persistence | No credentials | No execution")
         else:
             rows = candles(args.environment, args.symbol, args.interval, args.limit)
             stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
@@ -69,8 +82,8 @@ def main():
             path = save_csv(rows, output)
             print(f"Saved {len(rows)} candles to {path}")
             print("The latest candle may still be open; timestamps are Unix milliseconds (UTC).")
-    except (AccountError, HistoricalDownloadError, MarketDataError, PaperWorkflowError,
-            PublicRestError, ValueError, OSError) as exc:
+    except (AccountError, HistoricalDownloadError, MarketDataError, NormalizationError,
+            PaperWorkflowError, PublicRestError, ValueError, OSError) as exc:
         # OSError messages can expose local paths; keep their display generic.
         message = "Cannot create output file; check permissions or use a new filename" if isinstance(exc, OSError) else str(exc)
         print(f"Error: {message}", file=sys.stderr)

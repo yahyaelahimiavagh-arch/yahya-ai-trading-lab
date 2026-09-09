@@ -10,6 +10,7 @@ from .config import (
 from .models import Candle, CandleValidationError
 from .rest import BinancePublicRestClient, PublicRestError
 from .history import HistoricalBatch, HistoricalDownloadError, download_range
+from .normalize import NormalizationError, normalize_rest_kline, normalize_websocket_kline
 
 __all__ = [
     "BINANCE_PUBLIC_BASE_URL",
@@ -20,8 +21,11 @@ __all__ = [
     "INTERVAL_MILLISECONDS",
     "HistoricalBatch",
     "HistoricalDownloadError",
+    "NormalizationError",
     "PublicRestError",
     "SYMBOLS",
     "TIMEFRAME_POLICY",
     "download_range",
+    "normalize_rest_kline",
+    "normalize_websocket_kline",
 ]

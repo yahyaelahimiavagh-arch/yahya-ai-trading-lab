@@ -1,6 +1,6 @@
 # P1 — Market Data Layer implementation plan
 
-Status: **IN PROGRESS — P1-003 IMPLEMENTED, CHECKPOINT PENDING**
+Status: **IN PROGRESS — P1-004 IMPLEMENTED, CHECKPOINT PENDING**
 Entry condition: P0 baseline commit accepted and working tree clean.  
 Exit condition: public BTCUSDT/ETHUSDT datasets and health reports pass deterministic tests and live runtime checks.
 
@@ -57,8 +57,10 @@ from the exchange close flag for streams or when its close boundary is safely be
 verified server time for REST. Preserve the current open candle but exclude it by default
 from backtest-ready views.
 
-Acceptance: equivalent REST/stream payloads normalize identically; boundary tests cover
-clock edges and open-to-closed transitions.
+Acceptance: **PASS in working tree, 2026-09-09.** Equivalent recorded REST/raw-stream/
+combined-stream payloads normalize identically. Boundary tests cover the exact exchange-time
+transition. The live REST check observed `closed,open` for both symbols on all three intervals.
+Checkpoint commit remains required before P1-005 starts.
 
 ### P1-005 — SQLite storage and migrations
 
