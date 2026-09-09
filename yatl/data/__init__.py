@@ -14,6 +14,7 @@ from .normalize import NormalizationError, normalize_rest_kline, normalize_webso
 from .storage import CandleStore, ClosedCandleConflict, StorageError
 from .quality import QualityError, RangeQualityReport, analyze_open_times, duplicate_candle_keys
 from .stream import PublicKlineStream, StreamError, StreamRunResult, stream_url
+from .health import DataHealthReport, HealthError, build_health_report
 
 __all__ = [
     "BINANCE_PUBLIC_BASE_URL",
@@ -23,9 +24,11 @@ __all__ = [
     "CandleStore",
     "ClosedCandleConflict",
     "DATA_SOURCE",
+    "DataHealthReport",
     "INTERVAL_MILLISECONDS",
     "HistoricalBatch",
     "HistoricalDownloadError",
+    "HealthError",
     "NormalizationError",
     "PublicRestError",
     "PublicKlineStream",
@@ -38,6 +41,7 @@ __all__ = [
     "TIMEFRAME_POLICY",
     "download_range",
     "analyze_open_times",
+    "build_health_report",
     "duplicate_candle_keys",
     "normalize_rest_kline",
     "normalize_websocket_kline",

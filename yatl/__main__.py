@@ -13,7 +13,7 @@ from .data import (BinancePublicRestClient, Candle, CandleStore,
                    INTERVAL_MILLISECONDS, NormalizationError, PublicRestError,
                    QualityError, StorageError, SYMBOLS, analyze_open_times,
                    PublicKlineStream, StreamError, download_range,
-                   normalize_rest_kline)
+                   HealthError, build_health_report, normalize_rest_kline)
 
 
 def _storage_runtime_check():
@@ -81,6 +81,8 @@ def main():
     stream.add_argument("--symbol", choices=SYMBOLS, default="BTCUSDT")
     stream.add_argument("--interval", choices=INTERVAL_MILLISECONDS, default="1h")
     stream.add_argument("--messages", type=int, choices=range(1, 11), default=1)
+    health = commands.add_parser("health-check", help="Build deterministic P1 data health report")
+    health.add_argument("--json", action="store_true", help="Print deterministic JSON")
     collect = commands.add_parser("candles", help="Save recent candles to CSV")
     collect.add_argument("--symbol", default="BTCUSDT")
     collect.add_argument("--interval", choices=sorted(INTERVALS), default="1h")
@@ -164,6 +166,23 @@ def main():
             print(f"OK: public Spot kline stream messages={result.messages} stored_rows={rows} "
                   f"reconnects={result.reconnects} backfilled={result.backfilled_rows}")
             print("PUBLIC MARKET DATA ONLY | Memory storage | No credentials | No execution")
+        elif args.command == "health-check":
+            duration = INTERVAL_MILLISECONDS["1h"]
+            start = 1_699_999_200_000
+            current = start + (3 * duration)
+            values = [Candle(
+                source=DATA_SOURCE, symbol="BTCUSDT", interval="1h",
+                open_time_ms=open_time, close_time_ms=open_time + duration - 1,
+                open="26000.0", high="26250.0", low="25900.0", close="26100.0",
+                base_volume="123.0", quote_volume="3210000.0", trade_count=100,
+                is_closed=open_time < current,
+            ) for open_time in range(start, current + duration, duration)]
+            report = build_health_report(DATA_SOURCE, "BTCUSDT", "1h", start,
+                                         current + duration, values, current + 1)
+            print(report.to_json() if args.json else report.to_text())
+            print("PUBLIC CANONICAL DATA | No credentials | No execution")
+            if not report.backtest_ready:
+                return 1
         else:
             rows = candles(args.environment, args.symbol, args.interval, args.limit)
             stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
@@ -172,7 +191,8 @@ def main():
             print(f"Saved {len(rows)} candles to {path}")
             print("The latest candle may still be open; timestamps are Unix milliseconds (UTC).")
     except (AccountError, HistoricalDownloadError, MarketDataError, NormalizationError,
-            PaperWorkflowError, PublicRestError, QualityError, StorageError, StreamError,
+            HealthError, PaperWorkflowError, PublicRestError, QualityError,
+            StorageError, StreamError,
             ValueError, OSError) as exc:
         # OSError messages can expose local paths; keep their display generic.
         message = "Cannot create output file; check permissions or use a new filename" if isinstance(exc, OSError) else str(exc)

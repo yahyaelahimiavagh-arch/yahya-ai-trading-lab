@@ -38,9 +38,9 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 
 مرجع ترتیب اجرا: [نقشه پروژه](docs/MASTER-PLAN.md).
 وضعیت جاری **P0 پذیرفته‌شده و P1 در حال اجرا** است.
-P1-006 در `c63d88e` checkpoint شده و P1-007 WebSocket عمومی بازار را تکمیل کرده
-است. قدم بعدی پس از checkpoint تمیز، P1-008 (گزارش سلامت داده) است. P2 هنوز
-شروع نشده است.
+P1-007 در `ab1fa24` checkpoint شده و P1-008 گزارش deterministic سلامت داده را
+تکمیل کرده است. قدم بعدی پس از checkpoint تمیز، P1-009 (ساخت datasetهای واقعی
+BTCUSDT و ETHUSDT) است. P2 هنوز شروع نشده است.
 
 وضعیت تست‌های همین تحویل در `docs/STATUS.md` ثبت شده است.
 
@@ -175,3 +175,16 @@ uv run --locked python -m yatl stream-check --symbol BTCUSDT --interval 1h --mes
 
 این بررسی یک پیام زنده عمومی را در SQLite حافظه‌ای ثبت می‌کند و سپس اتصال را می‌بندد.
 هیچ `.env`، API key، user stream یا endpoint اجرایی استفاده نمی‌شود.
+
+P1-008 برای هر بازه، اولین/آخرین timestamp، تعداد کل و یکتا، open/closed، duplicate،
+gap، repair range، malformed/conflicting، freshness و آمادگی backtest را گزارش می‌کند.
+کندل باز فعلی می‌تواند در داده باشد، ولی از شمارش بسته جداست؛ کندل باز تاریخی، شکاف
+حل‌نشده یا تعارض باعث FAIL و کد خروج غیرصفر می‌شود.
+
+```powershell
+uv run --locked python -m yatl health-check
+uv run --locked python -m yatl health-check --json
+```
+
+این مرحله از fixture محلی canonical استفاده می‌کند. اتصال گزارش به dataset واقعی در
+P1-009 انجام می‌شود.

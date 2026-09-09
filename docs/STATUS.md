@@ -200,7 +200,7 @@ Status: **CHECKPOINT ACCEPTED — `c63d88e`**.
 
 ## P1-007 evidence — 2026-09-09
 
-Status: **IMPLEMENTED AND LIVE RUNTIME VERIFIED — CHECKPOINT COMMIT PENDING**.
+Status: **CHECKPOINT ACCEPTED — `ab1fa24`**.
 
 - P1-006 checkpoint: `c63d88e` with a clean working tree.
 - Added one combined public kline stream restricted to the market-data-only
@@ -221,3 +221,28 @@ Status: **IMPLEMENTED AND LIVE RUNTIME VERIFIED — CHECKPOINT COMMIT PENDING**.
 
 References: https://github.com/binance/binance-spot-api-docs/blob/master/web-socket-streams.md
 and https://pypi.org/project/websockets/
+
+## P1-008 evidence — 2026-09-09
+
+Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT COMMIT PENDING**.
+
+- P1-007 checkpoint: `ab1fa24` with a clean working tree.
+- Added immutable health reports with requested/stored boundaries, total/unique rows,
+  closed/open counts, duplicate and gap timestamps, bounded repair ranges, malformed and
+  conflict counters, freshness, current-open state and backtest-ready status.
+- A current open candle is reported separately and allowed in the source dataset. Missing
+  current-open data is not a historical gap. Historical open candles and stale required
+  closed candles fail the readiness gate.
+- JSON output is stable (`sort_keys` and compact separators); human output contains every
+  required gate. An unhealthy report returns exit code 1.
+- Tests cover healthy closed data, present/missing current open, duplicates, gaps, unexpected
+  open candles, stale data, malformed/conflicting counters, invalid identities, deterministic
+  JSON, human output and nonzero gate failure.
+- Full suite: **104 passed, 0 failed**.
+- Local `python -m yatl health-check`: PASS with 4 unique rows, 3 closed, 1 current open,
+  zero duplicates/gaps/malformed/conflicts and `backtest_ready=true`.
+- Local `python -m yatl health-check --json`: PASS and parsed as deterministic JSON.
+- This checkpoint uses a canonical local fixture. Real BTCUSDT/ETHUSDT dataset collection and
+  persisted health manifests belong to P1-009 and have not started.
+- No network call, credential, order endpoint or execution logic was added.
+- P1 as a whole is not accepted; P2 remains unopened.

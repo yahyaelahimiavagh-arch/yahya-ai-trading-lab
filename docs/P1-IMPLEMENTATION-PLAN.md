@@ -1,6 +1,6 @@
 # P1 — Market Data Layer implementation plan
 
-Status: **IN PROGRESS — P1-007 IMPLEMENTED, LIVE RUNTIME VERIFIED, CHECKPOINT PENDING**
+Status: **IN PROGRESS — P1-008 IMPLEMENTED, RUNTIME VERIFIED, CHECKPOINT PENDING**
 Entry condition: P0 baseline commit accepted and working tree clean.  
 Exit condition: public BTCUSDT/ETHUSDT datasets and health reports pass deterministic tests and live runtime checks.
 
@@ -92,11 +92,11 @@ Subscribe only to Binance Spot public kline streams for the approved symbol/time
 pairs. Normalize events, persist updates idempotently, reconnect with capped backoff and
 REST-backfill the bounded disconnect range. No credentials are loaded by this process.
 
-Acceptance: **PASS in working tree, 2026-09-09.** Recorded-event tests cover exact URL and
+Acceptance: **PASS, checkpoint `ab1fa24`, 2026-09-09.** Recorded-event tests cover exact URL and
 transport limits, duplicate events, open updates/finalization, out-of-order rejection,
 server shutdown, capped reconnect/backoff and bounded REST backfill handoff. A live public
 BTCUSDT 1h stream message normalized and persisted in memory. Checkpoint commit remains
-required before P1-008 starts.
+The clean checkpoint was accepted before P1-008 started.
 
 ### P1-008 — Data health report
 
@@ -104,8 +104,10 @@ Report per source/symbol/interval: requested and stored ranges, first/last candl
 rows, closed/open counts, duplicates, gaps, malformed/conflicting rows, freshness and
 whether the dataset is backtest-ready. Exit nonzero when required health gates fail.
 
-Acceptance: deterministic JSON plus human-readable CLI output tested against healthy and
-unhealthy fixtures.
+Acceptance: **PASS in working tree, 2026-09-09.** Deterministic JSON and human-readable
+reports cover healthy/current-open and unhealthy gap/duplicate/stale/malformed/conflicting
+cases. Required gate failure returns nonzero. Both runtime output formats passed. Checkpoint
+commit remains required before P1-009 starts.
 
 ### P1-009 — BTCUSDT and ETHUSDT datasets
 
