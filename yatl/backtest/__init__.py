@@ -11,14 +11,18 @@ from .config import (
 from .models import BacktestContractError, MarketSnapshot
 from .loader import (AcceptedBacktestDataset, BacktestLoadError,
                      latest_spec_from_manifest, load_accepted_dataset)
+from .clock import BacktestClock, BacktestClockError, DecisionEvent
 
 __all__ = [
     "BacktestConfigError",
+    "BacktestClock",
+    "BacktestClockError",
     "BacktestContractError",
     "BacktestSpec",
     "BacktestLoadError",
     "AcceptedBacktestDataset",
     "CONTEXT_INTERVAL",
+    "DecisionEvent",
     "EXECUTION_PRICE_POLICY",
     "MarketSnapshot",
     "PRIMARY_INTERVAL",

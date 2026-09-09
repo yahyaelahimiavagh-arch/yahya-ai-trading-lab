@@ -1,6 +1,6 @@
 # P2 — Backtesting Engine implementation plan
 
-Status: **IN PROGRESS — P2-002 IMPLEMENTED AND RUNTIME VERIFIED, CHECKPOINT PENDING**
+Status: **IN PROGRESS — P2-003 IMPLEMENTED AND RUNTIME VERIFIED, CHECKPOINT PENDING**
 Entry baseline: P1 accepted in commit `4e77e34` with a clean working tree.
 Exit condition: deterministic BTCUSDT/ETHUSDT Spot simulations pass unit, invariant,
 reproducibility and real-dataset runtime gates with explicit fees and slippage.
@@ -38,11 +38,11 @@ Load exact half-open ranges from the P1 SQLite store only after the P1 manifest 
 Build point-in-time snapshots without leaking later rows. Reject incomplete coverage, schema
 drift, open candles and a database/manifest range mismatch.
 
-Acceptance: **PASS in working tree, 2026-09-09.** Temporary-database tests cover exact
+Acceptance: **PASS, checkpoint `218a06e`, 2026-09-09.** Temporary-database tests cover exact
 manifest matching, read-only behavior, point-in-time visibility, missing/open rows, schema
 mismatch, invalid paths/ranges and bounded selection. Runtime loads passed against the
 accepted P1 SQLite database for both BTCUSDT and ETHUSDT over the latest 24-hour run range.
-Checkpoint remains required before P2-003.
+The clean checkpoint was accepted before P2-003 started.
 
 ### P2-003 — Deterministic event clock
 
@@ -50,7 +50,10 @@ Advance one aligned primary boundary at a time. Emit the same ordered sequence f
 inputs and seed. Expose only the snapshot legal at that instant and queue decisions for the
 next primary open.
 
-Acceptance: boundary, start/end, multi-timeframe synchronization and look-ahead trap tests.
+Acceptance: **PASS in working tree, 2026-09-09.** Tests cover exact half-open boundaries,
+sequence numbers, next-open eligibility, multi-timeframe visibility, lazy failure and
+deterministic replay. Live read-only 24-hour clocks produced the same 24-event replay for
+BTCUSDT and ETHUSDT. Checkpoint remains required before P2-004.
 
 ### P2-004 — Paper intent and fill model
 

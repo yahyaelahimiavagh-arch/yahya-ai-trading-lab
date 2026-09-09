@@ -64,6 +64,16 @@ uv run --locked python -m yatl backtest-load-check --symbol ETHUSDT --hours 24
 هر snapshot فقط کندل‌هایی را برمی‌گرداند که پیش از زمان تصمیم بسته شده‌اند. اختلاف
 schema، بازه، تعداد، gap، کندل باز یا manifest باعث توقف می‌شود.
 
+P2-003 رویدادهای تصمیم را روی مرزهای دقیق 1h و به‌ترتیب قطعی تولید می‌کند:
+
+```powershell
+uv run --locked python -m yatl backtest-clock-check --symbol BTCUSDT --hours 24
+```
+
+این فرمان ساعت را دوبار replay می‌کند و فقط در صورت برابری کامل ترتیب و snapshotها
+PASS می‌شود. زمان fill مجاز، open کندل اصلی بعد از داده مشاهده‌شده است؛ قیمت آن کندل
+داخل snapshot تصمیم قرار نمی‌گیرد.
+
 ## تمرین دستی و قابل‌تکرار Paper
 
 فایل `fixtures/p0-paper-workflows.json` دو سناریوی آموزشی ثابت برای BTCUSDT و

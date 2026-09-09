@@ -349,3 +349,23 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
 - Runtime ETHUSDT load: PASS with the same stored and visible counts.
 - SQLite was opened with `mode=ro`; no network, credential or exchange order was used.
 - P2-003 has not started. P2 as a whole is not accepted; P3 remains unopened.
+
+## P2-003 evidence — 2026-09-09
+
+Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
+
+- P2-002 checkpoint: `218a06e` with a clean working tree.
+- Added a lazy deterministic event clock over the exact half-open BacktestSpec range.
+  Sequence numbers begin at zero, increase once per aligned 1h boundary and never emit
+  the exclusive end boundary.
+- Every DecisionEvent carries the legal point-in-time MarketSnapshot and identifies the
+  same timestamp as the earliest eligible next-primary-open fill. The current candle price
+  is not present in the decision snapshot.
+- Invalid datasets, event fields or a snapshot gate failure stop the clock safely.
+- Focused clock suite: **6 passed, 0 failed**.
+- Full suite after implementation: **136 passed, 0 failed**; lock and compile checks passed.
+- Runtime BTCUSDT 24-hour replay: PASS; 24 events from `1788883200000` through
+  `1788966000000`; immediate second replay was equal.
+- Runtime ETHUSDT 24-hour replay: PASS with the same event boundaries and equality gate.
+- No network, credential, random wall-clock input or exchange order was used.
+- P2-004 has not started. P2 as a whole is not accepted; P3 remains unopened.

@@ -8,8 +8,9 @@ from uuid import uuid4
 from .market_data import HOSTS, INTERVALS, MarketDataError, candles, ping, save_csv
 from .account import AccountError, read_account
 from .paper_workflow import PaperWorkflowError, load_and_validate
-from .backtest import (BacktestConfigError, BacktestContractError, BacktestLoadError,
-                       BacktestSpec, EXECUTION_PRICE_POLICY, MarketSnapshot,
+from .backtest import (BacktestClock, BacktestClockError, BacktestConfigError,
+                       BacktestContractError, BacktestLoadError, BacktestSpec,
+                       EXECUTION_PRICE_POLICY, MarketSnapshot,
                        latest_spec_from_manifest, load_accepted_dataset)
 from .data import (BinancePublicRestClient, Candle, CandleStore,
                    ClosedCandleConflict, DATA_SOURCE, HistoricalDownloadError,
@@ -111,6 +112,12 @@ def main():
     loader.add_argument("--manifest", default="manifests/p1-market-data.json")
     loader.add_argument("--symbol", choices=SYMBOLS, default="BTCUSDT")
     loader.add_argument("--hours", type=int, default=24)
+    clock = commands.add_parser("backtest-clock-check",
+                                help="Replay the deterministic P2 event clock")
+    clock.add_argument("--database", default="data/p1/market.sqlite3")
+    clock.add_argument("--manifest", default="manifests/p1-market-data.json")
+    clock.add_argument("--symbol", choices=SYMBOLS, default="BTCUSDT")
+    clock.add_argument("--hours", type=int, default=24)
     stream = commands.add_parser("stream-check", help="Read bounded public Spot kline messages")
     stream.add_argument("--symbol", choices=SYMBOLS, default="BTCUSDT")
     stream.add_argument("--interval", choices=INTERVAL_MILLISECONDS, default="1h")
@@ -209,6 +216,26 @@ def main():
                   f"stored={len(loaded.primary)}/{len(loaded.context)}/{len(loaded.regime)} "
                   f"visible={len(view.primary)}/{len(view.context)}/{len(view.regime)}")
             print("PAPER ONLY | Point-in-time data | No credentials | No exchange order")
+        elif args.command == "backtest-clock-check":
+            spec = latest_spec_from_manifest(args.manifest, args.symbol, hours=args.hours)
+            loaded = load_accepted_dataset(args.database, args.manifest, spec)
+            clock = BacktestClock(loaded)
+
+            def replay():
+                return tuple((item.sequence, item.decision_time_ms,
+                              item.eligible_fill_open_time_ms,
+                              item.snapshot.latest_primary.open_time_ms,
+                              item.snapshot.latest_context.open_time_ms,
+                              item.snapshot.latest_regime.open_time_ms)
+                             for item in clock.events())
+
+            first = replay()
+            second = replay()
+            if not first or first != second or len(first) != clock.event_count:
+                raise BacktestClockError("Deterministic clock replay failed")
+            print(f"OK: deterministic event clock; symbol={spec.symbol} events={len(first)} "
+                  f"first={first[0][1]} last={first[-1][1]} replay_equal=true")
+            print("PAPER ONLY | Point-in-time events | No credentials | No exchange order")
         elif args.command == "stream-check":
             with CandleStore(":memory:") as store:
                 result = PublicKlineStream(
@@ -256,7 +283,8 @@ def main():
             path = save_csv(rows, output)
             print(f"Saved {len(rows)} candles to {path}")
             print("The latest candle may still be open; timestamps are Unix milliseconds (UTC).")
-    except (AccountError, AuditError, BacktestConfigError, BacktestContractError,
+    except (AccountError, AuditError, BacktestClockError, BacktestConfigError,
+            BacktestContractError,
             BacktestLoadError,
             HistoricalDownloadError, MarketDataError, NormalizationError,
             DatasetError, HealthError, PaperWorkflowError, PublicRestError, QualityError,
