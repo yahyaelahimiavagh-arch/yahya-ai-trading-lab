@@ -5,7 +5,7 @@ __pycache__/
 .env.*
 *.pem
 *.key
-data/
+/data/
 .coverage
 htmlcov/
 .ruff_cache/

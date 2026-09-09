@@ -1,6 +1,6 @@
 # P1 — Market Data Layer implementation plan
 
-Status: **PLANNED — NOT STARTED**  
+Status: **IN PROGRESS — P1-001 IMPLEMENTED, CHECKPOINT PENDING**
 Entry condition: P0 baseline commit accepted and working tree clean.  
 Exit condition: public BTCUSDT/ETHUSDT datasets and health reports pass deterministic tests and live runtime checks.
 
@@ -23,8 +23,10 @@ base/quote volume, trade count, source and closed/open state. Store timestamps a
 milliseconds and financial values as original decimal strings. Reject unknown symbols,
 intervals, negative/non-finite values, inconsistent OHLC and malformed timestamps.
 
-Acceptance: unit tests for every invariant; configuration contains exactly the approved
-symbols, intervals and public host.
+Acceptance: **PASS in working tree, 2026-09-09.** Unit tests cover every invariant;
+configuration contains exactly the approved symbols, intervals and public host. The runtime
+smoke check constructed a closed BTCUSDT 1h candle and preserved its stable uniqueness key.
+Checkpoint commit remains required before starting P1-002.
 
 ### P1-002 — Public Binance REST client
 

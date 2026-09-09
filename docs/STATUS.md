@@ -79,3 +79,18 @@ Safety baseline remains: PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERA
 NO WITHDRAWAL API; NO AI DIRECT EXECUTION; current API key remains USER_DATA only.
 
 P1 exact plan: [P1-IMPLEMENTATION-PLAN.md](P1-IMPLEMENTATION-PLAN.md). P2 remains unopened.
+
+## P1-001 evidence — 2026-09-09
+
+Status: **IMPLEMENTED AND TESTED — CHECKPOINT COMMIT PENDING**.
+
+- Added immutable P1 configuration with only the public Binance Spot host, BTCUSDT/ETHUSDT,
+  15m/1h/4h and execution timeframe `NOT_ENABLED`.
+- Added a frozen canonical Candle contract with lossless decimal strings, UTC interval-aligned
+  timestamps, OHLC consistency, volume/trade-count validation, closed/open state and stable key.
+- Full suite: **36 passed, 0 failed**.
+- Runtime smoke check constructed a closed BTCUSDT 1h candle and returned its expected stable key.
+- No dependency or lockfile change. No network, credentials, order endpoint or execution logic added.
+- Corrected `.gitignore` from `data/` to `/data/` so root runtime datasets remain ignored while
+  the source package `yatl/data/` is tracked.
+- P1-002 has not started. P1 as a whole is not accepted; P2 remains unopened.

@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 RUNTIME ACCEPTED**
-قدم جاری: **P1 PLANNED — IMPLEMENTATION NOT STARTED**
+قدم جاری: **P1-001 IMPLEMENTED — CHECKPOINT PENDING**
 
 ## منشأ و حدود سند
 
@@ -33,7 +33,7 @@ NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only ب�
 | فاز | خروجی مورد انتظار | وضعیت امروز |
 |---|---|---|
 | P0 Foundation | محیط، Git، امنیت، Testnet، آموزش و تمرین دستی Paper | **RUNTIME ACCEPTED — 2026-09-09** |
-| P1 Market Data Layer | REST، دانلود تاریخی، WebSocket، نرمال‌سازی، SQLite، حذف تکرار، تشخیص شکاف، گزارش سلامت BTC/ETH | برنامه دقیق آماده؛ پیاده‌سازی شروع نشده |
+| P1 Market Data Layer | REST، دانلود تاریخی، WebSocket، نرمال‌سازی، SQLite، حذف تکرار، تشخیص شکاف، گزارش سلامت BTC/ETH | در حال اجرا؛ P1-001 پیاده‌سازی و تست شد، checkpoint باز است |
 | P2 Backtesting Engine | آزمون تاریخی تکرارپذیر با کارمزد، لغزش و جلوگیری از استفاده از آینده | شروع نشده |
 | P3 Strategy Framework | چارچوب مشترک استراتژی و قواعد روشن سیگنال/عدم معامله | شروع نشده |
 | P4 Risk Manager | اندازه موقعیت، محدودیت ریسک و Kill Switch مستقل | شروع نشده |
@@ -104,4 +104,5 @@ Gate مخزن محلی به عنوان PASS پذیرفته شد؛ remote خصو�
 - TradingView Paper برای Gate P0 با fixture محلی قابل‌تکرار جایگزین شد؛ TradingView حذف نشده و اختیاری است.
 - workflowها تمرین محاسباتی هستند؛ معامله واقعی، Testnet order یا نتیجه سود/زیان ادعا نمی‌شود.
 - سیاست بازار تثبیت شد: BTCUSDT + ETHUSDT، Spot، 1h اصلی، 4h regime، 15m context؛ 5m غیرفعال.
-- گام بعد فقط P1 Market Data Layer است؛ برنامه‌ریزی آن completion فاز P1 محسوب نمی‌شود.
+- P1-001 قرارداد Candle و policy ثابت را پیاده‌سازی کرد؛ completion کل P1 محسوب نمی‌شود.
+- شروع P1-002 فقط پس از commit تمیز baseline مربوط به P1-001 انجام می‌شود.

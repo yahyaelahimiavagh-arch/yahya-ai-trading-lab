@@ -100,3 +100,11 @@ timeout برابر ۱۵ ثانیه است؛ خطای شبکه/API، پاسخ ن�
 **PAPER ONLY · NO FUTURES · NO LEVERAGE · NO WITHDRAWAL API · NO AI DIRECT EXECUTION · LIVE_MASTER_LOCK=OFF**
 
 مرجع: [مستندات رسمی Spot Testnet](https://github.com/binance/binance-spot-api-docs/blob/master/testnet/rest-api.md).
+
+## وضعیت P1
+
+P1-001 قرارداد استاندارد Candle را برای داده عمومی Spot تعریف می‌کند. تنظیمات این لایه
+فقط `BTCUSDT` و `ETHUSDT`، تایم‌فریم‌های `15m`، `1h` و `4h` و میزبان عمومی ثابت
+Binance را می‌پذیرد. قیمت و حجم به‌صورت رشته اعشاری نگه‌داری می‌شوند تا دقت ورودی
+از بین نرود. timestampها باید دقیقاً روی مرز UTC تایم‌فریم باشند و وضعیت کندل باز/بسته
+صریح است. این مرحله transport شبکه، WebSocket، SQLite یا execution ندارد.
