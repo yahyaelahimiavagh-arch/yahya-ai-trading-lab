@@ -1,6 +1,6 @@
 # P1 — Market Data Layer implementation plan
 
-Status: **IN PROGRESS — P1-009 IMPLEMENTED, LIVE DATA VERIFIED, CHECKPOINT PENDING**
+Status: **RUNTIME ACCEPTED — 2026-09-09; FINAL CHECKPOINT IN THIS CHANGE**
 Entry condition: P0 baseline commit accepted and working tree clean.  
 Exit condition: public BTCUSDT/ETHUSDT datasets and health reports pass deterministic tests and live runtime checks.
 
@@ -115,11 +115,11 @@ Build bounded public-real datasets for 15m, 1h and 4h with a recorded range and 
 time. Database artifacts remain ignored; manifests and health summaries contain no secrets
 and may be committed when stable.
 
-Acceptance: **PASS in working tree, 2026-09-09.** A 30-day public-real build produced
+Acceptance: **PASS, checkpoint `fa4de2d`, 2026-09-09.** A 30-day public-real build produced
 7,560 closed candles across all six datasets: 2,880/720/180 rows per symbol for 15m/1h/4h.
 All reports have zero gaps, duplicates, malformed rows, conflicts and open candles, with
-`backtest_ready=true`. A second run preserved the same database count. Checkpoint commit
-remains required before P1-010 starts.
+`backtest_ready=true`. A second run preserved the same database count. The clean checkpoint
+was accepted before P1-010 started.
 
 ### P1-010 — P1 final audit and checkpoint
 
@@ -127,8 +127,12 @@ Run the full suite, clean-database rebuild, repeated idempotency run, live REST 
 bounded live WebSocket check and health reports. Audit that authenticated code remains
 isolated and that no execution endpoints exist.
 
-Acceptance: record exact commands/results in `docs/STATUS.md`, mark P1 accepted only from
-runtime evidence, commit the accepted baseline and leave Git clean. P2 remains unopened.
+Acceptance: **RUNTIME PASS, 2026-09-09.** The full 117-test suite, lock and compile checks,
+clean 30-day database build, immediate idempotent rebuild, direct SQLite count, live REST,
+bounded live WebSocket and health reports passed. The fail-closed `p1-audit` command accepts
+both the tracked and fresh manifests at exactly six datasets and 7,560 closed rows. The
+authenticated client remains isolated and no execution endpoint exists. Exact evidence is
+recorded in `docs/STATUS.md`. This change is the final P1 checkpoint; P2 remains unopened.
 
 ## Intended module boundaries
 
@@ -141,6 +145,7 @@ yatl/data/normalize.py    REST/WebSocket normalization
 yatl/data/storage.py      SQLite migrations and persistence
 yatl/data/quality.py      gaps, duplicates and health reports
 yatl/data/stream.py       public WebSocket lifecycle and REST backfill
+yatl/data/audit.py        fail-closed P1 manifest acceptance gate
 tests/fixtures/           deterministic REST/WebSocket payloads
 data/                     ignored runtime databases and downloads
 ```

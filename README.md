@@ -1,6 +1,6 @@
 # Yahya AI Trading Lab
 
-P0 پذیرفته شده است و P1 لایه داده عمومی Binance Spot را مرحله‌به‌مرحله می‌سازد.
+P0 و P1 با شواهد runtime پذیرفته شده‌اند. P2 هنوز شروع نشده است.
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
@@ -37,10 +37,9 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 ## مسیر بعدی
 
 مرجع ترتیب اجرا: [نقشه پروژه](docs/MASTER-PLAN.md).
-وضعیت جاری **P0 پذیرفته‌شده و P1 در حال اجرا** است.
-P1-008 در `fd7eb63` checkpoint شده و P1-009 datasetهای واقعی BTCUSDT و ETHUSDT
-را تکمیل کرده است. قدم بعدی پس از checkpoint تمیز، P1-010 (ممیزی و پذیرش نهایی
-کل P1) است. P2 هنوز شروع نشده است.
+وضعیت جاری **P0 و P1 پذیرفته‌شده در runtime** است. P1-009 در `fa4de2d`
+checkpoint شد و P1-010 بازسازی تمیز، اجرای تکراری، REST، WebSocket، گزارش سلامت،
+manifest و مرزهای امنیتی را تأیید کرد. P2 هنوز شروع نشده است.
 
 وضعیت تست‌های همین تحویل در `docs/STATUS.md` ثبت شده است.
 
@@ -200,3 +199,13 @@ SQLite در `data/p1/market.sqlite3` و خارج از Git است. manifest قا�
 `manifests/p1-market-data.json` ثبت می‌شود. اجرای مجدد idempotent است و فقط
 timestampهای گمشده را دریافت می‌کند. هر dataset باید بدون open candle، duplicate، gap،
 malformed یا conflict و با `backtest_ready=true` باشد.
+
+دروازه نهایی P1، manifest ثبت‌شده را بدون شبکه و credential بررسی می‌کند:
+
+```powershell
+uv run --locked python -m yatl p1-audit
+```
+
+قبولی آن مستلزم دقیقاً شش مجموعه، ۷۵۶۰ کندل بسته، پوشش ۳۰روزه، تازگی داده و
+صفر gap، duplicate، malformed، conflict و open row است. این فرمان سفارش یا
+درخواست احرازهویت‌شده نمی‌سازد. شواهد دقیق پذیرش P1 در `docs/STATUS.md` ثبت شده است.

@@ -1,8 +1,8 @@
 # YATL — نقشه مرجع اجرا و وضعیت پروژه
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
-وضعیت جاری: **P0 RUNTIME ACCEPTED**
-قدم جاری: **P1-009 IMPLEMENTED AND LIVE DATA VERIFIED — CHECKPOINT PENDING**
+وضعیت جاری: **P0 و P1 RUNTIME ACCEPTED**
+قدم جاری: **P1-010 ACCEPTED — FINAL CHECKPOINT IN THIS CHANGE; P2 NOT STARTED**
 
 ## منشأ و حدود سند
 
@@ -33,7 +33,7 @@ NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only ب�
 | فاز | خروجی مورد انتظار | وضعیت امروز |
 |---|---|---|
 | P0 Foundation | محیط، Git، امنیت، Testnet، آموزش و تمرین دستی Paper | **RUNTIME ACCEPTED — 2026-09-09** |
-| P1 Market Data Layer | REST، دانلود تاریخی، WebSocket، نرمال‌سازی، SQLite، حذف تکرار، تشخیص شکاف، گزارش سلامت BTC/ETH | در حال اجرا؛ P1-008 checkpoint شد و P1-009 live dataset PASS است |
+| P1 Market Data Layer | REST، دانلود تاریخی، WebSocket، نرمال‌سازی، SQLite، حذف تکرار، تشخیص شکاف، گزارش سلامت BTC/ETH | **RUNTIME ACCEPTED — 2026-09-09**؛ final checkpoint در همین تغییر |
 | P2 Backtesting Engine | آزمون تاریخی تکرارپذیر با کارمزد، لغزش و جلوگیری از استفاده از آینده | شروع نشده |
 | P3 Strategy Framework | چارچوب مشترک استراتژی و قواعد روشن سیگنال/عدم معامله | شروع نشده |
 | P4 Risk Manager | اندازه موقعیت، محدودیت ریسک و Kill Switch مستقل | شروع نشده |
@@ -105,5 +105,6 @@ Gate مخزن محلی به عنوان PASS پذیرفته شد؛ remote خصو�
 - workflowها تمرین محاسباتی هستند؛ معامله واقعی، Testnet order یا نتیجه سود/زیان ادعا نمی‌شود.
 - سیاست بازار تثبیت شد: BTCUSDT + ETHUSDT، Spot، 1h اصلی، 4h regime، 15m context؛ 5m غیرفعال.
 - P1-001 تا P1-008 به‌ترتیب در `38f4e78`، `bff4d24`، `c5d6f0e`، `0982f21`، `a02acb4`، `c63d88e`، `ab1fa24` و `fd7eb63` checkpoint شدند.
-- P1-009 شش dataset واقعی ۳۰روزه با مجموع ۷۵۶۰ کندل بسته و health gate کامل را تأیید کرد؛ completion کل P1 نیست.
-- شروع P1-010 فقط پس از commit تمیز baseline مربوط به P1-009 انجام می‌شود.
+- P1-009 شش dataset واقعی ۳۰روزه با مجموع ۷۵۶۰ کندل بسته و health gate کامل را تأیید و در `fa4de2d` checkpoint کرد.
+- P1-010 بازسازی تمیز و اجرای دوم idempotent، REST، WebSocket، health، manifest، SQLite و مرزهای امنیتی را تأیید کرد؛ P1 در runtime پذیرفته شد.
+- P2 تا ثبت checkpoint نهایی P1 باز نشده و شروع نشده است.

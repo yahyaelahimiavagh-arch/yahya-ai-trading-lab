@@ -14,7 +14,7 @@ from .data import (BinancePublicRestClient, Candle, CandleStore,
                    QualityError, StorageError, SYMBOLS, analyze_open_times,
                    PublicKlineStream, StreamError, download_range,
                    DatasetError, HealthError, build_datasets, build_health_report,
-                   normalize_rest_kline, write_manifest)
+                   normalize_rest_kline, write_manifest, AuditError, audit_p1_manifest)
 
 
 def _storage_runtime_check():
@@ -88,6 +88,8 @@ def main():
     dataset.add_argument("--days", type=int, default=30)
     dataset.add_argument("--database", default="data/p1/market.sqlite3")
     dataset.add_argument("--manifest", default="manifests/p1-market-data.json")
+    audit = commands.add_parser("p1-audit", help="Audit the fixed P1 acceptance manifest")
+    audit.add_argument("--manifest", default="manifests/p1-market-data.json")
     collect = commands.add_parser("candles", help="Save recent candles to CSV")
     collect.add_argument("--symbol", default="BTCUSDT")
     collect.add_argument("--interval", choices=sorted(INTERVALS), default="1h")
@@ -197,6 +199,11 @@ def main():
                       f"rows={report['total_rows']} backtest_ready={str(report['backtest_ready']).lower()}")
             print(f"OK: {len(manifest['datasets'])} public-real closed datasets; manifest={path}")
             print("SPOT PUBLIC DATA ONLY | No credentials | No execution")
+        elif args.command == "p1-audit":
+            result = audit_p1_manifest(args.manifest)
+            print(f"OK: P1 manifest acceptance gate; datasets={result.datasets} "
+                  f"closed_rows={result.closed_rows} range_days={result.range_days}")
+            print("SPOT PUBLIC DATA ONLY | No credentials | No execution")
         else:
             rows = candles(args.environment, args.symbol, args.interval, args.limit)
             stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
@@ -204,7 +211,7 @@ def main():
             path = save_csv(rows, output)
             print(f"Saved {len(rows)} candles to {path}")
             print("The latest candle may still be open; timestamps are Unix milliseconds (UTC).")
-    except (AccountError, HistoricalDownloadError, MarketDataError, NormalizationError,
+    except (AccountError, AuditError, HistoricalDownloadError, MarketDataError, NormalizationError,
             DatasetError, HealthError, PaperWorkflowError, PublicRestError, QualityError,
             StorageError, StreamError,
             ValueError, OSError) as exc:

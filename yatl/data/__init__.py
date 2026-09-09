@@ -16,9 +16,11 @@ from .quality import QualityError, RangeQualityReport, analyze_open_times, dupli
 from .stream import PublicKlineStream, StreamError, StreamRunResult, stream_url
 from .health import DataHealthReport, HealthError, build_health_report
 from .dataset import DatasetError, build_datasets, manifest_json, write_manifest
+from .audit import AuditError, P1AuditResult, audit_p1_manifest
 
 __all__ = [
     "BINANCE_PUBLIC_BASE_URL",
+    "AuditError",
     "BinancePublicRestClient",
     "Candle",
     "CandleValidationError",
@@ -33,6 +35,7 @@ __all__ = [
     "HealthError",
     "NormalizationError",
     "PublicRestError",
+    "P1AuditResult",
     "PublicKlineStream",
     "QualityError",
     "RangeQualityReport",
@@ -43,6 +46,7 @@ __all__ = [
     "TIMEFRAME_POLICY",
     "download_range",
     "analyze_open_times",
+    "audit_p1_manifest",
     "build_health_report",
     "build_datasets",
     "duplicate_candle_keys",

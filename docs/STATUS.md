@@ -267,4 +267,46 @@ Status: **IMPLEMENTED AND LIVE DATA VERIFIED — CHECKPOINT COMMIT PENDING**.
   `manifests/p1-market-data.json`.
 - Full suite: **111 passed, 0 failed** before the final documentation/manifest audit.
 - No `.env`, credential, Testnet account, user stream, order endpoint or execution logic was used.
-- P1-010 has not started. P1 as a whole is not yet accepted; P2 remains unopened.
+- P1-009 checkpoint: `fa4de2d` with a clean working tree.
+- P1-010 then performed the final P1 audit recorded below. P2 remained unopened.
+
+## P1-010 final audit — 2026-09-09
+
+Status: **P1 RUNTIME ACCEPTED**. This change is the final checkpoint baseline; P2 has
+not started.
+
+- Entry audit: HEAD `fa4de2d`; branch `main`; working tree clean.
+- `uv run --locked python -m unittest discover -s tests -v`: **117 passed, 0 failed**.
+- `uv lock --check`: PASS; two locked packages resolved without lock changes.
+- `uv run --locked python -m compileall -q yatl`: PASS.
+- A new empty SQLite file and manifest were used for a 30-day `dataset-build`. The build
+  returned 2,880/720/180 closed rows for 15m/1h/4h for each of BTCUSDT and ETHUSDT;
+  all six reports returned `backtest_ready=true`.
+- The identical build was run immediately against the same SQLite file. Counts remained
+  2,880/720/180 per symbol/timeframe and the manifest gate passed, demonstrating runtime
+  idempotency without duplicate rows.
+- Direct SQLite verification after the second build: schema version 1; 7,560 total rows;
+  7,560 distinct canonical keys; 0 open rows.
+- `python -m yatl p1-audit` passed for both the fresh audit manifest and tracked
+  `manifests/p1-market-data.json`: 6 datasets, 7,560 closed rows, 30 days. Tests prove
+  malformed, oversized, incomplete, duplicate-identity and unhealthy manifests fail closed.
+- Live `data-check`: PASS; Binance Spot public time returned; BTCUSDT and ETHUSDT were
+  `TRADING` and returned two 1h klines each.
+- Live `history-check`: PASS; all six symbol/timeframe pairs returned two closed-range rows
+  in two pages, exercising real pagination.
+- Live `normalize-check`: PASS; all six pairs normalized two rows as `closed,open`.
+- Live bounded WebSocket checks: PASS for BTCUSDT 1h and ETHUSDT 15m; each accepted one
+  public kline into memory with zero reconnects and zero backfilled rows.
+- Human and deterministic JSON `health-check` formats: PASS with
+  `backtest_ready=true`; the required nonzero failure behavior remains covered by tests.
+- Safety audit: `.env` is ignored and untracked; `data/p1/market.sqlite3` is ignored;
+  authenticated production code contains only the exact Spot Testnet
+  `GET /api/v3/account`; no order, order-list, withdrawal, Futures or user-stream route
+  exists; `yatl/data/` has no authenticated-account import.
+- `git diff --check`: PASS before final documentation update. No credential, raw account
+  response, API key, secret, signature or signed URL was printed or persisted.
+
+Accepted scope remains BTCUSDT + ETHUSDT, Spot only, 1h primary, 4h regime and 15m
+context. 5m remains disabled. PAPER ONLY, LIVE_MASTER_LOCK=OFF, NO FUTURES, NO LEVERAGE,
+NO WITHDRAWAL API and NO AI DIRECT EXECUTION remain enforced. TRADE permission remains
+disabled and no execution endpoint was added.
