@@ -1,6 +1,6 @@
 # P1 — Market Data Layer implementation plan
 
-Status: **IN PROGRESS — P1-001 IMPLEMENTED, CHECKPOINT PENDING**
+Status: **IN PROGRESS — P1-002 IMPLEMENTED, CHECKPOINT PENDING**
 Entry condition: P0 baseline commit accepted and working tree clean.  
 Exit condition: public BTCUSDT/ETHUSDT datasets and health reports pass deterministic tests and live runtime checks.
 
@@ -35,7 +35,9 @@ exchange metadata and klines. Enforce HTTPS host/path allowlists, response size/
 no redirects, bounded retries only for transient read failures, and explicit backoff for
 rate limits. Never retry a structurally invalid response.
 
-Acceptance: transport tests plus live server-time/exchange-info/klines checks for both symbols.
+Acceptance: **PASS in working tree, 2026-09-09.** Transport tests pass. Live checks returned
+Binance Spot public server time, `TRADING` exchange status and two 1h klines for both BTCUSDT
+and ETHUSDT. The checkpoint commit remains required before P1-003 starts.
 
 ### P1-003 — Paginated historical OHLCV downloader
 

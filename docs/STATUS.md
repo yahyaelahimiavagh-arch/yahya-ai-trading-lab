@@ -94,3 +94,24 @@ Status: **IMPLEMENTED AND TESTED — CHECKPOINT COMMIT PENDING**.
 - Corrected `.gitignore` from `data/` to `/data/` so root runtime datasets remain ignored while
   the source package `yatl/data/` is tracked.
 - P1-002 has not started. P1 as a whole is not accepted; P2 remains unopened.
+
+## P1-002 evidence — 2026-09-09
+
+Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT COMMIT PENDING**.
+
+- P1-001 checkpoint: `38f4e78` with a clean working tree.
+- Added a credential-free Binance Spot public REST client restricted to GET server time,
+  single-symbol exchange information and klines on `https://api.binance.com`.
+- Only BTCUSDT/ETHUSDT and 15m/1h/4h are accepted; kline pages are limited to 1000 rows.
+- Redirects and ambient proxies are disabled. Responses have an 8 MB cap and 15-second timeout.
+- HTTP 418 stops immediately. HTTP 429 uses bounded `Retry-After`; transient network/5xx
+  failures use bounded backoff with at most three attempts. Client errors and malformed
+  responses are not retried and raw URLs/server messages are not displayed.
+- Full suite: **48 passed, 0 failed**.
+- Live `python -m yatl data-check`: PASS. Server time returned; BTCUSDT and ETHUSDT both
+  reported `TRADING` and returned two public-real 1h klines.
+- No API key/header, environment credential, account import, order endpoint, persistence,
+  WebSocket or execution logic was added.
+- P1-003 has not started. P1 as a whole is not accepted; P2 remains unopened.
+
+Reference: https://developers.binance.com/en/docs/products/spot/rest-api

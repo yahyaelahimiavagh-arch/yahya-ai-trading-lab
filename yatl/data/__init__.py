@@ -8,13 +8,16 @@ from .config import (
     TIMEFRAME_POLICY,
 )
 from .models import Candle, CandleValidationError
+from .rest import BinancePublicRestClient, PublicRestError
 
 __all__ = [
     "BINANCE_PUBLIC_BASE_URL",
+    "BinancePublicRestClient",
     "Candle",
     "CandleValidationError",
     "DATA_SOURCE",
     "INTERVAL_MILLISECONDS",
+    "PublicRestError",
     "SYMBOLS",
     "TIMEFRAME_POLICY",
 ]
