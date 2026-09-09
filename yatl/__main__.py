@@ -1,13 +1,64 @@
 import argparse
 import sys
+from dataclasses import replace
 from datetime import datetime, timezone
+from pathlib import Path
+from uuid import uuid4
 
 from .market_data import HOSTS, INTERVALS, MarketDataError, candles, ping, save_csv
 from .account import AccountError, read_account
 from .paper_workflow import PaperWorkflowError, load_and_validate
-from .data import (BinancePublicRestClient, HistoricalDownloadError,
+from .data import (BinancePublicRestClient, Candle, CandleStore,
+                   ClosedCandleConflict, DATA_SOURCE, HistoricalDownloadError,
                    INTERVAL_MILLISECONDS, NormalizationError, PublicRestError,
-                   SYMBOLS, download_range, normalize_rest_kline)
+                   StorageError, SYMBOLS, download_range, normalize_rest_kline)
+
+
+def _storage_runtime_check():
+    base = Candle(
+        source=DATA_SOURCE,
+        symbol="BTCUSDT",
+        interval="1h",
+        open_time_ms=1_699_999_200_000,
+        close_time_ms=1_700_002_799_999,
+        open="26000.10000000",
+        high="26250.00000000",
+        low="25900.00000000",
+        close="26100.25000000",
+        base_volume="123.45000000",
+        quote_volume="3210000.12345678",
+        trade_count=1234,
+        is_closed=False,
+    )
+    updated = replace(base, close="26150.25000000", base_volume="124.00000000",
+                      quote_volume="3220000.00000000", trade_count=1240)
+    finalized = replace(updated, is_closed=True)
+    Path("data").mkdir(exist_ok=True)
+    database = Path("data") / f"p1-storage-{uuid4().hex}.sqlite3"
+    sidecars = (database, Path(f"{database}-wal"), Path(f"{database}-shm"))
+    try:
+        with CandleStore(database) as store:
+            statuses = (store.write(base), store.write(base), store.write(updated),
+                        store.write(finalized))
+            if statuses != ("inserted", "unchanged", "updated", "finalized"):
+                raise StorageError("Storage lifecycle did not complete safely")
+        with CandleStore(database) as reopened:
+            if reopened.schema_version() != 1 or reopened.count() != 1:
+                raise StorageError("Reopened database failed verification")
+            if reopened.get(finalized.key) != finalized:
+                raise StorageError("Stored candle changed after database reopen")
+            try:
+                reopened.write(updated)
+            except ClosedCandleConflict:
+                pass
+            else:
+                raise StorageError("Closed candle protection failed")
+    finally:
+        for path in sidecars:
+            try:
+                path.unlink(missing_ok=True)
+            except OSError:
+                raise StorageError("Cannot remove temporary storage-check data") from None
 
 
 def main():
@@ -22,6 +73,7 @@ def main():
     commands.add_parser("data-check", help="Check credential-free Binance Spot public data")
     commands.add_parser("history-check", help="Check bounded historical pagination for P1")
     commands.add_parser("normalize-check", help="Normalize live public REST klines for P1")
+    commands.add_parser("storage-check", help="Verify temporary SQLite candle storage for P1")
     collect = commands.add_parser("candles", help="Save recent candles to CSV")
     collect.add_argument("--symbol", default="BTCUSDT")
     collect.add_argument("--interval", choices=sorted(INTERVALS), default="1h")
@@ -75,6 +127,10 @@ def main():
                     states = ",".join("closed" if candle.is_closed else "open" for candle in candles)
                     print(f"{symbol} {interval}: rows={len(candles)} states={states}")
             print("CANONICAL PUBLIC CANDLES | No persistence | No credentials | No execution")
+        elif args.command == "storage-check":
+            _storage_runtime_check()
+            print("OK: SQLite migration, idempotency, finalization, reopen and conflict protection")
+            print("TEMPORARY LOCAL DATA ONLY | No credentials | No execution endpoints")
         else:
             rows = candles(args.environment, args.symbol, args.interval, args.limit)
             stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
@@ -83,7 +139,7 @@ def main():
             print(f"Saved {len(rows)} candles to {path}")
             print("The latest candle may still be open; timestamps are Unix milliseconds (UTC).")
     except (AccountError, HistoricalDownloadError, MarketDataError, NormalizationError,
-            PaperWorkflowError, PublicRestError, ValueError, OSError) as exc:
+            PaperWorkflowError, PublicRestError, StorageError, ValueError, OSError) as exc:
         # OSError messages can expose local paths; keep their display generic.
         message = "Cannot create output file; check permissions or use a new filename" if isinstance(exc, OSError) else str(exc)
         print(f"Error: {message}", file=sys.stderr)

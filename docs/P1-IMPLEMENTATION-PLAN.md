@@ -1,6 +1,6 @@
 # P1 — Market Data Layer implementation plan
 
-Status: **IN PROGRESS — P1-004 IMPLEMENTED, CHECKPOINT PENDING**
+Status: **IN PROGRESS — P1-005 IMPLEMENTED, RUNTIME VERIFIED, CHECKPOINT PENDING**
 Entry condition: P0 baseline commit accepted and working tree clean.  
 Exit condition: public BTCUSDT/ETHUSDT datasets and health reports pass deterministic tests and live runtime checks.
 
@@ -57,10 +57,10 @@ from the exchange close flag for streams or when its close boundary is safely be
 verified server time for REST. Preserve the current open candle but exclude it by default
 from backtest-ready views.
 
-Acceptance: **PASS in working tree, 2026-09-09.** Equivalent recorded REST/raw-stream/
+Acceptance: **PASS, checkpoint `0982f21`, 2026-09-09.** Equivalent recorded REST/raw-stream/
 combined-stream payloads normalize identically. Boundary tests cover the exact exchange-time
 transition. The live REST check observed `closed,open` for both symbols on all three intervals.
-Checkpoint commit remains required before P1-005 starts.
+The clean checkpoint was accepted before P1-005 started.
 
 ### P1-005 — SQLite storage and migrations
 
@@ -69,8 +69,10 @@ Use transactions and upserts so reruns cannot duplicate candles; allow an open c
 be updated and then finalized, while a closed candle cannot be silently rewritten with
 conflicting values. Keep database files under ignored `data/`.
 
-Acceptance: fresh migration, reopen, rollback, idempotent insert, open-candle update and
-closed-candle conflict tests.
+Acceptance: **PASS in working tree, 2026-09-09.** Version 1 fresh migration, file reopen,
+lossless round trip, idempotent insert, open-candle update/finalization, batch rollback,
+future-schema rejection and closed-candle conflict protection pass. The standalone temporary
+database runtime check also passed. Checkpoint commit remains required before P1-006 starts.
 
 ### P1-006 — Duplicate and missing-candle detection
 

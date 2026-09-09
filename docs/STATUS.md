@@ -82,7 +82,7 @@ P1 exact plan: [P1-IMPLEMENTATION-PLAN.md](P1-IMPLEMENTATION-PLAN.md). P2 remain
 
 ## P1-001 evidence — 2026-09-09
 
-Status: **IMPLEMENTED AND TESTED — CHECKPOINT COMMIT PENDING**.
+Status: **CHECKPOINT ACCEPTED — `38f4e78`**.
 
 - Added immutable P1 configuration with only the public Binance Spot host, BTCUSDT/ETHUSDT,
   15m/1h/4h and execution timeframe `NOT_ENABLED`.
@@ -97,7 +97,7 @@ Status: **IMPLEMENTED AND TESTED — CHECKPOINT COMMIT PENDING**.
 
 ## P1-002 evidence — 2026-09-09
 
-Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT COMMIT PENDING**.
+Status: **CHECKPOINT ACCEPTED — `bff4d24`**.
 
 - P1-001 checkpoint: `38f4e78` with a clean working tree.
 - Added a credential-free Binance Spot public REST client restricted to GET server time,
@@ -118,7 +118,7 @@ Reference: https://developers.binance.com/en/docs/products/spot/rest-api
 
 ## P1-003 evidence — 2026-09-09
 
-Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT COMMIT PENDING**.
+Status: **CHECKPOINT ACCEPTED — `c5d6f0e`**.
 
 - P1-002 checkpoint: `bff4d24` with a clean working tree.
 - Added explicit half-open `[start, end)` historical ranges aligned to 15m/1h/4h UTC grids.
@@ -135,7 +135,7 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT COMMIT PENDING**.
 
 ## P1-004 evidence — 2026-09-09
 
-Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT COMMIT PENDING**.
+Status: **CHECKPOINT ACCEPTED — `0982f21`**.
 
 - P1-003 checkpoint: `c5d6f0e` with a clean working tree.
 - Added one normalizer for REST rows and public raw/combined WebSocket kline events.
@@ -151,3 +151,27 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT COMMIT PENDING**.
 - P1-005 has not started. P1 as a whole is not accepted; P2 remains unopened.
 
 Reference: https://developers.binance.com/en/docs/products/spot/testnet/web-socket-streams
+
+## P1-005 evidence — 2026-09-09
+
+Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT COMMIT PENDING**.
+
+- P1-004 checkpoint: `0982f21` with a clean working tree.
+- Added SQLite schema version 1 and a unique primary key of
+  `(source, symbol, interval, open_time_ms)` for canonical candles.
+- Decimal strings round-trip without conversion. Identical writes are idempotent; an open
+  candle can update and finalize, while any conflicting rewrite or downgrade of a closed candle
+  raises a fail-closed error.
+- Batch writes are transactional and roll back earlier rows when a later row conflicts.
+  Invalid batches, non-Candle values, invalid keys and databases with newer schemas are rejected.
+- File databases use WAL, a five-second busy timeout and explicit reopen verification. Runtime
+  databases remain under ignored `/data/` in normal project use.
+- Full suite: **74 passed, 0 failed**.
+- Live local `python -m yatl storage-check`: PASS. A temporary file database completed migration,
+  insert, identical replay, open update, finalization, close/reopen round trip and closed-candle
+  conflict protection, then removed its temporary database files.
+- The managed Codex process could not write runtime files inside the older repository checkout;
+  the same project code and locked environment were therefore run with its temporary database in
+  the current approved workspace. This was an environment path restriction, not a test failure.
+- No network request, credential, authenticated import, order endpoint or execution logic was added.
+- P1-006 has not started. P1 as a whole is not accepted; P2 remains unopened.
