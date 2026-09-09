@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 RUNTIME ACCEPTED**
-قدم جاری: **P1-005 IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**
+قدم جاری: **P1-006 IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**
 
 ## منشأ و حدود سند
 
@@ -33,7 +33,7 @@ NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only ب�
 | فاز | خروجی مورد انتظار | وضعیت امروز |
 |---|---|---|
 | P0 Foundation | محیط، Git، امنیت، Testnet، آموزش و تمرین دستی Paper | **RUNTIME ACCEPTED — 2026-09-09** |
-| P1 Market Data Layer | REST، دانلود تاریخی، WebSocket، نرمال‌سازی، SQLite، حذف تکرار، تشخیص شکاف، گزارش سلامت BTC/ETH | در حال اجرا؛ P1-004 checkpoint شد و P1-005 runtime PASS است |
+| P1 Market Data Layer | REST، دانلود تاریخی، WebSocket، نرمال‌سازی، SQLite، حذف تکرار، تشخیص شکاف، گزارش سلامت BTC/ETH | در حال اجرا؛ P1-005 checkpoint شد و P1-006 runtime PASS است |
 | P2 Backtesting Engine | آزمون تاریخی تکرارپذیر با کارمزد، لغزش و جلوگیری از استفاده از آینده | شروع نشده |
 | P3 Strategy Framework | چارچوب مشترک استراتژی و قواعد روشن سیگنال/عدم معامله | شروع نشده |
 | P4 Risk Manager | اندازه موقعیت، محدودیت ریسک و Kill Switch مستقل | شروع نشده |
@@ -104,6 +104,6 @@ Gate مخزن محلی به عنوان PASS پذیرفته شد؛ remote خصو�
 - TradingView Paper برای Gate P0 با fixture محلی قابل‌تکرار جایگزین شد؛ TradingView حذف نشده و اختیاری است.
 - workflowها تمرین محاسباتی هستند؛ معامله واقعی، Testnet order یا نتیجه سود/زیان ادعا نمی‌شود.
 - سیاست بازار تثبیت شد: BTCUSDT + ETHUSDT، Spot، 1h اصلی، 4h regime، 15m context؛ 5m غیرفعال.
-- P1-001 در `38f4e78`، P1-002 در `bff4d24`، P1-003 در `c5d6f0e` و P1-004 در `0982f21` checkpoint شدند.
-- P1-005 schema نسخه‌دار SQLite، ذخیره idempotent، گذار open-to-closed، rollback و حفاظت کندل بسته را runtime تأیید کرد؛ completion کل P1 نیست.
-- شروع P1-006 فقط پس از commit تمیز baseline مربوط به P1-005 انجام می‌شود.
+- P1-001 در `38f4e78`، P1-002 در `bff4d24`، P1-003 در `c5d6f0e`، P1-004 در `0982f21` و P1-005 در `a02acb4` checkpoint شدند.
+- P1-006 duplicate، شکاف تاریخی، استثنای کندل باز فعلی و repair range محدود را به‌صورت deterministic تأیید کرد؛ completion کل P1 نیست.
+- شروع P1-007 فقط پس از commit تمیز baseline مربوط به P1-006 انجام می‌شود.

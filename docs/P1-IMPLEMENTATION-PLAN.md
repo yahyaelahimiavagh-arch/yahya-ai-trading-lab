@@ -1,6 +1,6 @@
 # P1 — Market Data Layer implementation plan
 
-Status: **IN PROGRESS — P1-005 IMPLEMENTED, RUNTIME VERIFIED, CHECKPOINT PENDING**
+Status: **IN PROGRESS — P1-006 IMPLEMENTED, RUNTIME VERIFIED, CHECKPOINT PENDING**
 Entry condition: P0 baseline commit accepted and working tree clean.  
 Exit condition: public BTCUSDT/ETHUSDT datasets and health reports pass deterministic tests and live runtime checks.
 
@@ -69,10 +69,10 @@ Use transactions and upserts so reruns cannot duplicate candles; allow an open c
 be updated and then finalized, while a closed candle cannot be silently rewritten with
 conflicting values. Keep database files under ignored `data/`.
 
-Acceptance: **PASS in working tree, 2026-09-09.** Version 1 fresh migration, file reopen,
+Acceptance: **PASS, checkpoint `a02acb4`, 2026-09-09.** Version 1 fresh migration, file reopen,
 lossless round trip, idempotent insert, open-candle update/finalization, batch rollback,
 future-schema rejection and closed-candle conflict protection pass. The standalone temporary
-database runtime check also passed. Checkpoint commit remains required before P1-006 starts.
+database runtime check also passed. The clean checkpoint was accepted before P1-006 started.
 
 ### P1-006 — Duplicate and missing-candle detection
 
@@ -80,7 +80,11 @@ Detect duplicate keys before/at persistence and identify gaps from the exact int
 grid within requested ranges. Distinguish an expected current open interval from a true
 historical gap. Produce repair ranges without automatically looping forever.
 
-Acceptance: synthetic duplicate/gap/DST-independent UTC tests and bounded repair tests.
+Acceptance: **PASS in working tree, 2026-09-09.** Synthetic tests cover duplicate canonical
+keys, contiguous and separated historical gaps, all approved UTC interval grids across a DST
+date, the expected current-open exception, future/oversized ranges and a 1,000 repair-range cap.
+The deterministic local runtime check classified duplicate, historical gap and expected open
+interval correctly. Checkpoint commit remains required before P1-007 starts.
 
 ### P1-007 — WebSocket market stream
 

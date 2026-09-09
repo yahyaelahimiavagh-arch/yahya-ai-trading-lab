@@ -154,7 +154,7 @@ Reference: https://developers.binance.com/en/docs/products/spot/testnet/web-sock
 
 ## P1-005 evidence — 2026-09-09
 
-Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT COMMIT PENDING**.
+Status: **CHECKPOINT ACCEPTED — `a02acb4`**.
 
 - P1-004 checkpoint: `0982f21` with a clean working tree.
 - Added SQLite schema version 1 and a unique primary key of
@@ -175,3 +175,25 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT COMMIT PENDING**.
   the current approved workspace. This was an environment path restriction, not a test failure.
 - No network request, credential, authenticated import, order endpoint or execution logic was added.
 - P1-006 has not started. P1 as a whole is not accepted; P2 remains unopened.
+
+## P1-006 evidence — 2026-09-09
+
+Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT COMMIT PENDING**.
+
+- P1-005 checkpoint: `a02acb4` with a clean working tree.
+- Added deterministic inspection of half-open UTC ranges for BTCUSDT/ETHUSDT and
+  15m/1h/4h, with the same 100,000-candle bound as historical collection.
+- Duplicate timestamps are reported once per range. A separate canonical-key check detects
+  repeated Candle keys before persistence; SQLite's primary key remains the persistence guard.
+- Missing historical timestamps are grouped into minimal half-open repair ranges. The report
+  is capped at 1,000 repair ranges and never starts a download or retry loop itself.
+- A missing current open interval is identified separately and does not make an otherwise
+  healthy historical range fail. Ranges extending beyond that interval fail closed.
+- Tests cover healthy ranges, contiguous gaps, duplicates, the current-open distinction,
+  all approved UTC grids across a DST transition date, invalid/future/oversized input and
+  repair-range exhaustion.
+- Full suite: **84 passed, 0 failed**.
+- Local `python -m yatl quality-check`: PASS. It classified one duplicate, one historical
+  repair range and one expected missing current-open interval without network or persistence.
+- No credential, network request, automatic repair, order endpoint or execution logic was added.
+- P1-007 has not started. P1 as a whole is not accepted; P2 remains unopened.

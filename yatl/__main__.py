@@ -11,7 +11,8 @@ from .paper_workflow import PaperWorkflowError, load_and_validate
 from .data import (BinancePublicRestClient, Candle, CandleStore,
                    ClosedCandleConflict, DATA_SOURCE, HistoricalDownloadError,
                    INTERVAL_MILLISECONDS, NormalizationError, PublicRestError,
-                   StorageError, SYMBOLS, download_range, normalize_rest_kline)
+                   QualityError, StorageError, SYMBOLS, analyze_open_times,
+                   download_range, normalize_rest_kline)
 
 
 def _storage_runtime_check():
@@ -74,6 +75,7 @@ def main():
     commands.add_parser("history-check", help="Check bounded historical pagination for P1")
     commands.add_parser("normalize-check", help="Normalize live public REST klines for P1")
     commands.add_parser("storage-check", help="Verify temporary SQLite candle storage for P1")
+    commands.add_parser("quality-check", help="Verify deterministic gap and duplicate detection")
     collect = commands.add_parser("candles", help="Save recent candles to CSV")
     collect.add_argument("--symbol", default="BTCUSDT")
     collect.add_argument("--interval", choices=sorted(INTERVALS), default="1h")
@@ -131,6 +133,23 @@ def main():
             _storage_runtime_check()
             print("OK: SQLite migration, idempotency, finalization, reopen and conflict protection")
             print("TEMPORARY LOCAL DATA ONLY | No credentials | No execution endpoints")
+        elif args.command == "quality-check":
+            duration = INTERVAL_MILLISECONDS["1h"]
+            start = 1_699_999_200_000
+            current_open = start + (5 * duration)
+            report = analyze_open_times(
+                DATA_SOURCE, "BTCUSDT", "1h", start, current_open + duration,
+                [start, start + duration, start + duration,
+                 start + (3 * duration), start + (4 * duration)],
+                current_open + 1,
+            )
+            expected_repair = ((start + (2 * duration), start + (3 * duration)),)
+            if (report.duplicate_open_times != (start + duration,)
+                    or report.repair_ranges != expected_repair
+                    or not report.expected_current_open_missing):
+                raise QualityError("Quality classification failed")
+            print("OK: duplicate, historical gap and expected open interval classified")
+            print("BOUNDED REPAIR RANGES ONLY | No network | No credentials | No execution")
         else:
             rows = candles(args.environment, args.symbol, args.interval, args.limit)
             stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
@@ -139,7 +158,8 @@ def main():
             print(f"Saved {len(rows)} candles to {path}")
             print("The latest candle may still be open; timestamps are Unix milliseconds (UTC).")
     except (AccountError, HistoricalDownloadError, MarketDataError, NormalizationError,
-            PaperWorkflowError, PublicRestError, StorageError, ValueError, OSError) as exc:
+            PaperWorkflowError, PublicRestError, QualityError, StorageError,
+            ValueError, OSError) as exc:
         # OSError messages can expose local paths; keep their display generic.
         message = "Cannot create output file; check permissions or use a new filename" if isinstance(exc, OSError) else str(exc)
         print(f"Error: {message}", file=sys.stderr)
