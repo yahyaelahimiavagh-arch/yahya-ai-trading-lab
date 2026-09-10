@@ -1,6 +1,6 @@
 # P2 — Backtesting Engine implementation plan
 
-Status: **IN PROGRESS — P2-005 IMPLEMENTED AND RUNTIME VERIFIED, CHECKPOINT PENDING**
+Status: **IN PROGRESS — P2-006 IMPLEMENTED AND RUNTIME VERIFIED, CHECKPOINT PENDING**
 Entry baseline: P1 accepted in commit `4e77e34` with a clean working tree.
 Exit condition: deterministic BTCUSDT/ETHUSDT Spot simulations pass unit, invariant,
 reproducibility and real-dataset runtime gates with explicit fees and slippage.
@@ -73,19 +73,22 @@ portfolio accounting. The clean checkpoint was accepted before P2-005 started.
 Apply adverse slippage by side and charge quote-currency fees on every fill using Decimal.
 Quantize only at an explicit reporting boundary; preserve full internal precision.
 
-Acceptance: **PASS in working tree, 2026-09-09.** Hand-calculated entry, exit and round-trip
+Acceptance: **PASS, checkpoint `2b50013`, 2026-09-10.** Hand-calculated entry, exit and round-trip
 vectors pass with 256-digit internal Decimal precision. Tests cover zero and maximum cost
 bounds, very large exact products, tamper rejection and cost monotonicity. The runtime
 scenario reports exact aggregate fee, slippage and net cash effect. Checkpoint remains
-required before P2-006.
+The clean checkpoint was accepted before P2-006 started.
 
 ### P2-006 — Portfolio ledger and invariants
 
 Maintain cash, one long Spot position per symbol, realized/unrealized PnL and mark-to-market
 equity. Every fill must balance and cash, quantity and equity inputs must remain valid.
 
-Acceptance: conservation identities, round-trip accounting, insufficient-cash rejection and
-multi-symbol isolation tests.
+Acceptance: **PASS in working tree, 2026-09-10.** Tests cover exact entry basis,
+conservative liquidation equity, balanced round trips, insufficient cash, duplicate/partial/
+out-of-order fills, atomic batch rollback, cost-policy matching and symbol isolation. Local
+runtime closed a costed round trip with cash/equity `999.4000000` from `1000` initial cash.
+Checkpoint remains required before P2-007.
 
 ### P2-007 — Performance metrics
 

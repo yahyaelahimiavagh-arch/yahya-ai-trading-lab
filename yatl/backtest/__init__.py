@@ -15,6 +15,7 @@ from .clock import BacktestClock, BacktestClockError, DecisionEvent
 from .fills import (FillModelError, FillReason, FillReference, IntentAction,
                     PaperFillEngine, PaperIntent)
 from .costs import CostedFill, CostModelError, apply_costs
+from .portfolio import PortfolioError, PortfolioLedger, PortfolioSnapshot
 
 __all__ = [
     "BacktestConfigError",
@@ -37,6 +38,9 @@ __all__ = [
     "PRIMARY_INTERVAL",
     "PaperFillEngine",
     "PaperIntent",
+    "PortfolioError",
+    "PortfolioLedger",
+    "PortfolioSnapshot",
     "REGIME_INTERVAL",
     "latest_spec_from_manifest",
     "load_accepted_dataset",

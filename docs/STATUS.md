@@ -410,3 +410,18 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
   adverse slippage `0.0975` and net cash delta `-5.2925025`.
 - No network, credential, account transport or exchange order was used.
 - P2-006 has not started. P2 as a whole is not accepted; P3 remains unopened.
+
+## P2-006 evidence — 2026-09-10
+
+Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
+
+- P2-005 checkpoint: `2b50013`; clean entry tree.
+- Added exact cash, asset, cost-basis, realized/unrealized PnL, conservative liquidation
+  equity, fee/slippage totals and closed-trade accounting.
+- Rejects insufficient cash, duplicate/partial/out-of-order or wrong-symbol fills and cost
+  policy mismatch. Batch failures restore the complete preceding ledger state.
+- Focused suite: **7 passed, 0 failed**.
+- Full suite after implementation: **159 passed, 0 failed**; lock and compile checks passed.
+- `backtest-portfolio-check`: PASS; initial `1000` became cash/equity `999.4000000`,
+  realized PnL `-0.6000000`, one closed trade, and zero asset balance.
+- No network, credential or exchange order was used. P2-007 and P3 remain unopened.

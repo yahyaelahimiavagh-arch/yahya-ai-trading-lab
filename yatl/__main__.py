@@ -11,8 +11,9 @@ from .account import AccountError, read_account
 from .paper_workflow import PaperWorkflowError, load_and_validate
 from .backtest import (BacktestClock, BacktestClockError, BacktestConfigError,
                        BacktestContractError, BacktestLoadError, BacktestSpec,
-                       DecisionEvent, EXECUTION_PRICE_POLICY, FillModelError,
-                       CostModelError, IntentAction, MarketSnapshot, PaperFillEngine,
+                       DecisionEvent, EXECUTION_PRICE_POLICY, FillModelError, FillReason,
+                       FillReference, CostModelError, IntentAction, MarketSnapshot,
+                       PaperFillEngine, PortfolioError, PortfolioLedger,
                        PaperIntent, apply_costs,
                        latest_spec_from_manifest, load_accepted_dataset)
 from .data import (BinancePublicRestClient, Candle, CandleStore,
@@ -125,6 +126,24 @@ def _backtest_cost_runtime_check():
     return fills, fee, slippage
 
 
+def _backtest_portfolio_runtime_check():
+    start = 1_699_999_200_000
+    spec = BacktestSpec("BTCUSDT", start, start + 2 * 3_600_000,
+                        initial_cash="1000")
+    references = (
+        FillReference(IntentAction.ENTER_LONG, spec.symbol, start, start,
+                      "2", "100", FillReason.NEXT_PRIMARY_OPEN),
+        FillReference(IntentAction.EXIT_LONG, spec.symbol, start + 3_600_000,
+                      start + 3_600_000, "2", "100", FillReason.SCRIPTED_EXIT),
+    )
+    ledger = PortfolioLedger(spec)
+    ledger.apply_many(tuple(apply_costs(item, spec) for item in references))
+    view = ledger.snapshot("100")
+    if view.asset_quantity != 0 or view.equity_quote != view.cash:
+        raise PortfolioError("Portfolio round trip did not balance")
+    return view
+
+
 def main():
     parser = argparse.ArgumentParser(description="YATL paper-only data and Testnet account tools")
     parser.add_argument("--environment", choices=HOSTS, default="testnet")
@@ -145,6 +164,8 @@ def main():
                         help="Verify the local conservative P2 fill lifecycle")
     commands.add_parser("backtest-cost-check",
                         help="Verify exact Decimal P2 fee and slippage accounting")
+    commands.add_parser("backtest-portfolio-check",
+                        help="Verify the exact P2 portfolio ledger")
     loader = commands.add_parser("backtest-load-check",
                                  help="Load accepted P1 data read-only for P2")
     loader.add_argument("--database", default="data/p1/market.sqlite3")
@@ -258,6 +279,11 @@ def main():
             print(f"OK: exact Decimal costs; fills={len(fills)} fee_quote={fee} "
                   f"slippage_quote={slippage} net_cash_delta={cash}")
             print("PAPER ONLY | Explicit adverse costs | No credentials | No exchange order")
+        elif args.command == "backtest-portfolio-check":
+            view = _backtest_portfolio_runtime_check()
+            print(f"OK: balanced portfolio round trip; cash={view.cash} "
+                  f"realized_pnl={view.realized_pnl_quote} closed_trades={view.closed_trades}")
+            print("PAPER ONLY | Exact local ledger | No credentials | No exchange order")
         elif args.command == "backtest-load-check":
             spec = latest_spec_from_manifest(args.manifest, args.symbol, hours=args.hours)
             loaded = load_accepted_dataset(args.database, args.manifest, spec)
@@ -335,7 +361,7 @@ def main():
             print("The latest candle may still be open; timestamps are Unix milliseconds (UTC).")
     except (AccountError, AuditError, BacktestClockError, BacktestConfigError,
             BacktestContractError,
-            BacktestLoadError, CostModelError, FillModelError,
+            BacktestLoadError, CostModelError, FillModelError, PortfolioError,
             HistoricalDownloadError, MarketDataError, NormalizationError,
             DatasetError, HealthError, PaperWorkflowError, PublicRestError, QualityError,
             StorageError, StreamError,

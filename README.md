@@ -97,6 +97,13 @@ uv run --locked python -m yatl backtest-cost-check
 این بررسی fee، slippage و اثر خالص نقدی یک رفت‌وبرگشت محافظه‌کارانه را با Decimal
 گزارش می‌کند. افزایش هزینه در تست‌ها هرگز نتیجه نقدی را بهتر نمی‌کند.
 
+P2-006 دفتر دقیق cash، دارایی، cost basis، سود تحقق‌یافته/نشده و equity قابل‌تسویه
+را اضافه می‌کند. fill تکراری، خروج ناقص، موجودی ناکافی و سیاست هزینه متفاوت رد می‌شود.
+
+```powershell
+uv run --locked python -m yatl backtest-portfolio-check
+```
+
 ## تمرین دستی و قابل‌تکرار Paper
 
 فایل `fixtures/p0-paper-workflows.json` دو سناریوی آموزشی ثابت برای BTCUSDT و
