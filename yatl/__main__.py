@@ -13,8 +13,8 @@ from .backtest import (BacktestClock, BacktestClockError, BacktestConfigError,
                        BacktestContractError, BacktestLoadError, BacktestSpec,
                        DecisionEvent, EXECUTION_PRICE_POLICY, FillModelError, FillReason,
                        FillReference, CostModelError, IntentAction, MarketSnapshot,
-                       PaperFillEngine, PortfolioError, PortfolioLedger,
-                       PaperIntent, apply_costs,
+                       MetricsError, PaperFillEngine, PortfolioError, PortfolioLedger,
+                       EquityPoint, PaperIntent, apply_costs, calculate_metrics,
                        latest_spec_from_manifest, load_accepted_dataset)
 from .data import (BinancePublicRestClient, Candle, CandleStore,
                    ClosedCandleConflict, DATA_SOURCE, HistoricalDownloadError,
@@ -144,6 +144,28 @@ def _backtest_portfolio_runtime_check():
     return view
 
 
+def _backtest_metrics_runtime_check():
+    start = 1_699_999_200_000
+    spec = BacktestSpec("BTCUSDT", start, start + 3 * 3_600_000,
+                        initial_cash="1000")
+    ledger = PortfolioLedger(spec)
+    points = [EquityPoint(start, ledger.snapshot("100"))]
+    entry = FillReference(IntentAction.ENTER_LONG, spec.symbol, start + 3_600_000,
+                          start + 3_600_000, "2", "100",
+                          FillReason.NEXT_PRIMARY_OPEN)
+    ledger.apply(apply_costs(entry, spec))
+    points.append(EquityPoint(start + 3_600_000, ledger.snapshot("100")))
+    exit_fill = FillReference(IntentAction.EXIT_LONG, spec.symbol,
+                              start + 2 * 3_600_000, start + 2 * 3_600_000,
+                              "2", "110", FillReason.SCRIPTED_EXIT)
+    ledger.apply(apply_costs(exit_fill, spec))
+    points.append(EquityPoint(start + 2 * 3_600_000, ledger.snapshot("110")))
+    report = calculate_metrics(tuple(points))
+    if report.gross_pnl_quote != Decimal("20") or report.trade_count != 1:
+        raise MetricsError("Hand-computed performance scenario failed")
+    return report
+
+
 def main():
     parser = argparse.ArgumentParser(description="YATL paper-only data and Testnet account tools")
     parser.add_argument("--environment", choices=HOSTS, default="testnet")
@@ -166,6 +188,8 @@ def main():
                         help="Verify exact Decimal P2 fee and slippage accounting")
     commands.add_parser("backtest-portfolio-check",
                         help="Verify the exact P2 portfolio ledger")
+    commands.add_parser("backtest-metrics-check",
+                        help="Verify deterministic P2 performance metrics")
     loader = commands.add_parser("backtest-load-check",
                                  help="Load accepted P1 data read-only for P2")
     loader.add_argument("--database", default="data/p1/market.sqlite3")
@@ -284,6 +308,12 @@ def main():
             print(f"OK: balanced portfolio round trip; cash={view.cash} "
                   f"realized_pnl={view.realized_pnl_quote} closed_trades={view.closed_trades}")
             print("PAPER ONLY | Exact local ledger | No credentials | No exchange order")
+        elif args.command == "backtest-metrics-check":
+            report = _backtest_metrics_runtime_check()
+            print(f"OK: deterministic performance metrics; trades={report.trade_count} "
+                  f"gross_pnl={report.gross_pnl_quote} net_pnl={report.net_pnl_quote} "
+                  f"max_drawdown={report.maximum_drawdown}")
+            print("PAPER ONLY | Decimal descriptive metrics | No credentials | No exchange order")
         elif args.command == "backtest-load-check":
             spec = latest_spec_from_manifest(args.manifest, args.symbol, hours=args.hours)
             loaded = load_accepted_dataset(args.database, args.manifest, spec)
@@ -361,7 +391,7 @@ def main():
             print("The latest candle may still be open; timestamps are Unix milliseconds (UTC).")
     except (AccountError, AuditError, BacktestClockError, BacktestConfigError,
             BacktestContractError,
-            BacktestLoadError, CostModelError, FillModelError, PortfolioError,
+            BacktestLoadError, CostModelError, FillModelError, MetricsError, PortfolioError,
             HistoricalDownloadError, MarketDataError, NormalizationError,
             DatasetError, HealthError, PaperWorkflowError, PublicRestError, QualityError,
             StorageError, StreamError,

@@ -104,6 +104,14 @@ P2-006 دفتر دقیق cash، دارایی، cost basis، سود تحقق‌ی
 uv run --locked python -m yatl backtest-portfolio-check
 ```
 
+P2-007 معیارهای قطعی بازده، تعداد و نرخ برد، سود ناخالص/خالص، هزینه کل، افت سرمایه
+و نسبت‌های توصیفی ریسک را فقط برای منحنی کامل و بسته‌شده محاسبه می‌کند. نمونه ناکافی
+یا مخرج صفر با مقدار تعریف‌نشده گزارش می‌شود و حدس زده نمی‌شود.
+
+```powershell
+uv run --locked python -m yatl backtest-metrics-check
+```
+
 ## تمرین دستی و قابل‌تکرار Paper
 
 فایل `fixtures/p0-paper-workflows.json` دو سناریوی آموزشی ثابت برای BTCUSDT و

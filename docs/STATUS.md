@@ -413,7 +413,7 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
 
 ## P2-006 evidence — 2026-09-10
 
-Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
+Status: **ACCEPTED — checkpoint `cd29f65`**.
 
 - P2-005 checkpoint: `2b50013`; clean entry tree.
 - Added exact cash, asset, cost-basis, realized/unrealized PnL, conservative liquidation
@@ -425,3 +425,19 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
 - `backtest-portfolio-check`: PASS; initial `1000` became cash/equity `999.4000000`,
   realized PnL `-0.6000000`, one closed trade, and zero asset balance.
 - No network, credential or exchange order was used. P2-007 and P3 remain unopened.
+
+## P2-007 evidence — 2026-09-10
+
+Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
+
+- P2-006 checkpoint: `cd29f65`; clean entry tree.
+- Added exact Decimal return, trade outcome, gross/net PnL, cost and drawdown metrics.
+- Added non-annualized period mean, sample volatility, downside deviation and descriptive
+  mean-to-risk ratios with explicit undefined-sample and zero-denominator handling.
+- Metrics require an ordered, single-symbol lifecycle beginning clean and ending flat; invalid
+  time, cost, realized-PnL or trade-count transitions fail closed.
+- Focused metric suite: **8 passed, 0 failed**.
+- Full suite after implementation: **167 passed, 0 failed**; lock and compile checks passed.
+- `backtest-metrics-check`: PASS; the hand-computed profitable round trip reported gross PnL
+  `20.0000000`, net PnL `19.3700100`, one winning trade and maximum drawdown `0.0006000`.
+- No network, credential or exchange order is used. P2-008 and P3 remain unopened.

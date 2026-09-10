@@ -16,6 +16,8 @@ from .fills import (FillModelError, FillReason, FillReference, IntentAction,
                     PaperFillEngine, PaperIntent)
 from .costs import CostedFill, CostModelError, apply_costs
 from .portfolio import PortfolioError, PortfolioLedger, PortfolioSnapshot
+from .metrics import (EquityPoint, MetricsError, PerformanceReport,
+                      calculate_metrics)
 
 __all__ = [
     "BacktestConfigError",
@@ -29,20 +31,24 @@ __all__ = [
     "CostedFill",
     "CostModelError",
     "DecisionEvent",
+    "EquityPoint",
     "EXECUTION_PRICE_POLICY",
     "FillModelError",
     "FillReason",
     "FillReference",
     "IntentAction",
     "MarketSnapshot",
+    "MetricsError",
     "PRIMARY_INTERVAL",
     "PaperFillEngine",
     "PaperIntent",
     "PortfolioError",
     "PortfolioLedger",
     "PortfolioSnapshot",
+    "PerformanceReport",
     "REGIME_INTERVAL",
     "latest_spec_from_manifest",
     "load_accepted_dataset",
     "apply_costs",
+    "calculate_metrics",
 ]

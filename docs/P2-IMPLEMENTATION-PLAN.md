@@ -1,6 +1,6 @@
 # P2 — Backtesting Engine implementation plan
 
-Status: **IN PROGRESS — P2-006 IMPLEMENTED AND RUNTIME VERIFIED, CHECKPOINT PENDING**
+Status: **IN PROGRESS — P2-007 IMPLEMENTED AND RUNTIME VERIFIED, CHECKPOINT PENDING**
 Entry baseline: P1 accepted in commit `4e77e34` with a clean working tree.
 Exit condition: deterministic BTCUSDT/ETHUSDT Spot simulations pass unit, invariant,
 reproducibility and real-dataset runtime gates with explicit fees and slippage.
@@ -84,18 +84,24 @@ The clean checkpoint was accepted before P2-006 started.
 Maintain cash, one long Spot position per symbol, realized/unrealized PnL and mark-to-market
 equity. Every fill must balance and cash, quantity and equity inputs must remain valid.
 
-Acceptance: **PASS in working tree, 2026-09-10.** Tests cover exact entry basis,
+Acceptance: **PASS, checkpoint `cd29f65`, 2026-09-10.** Tests cover exact entry basis,
 conservative liquidation equity, balanced round trips, insufficient cash, duplicate/partial/
 out-of-order fills, atomic batch rollback, cost-policy matching and symbol isolation. Local
 runtime closed a costed round trip with cash/equity `999.4000000` from `1000` initial cash.
-Checkpoint remains required before P2-007.
+The clean checkpoint was accepted before P2-007 started.
 
 ### P2-007 — Performance metrics
 
 Produce return, trade count, win rate, gross/net PnL, total costs, maximum drawdown and
 risk-adjusted descriptive metrics with explicit undefined-sample handling.
 
-Acceptance: hand-computed equity curves, no-trade/one-trade cases and drawdown edge cases.
+Acceptance: **PASS in working tree, 2026-09-10.** The contract uses exact Decimal
+arithmetic and requires a clean starting point and flat final portfolio. It reports total
+return, trade outcomes, gross/net PnL, costs, drawdown and non-annualized descriptive
+mean/volatility/downside ratios. Insufficient samples and zero denominators are explicitly
+undefined. Tests cover hand-computed curves, no-trade/one-trade cases and lifecycle failures.
+The local scenario reproduced gross PnL `20`, net PnL `19.37001` and maximum drawdown
+`0.0006`. Checkpoint remains required before P2-008.
 
 ### P2-008 — Reproducible artifacts
 
