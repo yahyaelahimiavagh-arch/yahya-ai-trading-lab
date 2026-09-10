@@ -1,6 +1,6 @@
 # P3 — Strategy Framework implementation plan
 
-Status: **PLANNED — NOT STARTED**
+Status: **IN PROGRESS — P3-001 IMPLEMENTED AND RUNTIME VERIFIED, CHECKPOINT PENDING**
 Entry baseline: P2 accepted in commit `9cbc197` with a clean working tree.
 Exit condition: deterministic, versioned BTCUSDT/ETHUSDT Spot strategy candidates produce
 point-in-time signals through the accepted P2 engine, pass anti-lookahead and reproducibility
@@ -32,8 +32,11 @@ Define immutable strategy context, action, reason, setup and decision records. E
 time, level, version and point-in-time identity. Ensure quantity, broker, credential and order
 fields cannot enter the strategy interface.
 
-Acceptance: construction/tamper tests, explicit `NO_TRADE`, wrong-time/symbol rejection and a
-source scan proving the strategy package has no execution endpoint.
+Acceptance: **PASS in working tree, 2026-09-10.** Immutable identity, context, setup and decision
+records enforce semantic versions, exact long levels and the fixed paper/Spot/long-only safety
+policy. Action/reason/setup mismatches and policy tampering fail closed. The context SHA-256 is
+byte-stable and changes with visible candle material. Tests and source scan prove there is no
+sizing, credential, broker or execution endpoint. Checkpoint remains required before P3-002.
 
 ### P3-002 — Point-in-time feature primitives
 

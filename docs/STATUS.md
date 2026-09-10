@@ -512,3 +512,19 @@ Status: **PLANNED — IMPLEMENTATION NOT STARTED**.
 - Framework acceptance is separate from performance evidence. The current 30-day dataset cannot
   alone justify a durable-edge claim and may only produce `INSUFFICIENT_EVIDENCE`.
 - No P3 production code or strategy evaluation was started in this planning checkpoint.
+
+## P3-001 evidence — 2026-09-10
+
+Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
+
+- Planning checkpoint: `84fadcc`; clean entry tree.
+- Added immutable strategy identity, point-in-time context, long setup and decision contracts.
+  Actions are limited to `NO_TRADE`, `ENTER_LONG` and `EXIT_LONG`; reason codes are explicit.
+- The context digest covers strategy identity/version, all visible 4h/1h/15m candles and the
+  fixed paper-only safety policy. Material visible-data changes alter the SHA-256.
+- P3 contracts contain no quantity, position size, account, credential, broker or order field.
+- Focused contract suite: **9 passed, 0 failed**.
+- Complete repository suite: **199 passed, 0 failed**; lock, compile and source safety scans passed.
+- `strategy-contract-check`: PASS with deterministic context SHA-256
+  `a0a540e025ab857ba626bdd4d4dc3b28e1dcbfd05807c755d57cf0a8441a6d9f`.
+- No network, credential or exchange order was used. P3-002 is next; P4 remains unopened.

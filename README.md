@@ -44,6 +44,14 @@ P2 بارگذاری point-in-time، ساعت رویداد، fill محافظه‌
 نهایی P2 همه این gateها را بازسازی و تأیید می‌کند. P3 هنوز شروع نشده است.
 ترتیب و معیارهای P3 در `docs/P3-IMPLEMENTATION-PLAN.md` قفل شده‌اند.
 
+P3-001 قرارداد research-only سیگنال را اضافه می‌کند. تصمیم فقط یکی از `NO_TRADE`،
+`ENTER_LONG` یا `EXIT_LONG` است و به context نقطه‌زمانی و digest آن متصل می‌شود.
+این قرارداد هیچ quantity، حساب، credential، broker یا مسیر سفارش ندارد.
+
+```powershell
+uv run --locked python -m yatl strategy-contract-check
+```
+
 وضعیت تست‌های همین تحویل در `docs/STATUS.md` ثبت شده است.
 
 بررسی محلی قرارداد P2-001:

@@ -9,6 +9,9 @@ from uuid import uuid4
 from .market_data import HOSTS, INTERVALS, MarketDataError, candles, ping, save_csv
 from .account import AccountError, read_account
 from .paper_workflow import PaperWorkflowError, load_and_validate
+from .strategy import (DecisionReason, LongSetup, StrategyAction,
+                       StrategyContext, StrategyContractError,
+                       StrategyDecision, StrategyIdentity)
 from .backtest import (AcceptedBacktestDataset, ArtifactError, BacktestClock,
                        BacktestClockError, BacktestConfigError,
                        BacktestContractError, BacktestLoadError, BacktestSpec,
@@ -208,6 +211,19 @@ def _backtest_artifact_runtime_check():
     return manifest
 
 
+def _strategy_contract_runtime_check():
+    _, snapshot = _backtest_contract_runtime_check()
+    context = StrategyContext(StrategyIdentity("TREND_PULLBACK", "1.0.0"), snapshot)
+    no_trade = StrategyDecision(context, StrategyAction.NO_TRADE,
+                                DecisionReason.SETUP_ABSENT)
+    entry = StrategyDecision(context, StrategyAction.ENTER_LONG,
+                             DecisionReason.TREND_PULLBACK_ENTRY,
+                             LongSetup("105", "95", "115"))
+    if no_trade.context_sha256 != entry.context_sha256:
+        raise StrategyContractError("Strategy context identity changed across decisions")
+    return no_trade, entry
+
+
 def main():
     parser = argparse.ArgumentParser(description="YATL paper-only data and Testnet account tools")
     parser.add_argument("--environment", choices=HOSTS, default="testnet")
@@ -244,6 +260,8 @@ def main():
     p2_audit.add_argument("--database", default="data/p1/market.sqlite3")
     p2_audit.add_argument("--manifest", default="manifests/p1-market-data.json")
     p2_audit.add_argument("--hours", type=int, default=24)
+    commands.add_parser("strategy-contract-check",
+                        help="Verify the P3 research-only signal boundary")
     loader = commands.add_parser("backtest-load-check",
                                  help="Load accepted P1 data read-only for P2")
     loader.add_argument("--database", default="data/p1/market.sqlite3")
@@ -388,6 +406,11 @@ def main():
                   f"scenarios={result.scenarios} artifacts={result.artifacts} "
                   f"trades={result.trades}")
             print("PAPER ONLY | LIVE_MASTER_LOCK=OFF | No credentials | No exchange order")
+        elif args.command == "strategy-contract-check":
+            no_trade, entry = _strategy_contract_runtime_check()
+            print(f"OK: P3 signal contract; actions={no_trade.action.value}/"
+                  f"{entry.action.value} context_sha256={entry.context_sha256}")
+            print("PAPER ONLY | No sizing | No credentials | No exchange order")
         elif args.command == "backtest-load-check":
             spec = latest_spec_from_manifest(args.manifest, args.symbol, hours=args.hours)
             loaded = load_accepted_dataset(args.database, args.manifest, spec)
@@ -469,7 +492,7 @@ def main():
             MetricsError, P2AuditError, PortfolioError, ScenarioError,
             HistoricalDownloadError, MarketDataError, NormalizationError,
             DatasetError, HealthError, PaperWorkflowError, PublicRestError, QualityError,
-            StorageError, StreamError,
+            StorageError, StrategyContractError, StreamError,
             ValueError, OSError) as exc:
         # OSError messages can expose local paths; keep their display generic.
         message = "Cannot create output file; check permissions or use a new filename" if isinstance(exc, OSError) else str(exc)
