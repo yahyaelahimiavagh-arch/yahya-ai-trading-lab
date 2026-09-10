@@ -1,6 +1,6 @@
 # Yahya AI Trading Lab
 
-P0 و P1 با شواهد runtime پذیرفته شده‌اند. P2 اکنون طبق برنامه ثابت در حال اجراست.
+P0، P1 و P2 با شواهد runtime پذیرفته شده‌اند. P3 هنوز شروع نشده است.
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
@@ -10,7 +10,7 @@ Python پروژه **3.12.14** است. تنها وابستگی خارجی، `webs
 
 ```powershell
 uv sync --locked
-uv run --locked python -m unittest discover -s tests -v
+uv run --locked python -m unittest discover -s tests
 uv run --locked python -m yatl ping
 uv run --locked python -m yatl candles --symbol BTCUSDT --interval 1h --limit 100
 ```
@@ -37,11 +37,10 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 ## مسیر بعدی
 
 مرجع ترتیب اجرا: [نقشه پروژه](docs/MASTER-PLAN.md).
-وضعیت جاری **P0 و P1 پذیرفته‌شده در runtime** است. P1-009 در `fa4de2d`
-checkpoint شد و P1-010 بازسازی تمیز، اجرای تکراری، REST، WebSocket، گزارش سلامت،
-manifest و مرزهای امنیتی را تأیید کرد. P1 در `4e77e34` بسته شد و P2-001 قرارداد
-point-in-time موتور بک‌تست را آغاز کرده است. ترتیب دقیق در
-`docs/P2-IMPLEMENTATION-PLAN.md` ثبت شده و P3 هنوز شروع نشده است.
+وضعیت جاری **P0، P1 و P2 پذیرفته‌شده در runtime** است. P1 در `4e77e34` بسته شد.
+P2 بارگذاری point-in-time، ساعت رویداد، fill محافظه‌کارانه، هزینه، دفتر پرتفوی،
+معیارها، artifact تکرارپذیر و شش سناریوی واقعی BTC/ETH را تکمیل کرده است. ممیزی
+نهایی P2 همه این gateها را بازسازی و تأیید می‌کند. P3 هنوز شروع نشده است.
 
 وضعیت تست‌های همین تحویل در `docs/STATUS.md` ثبت شده است.
 
@@ -126,6 +125,13 @@ P2-009 سه سناریوی ازپیش‌تعیین‌شده را روی داده
 
 ```powershell
 uv run --locked python -m yatl backtest-scenario-check
+```
+
+ممیزی نهایی P2، manifest پذیرفته‌شده P1، هر شش سناریو، هشت معامله، حسابداری،
+digest ورودی و نتیجه و نبود مسیر اجرای سفارش را مستقل بررسی می‌کند:
+
+```powershell
+uv run --locked python -m yatl p2-audit
 ```
 
 ## تمرین دستی و قابل‌تکرار Paper

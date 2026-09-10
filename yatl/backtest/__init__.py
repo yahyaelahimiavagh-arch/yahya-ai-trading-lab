@@ -22,6 +22,8 @@ from .artifacts import (ArtifactError, build_run_manifest, artifact_json,
                         write_run_manifest)
 from .scenarios import (SCENARIOS, ScenarioError, ScenarioResult,
                         run_real_scenario_matrix, run_scripted_scenario)
+from .audit import (ArtifactAuditResult, P2AuditError, P2AuditResult,
+                    audit_p2, audit_run_manifest)
 
 __all__ = [
     "BacktestConfigError",
@@ -32,6 +34,7 @@ __all__ = [
     "BacktestLoadError",
     "AcceptedBacktestDataset",
     "ArtifactError",
+    "ArtifactAuditResult",
     "CONTEXT_INTERVAL",
     "CostedFill",
     "CostModelError",
@@ -51,6 +54,8 @@ __all__ = [
     "PortfolioLedger",
     "PortfolioSnapshot",
     "PerformanceReport",
+    "P2AuditError",
+    "P2AuditResult",
     "REGIME_INTERVAL",
     "SCENARIOS",
     "ScenarioError",
@@ -59,6 +64,8 @@ __all__ = [
     "load_accepted_dataset",
     "apply_costs",
     "artifact_json",
+    "audit_p2",
+    "audit_run_manifest",
     "build_run_manifest",
     "calculate_metrics",
     "run_real_scenario_matrix",

@@ -17,7 +17,7 @@ from .metrics import PerformanceReport
 
 
 ARTIFACT_KIND = "YATL_SPOT_PAPER_BACKTEST"
-ENGINE_VERSION = "P2.1"
+ENGINE_VERSION = "P2.2"
 MAX_ARTIFACT_BYTES = 2 * 1024 * 1024
 
 
@@ -32,6 +32,10 @@ def _json(value):
 
 def _digest(value):
     return hashlib.sha256(_json(value).encode("utf-8")).hexdigest()
+
+
+def _decimal_text(value):
+    return format(value, "f")
 
 
 def _spec(spec):
@@ -127,14 +131,14 @@ def _trades(fills, report):
                 "exit_time_ms": fill.reference.fill_time_ms,
                 "quantity": entry.reference.quantity,
                 "entry_reference_price": entry.reference.reference_price,
-                "entry_execution_price": str(entry.execution_price),
+                "entry_execution_price": _decimal_text(entry.execution_price),
                 "exit_reference_price": fill.reference.reference_price,
-                "exit_execution_price": str(fill.execution_price),
+                "exit_execution_price": _decimal_text(fill.execution_price),
                 "exit_reason": fill.reference.reason.value,
-                "gross_pnl_quote": str(gross_pnl),
-                "net_pnl_quote": str(net_pnl),
-                "fee_quote": str(entry.fee_quote + fill.fee_quote),
-                "slippage_quote": str(entry.slippage_quote + fill.slippage_quote),
+                "gross_pnl_quote": _decimal_text(gross_pnl),
+                "net_pnl_quote": _decimal_text(net_pnl),
+                "fee_quote": _decimal_text(entry.fee_quote + fill.fee_quote),
+                "slippage_quote": _decimal_text(entry.slippage_quote + fill.slippage_quote),
             })
             entry = None
     if entry is not None or len(trades) != report.trade_count:
@@ -157,7 +161,7 @@ def _metrics(report):
         if item.name == "points":
             continue
         value = getattr(report, item.name)
-        result[item.name] = str(value) if isinstance(value, Decimal) else value
+        result[item.name] = _decimal_text(value) if isinstance(value, Decimal) else value
     return result
 
 
@@ -183,7 +187,7 @@ def build_run_manifest(dataset, fills, report):
     }
     equities = [point.portfolio.equity_quote for point in report.points]
     manifest = {
-        "schema_version": 1,
+        "schema_version": 2,
         "artifact_kind": ARTIFACT_KIND,
         "engine_version": ENGINE_VERSION,
         "input_sha256": _digest(input_material),
@@ -194,22 +198,23 @@ def build_run_manifest(dataset, fills, report):
             "points": len(report.points),
             "start_time_ms": report.points[0].time_ms,
             "end_time_ms": report.points[-1].time_ms,
-            "initial_equity_quote": str(report.initial_equity_quote),
-            "final_equity_quote": str(report.final_equity_quote),
-            "minimum_equity_quote": str(min(equities)),
-            "maximum_equity_quote": str(max(equities)),
+            "initial_equity_quote": _decimal_text(report.initial_equity_quote),
+            "final_equity_quote": _decimal_text(report.final_equity_quote),
+            "minimum_equity_quote": _decimal_text(min(equities)),
+            "maximum_equity_quote": _decimal_text(max(equities)),
         },
         "metrics": _metrics(report),
     }
+    manifest["result_sha256"] = _digest(manifest)
     return manifest
 
 
 def artifact_json(manifest):
     expected_keys = {"schema_version", "artifact_kind", "engine_version",
-                     "input_sha256", "configuration", "data", "trades",
+                     "input_sha256", "result_sha256", "configuration", "data", "trades",
                      "equity_curve", "metrics"}
     if (not isinstance(manifest, dict) or set(manifest) != expected_keys
-            or manifest.get("schema_version") != 1
+            or manifest.get("schema_version") != 2
             or manifest.get("artifact_kind") != ARTIFACT_KIND
             or manifest.get("engine_version") != ENGINE_VERSION):
         raise ArtifactError("Run manifest identity is invalid")

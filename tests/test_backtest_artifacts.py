@@ -71,6 +71,7 @@ class BacktestArtifactTests(unittest.TestCase):
         self.assertEqual(first["trades"][0]["net_pnl_quote"], "19.3700100")
         self.assertEqual(first["metrics"]["net_pnl_quote"], "19.3700100")
         self.assertEqual(first["equity_curve"]["points"], 3)
+        self.assertEqual(len(first["result_sha256"]), 64)
 
     def test_material_data_and_run_changes_change_input_digest(self):
         dataset, fills, report = scenario()

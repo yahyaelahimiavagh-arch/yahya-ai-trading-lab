@@ -1,8 +1,8 @@
 # YATL — نقشه مرجع اجرا و وضعیت پروژه
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
-وضعیت جاری: **P0 و P1 RUNTIME ACCEPTED**
-قدم جاری: **P2-009 IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**
+وضعیت جاری: **P0، P1 و P2 RUNTIME ACCEPTED**
+قدم جاری: **P2 FINAL ACCEPTANCE BASELINE READY — P3 NOT STARTED**
 
 ## منشأ و حدود سند
 
@@ -34,7 +34,7 @@ NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only ب�
 |---|---|---|
 | P0 Foundation | محیط، Git، امنیت، Testnet، آموزش و تمرین دستی Paper | **RUNTIME ACCEPTED — 2026-09-09** |
 | P1 Market Data Layer | REST، دانلود تاریخی، WebSocket، نرمال‌سازی، SQLite، حذف تکرار، تشخیص شکاف، گزارش سلامت BTC/ETH | **RUNTIME ACCEPTED — checkpoint `4e77e34`** |
-| P2 Backtesting Engine | آزمون تاریخی تکرارپذیر با کارمزد، لغزش و جلوگیری از استفاده از آینده | در حال اجرا؛ P2-008 checkpoint شد، P2-009 runtime PASS است |
+| P2 Backtesting Engine | آزمون تاریخی تکرارپذیر با کارمزد، لغزش و جلوگیری از استفاده از آینده | **RUNTIME ACCEPTED — 2026-09-10؛ final checkpoint ready** |
 | P3 Strategy Framework | چارچوب مشترک استراتژی و قواعد روشن سیگنال/عدم معامله | شروع نشده |
 | P4 Risk Manager | اندازه موقعیت، محدودیت ریسک و Kill Switch مستقل | شروع نشده |
 | P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | شروع نشده؛ مجوز TRADE فعلی خاموش |
@@ -81,7 +81,8 @@ Gate مخزن محلی به عنوان PASS پذیرفته شد؛ remote خصو�
 این محدودیت منشأ حفظ شده و نسخه حاضر مرجع authoritative ادامه پروژه است.
 
 هیچ endpoint سفارش یا مجوز TRADE اضافه نشد. موتور اجرای خودکار متعلق به P5 است.
-برنامه دقیق و معیارهای پذیرش P1 در `P1-IMPLEMENTATION-PLAN.md` قرار دارد. P2 باز نشده است.
+برنامه و شواهد P1 و P2 در implementation planهای همان فاز و `STATUS.md` ثبت شده‌اند.
+P3 تا checkpoint نهایی P2 باز نمی‌شود.
 
 ## روش ادامه کار
 
@@ -110,3 +111,13 @@ Gate مخزن محلی به عنوان PASS پذیرفته شد؛ remote خصو�
 - P1 در checkpoint نهایی `4e77e34` بسته شد.
 - P2 طبق `P2-IMPLEMENTATION-PLAN.md` باز شد؛ P2-001 قرارداد point-in-time و سیاست
   paper-only را پیاده‌سازی کرد. P3 باز نشده است.
+
+## P2 closure record — 2026-09-10
+
+- P2-001 تا P2-009 به‌ترتیب و با checkpoint تمیز اجرا شدند؛ آخرین checkpoint ورودی
+  ممیزی نهایی `de63601` است.
+- مجموعه نهایی **190 تست** را بدون خطا گذراند. loader و clock روی BTCUSDT و ETHUSDT،
+  شش سناریوی واقعی، هزینه‌ها، حسابداری، معیارها و artifactها در runtime تأیید شدند.
+- ممیزی مستقل ۲ نماد، ۶ سناریو، ۶ artifact و ۸ معامله را بازسازی کرد و digest ورودی
+  و نتیجه را تطبیق داد.
+- P2 در runtime پذیرفته شد. این پذیرش سوددهی استراتژی را ادعا نمی‌کند؛ P3 هنوز باز نشده است.

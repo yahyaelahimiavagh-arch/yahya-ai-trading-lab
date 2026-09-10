@@ -461,7 +461,7 @@ Status: **ACCEPTED — checkpoint `3a3c916`**.
 
 ## P2-009 evidence — 2026-09-10
 
-Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
+Status: **ACCEPTED — checkpoint `de63601`**.
 
 - P2-008 checkpoint: `3a3c916`; clean entry tree.
 - Added fixed no-trade, one-round-trip and three-trade schedules with no strategy signal.
@@ -476,3 +476,25 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
 - Explicit fee/slippage drag was positive for every trading scenario: `2.36814652595` and
   `7.0942196582` BTC; `0.749858701` and `2.2466721285` ETH.
 - No network, credential or exchange order was used. P2-010 is next; P3 remains unopened.
+
+## P2-010 final acceptance evidence — 2026-09-10
+
+Status: **P2 RUNTIME ACCEPTED — FINAL BASELINE CHECKPOINT READY**.
+
+- P2-009 checkpoint: `de63601`; clean entry tree.
+- Added an independent artifact audit that reconstructs every fill with the fixed fee/slippage
+  policy, reconciles trade and portfolio totals, validates metric/equity summaries and
+  recalculates both input and result SHA-256 digests.
+- Final audit: **PASS** for 2 symbols, 6 real-data scenarios, 6 canonical artifacts and
+  8 reconstructed completed trades. The accepted P1 manifest and P2 source safety scan passed.
+- Artifact schema 2 / engine P2.2 adds a result digest and hardens Decimal output to plain
+  exact strings; scientific notation is no longer emitted. Corrupt configuration, trade
+  arithmetic, metrics, equity, JSON or digests fail closed.
+- Focused P2-008/P2-009/P2-010 integration suites: **23 passed, 0 failed**.
+- Complete repository suite: **190 passed, 0 failed**; lock and compile checks passed.
+- All P2 runtime commands passed: point-in-time contract, accepted-data load and 24-event
+  BTC/ETH clocks, conservative fills, costs, portfolio, metrics, artifact, scenario matrix
+  and final audit.
+- Safety remains: PAPER ONLY; `LIVE_MASTER_LOCK=OFF`; Spot long-only; no Futures, leverage,
+  withdrawal, credential use, order endpoint or AI direct execution. P3 remains unopened.
+- No blocker remains for the final P2 acceptance checkpoint.

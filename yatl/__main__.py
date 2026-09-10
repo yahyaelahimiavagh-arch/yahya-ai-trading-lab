@@ -18,6 +18,7 @@ from .backtest import (AcceptedBacktestDataset, ArtifactError, BacktestClock,
                        EquityPoint, PaperIntent, apply_costs, artifact_json,
                        build_run_manifest, calculate_metrics, write_run_manifest,
                        ScenarioError, run_real_scenario_matrix,
+                       P2AuditError, audit_p2,
                        latest_spec_from_manifest, load_accepted_dataset)
 from .data import (BinancePublicRestClient, Candle, CandleStore,
                    ClosedCandleConflict, DATA_SOURCE, HistoricalDownloadError,
@@ -238,6 +239,11 @@ def main():
     scenarios.add_argument("--database", default="data/p1/market.sqlite3")
     scenarios.add_argument("--manifest", default="manifests/p1-market-data.json")
     scenarios.add_argument("--hours", type=int, default=24)
+    p2_audit = commands.add_parser("p2-audit",
+                                   help="Run the complete local P2 acceptance audit")
+    p2_audit.add_argument("--database", default="data/p1/market.sqlite3")
+    p2_audit.add_argument("--manifest", default="manifests/p1-market-data.json")
+    p2_audit.add_argument("--hours", type=int, default=24)
     loader = commands.add_parser("backtest-load-check",
                                  help="Load accepted P1 data read-only for P2")
     loader.add_argument("--database", default="data/p1/market.sqlite3")
@@ -376,6 +382,12 @@ def main():
                 print(f"{result.symbol} {result.name}: trades={result.report.trade_count} "
                       f"net_pnl={result.report.net_pnl_quote} cost_drag={drag}")
             print("PAPER ONLY | Public-real data | No credentials | No exchange order")
+        elif args.command == "p2-audit":
+            result = audit_p2(args.database, args.manifest, hours=args.hours)
+            print(f"OK: P2 final acceptance audit; symbols={result.symbols} "
+                  f"scenarios={result.scenarios} artifacts={result.artifacts} "
+                  f"trades={result.trades}")
+            print("PAPER ONLY | LIVE_MASTER_LOCK=OFF | No credentials | No exchange order")
         elif args.command == "backtest-load-check":
             spec = latest_spec_from_manifest(args.manifest, args.symbol, hours=args.hours)
             loaded = load_accepted_dataset(args.database, args.manifest, spec)
@@ -454,7 +466,7 @@ def main():
     except (AccountError, AuditError, BacktestClockError, BacktestConfigError,
             BacktestContractError,
             ArtifactError, BacktestLoadError, CostModelError, FillModelError,
-            MetricsError, PortfolioError, ScenarioError,
+            MetricsError, P2AuditError, PortfolioError, ScenarioError,
             HistoricalDownloadError, MarketDataError, NormalizationError,
             DatasetError, HealthError, PaperWorkflowError, PublicRestError, QualityError,
             StorageError, StreamError,

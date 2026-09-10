@@ -1,6 +1,6 @@
 # P2 — Backtesting Engine implementation plan
 
-Status: **IN PROGRESS — P2-009 IMPLEMENTED AND RUNTIME VERIFIED, CHECKPOINT PENDING**
+Status: **RUNTIME ACCEPTED — FINAL BASELINE CHECKPOINT READY**
 Entry baseline: P1 accepted in commit `4e77e34` with a clean working tree.
 Exit condition: deterministic BTCUSDT/ETHUSDT Spot simulations pass unit, invariant,
 reproducibility and real-dataset runtime gates with explicit fees and slippage.
@@ -123,19 +123,23 @@ Run deterministic no-strategy scenarios on accepted BTCUSDT and ETHUSDT datasets
 single round trip and controlled multi-trade sequences. Confirm costs reduce results and the
 engine never sees future data.
 
-Acceptance: **PASS in working tree, 2026-09-10.** The 24-hour accepted BTCUSDT and ETHUSDT
+Acceptance: **PASS, checkpoint `de63601`, 2026-09-10.** The 24-hour accepted BTCUSDT and ETHUSDT
 datasets each passed no-trade, single-round-trip and controlled three-trade scenarios. Fixed
 schedules use only the eligible current open for fills; decisions retain the point-in-time
 snapshot gate. Every run replays byte-identically, and explicit costs strictly reduce every
-trading result relative to its zero-cost control. Checkpoint remains required before P2-010.
+trading result relative to its zero-cost control. The clean checkpoint was accepted before
+P2-010 started.
 
 ### P2-010 — P2 final audit and checkpoint
 
 Run the complete suite, accepted-data simulations, reproducibility replay, arithmetic invariant
 audit, safety scan and artifact validation. Record exact evidence in `docs/STATUS.md`.
 
-Acceptance: mark P2 runtime accepted only after every gate passes, commit the final baseline
-and leave Git clean. P3 remains unopened until then.
+Acceptance: **PASS, 2026-09-10; final baseline checkpoint ready.** The independent audit
+reconstructs six canonical artifacts and eight trades across BTCUSDT/ETHUSDT, recalculates
+input and result digests, verifies the P1 manifest and fixed safety policy, and scans P2 source
+for execution endpoints. The complete suite passed 190/190; all component and real-data
+runtime checks passed. P3 remains unopened until this baseline is committed cleanly.
 
 ## Intended module boundaries
 
