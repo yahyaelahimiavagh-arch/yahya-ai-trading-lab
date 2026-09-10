@@ -1,6 +1,6 @@
 # P2 — Backtesting Engine implementation plan
 
-Status: **IN PROGRESS — P2-007 IMPLEMENTED AND RUNTIME VERIFIED, CHECKPOINT PENDING**
+Status: **IN PROGRESS — P2-008 IMPLEMENTED AND RUNTIME VERIFIED, CHECKPOINT PENDING**
 Entry baseline: P1 accepted in commit `4e77e34` with a clean working tree.
 Exit condition: deterministic BTCUSDT/ETHUSDT Spot simulations pass unit, invariant,
 reproducibility and real-dataset runtime gates with explicit fees and slippage.
@@ -95,20 +95,27 @@ The clean checkpoint was accepted before P2-007 started.
 Produce return, trade count, win rate, gross/net PnL, total costs, maximum drawdown and
 risk-adjusted descriptive metrics with explicit undefined-sample handling.
 
-Acceptance: **PASS in working tree, 2026-09-10.** The contract uses exact Decimal
+Acceptance: **PASS, checkpoint `4dbb26e`, 2026-09-10.** The contract uses exact Decimal
 arithmetic and requires a clean starting point and flat final portfolio. It reports total
 return, trade outcomes, gross/net PnL, costs, drawdown and non-annualized descriptive
 mean/volatility/downside ratios. Insufficient samples and zero denominators are explicitly
 undefined. Tests cover hand-computed curves, no-trade/one-trade cases and lifecycle failures.
 The local scenario reproduced gross PnL `20`, net PnL `19.37001` and maximum drawdown
-`0.0006`. Checkpoint remains required before P2-008.
+`0.0006`. The clean checkpoint was accepted before P2-008 started.
 
 ### P2-008 — Reproducible artifacts
 
 Write an atomic run manifest containing data identity, configuration, seed, engine version,
 input digest, trades, equity curve summary and metrics. Exclude local paths and secrets.
 
-Acceptance: byte-identical results for identical inputs and changed digest for material inputs.
+Acceptance: **PASS in working tree, 2026-09-10.** Canonical sorted JSON records the
+fixed safety configuration, accepted-data identity and hashes, engine version, input digest,
+reconciled completed trades, equity summary and metrics. It excludes local paths, credentials
+and run-time wall-clock fields and publishes through an atomic replace. Tests require
+byte-identical results for identical inputs and changed digests for material inputs.
+The local atomic write/read check reproduced input SHA-256
+`f97ad5f66a8ac0ea1d59ee4a41e1238eb186008d961b612097069df4a21c62e4`.
+Checkpoint remains required before P2-009.
 
 ### P2-009 — Real-data scripted runtime scenarios
 

@@ -18,6 +18,8 @@ from .costs import CostedFill, CostModelError, apply_costs
 from .portfolio import PortfolioError, PortfolioLedger, PortfolioSnapshot
 from .metrics import (EquityPoint, MetricsError, PerformanceReport,
                       calculate_metrics)
+from .artifacts import (ArtifactError, build_run_manifest, artifact_json,
+                        write_run_manifest)
 
 __all__ = [
     "BacktestConfigError",
@@ -27,6 +29,7 @@ __all__ = [
     "BacktestSpec",
     "BacktestLoadError",
     "AcceptedBacktestDataset",
+    "ArtifactError",
     "CONTEXT_INTERVAL",
     "CostedFill",
     "CostModelError",
@@ -50,5 +53,8 @@ __all__ = [
     "latest_spec_from_manifest",
     "load_accepted_dataset",
     "apply_costs",
+    "artifact_json",
+    "build_run_manifest",
     "calculate_metrics",
+    "write_run_manifest",
 ]

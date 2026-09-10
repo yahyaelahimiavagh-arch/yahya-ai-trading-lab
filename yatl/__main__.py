@@ -9,12 +9,14 @@ from uuid import uuid4
 from .market_data import HOSTS, INTERVALS, MarketDataError, candles, ping, save_csv
 from .account import AccountError, read_account
 from .paper_workflow import PaperWorkflowError, load_and_validate
-from .backtest import (BacktestClock, BacktestClockError, BacktestConfigError,
+from .backtest import (AcceptedBacktestDataset, ArtifactError, BacktestClock,
+                       BacktestClockError, BacktestConfigError,
                        BacktestContractError, BacktestLoadError, BacktestSpec,
                        DecisionEvent, EXECUTION_PRICE_POLICY, FillModelError, FillReason,
                        FillReference, CostModelError, IntentAction, MarketSnapshot,
                        MetricsError, PaperFillEngine, PortfolioError, PortfolioLedger,
-                       EquityPoint, PaperIntent, apply_costs, calculate_metrics,
+                       EquityPoint, PaperIntent, apply_costs, artifact_json,
+                       build_run_manifest, calculate_metrics, write_run_manifest,
                        latest_spec_from_manifest, load_accepted_dataset)
 from .data import (BinancePublicRestClient, Candle, CandleStore,
                    ClosedCandleConflict, DATA_SOURCE, HistoricalDownloadError,
@@ -144,7 +146,7 @@ def _backtest_portfolio_runtime_check():
     return view
 
 
-def _backtest_metrics_runtime_check():
+def _backtest_completed_run():
     start = 1_699_999_200_000
     spec = BacktestSpec("BTCUSDT", start, start + 3 * 3_600_000,
                         initial_cash="1000")
@@ -153,17 +155,55 @@ def _backtest_metrics_runtime_check():
     entry = FillReference(IntentAction.ENTER_LONG, spec.symbol, start + 3_600_000,
                           start + 3_600_000, "2", "100",
                           FillReason.NEXT_PRIMARY_OPEN)
-    ledger.apply(apply_costs(entry, spec))
+    entry_fill = apply_costs(entry, spec)
+    ledger.apply(entry_fill)
     points.append(EquityPoint(start + 3_600_000, ledger.snapshot("100")))
     exit_fill = FillReference(IntentAction.EXIT_LONG, spec.symbol,
                               start + 2 * 3_600_000, start + 2 * 3_600_000,
                               "2", "110", FillReason.SCRIPTED_EXIT)
-    ledger.apply(apply_costs(exit_fill, spec))
+    costed_exit = apply_costs(exit_fill, spec)
+    ledger.apply(costed_exit)
     points.append(EquityPoint(start + 2 * 3_600_000, ledger.snapshot("110")))
-    report = calculate_metrics(tuple(points))
+    return spec, (entry_fill, costed_exit), calculate_metrics(tuple(points))
+
+
+def _backtest_metrics_runtime_check():
+    _, _, report = _backtest_completed_run()
     if report.gross_pnl_quote != Decimal("20") or report.trade_count != 1:
         raise MetricsError("Hand-computed performance scenario failed")
     return report
+
+
+def _backtest_artifact_runtime_check():
+    spec, fills, report = _backtest_completed_run()
+
+    def closed(interval, opened):
+        duration = INTERVAL_MILLISECONDS[interval]
+        return Candle(DATA_SOURCE, spec.symbol, interval, opened,
+                      opened + duration - 1, "100", "110", "90", "100",
+                      "10", "1000", 10, True)
+
+    four_hours = INTERVAL_MILLISECONDS["4h"]
+    dataset = AcceptedBacktestDataset(
+        spec, spec.end_time_ms + 1,
+        (closed("1h", spec.start_time_ms - 3_600_000),),
+        (closed("15m", spec.start_time_ms - 900_000),),
+        (closed("4h", (spec.start_time_ms // four_hours - 1) * four_hours),),
+    )
+    manifest = build_run_manifest(dataset, fills, report)
+    encoded = artifact_json(manifest)
+    Path("data").mkdir(exist_ok=True)
+    target = Path("data") / f"p2-artifact-check-{uuid4().hex}.json"
+    try:
+        write_run_manifest(manifest, target)
+        if target.read_text(encoding="utf-8") != encoded:
+            raise ArtifactError("Atomic artifact bytes changed after write")
+    finally:
+        try:
+            target.unlink(missing_ok=True)
+        except OSError:
+            raise ArtifactError("Cannot remove temporary artifact check") from None
+    return manifest
 
 
 def main():
@@ -190,6 +230,8 @@ def main():
                         help="Verify the exact P2 portfolio ledger")
     commands.add_parser("backtest-metrics-check",
                         help="Verify deterministic P2 performance metrics")
+    commands.add_parser("backtest-artifact-check",
+                        help="Verify canonical atomic P2 run artifacts")
     loader = commands.add_parser("backtest-load-check",
                                  help="Load accepted P1 data read-only for P2")
     loader.add_argument("--database", default="data/p1/market.sqlite3")
@@ -314,6 +356,11 @@ def main():
                   f"gross_pnl={report.gross_pnl_quote} net_pnl={report.net_pnl_quote} "
                   f"max_drawdown={report.maximum_drawdown}")
             print("PAPER ONLY | Decimal descriptive metrics | No credentials | No exchange order")
+        elif args.command == "backtest-artifact-check":
+            manifest = _backtest_artifact_runtime_check()
+            print(f"OK: canonical atomic run artifact; input_sha256={manifest['input_sha256']} "
+                  f"trades={len(manifest['trades'])}")
+            print("PAPER ONLY | No paths or credentials | No exchange order")
         elif args.command == "backtest-load-check":
             spec = latest_spec_from_manifest(args.manifest, args.symbol, hours=args.hours)
             loaded = load_accepted_dataset(args.database, args.manifest, spec)
@@ -391,7 +438,8 @@ def main():
             print("The latest candle may still be open; timestamps are Unix milliseconds (UTC).")
     except (AccountError, AuditError, BacktestClockError, BacktestConfigError,
             BacktestContractError,
-            BacktestLoadError, CostModelError, FillModelError, MetricsError, PortfolioError,
+            ArtifactError, BacktestLoadError, CostModelError, FillModelError,
+            MetricsError, PortfolioError,
             HistoricalDownloadError, MarketDataError, NormalizationError,
             DatasetError, HealthError, PaperWorkflowError, PublicRestError, QualityError,
             StorageError, StreamError,

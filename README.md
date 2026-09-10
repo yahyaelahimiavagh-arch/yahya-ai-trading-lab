@@ -112,6 +112,14 @@ P2-007 معیارهای قطعی بازده، تعداد و نرخ برد، سو
 uv run --locked python -m yatl backtest-metrics-check
 ```
 
+P2-008 یک manifest قطعی JSON می‌سازد که هویت داده، تنظیمات، seed، نسخه موتور،
+digest ورودی، معاملات، خلاصه منحنی سرمایه و معیارها را نگه می‌دارد. خروجی به‌صورت
+اتمی نوشته می‌شود و مسیر محلی، credential و زمان اجرای سیستم در آن جایی ندارد.
+
+```powershell
+uv run --locked python -m yatl backtest-artifact-check
+```
+
 ## تمرین دستی و قابل‌تکرار Paper
 
 فایل `fixtures/p0-paper-workflows.json` دو سناریوی آموزشی ثابت برای BTCUSDT و

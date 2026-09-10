@@ -428,7 +428,7 @@ Status: **ACCEPTED — checkpoint `cd29f65`**.
 
 ## P2-007 evidence — 2026-09-10
 
-Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
+Status: **ACCEPTED — checkpoint `4dbb26e`**.
 
 - P2-006 checkpoint: `cd29f65`; clean entry tree.
 - Added exact Decimal return, trade outcome, gross/net PnL, cost and drawdown metrics.
@@ -441,3 +441,20 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
 - `backtest-metrics-check`: PASS; the hand-computed profitable round trip reported gross PnL
   `20.0000000`, net PnL `19.3700100`, one winning trade and maximum drawdown `0.0006000`.
 - No network, credential or exchange order is used. P2-008 and P3 remain unopened.
+
+## P2-008 evidence — 2026-09-10
+
+Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
+
+- P2-007 checkpoint: `4dbb26e`; clean entry tree.
+- Added canonical sorted JSON with fixed schema/engine identity, safety configuration,
+  accepted-data hashes, input digest, reconciled trades, equity summary and metrics.
+- Identical inputs produce byte-identical output; material candle or fill changes alter the
+  SHA-256 input identity. Atomic replacement prevents publication of partial output.
+- Local paths, credentials and run-time wall-clock fields are excluded and rejected.
+- Focused artifact suite: **8 passed, 0 failed**.
+- Full suite after implementation: **175 passed, 0 failed**; lock and compile checks passed.
+- `backtest-artifact-check`: PASS; atomic write/read reproduced input SHA-256
+  `f97ad5f66a8ac0ea1d59ee4a41e1238eb186008d961b612097069df4a21c62e4` with one
+  reconciled trade and left no runtime artifact behind.
+- No network, credential or exchange order is used. P2-009 and P3 remain unopened.
