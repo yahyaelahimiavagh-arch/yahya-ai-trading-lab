@@ -10,8 +10,9 @@ from .market_data import HOSTS, INTERVALS, MarketDataError, candles, ping, save_
 from .account import AccountError, read_account
 from .paper_workflow import PaperWorkflowError, load_and_validate
 from .strategy import (DecisionReason, LongSetup, StrategyAction,
-                       StrategyContext, StrategyContractError,
-                       StrategyDecision, StrategyIdentity)
+                       StrategyContext, StrategyContractError, StrategyDecision,
+                       StrategyIdentity, FeatureError, atr, ema, rolling_high,
+                       rolling_low, rsi, simple_return, sma)
 from .backtest import (AcceptedBacktestDataset, ArtifactError, BacktestClock,
                        BacktestClockError, BacktestConfigError,
                        BacktestContractError, BacktestLoadError, BacktestSpec,
@@ -224,6 +225,30 @@ def _strategy_contract_runtime_check():
     return no_trade, entry
 
 
+def _strategy_feature_runtime_check():
+    start = 1_699_977_600_000
+    duration = INTERVAL_MILLISECONDS["1h"]
+    values = []
+    for index, close in enumerate(("10", "11", "12", "13")):
+        opened = start + index * duration
+        price = Decimal(close)
+        values.append(Candle(
+            DATA_SOURCE, "BTCUSDT", "1h", opened, opened + duration - 1,
+            close, format(price + 1, "f"), format(price - 1, "f"), close,
+            "0", "0", 0, True,
+        ))
+    candles = tuple(values)
+    decision = start + 4 * duration
+    results = (simple_return(candles, 2, decision),
+               rolling_high(candles, 3, decision),
+               rolling_low(candles, 3, decision),
+               sma(candles, 3, decision), ema(candles, 3, decision),
+               atr(candles, 3, decision), rsi(candles, 3, decision))
+    if not all(item.available for item in results):
+        raise FeatureError("Strategy feature runtime vector is unavailable")
+    return results
+
+
 def main():
     parser = argparse.ArgumentParser(description="YATL paper-only data and Testnet account tools")
     parser.add_argument("--environment", choices=HOSTS, default="testnet")
@@ -262,6 +287,8 @@ def main():
     p2_audit.add_argument("--hours", type=int, default=24)
     commands.add_parser("strategy-contract-check",
                         help="Verify the P3 research-only signal boundary")
+    commands.add_parser("strategy-feature-check",
+                        help="Verify point-in-time Decimal P3 features")
     loader = commands.add_parser("backtest-load-check",
                                  help="Load accepted P1 data read-only for P2")
     loader.add_argument("--database", default="data/p1/market.sqlite3")
@@ -411,6 +438,13 @@ def main():
             print(f"OK: P3 signal contract; actions={no_trade.action.value}/"
                   f"{entry.action.value} context_sha256={entry.context_sha256}")
             print("PAPER ONLY | No sizing | No credentials | No exchange order")
+        elif args.command == "strategy-feature-check":
+            results = _strategy_feature_runtime_check()
+            by_name = {item.name: item for item in results}
+            print(f"OK: P3 point-in-time Decimal features; count={len(results)} "
+                  f"SMA={by_name['SMA'].value} EMA={by_name['EMA'].value} "
+                  f"ATR={by_name['ATR'].value} RSI={by_name['RSI'].value}")
+            print("PAPER ONLY | Closed candles | No credentials | No exchange order")
         elif args.command == "backtest-load-check":
             spec = latest_spec_from_manifest(args.manifest, args.symbol, hours=args.hours)
             loaded = load_accepted_dataset(args.database, args.manifest, spec)
@@ -491,7 +525,8 @@ def main():
             ArtifactError, BacktestLoadError, CostModelError, FillModelError,
             MetricsError, P2AuditError, PortfolioError, ScenarioError,
             HistoricalDownloadError, MarketDataError, NormalizationError,
-            DatasetError, HealthError, PaperWorkflowError, PublicRestError, QualityError,
+            DatasetError, FeatureError, HealthError, PaperWorkflowError,
+            PublicRestError, QualityError,
             StorageError, StrategyContractError, StreamError,
             ValueError, OSError) as exc:
         # OSError messages can expose local paths; keep their display generic.

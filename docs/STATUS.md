@@ -515,7 +515,7 @@ Status: **PLANNED — IMPLEMENTATION NOT STARTED**.
 
 ## P3-001 evidence — 2026-09-10
 
-Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
+Status: **ACCEPTED — checkpoint `9d83337`**.
 
 - Planning checkpoint: `84fadcc`; clean entry tree.
 - Added immutable strategy identity, point-in-time context, long setup and decision contracts.
@@ -528,3 +528,21 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
 - `strategy-contract-check`: PASS with deterministic context SHA-256
   `a0a540e025ab857ba626bdd4d4dc3b28e1dcbfd05807c755d57cf0a8441a6d9f`.
 - No network, credential or exchange order was used. P3-002 is next; P4 remains unopened.
+
+## P3-002 evidence — 2026-09-10
+
+Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
+
+- P3-001 checkpoint: `9d83337`; clean entry tree.
+- Added point-in-time simple return, rolling high/low, SMA, EMA, Wilder ATR and Wilder RSI.
+  All arithmetic uses a 256-digit local Decimal context; binary floating point is rejected.
+- Every function requires an explicit decision time, declares warm-up and returns a typed
+  unavailable result for insufficient history. Visible gaps, open candles and mixed identity
+  fail closed.
+- Future candle content and state are ignored at an earlier decision boundary; prefix-invariance
+  tests cover all seven features. Zero volume and 40-digit price inputs remain valid.
+- Focused feature suite: **9 passed, 0 failed**.
+- Complete repository suite: **208 passed, 0 failed**; lock, compile and source safety scans passed.
+- `strategy-feature-check`: PASS; seven features reproduced hand-computed SMA `12`, EMA `12.0`,
+  ATR `2` and RSI `100`.
+- No network, credential, sizing or exchange order was used. P3-003 is next; P4 remains unopened.

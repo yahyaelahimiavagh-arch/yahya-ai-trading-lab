@@ -1,6 +1,6 @@
 # P3 — Strategy Framework implementation plan
 
-Status: **IN PROGRESS — P3-001 IMPLEMENTED AND RUNTIME VERIFIED, CHECKPOINT PENDING**
+Status: **IN PROGRESS — P3-002 IMPLEMENTED AND RUNTIME VERIFIED, CHECKPOINT PENDING**
 Entry baseline: P2 accepted in commit `9cbc197` with a clean working tree.
 Exit condition: deterministic, versioned BTCUSDT/ETHUSDT Spot strategy candidates produce
 point-in-time signals through the accepted P2 engine, pass anti-lookahead and reproducibility
@@ -32,20 +32,23 @@ Define immutable strategy context, action, reason, setup and decision records. E
 time, level, version and point-in-time identity. Ensure quantity, broker, credential and order
 fields cannot enter the strategy interface.
 
-Acceptance: **PASS in working tree, 2026-09-10.** Immutable identity, context, setup and decision
+Acceptance: **PASS, checkpoint `9d83337`, 2026-09-10.** Immutable identity, context, setup and decision
 records enforce semantic versions, exact long levels and the fixed paper/Spot/long-only safety
 policy. Action/reason/setup mismatches and policy tampering fail closed. The context SHA-256 is
 byte-stable and changes with visible candle material. Tests and source scan prove there is no
-sizing, credential, broker or execution endpoint. Checkpoint remains required before P3-002.
+sizing, credential, broker or execution endpoint. The clean checkpoint was accepted before
+P3-002 started.
 
 ### P3-002 — Point-in-time feature primitives
 
 Implement exact returns, rolling high/low, SMA, EMA, ATR and RSI over closed canonical candles.
 Each function declares warm-up length and returns an explicit unavailable result until ready.
 
-Acceptance: hand-computed vectors, flat/rising/falling series, gaps, zero-volume inputs, extreme
-Decimal precision and prefix-invariance tests. Appending future candles cannot change an earlier
-feature value.
+Acceptance: **PASS in working tree, 2026-09-10.** Hand-computed vectors cover return, rolling
+high/low, SMA, EMA seeded by SMA, Wilder ATR and Wilder RSI. Warm-up is explicit; flat/rising/
+falling series, gaps, open candles, zero volume and extreme Decimal precision are tested.
+Appending or mutating a future candle cannot change an earlier feature result. Checkpoint
+remains required before P3-003.
 
 ### P3-003 — Higher-timeframe regime classifier
 

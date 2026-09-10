@@ -52,6 +52,15 @@ P3-001 قرارداد research-only سیگنال را اضافه می‌کند. 
 uv run --locked python -m yatl strategy-contract-check
 ```
 
+P3-002 هفت feature دقیق را روی candleهای بسته و قبل از زمان تصمیم محاسبه می‌کند:
+بازده ساده، rolling high/low، SMA، EMA و Wilder ATR/RSI. EMA با SMA اولیه و
+`2/(period+1)` آغاز می‌شود؛ ATR و RSI از Wilder smoothing استفاده می‌کنند. warm-up
+ناکافی صریحاً unavailable است و candle آینده حتی اگر تغییر کند روی مقدار گذشته اثر ندارد.
+
+```powershell
+uv run --locked python -m yatl strategy-feature-check
+```
+
 وضعیت تست‌های همین تحویل در `docs/STATUS.md` ثبت شده است.
 
 بررسی محلی قرارداد P2-001:
