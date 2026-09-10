@@ -2,6 +2,7 @@ import argparse
 import sys
 from dataclasses import replace
 from datetime import datetime, timezone
+from decimal import Decimal
 from pathlib import Path
 from uuid import uuid4
 
@@ -11,7 +12,8 @@ from .paper_workflow import PaperWorkflowError, load_and_validate
 from .backtest import (BacktestClock, BacktestClockError, BacktestConfigError,
                        BacktestContractError, BacktestLoadError, BacktestSpec,
                        DecisionEvent, EXECUTION_PRICE_POLICY, FillModelError,
-                       IntentAction, MarketSnapshot, PaperFillEngine, PaperIntent,
+                       CostModelError, IntentAction, MarketSnapshot, PaperFillEngine,
+                       PaperIntent, apply_costs,
                        latest_spec_from_manifest, load_accepted_dataset)
 from .data import (BinancePublicRestClient, Candle, CandleStore,
                    ClosedCandleConflict, DATA_SOURCE, HistoricalDownloadError,
@@ -113,6 +115,16 @@ def _backtest_fill_runtime_check():
     return fills
 
 
+def _backtest_cost_runtime_check():
+    references = _backtest_fill_runtime_check()
+    start = references[0].decision_time_ms
+    spec = BacktestSpec(references[0].symbol, start, start + 3_600_000)
+    fills = tuple(apply_costs(reference, spec) for reference in references)
+    fee = sum((item.fee_quote for item in fills), start=Decimal(0))
+    slippage = sum((item.slippage_quote for item in fills), start=Decimal(0))
+    return fills, fee, slippage
+
+
 def main():
     parser = argparse.ArgumentParser(description="YATL paper-only data and Testnet account tools")
     parser.add_argument("--environment", choices=HOSTS, default="testnet")
@@ -131,6 +143,8 @@ def main():
                         help="Verify the local point-in-time P2 contract")
     commands.add_parser("backtest-fill-check",
                         help="Verify the local conservative P2 fill lifecycle")
+    commands.add_parser("backtest-cost-check",
+                        help="Verify exact Decimal P2 fee and slippage accounting")
     loader = commands.add_parser("backtest-load-check",
                                  help="Load accepted P1 data read-only for P2")
     loader.add_argument("--database", default="data/p1/market.sqlite3")
@@ -238,6 +252,12 @@ def main():
             print(f"OK: paper fill-reference lifecycle; references={len(fills)} "
                   f"exit_reason={fills[-1].reason.value} costs_pending=P2-005")
             print("PAPER ONLY | Local simulation | No credentials | No exchange order")
+        elif args.command == "backtest-cost-check":
+            fills, fee, slippage = _backtest_cost_runtime_check()
+            cash = sum((item.cash_delta for item in fills), start=Decimal(0))
+            print(f"OK: exact Decimal costs; fills={len(fills)} fee_quote={fee} "
+                  f"slippage_quote={slippage} net_cash_delta={cash}")
+            print("PAPER ONLY | Explicit adverse costs | No credentials | No exchange order")
         elif args.command == "backtest-load-check":
             spec = latest_spec_from_manifest(args.manifest, args.symbol, hours=args.hours)
             loaded = load_accepted_dataset(args.database, args.manifest, spec)
@@ -315,7 +335,7 @@ def main():
             print("The latest candle may still be open; timestamps are Unix milliseconds (UTC).")
     except (AccountError, AuditError, BacktestClockError, BacktestConfigError,
             BacktestContractError,
-            BacktestLoadError, FillModelError,
+            BacktestLoadError, CostModelError, FillModelError,
             HistoricalDownloadError, MarketDataError, NormalizationError,
             DatasetError, HealthError, PaperWorkflowError, PublicRestError, QualityError,
             StorageError, StreamError,

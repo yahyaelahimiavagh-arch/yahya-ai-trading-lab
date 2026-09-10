@@ -390,3 +390,23 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
   `AMBIGUOUS_STOP_PRIORITY` and explicitly reported `costs_pending=P2-005`.
 - No network, credential, account transport or exchange order was used.
 - P2-005 has not started. P2 as a whole is not accepted; P3 remains unopened.
+
+## P2-005 evidence — 2026-09-09
+
+Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
+
+- P2-004 checkpoint: `2d8940b` with a clean working tree.
+- Added self-validating CostedFill records. Entry slippage raises the reference price; exit
+  slippage lowers it. Quote fees apply to the slipped gross value on every fill.
+- Exact cash and asset deltas, fee quote and adverse slippage quote use Decimal inside a
+  256-digit local context. Binary floating-point values are rejected.
+- Hand-calculated quantity-2, price-100 vectors at 10 bps fee and 5 bps slippage pass:
+  entry cash `-200.30010`, exit cash `199.70010`, round-trip cash `-0.60000`.
+- Focused cost suite: **7 passed, 0 failed**. It covers zero/1,000-bps bounds, cost
+  monotonicity, 40-digit price × 40-digit quantity without rounding, symbol mismatch and
+  post-construction arithmetic tampering.
+- Full suite after implementation: **152 passed, 0 failed**; lock and compile checks passed.
+- `python -m yatl backtest-cost-check`: PASS; two references produced fee `0.1950025`,
+  adverse slippage `0.0975` and net cash delta `-5.2925025`.
+- No network, credential, account transport or exchange order was used.
+- P2-006 has not started. P2 as a whole is not accepted; P3 remains unopened.

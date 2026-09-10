@@ -14,6 +14,7 @@ from .loader import (AcceptedBacktestDataset, BacktestLoadError,
 from .clock import BacktestClock, BacktestClockError, DecisionEvent
 from .fills import (FillModelError, FillReason, FillReference, IntentAction,
                     PaperFillEngine, PaperIntent)
+from .costs import CostedFill, CostModelError, apply_costs
 
 __all__ = [
     "BacktestConfigError",
@@ -24,6 +25,8 @@ __all__ = [
     "BacktestLoadError",
     "AcceptedBacktestDataset",
     "CONTEXT_INTERVAL",
+    "CostedFill",
+    "CostModelError",
     "DecisionEvent",
     "EXECUTION_PRICE_POLICY",
     "FillModelError",
@@ -37,4 +40,5 @@ __all__ = [
     "REGIME_INTERVAL",
     "latest_spec_from_manifest",
     "load_accepted_dataset",
+    "apply_costs",
 ]

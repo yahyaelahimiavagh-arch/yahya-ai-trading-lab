@@ -86,6 +86,17 @@ uv run --locked python -m yatl backtest-fill-check
 خروجی P2-004 فقط `FillReference` است. fee و slippage هنوز روی آن اعمال نشده‌اند و
 در P2-005 پیش از ورود به حسابداری اجباری خواهند شد.
 
+P2-005 هر FillReference را با دقت داخلی ۲۵۶رقمی به CostedFill تبدیل می‌کند. slippage
+برای خرید قیمت را افزایش و برای فروش کاهش می‌دهد؛ fee روی ارزش واقعی fill محاسبه
+می‌شود. حسابداری پول و دارایی از float استفاده نمی‌کند.
+
+```powershell
+uv run --locked python -m yatl backtest-cost-check
+```
+
+این بررسی fee، slippage و اثر خالص نقدی یک رفت‌وبرگشت محافظه‌کارانه را با Decimal
+گزارش می‌کند. افزایش هزینه در تست‌ها هرگز نتیجه نقدی را بهتر نمی‌کند.
+
 ## تمرین دستی و قابل‌تکرار Paper
 
 فایل `fixtures/p0-paper-workflows.json` دو سناریوی آموزشی ثابت برای BTCUSDT و
