@@ -498,3 +498,17 @@ Status: **P2 RUNTIME ACCEPTED — FINAL BASELINE CHECKPOINT READY**.
 - Safety remains: PAPER ONLY; `LIVE_MASTER_LOCK=OFF`; Spot long-only; no Futures, leverage,
   withdrawal, credential use, order endpoint or AI direct execution. P3 remains unopened.
 - No blocker remains for the final P2 acceptance checkpoint.
+
+## P3 planning baseline — 2026-09-10
+
+Status: **PLANNED — IMPLEMENTATION NOT STARTED**.
+
+- P2 final acceptance checkpoint: `9cbc197`; clean entry tree.
+- Added `P3-IMPLEMENTATION-PLAN.md` with ten ordered delivery gates covering signal contracts,
+  Decimal features, 4h regime, frozen registry, two transparent candidates, P2 adapter,
+  anti-overfitting evaluation, accepted-data runs and final audit.
+- Strategy output has no quantity, credential, broker or order interface. P4 owns sizing and
+  risk controls; P5 owns any future paper/Testnet execution work.
+- Framework acceptance is separate from performance evidence. The current 30-day dataset cannot
+  alone justify a durable-edge claim and may only produce `INSUFFICIENT_EVIDENCE`.
+- No P3 production code or strategy evaluation was started in this planning checkpoint.

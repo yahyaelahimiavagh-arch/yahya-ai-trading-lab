@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0، P1 و P2 RUNTIME ACCEPTED**
-قدم جاری: **P2 FINAL ACCEPTANCE BASELINE READY — P3 NOT STARTED**
+قدم جاری: **P3 PLANNED — IMPLEMENTATION NOT STARTED**
 
 ## منشأ و حدود سند
 
@@ -34,8 +34,8 @@ NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only ب�
 |---|---|---|
 | P0 Foundation | محیط، Git، امنیت، Testnet، آموزش و تمرین دستی Paper | **RUNTIME ACCEPTED — 2026-09-09** |
 | P1 Market Data Layer | REST، دانلود تاریخی، WebSocket، نرمال‌سازی، SQLite، حذف تکرار، تشخیص شکاف، گزارش سلامت BTC/ETH | **RUNTIME ACCEPTED — checkpoint `4e77e34`** |
-| P2 Backtesting Engine | آزمون تاریخی تکرارپذیر با کارمزد، لغزش و جلوگیری از استفاده از آینده | **RUNTIME ACCEPTED — 2026-09-10؛ final checkpoint ready** |
-| P3 Strategy Framework | چارچوب مشترک استراتژی و قواعد روشن سیگنال/عدم معامله | شروع نشده |
+| P2 Backtesting Engine | آزمون تاریخی تکرارپذیر با کارمزد، لغزش و جلوگیری از استفاده از آینده | **RUNTIME ACCEPTED — checkpoint `9cbc197`** |
+| P3 Strategy Framework | چارچوب مشترک استراتژی و قواعد روشن سیگنال/عدم معامله | **برنامه اجرایی آماده؛ پیاده‌سازی شروع نشده** |
 | P4 Risk Manager | اندازه موقعیت، محدودیت ریسک و Kill Switch مستقل | شروع نشده |
 | P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | شروع نشده؛ مجوز TRADE فعلی خاموش |
 | P6 AI Analyst | تحلیل ساختاریافته و NO_TRADE بدون دسترسی مستقیم به اجرا | شروع نشده |
@@ -121,3 +121,10 @@ P3 تا checkpoint نهایی P2 باز نمی‌شود.
 - ممیزی مستقل ۲ نماد، ۶ سناریو، ۶ artifact و ۸ معامله را بازسازی کرد و digest ورودی
   و نتیجه را تطبیق داد.
 - P2 در runtime پذیرفته شد. این پذیرش سوددهی استراتژی را ادعا نمی‌کند؛ P3 هنوز باز نشده است.
+
+## P3 planning record — 2026-09-10
+
+برنامه ترتیبی P3 در `P3-IMPLEMENTATION-PLAN.md` ثبت شد. این فاز دو candidate شفاف و
+نسخه‌بندی‌شده را پس از ساخت قرارداد، featureها، regime و registry ارزیابی می‌کند. کیفیت
+چارچوب از قدرت شواهد عملکرد جدا می‌ماند؛ داده ۳۰روزه فقط smoke/integration است و نتیجه
+ناکافی بدون دست‌کاری پارامترها `INSUFFICIENT_EVIDENCE` ثبت می‌شود. P3 هنوز کد اجرایی ندارد.
