@@ -20,6 +20,8 @@ from .metrics import (EquityPoint, MetricsError, PerformanceReport,
                       calculate_metrics)
 from .artifacts import (ArtifactError, build_run_manifest, artifact_json,
                         write_run_manifest)
+from .scenarios import (SCENARIOS, ScenarioError, ScenarioResult,
+                        run_real_scenario_matrix, run_scripted_scenario)
 
 __all__ = [
     "BacktestConfigError",
@@ -50,11 +52,16 @@ __all__ = [
     "PortfolioSnapshot",
     "PerformanceReport",
     "REGIME_INTERVAL",
+    "SCENARIOS",
+    "ScenarioError",
+    "ScenarioResult",
     "latest_spec_from_manifest",
     "load_accepted_dataset",
     "apply_costs",
     "artifact_json",
     "build_run_manifest",
     "calculate_metrics",
+    "run_real_scenario_matrix",
+    "run_scripted_scenario",
     "write_run_manifest",
 ]

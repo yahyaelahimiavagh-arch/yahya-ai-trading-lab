@@ -120,6 +120,14 @@ digest ورودی، معاملات، خلاصه منحنی سرمایه و مع�
 uv run --locked python -m yatl backtest-artifact-check
 ```
 
+P2-009 سه سناریوی ازپیش‌تعیین‌شده را روی داده واقعی پذیرفته‌شده BTCUSDT و ETHUSDT
+اجرا می‌کند: بدون معامله، یک رفت‌وبرگشت و سه معامله کنترل‌شده. هر اجرا دوباره پخش
+می‌شود و نتیجه دارای هزینه باید از همان سناریو با هزینه صفر ضعیف‌تر باشد.
+
+```powershell
+uv run --locked python -m yatl backtest-scenario-check
+```
+
 ## تمرین دستی و قابل‌تکرار Paper
 
 فایل `fixtures/p0-paper-workflows.json` دو سناریوی آموزشی ثابت برای BTCUSDT و

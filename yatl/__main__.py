@@ -17,6 +17,7 @@ from .backtest import (AcceptedBacktestDataset, ArtifactError, BacktestClock,
                        MetricsError, PaperFillEngine, PortfolioError, PortfolioLedger,
                        EquityPoint, PaperIntent, apply_costs, artifact_json,
                        build_run_manifest, calculate_metrics, write_run_manifest,
+                       ScenarioError, run_real_scenario_matrix,
                        latest_spec_from_manifest, load_accepted_dataset)
 from .data import (BinancePublicRestClient, Candle, CandleStore,
                    ClosedCandleConflict, DATA_SOURCE, HistoricalDownloadError,
@@ -232,6 +233,11 @@ def main():
                         help="Verify deterministic P2 performance metrics")
     commands.add_parser("backtest-artifact-check",
                         help="Verify canonical atomic P2 run artifacts")
+    scenarios = commands.add_parser("backtest-scenario-check",
+                                    help="Run fixed P2 scenarios on accepted real data")
+    scenarios.add_argument("--database", default="data/p1/market.sqlite3")
+    scenarios.add_argument("--manifest", default="manifests/p1-market-data.json")
+    scenarios.add_argument("--hours", type=int, default=24)
     loader = commands.add_parser("backtest-load-check",
                                  help="Load accepted P1 data read-only for P2")
     loader.add_argument("--database", default="data/p1/market.sqlite3")
@@ -361,6 +367,15 @@ def main():
             print(f"OK: canonical atomic run artifact; input_sha256={manifest['input_sha256']} "
                   f"trades={len(manifest['trades'])}")
             print("PAPER ONLY | No paths or credentials | No exchange order")
+        elif args.command == "backtest-scenario-check":
+            results = run_real_scenario_matrix(args.database, args.manifest,
+                                               hours=args.hours)
+            print(f"OK: accepted real-data scenario matrix; runs={len(results)}")
+            for result in results:
+                drag = result.zero_cost_net_pnl_quote - result.report.net_pnl_quote
+                print(f"{result.symbol} {result.name}: trades={result.report.trade_count} "
+                      f"net_pnl={result.report.net_pnl_quote} cost_drag={drag}")
+            print("PAPER ONLY | Public-real data | No credentials | No exchange order")
         elif args.command == "backtest-load-check":
             spec = latest_spec_from_manifest(args.manifest, args.symbol, hours=args.hours)
             loaded = load_accepted_dataset(args.database, args.manifest, spec)
@@ -439,7 +454,7 @@ def main():
     except (AccountError, AuditError, BacktestClockError, BacktestConfigError,
             BacktestContractError,
             ArtifactError, BacktestLoadError, CostModelError, FillModelError,
-            MetricsError, PortfolioError,
+            MetricsError, PortfolioError, ScenarioError,
             HistoricalDownloadError, MarketDataError, NormalizationError,
             DatasetError, HealthError, PaperWorkflowError, PublicRestError, QualityError,
             StorageError, StreamError,

@@ -1,6 +1,6 @@
 # P2 — Backtesting Engine implementation plan
 
-Status: **IN PROGRESS — P2-008 IMPLEMENTED AND RUNTIME VERIFIED, CHECKPOINT PENDING**
+Status: **IN PROGRESS — P2-009 IMPLEMENTED AND RUNTIME VERIFIED, CHECKPOINT PENDING**
 Entry baseline: P1 accepted in commit `4e77e34` with a clean working tree.
 Exit condition: deterministic BTCUSDT/ETHUSDT Spot simulations pass unit, invariant,
 reproducibility and real-dataset runtime gates with explicit fees and slippage.
@@ -108,14 +108,14 @@ The local scenario reproduced gross PnL `20`, net PnL `19.37001` and maximum dra
 Write an atomic run manifest containing data identity, configuration, seed, engine version,
 input digest, trades, equity curve summary and metrics. Exclude local paths and secrets.
 
-Acceptance: **PASS in working tree, 2026-09-10.** Canonical sorted JSON records the
+Acceptance: **PASS, checkpoint `3a3c916`, 2026-09-10.** Canonical sorted JSON records the
 fixed safety configuration, accepted-data identity and hashes, engine version, input digest,
 reconciled completed trades, equity summary and metrics. It excludes local paths, credentials
 and run-time wall-clock fields and publishes through an atomic replace. Tests require
 byte-identical results for identical inputs and changed digests for material inputs.
 The local atomic write/read check reproduced input SHA-256
 `f97ad5f66a8ac0ea1d59ee4a41e1238eb186008d961b612097069df4a21c62e4`.
-Checkpoint remains required before P2-009.
+The clean checkpoint was accepted before P2-009 started.
 
 ### P2-009 — Real-data scripted runtime scenarios
 
@@ -123,7 +123,11 @@ Run deterministic no-strategy scenarios on accepted BTCUSDT and ETHUSDT datasets
 single round trip and controlled multi-trade sequences. Confirm costs reduce results and the
 engine never sees future data.
 
-Acceptance: repeat each scenario, compare manifests and record exact runtime evidence.
+Acceptance: **PASS in working tree, 2026-09-10.** The 24-hour accepted BTCUSDT and ETHUSDT
+datasets each passed no-trade, single-round-trip and controlled three-trade scenarios. Fixed
+schedules use only the eligible current open for fills; decisions retain the point-in-time
+snapshot gate. Every run replays byte-identically, and explicit costs strictly reduce every
+trading result relative to its zero-cost control. Checkpoint remains required before P2-010.
 
 ### P2-010 — P2 final audit and checkpoint
 

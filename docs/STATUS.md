@@ -444,7 +444,7 @@ Status: **ACCEPTED — checkpoint `4dbb26e`**.
 
 ## P2-008 evidence — 2026-09-10
 
-Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
+Status: **ACCEPTED — checkpoint `3a3c916`**.
 
 - P2-007 checkpoint: `4dbb26e`; clean entry tree.
 - Added canonical sorted JSON with fixed schema/engine identity, safety configuration,
@@ -458,3 +458,21 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
   `f97ad5f66a8ac0ea1d59ee4a41e1238eb186008d961b612097069df4a21c62e4` with one
   reconciled trade and left no runtime artifact behind.
 - No network, credential or exchange order is used. P2-009 and P3 remain unopened.
+
+## P2-009 evidence — 2026-09-10
+
+Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
+
+- P2-008 checkpoint: `3a3c916`; clean entry tree.
+- Added fixed no-trade, one-round-trip and three-trade schedules with no strategy signal.
+  Fill prices use only the eligible current 1h open; every decision snapshot remains strictly
+  point-in-time and excludes the current and future candle content.
+- Focused scenario suite: **8 passed, 0 failed**. It covers exact trade counts, byte-identical
+  replay, cost drag, future-field isolation, both symbols and fail-closed inputs.
+- Full suite after implementation: **183 passed, 0 failed**; lock and compile checks passed.
+- Runtime accepted-data matrix: **6/6 PASS** over the latest 24 hours for BTCUSDT and ETHUSDT.
+  No-trade PnL was zero. Single/multi net PnL was `1.67995347405`/`-7.0106196582` BTC
+  and `-0.151858701`/`-3.5036721285` ETH.
+- Explicit fee/slippage drag was positive for every trading scenario: `2.36814652595` and
+  `7.0942196582` BTC; `0.749858701` and `2.2466721285` ETH.
+- No network, credential or exchange order was used. P2-010 is next; P3 remains unopened.
