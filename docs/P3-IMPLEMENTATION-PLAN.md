@@ -1,6 +1,6 @@
 # P3 — Strategy Framework implementation plan
 
-Status: **IN PROGRESS — P3-002 IMPLEMENTED AND RUNTIME VERIFIED, CHECKPOINT PENDING**
+Status: **IN PROGRESS — P3-003 RUNTIME VERIFIED, CHECKPOINT PENDING**
 Entry baseline: P2 accepted in commit `9cbc197` with a clean working tree.
 Exit condition: deterministic, versioned BTCUSDT/ETHUSDT Spot strategy candidates produce
 point-in-time signals through the accepted P2 engine, pass anti-lookahead and reproducibility
@@ -44,19 +44,37 @@ P3-002 started.
 Implement exact returns, rolling high/low, SMA, EMA, ATR and RSI over closed canonical candles.
 Each function declares warm-up length and returns an explicit unavailable result until ready.
 
-Acceptance: **PASS in working tree, 2026-09-10.** Hand-computed vectors cover return, rolling
+Acceptance: **PASS, checkpoint `9412fd6`.** Hand-computed vectors cover return, rolling
 high/low, SMA, EMA seeded by SMA, Wilder ATR and Wilder RSI. Warm-up is explicit; flat/rising/
 falling series, gaps, open candles, zero volume and extreme Decimal precision are tested.
-Appending or mutating a future candle cannot change an earlier feature result. Checkpoint
-remains required before P3-003.
+Appending or mutating a future candle cannot change an earlier feature result. The clean
+checkpoint was verified before P3-003.
 
 ### P3-003 — Higher-timeframe regime classifier
 
 Classify the closed 4h prefix as `TREND_UP`, `TREND_DOWN`, `RANGE` or `UNKNOWN` using one frozen,
 versioned ruleset. The regime is context and cannot create an order.
 
-Acceptance: boundary vectors, insufficient-history behavior, deterministic reason codes and
-future-append invariance.
+Acceptance: **PASS in working tree, 2026-09-11.** Eight tests cover hand-calculated trends,
+exact threshold equality, conflicting evidence, 50/51-bar warm-up, corrupted history,
+immutable results, deterministic replay and future-prefix isolation. The accepted historical
+BTC/ETH runtime passed with 174 closed 4h bars per symbol; full suite: 216/216.
+
+Frozen research rules `SMA_4H_V1` (not fitted to observed runtime results):
+
+- Require 51 contiguous, fresh closed 4h bars from a validated StrategyContext.
+- Fast = mean of latest 20 closes; slow = mean of latest 50 closes; previous slow = mean
+  of the 50 closes immediately preceding the latest close.
+- Relative spread = (fast - slow) / slow; relative slope = (slow - previous slow) / previous slow.
+- TREND_UP: spread > 0.002, slope > 0, latest close > fast.
+- TREND_DOWN: spread < -0.002, slope < 0, latest close < fast.
+- RANGE: absolute spread <= 0.002 and absolute slope <= 0.0005 (inclusive boundaries).
+- Otherwise UNKNOWN / CONFLICTING_EVIDENCE; fewer than 51 bars gives UNKNOWN /
+  INSUFFICIENT_HISTORY. Invalid, stale, future or open history raises RegimeError.
+
+The classifier returns context only, with no signal or quantity. Thresholds are an initial
+research convention, not validated profitability or a statistical definition of market regime.
+Use a new version for rule changes. P3-004 remains unopened until checkpoint.
 
 ### P3-004 — Strategy registry and frozen configuration
 

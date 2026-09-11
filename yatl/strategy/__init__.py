@@ -5,8 +5,11 @@ from .contracts import (DecisionReason, LongSetup, StrategyAction,
                         StrategyDecision, StrategyIdentity)
 from .features import (FeatureError, FeatureResult, FeatureState, atr, ema,
                        rolling_high, rolling_low, rsi, simple_return, sma)
+from .regime import (MarketRegime, RegimeError, RegimeReason, RegimeResult,
+                     classify_regime)
 
 __all__ = [
+    "MarketRegime", "RegimeError", "RegimeReason", "RegimeResult", "classify_regime",
     "DecisionReason",
     "FeatureError",
     "FeatureResult",

@@ -531,7 +531,7 @@ Status: **ACCEPTED — checkpoint `9d83337`**.
 
 ## P3-002 evidence — 2026-09-10
 
-Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
+Status: **ACCEPTED — checkpoint `9412fd6`**.
 
 - P3-001 checkpoint: `9d83337`; clean entry tree.
 - Added point-in-time simple return, rolling high/low, SMA, EMA, Wilder ATR and Wilder RSI.
@@ -546,3 +546,21 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
 - `strategy-feature-check`: PASS; seven features reproduced hand-computed SMA `12`, EMA `12.0`,
   ATR `2` and RSI `100`.
 - No network, credential, sizing or exchange order was used. P3-003 is next; P4 remains unopened.
+
+## P3-003 evidence — 2026-09-11
+
+Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
+
+- Entry checkpoint: `9412fd6`; verified clean tree.
+- Frozen research rules SMA_4H_V1 use 20/50-close means, relative spread, one-bar slow-mean
+  slope and price alignment. Exact formulas and inclusive range boundaries are in the P3 plan.
+- Insufficient history and conflicting evidence remain UNKNOWN. Invalid point-in-time context
+  is rejected; the result revalidates its measurements and rejects alteration.
+- Focused suite: **8 passed, 0 failed**. Full suite: **216 passed, 0 failed**.
+- Lock, compile, whitespace and strategy source transport/credential scans passed.
+- Runtime `strategy-regime-check`: PASS on both accepted historical datasets, using
+  174 closed 4h bars at decision time 1788883200000. BTCUSDT: UNKNOWN / CONFLICTING_EVIDENCE;
+  ETHUSDT: TREND_UP / UP_ALIGNED; repeated results were equal.
+- This is historical integration evidence, not live market analysis or strategy qualification.
+- PAPER ONLY, LIVE_MASTER_LOCK=OFF and all execution restrictions remain in force.
+  No network, account credentials or orders were used. P3-004 has not started.

@@ -12,7 +12,8 @@ from .paper_workflow import PaperWorkflowError, load_and_validate
 from .strategy import (DecisionReason, LongSetup, StrategyAction,
                        StrategyContext, StrategyContractError, StrategyDecision,
                        StrategyIdentity, FeatureError, atr, ema, rolling_high,
-                       rolling_low, rsi, simple_return, sma)
+                       rolling_low, rsi, simple_return, sma, RegimeError,
+                       classify_regime)
 from .backtest import (AcceptedBacktestDataset, ArtifactError, BacktestClock,
                        BacktestClockError, BacktestConfigError,
                        BacktestContractError, BacktestLoadError, BacktestSpec,
@@ -289,6 +290,10 @@ def main():
                         help="Verify the P3 research-only signal boundary")
     commands.add_parser("strategy-feature-check",
                         help="Verify point-in-time Decimal P3 features")
+    regime = commands.add_parser("strategy-regime-check",
+                                 help="Classify accepted closed 4h data for both symbols")
+    regime.add_argument("--database", default="data/p1/market.sqlite3")
+    regime.add_argument("--manifest", default="manifests/p1-market-data.json")
     loader = commands.add_parser("backtest-load-check",
                                  help="Load accepted P1 data read-only for P2")
     loader.add_argument("--database", default="data/p1/market.sqlite3")
@@ -438,6 +443,20 @@ def main():
             print(f"OK: P3 signal contract; actions={no_trade.action.value}/"
                   f"{entry.action.value} context_sha256={entry.context_sha256}")
             print("PAPER ONLY | No sizing | No credentials | No exchange order")
+        elif args.command == "strategy-regime-check":
+            for symbol in SYMBOLS:
+                spec = latest_spec_from_manifest(args.manifest, symbol, hours=24)
+                dataset = load_accepted_dataset(args.database, args.manifest, spec)
+                context = StrategyContext(
+                    StrategyIdentity("RESEARCH_REGIME", "1.0.0"),
+                    dataset.snapshot_at(spec.start_time_ms))
+                result = classify_regime(context)
+                if result != classify_regime(context):
+                    raise RegimeError("Regime replay mismatch")
+                print(f"OK: {symbol} 4h regime={result.regime.value} "
+                      f"reason={result.reason.value} version={result.version} "
+                      f"observed={len(context.snapshot.regime)} replay_equal=true")
+            print("PAPER ONLY | LIVE_MASTER_LOCK=OFF | No exchange order")
         elif args.command == "strategy-feature-check":
             results = _strategy_feature_runtime_check()
             by_name = {item.name: item for item in results}
@@ -525,7 +544,7 @@ def main():
             ArtifactError, BacktestLoadError, CostModelError, FillModelError,
             MetricsError, P2AuditError, PortfolioError, ScenarioError,
             HistoricalDownloadError, MarketDataError, NormalizationError,
-            DatasetError, FeatureError, HealthError, PaperWorkflowError,
+            DatasetError, FeatureError, RegimeError, HealthError, PaperWorkflowError,
             PublicRestError, QualityError,
             StorageError, StrategyContractError, StreamError,
             ValueError, OSError) as exc:
