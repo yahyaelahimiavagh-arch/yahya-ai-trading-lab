@@ -1,6 +1,6 @@
 # P3 — Strategy Framework implementation plan
 
-Status: **IN PROGRESS — P3-007 RUNTIME ACCEPTED; P3-008 NOT STARTED**
+Status: **IN PROGRESS — P3-008 RUNTIME ACCEPTED; P3-009 NOT STARTED**
 Entry baseline: P2 accepted in commit `9cbc197` with a clean working tree.
 Exit condition: deterministic, versioned BTCUSDT/ETHUSDT Spot strategy candidates produce
 point-in-time signals through the accepted P2 engine, pass anti-lookahead and reproducibility
@@ -137,7 +137,7 @@ Track one strategy position state and translate accepted signals into P2 paper i
 fixed test quantity. Preserve next-primary-open fills, conservative Stop priority, explicit
 costs and flat final portfolios. P4 sizing is deliberately absent.
 
-Acceptance: **PASS, 2026-09-11.** The adapter accepts only the two frozen
+Acceptance: **PASS, checkpoint `2e43a12`, 2026-09-11.** The adapter accepts only the two frozen
 candidate identities and approved symbols, translates `NO_TRADE`, entry and
 exit decisions to P2 paper intents, and keeps one synchronized position state.
 The quantity `0.001` is a non-configurable research fixture; P4 sizing remains absent.
@@ -155,9 +155,24 @@ Pre-register candidate versions and evaluation windows. Report each symbol separ
 compare against no-trade and buy-and-hold research references; include costs, trade count, return,
 drawdown and stability by chronological segment. Never select a candidate on one headline metric.
 
-Acceptance: train/evaluation separation, minimum-sample rules, parameter-lock digest, future-data
-mutation tests and explicit `INSUFFICIENT_EVIDENCE`, `REJECTED` or `QUALIFIED_FOR_P4_RESEARCH`
-labels. Qualification is not approval for live trading.
+Acceptance: **PASS, 2026-09-11.** Frozen `P3_EVAL_V1` binds strategy
+ID/version, exact configuration digest, non-overlapping day-aligned training
+and evaluation windows, BTCUSDT plus ETHUSDT, and three chronological segments.
+Minimum evidence is 180 evaluation days, 30 trades per symbol and 60 pooled.
+
+Only sufficient evidence reaches performance gates: positive net return,
+outperformance of each symbol's Buy-and-Hold, drawdown no greater than 25% or
+the matching Buy-and-Hold drawdown, at least two positive segments and no
+segment below -10%. Replay, point-in-time and future-isolation proofs must pass.
+Reports include costs, symbol results, pooled means and the no-trade reference.
+
+Twelve focused tests cover all three labels, every independent gate, weak-symbol
+pool blocking, window separation/alignment, parameter locks, exact decimals,
+canonical replay, tampering and future-cutoff mutation. Complete suite: 265/265.
+Runtime reproduced all labels; canonical qualified-fixture report SHA-256:
+`c1e2c6a5c6a7d8a1b768122e2862d6a1eff83e5876126fd1650787f1449c97ec`.
+This is protocol verification, not candidate performance. Current 30-day data
+is necessarily insufficient. P3-009 remains NOT STARTED.
 
 ### P3-009 — Accepted-data candidate runs
 

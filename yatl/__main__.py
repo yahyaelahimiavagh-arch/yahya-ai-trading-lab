@@ -20,7 +20,8 @@ from .strategy import (DecisionReason, LongSetup, StrategyAction,
                        BREAKOUT_CONFIGURATION, BREAKOUT_IDENTITY,
                        BreakoutStrategyError, evaluate_breakout,
                        FIXED_RESEARCH_QUANTITY, ResearchSignalAdapter,
-                       SignalAdapterError)
+                       SignalAdapterError, EvaluationError, EvaluationPlan,
+                       EvidenceLabel, SymbolEvidence, assess_evidence)
 from .backtest import (AcceptedBacktestDataset, ArtifactError, BacktestClock,
                        BacktestClockError, BacktestConfigError,
                        BacktestContractError, BacktestLoadError, BacktestSpec,
@@ -287,6 +288,51 @@ def _strategy_adapter_runtime_check():
     return first, second, final
 
 
+def _strategy_evaluation_runtime_check():
+    day = 86_400_000
+
+    def build_plan(days):
+        return EvaluationPlan(
+            TREND_PULLBACK_IDENTITY, TREND_PULLBACK_CONFIGURATION.sha256,
+            1000 * day, 1180 * day, 1180 * day, (1180 + days) * day)
+
+    def evidence(plan, symbol, **changes):
+        values = {
+            "symbol": symbol, "plan_sha256": plan.sha256,
+            "configuration_sha256": plan.configuration_sha256,
+            "evaluation_start_ms": plan.evaluation_start_ms,
+            "evaluation_end_ms": plan.evaluation_end_ms,
+            "dataset_sha256": ("a" if symbol == "BTCUSDT" else "b") * 64,
+            "trade_count": 30, "total_return": "0.12",
+            "maximum_drawdown": "0.08", "total_cost_quote": "10",
+            "buy_hold_return": "0.05",
+            "buy_hold_maximum_drawdown": "0.15",
+            "segment_returns": ("0.03", "0.04", "0.05"),
+            "replay_equal": True, "point_in_time_verified": True,
+            "future_isolation_verified": True,
+        }
+        values.update(changes)
+        return SymbolEvidence(**values)
+
+    short = build_plan(30)
+    insufficient = assess_evidence(
+        short, tuple(evidence(short, symbol, trade_count=2)
+                     for symbol in SYMBOLS))
+    full = build_plan(180)
+    rejected = assess_evidence(
+        full, tuple(evidence(full, symbol, replay_equal=False)
+                    for symbol in SYMBOLS))
+    qualified = assess_evidence(
+        full, tuple(evidence(full, symbol) for symbol in SYMBOLS))
+    if (insufficient.label is not EvidenceLabel.INSUFFICIENT_EVIDENCE
+            or rejected.label is not EvidenceLabel.REJECTED
+            or qualified.label is not EvidenceLabel.QUALIFIED_FOR_P4_RESEARCH
+            or qualified != assess_evidence(
+                full, tuple(evidence(full, symbol) for symbol in SYMBOLS))):
+        raise EvaluationError("Evaluation label or replay gate failed")
+    return insufficient, rejected, qualified
+
+
 def _strategy_feature_runtime_check():
     start = 1_699_977_600_000
     duration = INTERVAL_MILLISECONDS["1h"]
@@ -363,6 +409,8 @@ def main():
     breakout.add_argument("--manifest", default="manifests/p1-market-data.json")
     commands.add_parser("strategy-adapter-check",
                         help="Verify P3 decisions through the P2 paper lifecycle")
+    commands.add_parser("strategy-evaluation-check",
+                        help="Verify pre-registered P3 evidence labels")
     regime = commands.add_parser("strategy-regime-check",
                                  help="Classify accepted closed 4h data for both symbols")
     regime.add_argument("--database", default="data/p1/market.sqlite3")
@@ -575,6 +623,13 @@ def main():
                   f"fixed_quantity={FIXED_RESEARCH_QUANTITY} flat=true")
             print(f"costs_applied=true closed_trades={final.closed_trades} replay_equal=true")
             print("PAPER ONLY | LIVE_MASTER_LOCK=OFF | No account sizing | No exchange order")
+        elif args.command == "strategy-evaluation-check":
+            insufficient, rejected, qualified = _strategy_evaluation_runtime_check()
+            print(f"OK: evaluation labels={insufficient.label.value}/"
+                  f"{rejected.label.value}/{qualified.label.value}")
+            print(f"minimum_days=180 minimum_trades=30_per_symbol/60_pooled "
+                  f"replay_equal=true report_sha256={qualified.sha256}")
+            print("RESEARCH ONLY | Qualification is not trading approval | No exchange order")
         elif args.command == "strategy-regime-check":
             for symbol in SYMBOLS:
                 spec = latest_spec_from_manifest(args.manifest, symbol, hours=24)
@@ -678,6 +733,7 @@ def main():
             HistoricalDownloadError, MarketDataError, NormalizationError,
             DatasetError, FeatureError, RegimeError, RegistryError, TrendStrategyError,
             BreakoutStrategyError, SignalAdapterError,
+            EvaluationError,
             HealthError, PaperWorkflowError,
             PublicRestError, QualityError,
             StorageError, StrategyContractError, StreamError,

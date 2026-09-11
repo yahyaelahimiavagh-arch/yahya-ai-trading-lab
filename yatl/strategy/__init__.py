@@ -17,6 +17,11 @@ from .breakout import (CONFIGURATION as BREAKOUT_CONFIGURATION,
                        evaluate_breakout)
 from .adapter import (FIXED_RESEARCH_QUANTITY, AdapterStep,
                       ResearchSignalAdapter, SignalAdapterError)
+from .evaluate import (MIN_EVALUATION_DAYS, MIN_TOTAL_TRADES,
+                       MIN_TRADES_PER_SYMBOL, EvaluationError,
+                       EvaluationPlan, EvaluationReport, EvidenceLabel,
+                       EvidenceReason, SymbolEvidence, assess_evidence,
+                       evaluation_input_sha256)
 
 __all__ = [
     "ParameterRule", "RegistryError", "StrategyConfiguration",
@@ -27,6 +32,10 @@ __all__ = [
     "BreakoutStrategyError", "evaluate_breakout",
     "FIXED_RESEARCH_QUANTITY", "AdapterStep",
     "ResearchSignalAdapter", "SignalAdapterError",
+    "MIN_EVALUATION_DAYS", "MIN_TOTAL_TRADES", "MIN_TRADES_PER_SYMBOL",
+    "EvaluationError", "EvaluationPlan", "EvaluationReport",
+    "EvidenceLabel", "EvidenceReason", "SymbolEvidence", "assess_evidence",
+    "evaluation_input_sha256",
     "MarketRegime", "RegimeError", "RegimeReason", "RegimeResult", "classify_regime",
     "DecisionReason",
     "FeatureError",

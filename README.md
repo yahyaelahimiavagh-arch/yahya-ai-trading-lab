@@ -40,7 +40,7 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 وضعیت جاری **P0، P1 و P2 پذیرفته‌شده در runtime** است. P1 در `4e77e34` بسته شد.
 P2 بارگذاری point-in-time، ساعت رویداد، fill محافظه‌کارانه، هزینه، دفتر پرتفوی،
 معیارها، artifact تکرارپذیر و شش سناریوی واقعی BTC/ETH را تکمیل کرده است. ممیزی
-نهایی P2 همه این gateها را بازسازی و تأیید می‌کند. P3 در حال اجراست؛ مرحله بعدی P3-008 است.
+نهایی P2 همه این gateها را بازسازی و تأیید می‌کند. P3 در حال اجراست؛ مرحله بعدی P3-009 است.
 ترتیب و معیارهای P3 در `docs/P3-IMPLEMENTATION-PLAN.md` قفل شده‌اند.
 
 P3-001 قرارداد research-only سیگنال را اضافه می‌کند. تصمیم فقط یکی از `NO_TRADE`،
@@ -400,5 +400,28 @@ uv run --locked python -m yatl strategy-adapter-check
 ```
 
 P3-007: 253 tests passed. The deterministic runtime round trip produced two
-fills, applied costs, closed one paper trade and finished flat. P3-008 has not
-started. PAPER ONLY; LIVE_MASTER_LOCK=OFF.
+fills, applied costs, closed one paper trade and finished flat. P3-007 was
+accepted in `2e43a12`. PAPER ONLY; LIVE_MASTER_LOCK=OFF.
+
+## P3-008 — Evaluation and anti-overfitting protocol
+
+Each candidate evaluation is bound to an immutable strategy version,
+configuration SHA-256, separate training/evaluation windows and exactly two
+symbol reports. Qualification requires at least 180 evaluation days, 30 closed
+trades per symbol and 60 pooled, three chronological segments, deterministic
+replay, point-in-time proof and future-data isolation.
+
+After sample sufficiency, each symbol must beat the zero-return no-trade
+reference and its own Buy-and-Hold return, remain within the absolute and
+Buy-and-Hold drawdown limits, and pass multi-segment stability. The result is
+one of `INSUFFICIENT_EVIDENCE`, `REJECTED` or
+`QUALIFIED_FOR_P4_RESEARCH`. Qualification is never trading approval.
+
+```powershell
+uv run --locked python -m yatl strategy-evaluation-check
+```
+
+P3-008: 265 tests passed. Runtime reproduced all three labels and a canonical
+report. Mutating data after the frozen cutoff leaves the input digest unchanged;
+mutating visible data changes it. The current 30-day dataset cannot pass the
+180-day evidence gate. P3-009 has not started.

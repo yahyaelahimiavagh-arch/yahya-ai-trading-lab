@@ -638,4 +638,28 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
 - No network, account, credentials, broker or exchange endpoint was added.
   PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE;
   NO WITHDRAWAL API; NO AI DIRECT EXECUTION. TRADE permissions remain disabled.
-- P3-007 runtime accepted. Next: P3-008 evaluation protocol; not started.
+- P3-007 runtime accepted in checkpoint `2e43a12`.
+
+## P3-008 evidence — 2026-09-11
+
+- Entry checkpoint: `2e43a12`, main, clean working tree.
+- Added frozen `P3_EVAL_V1` plans binding strategy version, parameter digest,
+  separate training/evaluation windows, both symbols and three segments.
+- Sample gates: at least 180 evaluation days, 30 trades per symbol and 60 pooled.
+  Insufficient samples are not performance-ranked.
+- Sufficient runs require replay, point-in-time and future isolation plus
+  no-trade, Buy-and-Hold, drawdown and segment-stability gates for each symbol.
+- Explicit labels: `INSUFFICIENT_EVIDENCE`, `REJECTED`,
+  `QUALIFIED_FOR_P4_RESEARCH`; qualification is not trading approval.
+- Twelve focused tests and complete suite: **265 passed, 0 failed**.
+  Lock check, compileall and restricted-source scan: PASS.
+- Future-cutoff test: mutations after evaluation end preserve the input digest;
+  visible-data mutation changes it.
+- Runtime reproduced all labels and the canonical report twice with SHA-256
+  `c1e2c6a5c6a7d8a1b768122e2862d6a1eff83e5876126fd1650787f1449c97ec`.
+- Runtime used deterministic fixtures to verify protocol logic. It did not
+  evaluate profitability. Current accepted 30-day data is below the 180-day gate.
+- No network, account, credential, sizing, broker or exchange endpoint added.
+  PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE;
+  NO WITHDRAWAL API; NO AI DIRECT EXECUTION. TRADE permissions remain disabled.
+- P3-008 runtime accepted. Next: P3-009 accepted-data candidate runs; not started.
