@@ -13,7 +13,8 @@ from .strategy import (DecisionReason, LongSetup, StrategyAction,
                        StrategyContext, StrategyContractError, StrategyDecision,
                        StrategyIdentity, FeatureError, atr, ema, rolling_high,
                        rolling_low, rsi, simple_return, sma, RegimeError,
-                       classify_regime)
+                       classify_regime, ParameterRule, RegistryError,
+                       StrategyDefinition, StrategyRegistry)
 from .backtest import (AcceptedBacktestDataset, ArtifactError, BacktestClock,
                        BacktestClockError, BacktestConfigError,
                        BacktestContractError, BacktestLoadError, BacktestSpec,
@@ -290,6 +291,8 @@ def main():
                         help="Verify the P3 research-only signal boundary")
     commands.add_parser("strategy-feature-check",
                         help="Verify point-in-time Decimal P3 features")
+    commands.add_parser("strategy-registry-check",
+                        help="Verify immutable versioned research configuration")
     regime = commands.add_parser("strategy-regime-check",
                                  help="Classify accepted closed 4h data for both symbols")
     regime.add_argument("--database", default="data/p1/market.sqlite3")
@@ -443,6 +446,28 @@ def main():
             print(f"OK: P3 signal contract; actions={no_trade.action.value}/"
                   f"{entry.action.value} context_sha256={entry.context_sha256}")
             print("PAPER ONLY | No sizing | No credentials | No exchange order")
+        elif args.command == "strategy-registry-check":
+            identity = StrategyIdentity("RESEARCH_FIXTURE", "1.0.0")
+            registry = StrategyRegistry((StrategyDefinition(identity, (
+                ParameterRule("lookback", "integer", 2, 200),
+                ParameterRule("threshold", "decimal", "0", "1"),
+            )),))
+            first = registry.configure(identity, {"lookback": 20, "threshold": "0.0020"})
+            replay = registry.configure(identity, {"threshold": "0.002", "lookback": 20})
+            changed = registry.configure(identity, {"lookback": 21, "threshold": "0.002"})
+            if first.to_json() != replay.to_json() or first.sha256 != replay.sha256 or first.sha256 == changed.sha256:
+                raise RegistryError("Configuration replay gate failed")
+            rejected = 0
+            for invalid in ({"lookback": 201, "threshold": "0.002"},
+                            {"lookback": 20, "threshold": "0.002", "quantity": 1}):
+                try:
+                    registry.configure(identity, invalid)
+                except RegistryError:
+                    rejected += 1
+            if rejected != 2:
+                raise RegistryError("Configuration rejection gate failed")
+            print("OK: research registry; replay_equal=true changed_digest=true rejected=2")
+            print("PAPER ONLY | LIVE_MASTER_LOCK=OFF | No credentials | No execution")
         elif args.command == "strategy-regime-check":
             for symbol in SYMBOLS:
                 spec = latest_spec_from_manifest(args.manifest, symbol, hours=24)
@@ -544,7 +569,7 @@ def main():
             ArtifactError, BacktestLoadError, CostModelError, FillModelError,
             MetricsError, P2AuditError, PortfolioError, ScenarioError,
             HistoricalDownloadError, MarketDataError, NormalizationError,
-            DatasetError, FeatureError, RegimeError, HealthError, PaperWorkflowError,
+            DatasetError, FeatureError, RegimeError, RegistryError, HealthError, PaperWorkflowError,
             PublicRestError, QualityError,
             StorageError, StrategyContractError, StreamError,
             ValueError, OSError) as exc:

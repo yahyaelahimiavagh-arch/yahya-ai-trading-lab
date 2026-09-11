@@ -1,6 +1,6 @@
 # P3 — Strategy Framework implementation plan
 
-Status: **IN PROGRESS — P3-003 RUNTIME VERIFIED, CHECKPOINT PENDING**
+Status: **IN PROGRESS — P3-004 RUNTIME ACCEPTED; P3-005 NOT STARTED**
 Entry baseline: P2 accepted in commit `9cbc197` with a clean working tree.
 Exit condition: deterministic, versioned BTCUSDT/ETHUSDT Spot strategy candidates produce
 point-in-time signals through the accepted P2 engine, pass anti-lookahead and reproducibility
@@ -55,7 +55,7 @@ checkpoint was verified before P3-003.
 Classify the closed 4h prefix as `TREND_UP`, `TREND_DOWN`, `RANGE` or `UNKNOWN` using one frozen,
 versioned ruleset. The regime is context and cannot create an order.
 
-Acceptance: **PASS in working tree, 2026-09-11.** Eight tests cover hand-calculated trends,
+Acceptance: **PASS, checkpoint `cc1a735`, 2026-09-11.** Eight tests cover hand-calculated trends,
 exact threshold equality, conflicting evidence, 50/51-bar warm-up, corrupted history,
 immutable results, deterministic replay and future-prefix isolation. The accepted historical
 BTC/ETH runtime passed with 174 closed 4h bars per symbol; full suite: 216/216.
@@ -74,15 +74,22 @@ Frozen research rules `SMA_4H_V1` (not fitted to observed runtime results):
 
 The classifier returns context only, with no signal or quantity. Thresholds are an initial
 research convention, not validated profitability or a statistical definition of market regime.
-Use a new version for rule changes. P3-004 remains unopened until checkpoint.
+Use a new version for rule changes. P3-003 was committed in `cc1a735` before P3-004 started.
 
 ### P3-004 — Strategy registry and frozen configuration
 
 Register strategies by immutable ID/version and canonical parameter payload. Reject duplicate
-IDs, unknown parameters, unsafe ranges and runtime mutation. Hash configuration for artifacts.
+ID/version pairs, unknown parameters, unsafe ranges and runtime mutation. Hash configuration for artifacts.
 
-Acceptance: byte-stable configuration, changed digest for material changes and fail-closed
-registry/config tests.
+Acceptance: **PASS, 2026-09-11.** Nine registry tests; complete suite 225/225.
+Offline CLI `strategy-registry-check` passes byte-stable replay, changed-digest and
+two invalid-input rejection gates. Canonical JSON includes schema, bounds, ID/version,
+numeric values and fixed paper policy. Integer values reject bool/float; decimals require
+plain exact strings. No implicit defaults or unknown parameters. Different versions may
+coexist; duplicate ID/version pairs cannot. Frozen tuples prevent runtime mutation.
+Limits: 128 definitions, 32 numeric parameters, bounds within 0..10000.
+Candidate-specific relationships between parameters will be checked by candidate code.
+No candidate selection or tuning occurred. P3-005 remains NOT STARTED.
 
 ### P3-005 — Trend-pullback candidate v1
 

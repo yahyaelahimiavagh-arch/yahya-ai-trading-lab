@@ -1,7 +1,6 @@
 # Yahya AI Trading Lab
 
-P0، P1 و P2 با شواهد runtime پذیرفته شده‌اند. برنامه P3 آماده است و پیاده‌سازی آن
-هنوز شروع نشده است.
+P0، P1 و P2 با شواهد runtime پذیرفته شده‌اند. P3 در حال اجراست؛ مراحل ۰۰۱ تا ۰۰۴ پیاده‌سازی و بررسی شده‌اند.
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
@@ -41,7 +40,7 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 وضعیت جاری **P0، P1 و P2 پذیرفته‌شده در runtime** است. P1 در `4e77e34` بسته شد.
 P2 بارگذاری point-in-time، ساعت رویداد، fill محافظه‌کارانه، هزینه، دفتر پرتفوی،
 معیارها، artifact تکرارپذیر و شش سناریوی واقعی BTC/ETH را تکمیل کرده است. ممیزی
-نهایی P2 همه این gateها را بازسازی و تأیید می‌کند. P3 هنوز شروع نشده است.
+نهایی P2 همه این gateها را بازسازی و تأیید می‌کند. P3 در حال اجراست؛ مرحله بعدی P3-005 است.
 ترتیب و معیارهای P3 در `docs/P3-IMPLEMENTATION-PLAN.md` قفل شده‌اند.
 
 P3-001 قرارداد research-only سیگنال را اضافه می‌کند. تصمیم فقط یکی از `NO_TRADE`،
@@ -328,3 +327,20 @@ uv run --locked python -m yatl p1-audit
 قبولی آن مستلزم دقیقاً شش مجموعه، ۷۵۶۰ کندل بسته، پوشش ۳۰روزه، تازگی داده و
 صفر gap، duplicate، malformed، conflict و open row است. این فرمان سفارش یا
 درخواست احرازهویت‌شده نمی‌سازد. شواهد دقیق پذیرش P1 در `docs/STATUS.md` ثبت شده است.
+
+## P3-004 — Frozen research configuration
+
+Versioned strategy definitions declare bounded integer or exact decimal-string parameters.
+Configuration is immutable; canonical JSON and SHA-256 include the ID, version, schema,
+bounds, values and fixed paper policy. Duplicate ID/version pairs, unknown/missing fields,
+invalid numeric types and out-of-range values fail closed. Different versions may coexist.
+Limits: 128 definitions, 32 parameters per definition, numeric bounds from 0 to 10000.
+Cross-parameter candidate rules belong to the later candidate implementation.
+The runtime fixture is a registry check, not a trading strategy or tuned parameter set.
+
+```powershell
+uv run --locked python -m yatl strategy-registry-check
+```
+
+P3-004: 225 tests passed; runtime replay, changed-digest and rejection gates passed.
+P3-005 has not started. PAPER ONLY; LIVE_MASTER_LOCK=OFF.

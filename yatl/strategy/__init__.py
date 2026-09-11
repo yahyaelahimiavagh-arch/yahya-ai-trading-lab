@@ -7,8 +7,12 @@ from .features import (FeatureError, FeatureResult, FeatureState, atr, ema,
                        rolling_high, rolling_low, rsi, simple_return, sma)
 from .regime import (MarketRegime, RegimeError, RegimeReason, RegimeResult,
                      classify_regime)
+from .registry import (ParameterRule, RegistryError, StrategyConfiguration,
+                       StrategyDefinition, StrategyRegistry)
 
 __all__ = [
+    "ParameterRule", "RegistryError", "StrategyConfiguration",
+    "StrategyDefinition", "StrategyRegistry",
     "MarketRegime", "RegimeError", "RegimeReason", "RegimeResult", "classify_regime",
     "DecisionReason",
     "FeatureError",

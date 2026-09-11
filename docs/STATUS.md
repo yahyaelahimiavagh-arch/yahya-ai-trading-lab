@@ -564,3 +564,19 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
 - This is historical integration evidence, not live market analysis or strategy qualification.
 - PAPER ONLY, LIVE_MASTER_LOCK=OFF and all execution restrictions remain in force.
   No network, account credentials or orders were used. P3-004 has not started.
+
+## P3-004 evidence — 2026-09-11
+
+- Entry checkpoint: `cc1a735`, main, clean working tree.
+- Added immutable versioned registry, bounded numeric schema, canonical JSON and SHA-256.
+- Nine registry tests cover canonicalization, material changes, exact types, range limits,
+  unknown/missing/duplicate fields, registration versions, immutable input snapshots,
+  fixed safety policy, tampering rejection and CLI output.
+- Full suite: **225 passed, 0 failed**. Lock check and compileall: PASS.
+- Runtime `strategy-registry-check`: **PASS**:
+  `replay_equal=true changed_digest=true rejected=2`.
+- Runtime is an offline metadata fixture. No market-performance or profitability claim.
+- No network, credentials, sizing, exchange order or new dependency introduced.
+- PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE;
+  NO WITHDRAWAL API; NO AI DIRECT EXECUTION. TRADE permissions unchanged.
+- P3-004 runtime accepted. Next: P3-005 trend-pullback candidate; not started.
