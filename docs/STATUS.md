@@ -599,4 +599,24 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
 - No network request, credential, quantity, broker or exchange endpoint was added.
   PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE;
   NO WITHDRAWAL API; NO AI DIRECT EXECUTION. TRADE permissions remain disabled.
-- P3-005 runtime accepted. Next: P3-006 breakout candidate; not started.
+- P3-005 runtime accepted in checkpoint `a4a8ef8`.
+
+## P3-006 evidence — 2026-09-11
+
+- Entry checkpoint: `a4a8ef8`, main, clean working tree.
+- Added independent frozen `RANGE_BREAKOUT/1.0.0`: 4h up-regime,
+  preceding 20-bar 1h high, breakout quality and closed 15m confirmation.
+- Invalidation and 2R target derive only from visible candle and prior ATR(14).
+  False-breakout and regime-loss exits are deterministic.
+- Configuration SHA-256:
+  `03d9231addf92735bd3a1d4a956836277b54d0e514bbd9dec23b9dd123d77eea`.
+- Nine focused tests and complete suite: **243 passed, 0 failed**.
+  Lock check and compileall: PASS.
+- Accepted historical replay: BTCUSDT `NO_TRADE/REGIME_UNKNOWN`;
+  ETHUSDT `NO_TRADE/SETUP_ABSENT`; both replay-equal.
+- Observations did not alter the frozen rules and do not establish profitability.
+- No trend-strategy state, network request, credential, quantity, broker or
+  exchange endpoint was added. PAPER ONLY; LIVE_MASTER_LOCK=OFF;
+  NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API; NO AI DIRECT EXECUTION.
+  TRADE permissions remain disabled.
+- P3-006 runtime accepted. Next: P3-007 signal lifecycle and P2 adapter; not started.

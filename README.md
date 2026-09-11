@@ -40,7 +40,7 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 وضعیت جاری **P0، P1 و P2 پذیرفته‌شده در runtime** است. P1 در `4e77e34` بسته شد.
 P2 بارگذاری point-in-time، ساعت رویداد، fill محافظه‌کارانه، هزینه، دفتر پرتفوی،
 معیارها، artifact تکرارپذیر و شش سناریوی واقعی BTC/ETH را تکمیل کرده است. ممیزی
-نهایی P2 همه این gateها را بازسازی و تأیید می‌کند. P3 در حال اجراست؛ مرحله بعدی P3-005 است.
+نهایی P2 همه این gateها را بازسازی و تأیید می‌کند. P3 در حال اجراست؛ مرحله بعدی P3-007 است.
 ترتیب و معیارهای P3 در `docs/P3-IMPLEMENTATION-PLAN.md` قفل شده‌اند.
 
 P3-001 قرارداد research-only سیگنال را اضافه می‌کند. تصمیم فقط یکی از `NO_TRADE`،
@@ -361,5 +361,23 @@ uv run --locked python -m yatl strategy-trend-check
 P3-005: 234 tests passed. Accepted historical runtime replay returned
 BTCUSDT `NO_TRADE/REGIME_UNKNOWN` and ETHUSDT
 `ENTER_LONG/TREND_PULLBACK_ENTRY`. These are integration observations, not
-performance evidence or trading instructions. P3-006 has not started.
+performance evidence or trading instructions. P3-005 was accepted in `a4a8ef8`.
 PAPER ONLY; LIVE_MASTER_LOCK=OFF.
+
+## P3-006 — Range-breakout research candidate
+
+The independent frozen `RANGE_BREAKOUT/1.0.0` candidate requires a 4h up
+regime and a closed 1h close above the highest high of the preceding 20 bars.
+It rejects a breakout when the close is below the top 25% of its candle or its
+extension exceeds one prior ATR(14). The latest two closed 15m candles provide
+bullish confirmation. Invalidation is the breakout-candle low minus 0.25 prior
+ATR and the target is 2R. False breakouts and regime loss have explicit exits.
+
+```powershell
+uv run --locked python -m yatl strategy-breakout-check
+```
+
+P3-006: 243 tests passed. Accepted historical replay returned
+BTCUSDT `NO_TRADE/REGIME_UNKNOWN` and ETHUSDT
+`NO_TRADE/SETUP_ABSENT`. This is integration evidence only. P3-007 has not
+started. PAPER ONLY; LIVE_MASTER_LOCK=OFF.

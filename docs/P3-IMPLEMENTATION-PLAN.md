@@ -1,6 +1,6 @@
 # P3 — Strategy Framework implementation plan
 
-Status: **IN PROGRESS — P3-005 RUNTIME ACCEPTED; P3-006 NOT STARTED**
+Status: **IN PROGRESS — P3-006 RUNTIME ACCEPTED; P3-007 NOT STARTED**
 Entry baseline: P2 accepted in commit `9cbc197` with a clean working tree.
 Exit condition: deterministic, versioned BTCUSDT/ETHUSDT Spot strategy candidates produce
 point-in-time signals through the accepted P2 engine, pass anti-lookahead and reproducibility
@@ -97,7 +97,7 @@ Implement a transparent long-only candidate: 4h up-regime filter, 1h trend/pullb
 closed 15m confirmation. Entry invalidation and target levels must be derived only from visible
 candles and emitted with exact reason codes.
 
-Acceptance: **PASS, 2026-09-11.** Frozen `TREND_PULLBACK/1.0.0` uses the existing
+Acceptance: **PASS, checkpoint `a4a8ef8`, 2026-09-11.** Frozen `TREND_PULLBACK/1.0.0` uses the existing
 `SMA_4H_V1` up-regime, a closed 1h SMA(20) touch/reclaim and two-candle bullish
 15m confirmation. Stop reference is the visible three-bar low minus 0.25 ATR(14);
 target is 2R. Parameters were declared before the accepted-data run and hash to
@@ -116,8 +116,20 @@ capability was added. P3-006 remains NOT STARTED.
 Implement a second transparent long-only candidate using a closed 4h regime filter, confirmed
 1h range breakout and 15m context. It must remain independent of the trend-pullback state.
 
-Acceptance: breakout/false-breakout/range/low-quality vectors, deterministic exits and the same
-point-in-time safety gates as P3-005.
+Acceptance: **PASS, 2026-09-11.** Frozen, independent
+`RANGE_BREAKOUT/1.0.0` requires a 4h up-regime and a closed 1h close above
+the preceding 20-bar high. Close location must be at least 0.75 and extension
+at most one prior ATR(14); two closed 15m candles confirm. Invalidation uses
+the breakout low minus 0.25 prior ATR and target is 2R.
+
+Nine focused tests cover breakout, false-breakout, range/unknown regimes,
+low-quality and overextended candles, confirmation, warm-up, deterministic
+hold/exit rules, immutable state, gaps and current/future isolation. Complete
+suite: 243/243. Configuration SHA-256:
+`03d9231addf92735bd3a1d4a956836277b54d0e514bbd9dec23b9dd123d77eea`.
+Accepted historical replay returned BTCUSDT `NO_TRADE/REGIME_UNKNOWN` and
+ETHUSDT `NO_TRADE/SETUP_ABSENT`. Rules were not changed after this result.
+No performance claim, sizing or execution capability. P3-007 remains NOT STARTED.
 
 ### P3-007 — Signal lifecycle and P2 research adapter
 
