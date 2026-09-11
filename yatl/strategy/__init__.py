@@ -9,10 +9,15 @@ from .regime import (MarketRegime, RegimeError, RegimeReason, RegimeResult,
                      classify_regime)
 from .registry import (ParameterRule, RegistryError, StrategyConfiguration,
                        StrategyDefinition, StrategyRegistry)
+from .trend import (CONFIGURATION as TREND_PULLBACK_CONFIGURATION,
+                    IDENTITY as TREND_PULLBACK_IDENTITY, TrendStrategyError,
+                    evaluate_trend_pullback)
 
 __all__ = [
     "ParameterRule", "RegistryError", "StrategyConfiguration",
     "StrategyDefinition", "StrategyRegistry",
+    "TREND_PULLBACK_CONFIGURATION", "TREND_PULLBACK_IDENTITY",
+    "TrendStrategyError", "evaluate_trend_pullback",
     "MarketRegime", "RegimeError", "RegimeReason", "RegimeResult", "classify_regime",
     "DecisionReason",
     "FeatureError",

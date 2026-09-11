@@ -343,4 +343,23 @@ uv run --locked python -m yatl strategy-registry-check
 ```
 
 P3-004: 225 tests passed; runtime replay, changed-digest and rejection gates passed.
-P3-005 has not started. PAPER ONLY; LIVE_MASTER_LOCK=OFF.
+
+## P3-005 — Trend-pullback research candidate
+
+The frozen `TREND_PULLBACK` version `1.0.0` requires an accepted 4h up regime,
+a closed 1h pullback through SMA(20) followed by a close above it, and bullish
+confirmation from the latest two closed 15m candles. Its invalidation is the
+three-bar 1h low minus 0.25 ATR(14); its target is two times that visible risk.
+Insufficient history, blocked/unknown regime, absent setup and failed confirmation
+produce explicit no-trade decisions. Existing research state has deterministic
+hold and exit rules. No account quantity or execution capability exists here.
+
+```powershell
+uv run --locked python -m yatl strategy-trend-check
+```
+
+P3-005: 234 tests passed. Accepted historical runtime replay returned
+BTCUSDT `NO_TRADE/REGIME_UNKNOWN` and ETHUSDT
+`ENTER_LONG/TREND_PULLBACK_ENTRY`. These are integration observations, not
+performance evidence or trading instructions. P3-006 has not started.
+PAPER ONLY; LIVE_MASTER_LOCK=OFF.

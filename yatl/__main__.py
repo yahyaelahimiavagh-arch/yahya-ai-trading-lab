@@ -14,7 +14,9 @@ from .strategy import (DecisionReason, LongSetup, StrategyAction,
                        StrategyIdentity, FeatureError, atr, ema, rolling_high,
                        rolling_low, rsi, simple_return, sma, RegimeError,
                        classify_regime, ParameterRule, RegistryError,
-                       StrategyDefinition, StrategyRegistry)
+                       StrategyDefinition, StrategyRegistry,
+                       TREND_PULLBACK_CONFIGURATION, TREND_PULLBACK_IDENTITY,
+                       TrendStrategyError, evaluate_trend_pullback)
 from .backtest import (AcceptedBacktestDataset, ArtifactError, BacktestClock,
                        BacktestClockError, BacktestConfigError,
                        BacktestContractError, BacktestLoadError, BacktestSpec,
@@ -293,6 +295,10 @@ def main():
                         help="Verify point-in-time Decimal P3 features")
     commands.add_parser("strategy-registry-check",
                         help="Verify immutable versioned research configuration")
+    trend = commands.add_parser("strategy-trend-check",
+                                help="Evaluate frozen trend-pullback research rules")
+    trend.add_argument("--database", default="data/p1/market.sqlite3")
+    trend.add_argument("--manifest", default="manifests/p1-market-data.json")
     regime = commands.add_parser("strategy-regime-check",
                                  help="Classify accepted closed 4h data for both symbols")
     regime.add_argument("--database", default="data/p1/market.sqlite3")
@@ -468,6 +474,20 @@ def main():
                 raise RegistryError("Configuration rejection gate failed")
             print("OK: research registry; replay_equal=true changed_digest=true rejected=2")
             print("PAPER ONLY | LIVE_MASTER_LOCK=OFF | No credentials | No execution")
+        elif args.command == "strategy-trend-check":
+            for symbol in SYMBOLS:
+                spec = latest_spec_from_manifest(args.manifest, symbol, hours=24)
+                dataset = load_accepted_dataset(args.database, args.manifest, spec)
+                context = StrategyContext(
+                    TREND_PULLBACK_IDENTITY,
+                    dataset.snapshot_at(spec.start_time_ms))
+                decision = evaluate_trend_pullback(context)
+                if decision != evaluate_trend_pullback(context):
+                    raise TrendStrategyError("Trend-pullback replay mismatch")
+                print(f"OK: {symbol} action={decision.action.value} "
+                      f"reason={decision.reason.value} replay_equal=true")
+            print(f"config_sha256={TREND_PULLBACK_CONFIGURATION.sha256}")
+            print("PAPER ONLY | LIVE_MASTER_LOCK=OFF | No sizing | No exchange order")
         elif args.command == "strategy-regime-check":
             for symbol in SYMBOLS:
                 spec = latest_spec_from_manifest(args.manifest, symbol, hours=24)
@@ -569,7 +589,8 @@ def main():
             ArtifactError, BacktestLoadError, CostModelError, FillModelError,
             MetricsError, P2AuditError, PortfolioError, ScenarioError,
             HistoricalDownloadError, MarketDataError, NormalizationError,
-            DatasetError, FeatureError, RegimeError, RegistryError, HealthError, PaperWorkflowError,
+            DatasetError, FeatureError, RegimeError, RegistryError, TrendStrategyError,
+            HealthError, PaperWorkflowError,
             PublicRestError, QualityError,
             StorageError, StrategyContractError, StreamError,
             ValueError, OSError) as exc:

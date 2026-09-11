@@ -1,6 +1,6 @@
 # P3 — Strategy Framework implementation plan
 
-Status: **IN PROGRESS — P3-004 RUNTIME ACCEPTED; P3-005 NOT STARTED**
+Status: **IN PROGRESS — P3-005 RUNTIME ACCEPTED; P3-006 NOT STARTED**
 Entry baseline: P2 accepted in commit `9cbc197` with a clean working tree.
 Exit condition: deterministic, versioned BTCUSDT/ETHUSDT Spot strategy candidates produce
 point-in-time signals through the accepted P2 engine, pass anti-lookahead and reproducibility
@@ -97,8 +97,19 @@ Implement a transparent long-only candidate: 4h up-regime filter, 1h trend/pullb
 closed 15m confirmation. Entry invalidation and target levels must be derived only from visible
 candles and emitted with exact reason codes.
 
-Acceptance: positive/negative hand-built scenarios, gap/insufficient-data rejection, explicit
-exit rules and no current/future candle access.
+Acceptance: **PASS, 2026-09-11.** Frozen `TREND_PULLBACK/1.0.0` uses the existing
+`SMA_4H_V1` up-regime, a closed 1h SMA(20) touch/reclaim and two-candle bullish
+15m confirmation. Stop reference is the visible three-bar low minus 0.25 ATR(14);
+target is 2R. Parameters were declared before the accepted-data run and hash to
+`98301c6ee14e9ee01ffdbb1ca68cdce4c0ea0db6a504fc6e4e280bd9f027e20a`.
+
+Nine focused tests cover positive entry, negative gates, exact levels, warm-up,
+hold/exit state, identity/mutation rejection, gaps, open/future isolation and
+deterministic replay. Full suite: 234/234. Accepted historical integration replay:
+BTCUSDT `NO_TRADE/REGIME_UNKNOWN`; ETHUSDT
+`ENTER_LONG/TREND_PULLBACK_ENTRY`. This single observation is not evidence of
+profitability and did not change the rules. No sizing, credential or execution
+capability was added. P3-006 remains NOT STARTED.
 
 ### P3-006 — Breakout candidate v1
 

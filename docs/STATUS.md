@@ -332,7 +332,7 @@ Status: **IMPLEMENTED — CHECKPOINT PENDING**.
 
 ## P2-002 evidence — 2026-09-09
 
-Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
+Status: **ACCEPTED — checkpoint `cc1a735`**.
 
 - P2-001 checkpoint: `30a6e6d` with a clean working tree.
 - Added manifest-gated, read-only SQLite loading. The accepted P1 manifest is snapshotted,
@@ -579,4 +579,24 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
 - No network, credentials, sizing, exchange order or new dependency introduced.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE;
   NO WITHDRAWAL API; NO AI DIRECT EXECUTION. TRADE permissions unchanged.
-- P3-004 runtime accepted. Next: P3-005 trend-pullback candidate; not started.
+- P3-004 runtime accepted in checkpoint `920ffaa`.
+
+## P3-005 evidence — 2026-09-11
+
+- Entry checkpoint: `920ffaa`, main, clean working tree.
+- Added frozen `TREND_PULLBACK/1.0.0` research rules: 4h up-regime,
+  closed 1h SMA(20) touch/reclaim, and closed two-candle 15m confirmation.
+- Invalidation and 2R target derive only from visible 1h low and ATR(14).
+  Existing research positions have explicit hold and exit decisions.
+- Configuration SHA-256:
+  `98301c6ee14e9ee01ffdbb1ca68cdce4c0ea0db6a504fc6e4e280bd9f027e20a`.
+- Nine focused tests and the complete suite: **234 passed, 0 failed**.
+  Lock check, compileall and restricted-source scan: PASS.
+- Accepted historical runtime replay: BTCUSDT `NO_TRADE/REGIME_UNKNOWN`;
+  ETHUSDT `ENTER_LONG/TREND_PULLBACK_ENTRY`; both replay-equal.
+- The runtime result is an integration observation, not a profitability claim,
+  recommendation or approval to trade. No rule was fitted to that result.
+- No network request, credential, quantity, broker or exchange endpoint was added.
+  PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE;
+  NO WITHDRAWAL API; NO AI DIRECT EXECUTION. TRADE permissions remain disabled.
+- P3-005 runtime accepted. Next: P3-006 breakout candidate; not started.
