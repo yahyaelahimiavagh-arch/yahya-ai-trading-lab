@@ -15,6 +15,8 @@ from .trend import (CONFIGURATION as TREND_PULLBACK_CONFIGURATION,
 from .breakout import (CONFIGURATION as BREAKOUT_CONFIGURATION,
                        IDENTITY as BREAKOUT_IDENTITY, BreakoutStrategyError,
                        evaluate_breakout)
+from .adapter import (FIXED_RESEARCH_QUANTITY, AdapterStep,
+                      ResearchSignalAdapter, SignalAdapterError)
 
 __all__ = [
     "ParameterRule", "RegistryError", "StrategyConfiguration",
@@ -23,6 +25,8 @@ __all__ = [
     "TrendStrategyError", "evaluate_trend_pullback",
     "BREAKOUT_CONFIGURATION", "BREAKOUT_IDENTITY",
     "BreakoutStrategyError", "evaluate_breakout",
+    "FIXED_RESEARCH_QUANTITY", "AdapterStep",
+    "ResearchSignalAdapter", "SignalAdapterError",
     "MarketRegime", "RegimeError", "RegimeReason", "RegimeResult", "classify_regime",
     "DecisionReason",
     "FeatureError",

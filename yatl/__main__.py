@@ -18,7 +18,9 @@ from .strategy import (DecisionReason, LongSetup, StrategyAction,
                        TREND_PULLBACK_CONFIGURATION, TREND_PULLBACK_IDENTITY,
                        TrendStrategyError, evaluate_trend_pullback,
                        BREAKOUT_CONFIGURATION, BREAKOUT_IDENTITY,
-                       BreakoutStrategyError, evaluate_breakout)
+                       BreakoutStrategyError, evaluate_breakout,
+                       FIXED_RESEARCH_QUANTITY, ResearchSignalAdapter,
+                       SignalAdapterError)
 from .backtest import (AcceptedBacktestDataset, ArtifactError, BacktestClock,
                        BacktestClockError, BacktestConfigError,
                        BacktestContractError, BacktestLoadError, BacktestSpec,
@@ -231,6 +233,60 @@ def _strategy_contract_runtime_check():
     return no_trade, entry
 
 
+def _strategy_adapter_runtime_check():
+    start = 1_699_999_200_000
+
+    def snapshot(decision):
+        def completed(interval):
+            duration = INTERVAL_MILLISECONDS[interval]
+            opened = (decision // duration) * duration - duration
+            return (Candle(
+                DATA_SOURCE, "BTCUSDT", interval, opened,
+                opened + duration - 1, "100", "106", "99", "100",
+                "10", "1000", 20, True,
+            ),)
+        return MarketSnapshot("BTCUSDT", decision, completed("1h"),
+                              completed("15m"), completed("4h"))
+
+    def fill_bar(decision, price, low, high):
+        return Candle(
+            DATA_SOURCE, "BTCUSDT", "1h", decision, decision + 3_600_000 - 1,
+            price, high, low, price, "10", "1000", 20, True,
+        )
+
+    adapter = ResearchSignalAdapter(TREND_PULLBACK_IDENTITY, "BTCUSDT")
+    first_view = snapshot(start)
+    first_event = DecisionEvent(0, start, start, first_view)
+    entry = StrategyDecision(
+        StrategyContext(TREND_PULLBACK_IDENTITY, first_view),
+        StrategyAction.ENTER_LONG, DecisionReason.TREND_PULLBACK_ENTRY,
+        LongSetup("100", "95", "110"))
+    first = adapter.process(first_event, entry,
+                            fill_bar(start, "100", "99", "106"))
+
+    end = start + 3_600_000
+    second_view = snapshot(end)
+    second_event = DecisionEvent(1, end, end, second_view)
+    exit_decision = StrategyDecision(
+        StrategyContext(TREND_PULLBACK_IDENTITY, second_view),
+        StrategyAction.EXIT_LONG, DecisionReason.STRATEGY_EXIT)
+    second = adapter.process(second_event, exit_decision,
+                             fill_bar(end, "105", "104", "106"))
+
+    spec = BacktestSpec("BTCUSDT", start, end + 3_600_000,
+                        initial_cash="1000")
+    costed = tuple(apply_costs(item, spec)
+                   for item in first.fills + second.fills)
+    ledger = PortfolioLedger(spec)
+    ledger.apply_many(costed)
+    final = ledger.snapshot("105")
+    if (adapter.has_position or final.asset_quantity != 0
+            or final.closed_trades != 1
+            or final.total_fee_quote <= 0 or final.total_slippage_quote <= 0):
+        raise SignalAdapterError("Research adapter round trip failed")
+    return first, second, final
+
+
 def _strategy_feature_runtime_check():
     start = 1_699_977_600_000
     duration = INTERVAL_MILLISECONDS["1h"]
@@ -305,6 +361,8 @@ def main():
                                    help="Evaluate frozen range-breakout research rules")
     breakout.add_argument("--database", default="data/p1/market.sqlite3")
     breakout.add_argument("--manifest", default="manifests/p1-market-data.json")
+    commands.add_parser("strategy-adapter-check",
+                        help="Verify P3 decisions through the P2 paper lifecycle")
     regime = commands.add_parser("strategy-regime-check",
                                  help="Classify accepted closed 4h data for both symbols")
     regime.add_argument("--database", default="data/p1/market.sqlite3")
@@ -508,6 +566,15 @@ def main():
                       f"reason={decision.reason.value} replay_equal=true")
             print(f"config_sha256={BREAKOUT_CONFIGURATION.sha256}")
             print("PAPER ONLY | LIVE_MASTER_LOCK=OFF | No sizing | No exchange order")
+        elif args.command == "strategy-adapter-check":
+            first, second, final = _strategy_adapter_runtime_check()
+            if (first, second, final) != _strategy_adapter_runtime_check():
+                raise SignalAdapterError("Research adapter replay mismatch")
+            print(f"OK: signal adapter; intents={first.intent.action.value}/"
+                  f"{second.intent.action.value} fills={len(first.fills) + len(second.fills)} "
+                  f"fixed_quantity={FIXED_RESEARCH_QUANTITY} flat=true")
+            print(f"costs_applied=true closed_trades={final.closed_trades} replay_equal=true")
+            print("PAPER ONLY | LIVE_MASTER_LOCK=OFF | No account sizing | No exchange order")
         elif args.command == "strategy-regime-check":
             for symbol in SYMBOLS:
                 spec = latest_spec_from_manifest(args.manifest, symbol, hours=24)
@@ -610,7 +677,7 @@ def main():
             MetricsError, P2AuditError, PortfolioError, ScenarioError,
             HistoricalDownloadError, MarketDataError, NormalizationError,
             DatasetError, FeatureError, RegimeError, RegistryError, TrendStrategyError,
-            BreakoutStrategyError,
+            BreakoutStrategyError, SignalAdapterError,
             HealthError, PaperWorkflowError,
             PublicRestError, QualityError,
             StorageError, StrategyContractError, StreamError,

@@ -40,7 +40,7 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 وضعیت جاری **P0، P1 و P2 پذیرفته‌شده در runtime** است. P1 در `4e77e34` بسته شد.
 P2 بارگذاری point-in-time، ساعت رویداد، fill محافظه‌کارانه، هزینه، دفتر پرتفوی،
 معیارها، artifact تکرارپذیر و شش سناریوی واقعی BTC/ETH را تکمیل کرده است. ممیزی
-نهایی P2 همه این gateها را بازسازی و تأیید می‌کند. P3 در حال اجراست؛ مرحله بعدی P3-007 است.
+نهایی P2 همه این gateها را بازسازی و تأیید می‌کند. P3 در حال اجراست؛ مرحله بعدی P3-008 است.
 ترتیب و معیارهای P3 در `docs/P3-IMPLEMENTATION-PLAN.md` قفل شده‌اند.
 
 P3-001 قرارداد research-only سیگنال را اضافه می‌کند. تصمیم فقط یکی از `NO_TRADE`،
@@ -379,5 +379,26 @@ uv run --locked python -m yatl strategy-breakout-check
 
 P3-006: 243 tests passed. Accepted historical replay returned
 BTCUSDT `NO_TRADE/REGIME_UNKNOWN` and ETHUSDT
-`NO_TRADE/SETUP_ABSENT`. This is integration evidence only. P3-007 has not
+`NO_TRADE/SETUP_ABSENT`. This is integration evidence only. P3-006 was
+accepted in `1e8ffb0`. PAPER ONLY; LIVE_MASTER_LOCK=OFF.
+
+## P3-007 — Signal lifecycle and P2 paper adapter
+
+`ResearchSignalAdapter` accepts only the two registered P3 identities and
+approved BTCUSDT/ETHUSDT symbols. It translates strategy decisions into the
+accepted P2 `HOLD`, `ENTER_LONG` and `EXIT_LONG` intents, then delegates
+next-open and protective fills to the P2 engine. It rejects duplicate,
+out-of-order and overlapping signals without consuming the failed event.
+
+The adapter uses the fixed fixture quantity `0.001`; callers cannot supply or
+calculate quantity. P4 remains responsible for future risk-based sizing.
+Protective Stop/Target behavior, ambiguous Stop priority, fees and slippage
+remain the accepted P2 policies.
+
+```powershell
+uv run --locked python -m yatl strategy-adapter-check
+```
+
+P3-007: 253 tests passed. The deterministic runtime round trip produced two
+fills, applied costs, closed one paper trade and finished flat. P3-008 has not
 started. PAPER ONLY; LIVE_MASTER_LOCK=OFF.

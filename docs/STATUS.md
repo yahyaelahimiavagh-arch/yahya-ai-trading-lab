@@ -619,4 +619,23 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
   exchange endpoint was added. PAPER ONLY; LIVE_MASTER_LOCK=OFF;
   NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API; NO AI DIRECT EXECUTION.
   TRADE permissions remain disabled.
-- P3-006 runtime accepted. Next: P3-007 signal lifecycle and P2 adapter; not started.
+- P3-006 runtime accepted in checkpoint `1e8ffb0`.
+
+## P3-007 evidence — 2026-09-11
+
+- Entry checkpoint: `1e8ffb0`, main, clean working tree.
+- Added one-position strategy lifecycle and atomic adapter to the accepted P2
+  next-open/protective fill engine.
+- Candidate decisions map exactly to P2 HOLD/ENTER_LONG/EXIT_LONG intents.
+  Duplicate, out-of-order, overlapping and invalid flat-state signals fail closed.
+- Research quantity is fixed at `0.001` and cannot be passed to the adapter.
+  It is a reproducible fixture, not account-based position sizing; P4 is unopened.
+- Ten focused tests and complete suite: **253 passed, 0 failed**.
+  Lock check, compileall and restricted-source scan: PASS.
+- Runtime `strategy-adapter-check`: **PASS** and replay-equal; two fills,
+  explicit fees/slippage, one closed paper trade and final quantity zero.
+- P2 next-primary-open behavior and ambiguous Stop priority remain unchanged.
+- No network, account, credentials, broker or exchange endpoint was added.
+  PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE;
+  NO WITHDRAWAL API; NO AI DIRECT EXECUTION. TRADE permissions remain disabled.
+- P3-007 runtime accepted. Next: P3-008 evaluation protocol; not started.

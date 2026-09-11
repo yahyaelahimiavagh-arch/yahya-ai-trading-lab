@@ -1,6 +1,6 @@
 # P3 — Strategy Framework implementation plan
 
-Status: **IN PROGRESS — P3-006 RUNTIME ACCEPTED; P3-007 NOT STARTED**
+Status: **IN PROGRESS — P3-007 RUNTIME ACCEPTED; P3-008 NOT STARTED**
 Entry baseline: P2 accepted in commit `9cbc197` with a clean working tree.
 Exit condition: deterministic, versioned BTCUSDT/ETHUSDT Spot strategy candidates produce
 point-in-time signals through the accepted P2 engine, pass anti-lookahead and reproducibility
@@ -116,7 +116,7 @@ capability was added. P3-006 remains NOT STARTED.
 Implement a second transparent long-only candidate using a closed 4h regime filter, confirmed
 1h range breakout and 15m context. It must remain independent of the trend-pullback state.
 
-Acceptance: **PASS, 2026-09-11.** Frozen, independent
+Acceptance: **PASS, checkpoint `1e8ffb0`, 2026-09-11.** Frozen, independent
 `RANGE_BREAKOUT/1.0.0` requires a 4h up-regime and a closed 1h close above
 the preceding 20-bar high. Close location must be at least 0.75 and extension
 at most one prior ATR(14); two closed 15m candles confirm. Invalidation uses
@@ -137,8 +137,17 @@ Track one strategy position state and translate accepted signals into P2 paper i
 fixed test quantity. Preserve next-primary-open fills, conservative Stop priority, explicit
 costs and flat final portfolios. P4 sizing is deliberately absent.
 
-Acceptance: `NO_TRADE`, entry, hold and exit lifecycles; duplicate/overlapping signal rejection;
-replay equality; no exchange, account or credential transport.
+Acceptance: **PASS, 2026-09-11.** The adapter accepts only the two frozen
+candidate identities and approved symbols, translates `NO_TRADE`, entry and
+exit decisions to P2 paper intents, and keeps one synchronized position state.
+The quantity `0.001` is a non-configurable research fixture; P4 sizing remains absent.
+
+Ten focused tests cover no-trade/entry/hold/exit, duplicate and overlapping
+rejection, flat-state rejection, P2 ambiguous Stop priority, atomic recovery
+after fill rejection, explicit fees/slippage, a flat final portfolio and
+byte-equal replay. Complete suite: 253/253. Offline runtime repeated the costed
+round trip exactly: two fills, one closed trade, final quantity zero.
+No network, account, credential or exchange transport. P3-008 remains NOT STARTED.
 
 ### P3-008 — Evaluation protocol and anti-overfitting gates
 
