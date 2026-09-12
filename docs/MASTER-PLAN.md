@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0، P1، P2 و P3 RUNTIME ACCEPTED**
-قدم جاری: **P4-001 RUNTIME ACCEPTED — P4-002 NOT STARTED**
+قدم جاری: **P4-001 MERGED — P4-002 IMPLEMENTED, RUNTIME PENDING**
 
 ## منشأ و حدود سند
 
@@ -48,14 +48,14 @@ NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only ب�
 ## نمای پیشرفت فعلی — 2026-09-12
 
 جای فعلی پروژه: چهار فاز اول توسعه، یعنی P0 تا P3، در runtime پذیرفته و روی
-`main` بسته شده‌اند. P4 فاز فعال است. P4-001 از ده checkpoint این فاز پیاده‌سازی
-و در GitHub Actions با 293 تست تأیید شده، اما تا merge شدن PR #3 هنوز checkpoint
-شاخه محسوب می‌شود. P4-002 هنوز شروع نشده است.
+`main` بسته شده‌اند. P4 فاز فعال است. P4-001 از ده checkpoint این فاز پس از
+GitHub Actions موفق در checkpoint `be3c042` روی `main` merge شده است. P4-002
+محاسبه دقیق اندازه موقعیت را روی شاخه مستقل پیاده‌سازی کرده و runtime آن در انتظار است.
 
 | معیار | انجام‌شده | باقی‌مانده | تفسیر صحیح |
 |---|---:|---:|---|
 | فازهای تحویل نرم‌افزاری P0 تا P9 | 4 از 10 | 6 فاز | **40% بر مبنای شمارش ساده فازها**؛ تخمین زمان یا حجم کار نیست |
-| checkpointهای P4 | 1 از 10 | 9 checkpoint | P4-001 runtime verified روی PR #3؛ merge نشده |
+| checkpointهای P4 | 1 از 10 | 9 checkpoint | P4-001 روی `main` بسته شده؛ P4-002 هنوز پذیرفته نشده |
 | فازهای پیش از Forward Validation | P0 تا P3 | P4 تا P9 | پس از آن P10 باید روی داده جدید اجرا و پذیرفته شود |
 | مسیر Live | هیچ | P4 تا P10 و ممیزی‌های P11 | P11 همچنان LOCKED و مشروط به تأیید صریح است |
 
@@ -190,6 +190,6 @@ Kill Switch را از پیش محدود می‌کند. candidateهای فعلی 
 `INSUFFICIENT_EVIDENCE` اجازه ورود نمی‌گیرند. P4-001 قرارداد و مرز ایمنی را بدون
 network، credential، broker یا order endpoint پیاده‌سازی می‌کند.
 
-P4-001 در GitHub Actions run `34700810982` با **293 تست** پذیرفته شد. candidateهای
-فعلی برای ورود رد شدند و خروج کاهنده ریسک زیر Kill Switch مجاز ماند. P4-002 هنوز
-شروع نشده است.
+P4-001 در GitHub Actions run `34701891824` با **293 تست** پذیرفته و در checkpoint
+`be3c042` merge شد. candidateهای فعلی برای ورود رد شدند و خروج کاهنده ریسک زیر
+Kill Switch مجاز ماند. P4-002 اکنون روی شاخه مستقل در حال اجراست.

@@ -483,6 +483,22 @@ from receiving entry approval. A Kill Switch blocks new exposure but never a
 matching risk-reducing exit. This step does not yet implement position sizing or
 the circuit-breaker engine and cannot submit an exchange order.
 
-GitHub Actions run `34700810982` passed all **293 tests**, the deterministic P4
-runtime check, safety scans and the unchanged P3 evidence replay. P4-001 is runtime
-accepted on its PR branch; P4-002 has not started.
+GitHub Actions run `34701891824` passed all **293 tests**, the deterministic P4
+runtime check, safety scans and the unchanged P3 evidence replay. P4-001 was
+accepted and merged in `be3c042`.
+
+## P4-002 — Exact loss-budget position sizing
+
+The sizing layer computes a qualified Paper fixture quantity from the 1% equity
+loss budget, entry and stop, including the accepted P2 fee/slippage defaults. It
+uses isolated high-precision Decimal arithmetic and always rounds downward to the
+frozen `0.000001` research step:
+
+```powershell
+uv run --locked python -m yatl risk-sizing-check
+```
+
+Current candidates remain blocked before sizing because their evidence is
+insufficient. This step returns a sizing record, not a trade approval; cash,
+notional and exposure limits belong to P4-003. No exchange order is possible.
+Local verification passed all **305 tests**; GitHub runtime acceptance is pending.
