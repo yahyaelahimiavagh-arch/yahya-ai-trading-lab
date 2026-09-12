@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0، P1، P2 و P3 RUNTIME ACCEPTED**
-قدم جاری: **P4-003 RUNTIME ACCEPTED ON PR #5 — MERGE PENDING**
+قدم جاری: **P4-003 MERGED — P4-004 IMPLEMENTED, RUNTIME PENDING**
 
 ## منشأ و حدود سند
 
@@ -51,19 +51,20 @@ NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only ب�
 `main` بسته شده‌اند. P4 فاز فعال است. P4-001 در checkpoint `be3c042` روی `main`
 merge شده است. P4-002 محاسبه دقیق اندازه موقعیت را روی شاخه مستقل پیاده‌سازی و در
 GitHub Actions تأیید و در checkpoint `bc2bd30` merge کرده است. P4-003 کنترل cash،
-notional و exposure را روی PR #5 پیاده‌سازی کرده و runtime آن پذیرفته شده است؛
-merge نهایی هنوز انجام نشده است.
+notional و exposure را روی PR #5 پیاده‌سازی کرد و در checkpoint `27dfd86` merge
+شد. P4-004 مدیریت point-in-time وضعیت portfolio/session را پیاده‌سازی کرده و
+runtime GitHub آن در انتظار است.
 
 | معیار | انجام‌شده | باقی‌مانده | تفسیر صحیح |
 |---|---:|---:|---|
 | فازهای تحویل نرم‌افزاری P0 تا P9 | 4 از 10 | 6 فاز | **40% بر مبنای شمارش ساده فازها**؛ تخمین زمان یا حجم کار نیست |
-| checkpointهای P4 | 3 از 10 | 7 checkpoint | P4-001 و P4-002 روی `main`؛ P4-003 runtime پذیرفته و merge آن در انتظار است |
+| checkpointهای P4 | 3 از 10 | 7 checkpoint | P4-001 تا P4-003 روی `main`؛ P4-004 هنوز runtime پذیرفته نشده است |
 | فازهای پیش از Forward Validation | P0 تا P3 | P4 تا P9 | پس از آن P10 باید روی داده جدید اجرا و پذیرفته شود |
 | مسیر Live | هیچ | P4 تا P10 و ممیزی‌های P11 | P11 همچنان LOCKED و مشروط به تأیید صریح است |
 
 ### کار باقی‌مانده تا نسخه آزمایشی نرم‌افزار
 
-1. merge کردن P4-003 و تکمیل P4-004 تا P4-010: state، protective gate،
+1. تکمیل P4-004 تا P4-010: state، protective gate،
    circuit breaker، Kill Switch، adapter، سناریوها و ممیزی نهایی.
 2. P5: اجرای کنترل‌شده Paper/Testnet زیر Risk Manager؛ مجوز TRADE فعلاً خاموش است.
 3. P6: AI Analyst ساختاریافته، فقط پیشنهاد/`NO_TRADE` و بدون اجرای مستقیم.
@@ -201,4 +202,5 @@ P4-002 در GitHub Actions run `34702613220` با **305 تست** پذیرفته 
 P4-002 در checkpoint `bc2bd30` merge شد. P4-003 در GitHub Actions run
 `34714934702` با **314 تست**، اسکن‌های ایمنی و بازپخش/ممیزی بدون تغییر داده‌های
 پذیرفته‌شده قبول شد. runtime نتیجه عادی را `PASS/WITHIN_LIMITS` و کمبود cash را
-`REJECT/CASH_INSUFFICIENT` ثبت کرد. PR #5 آماده بازبینی نهایی است؛ P4-004 شروع نشده است.
+`REJECT/CASH_INSUFFICIENT` ثبت کرد. PR #5 در checkpoint `27dfd86` merge شد.
+P4-004 اکنون روی شاخه مستقل پیاده‌سازی شده و پذیرش runtime آن در انتظار است.
