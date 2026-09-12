@@ -1,6 +1,6 @@
 # P4 — Risk Manager implementation plan
 
-Status: **IN PROGRESS — P4-001 MERGED; P4-002 IMPLEMENTED, GITHUB RUNTIME PENDING**
+Status: **IN PROGRESS — P4-002 RUNTIME ACCEPTED; P4-003 NOT STARTED**
 Entry baseline: P3 runtime accepted and squash-merged in commit `90d5847` with all
 283 tests and GitHub Actions run `34699734574` passing.
 Exit condition: an independent, deterministic and fail-closed manager binds each
@@ -68,15 +68,19 @@ Compute quantity from equity, entry, invalidation and the 1% loss budget, includ
 explicit P2 fees/slippage. Round downward to frozen research increments and reject
 zero, non-finite, over-budget or under-specified results.
 
-Implementation: exact 256-digit local Decimal arithmetic uses the accepted P2
+Acceptance: **PASS, runtime 2026-09-12, GitHub Actions run `34702613220`.** Exact
+256-digit local Decimal arithmetic uses the accepted P2
 defaults of 10 bps fee and 5 bps adverse slippage on both entry and stop. The 1%
 equity budget is divided by the complete cost-adjusted loss per unit and rounded
 down to the frozen `0.000001` research quantity step. The immutable result records
 budget, adjusted prices, loss per unit, total fee/slippage, planned loss and the
-bound request SHA-256. Exposure and cash caps remain P4-003. GitHub runtime
-acceptance is pending and is not claimed here. Twelve focused sizing tests and the
-complete local suite pass **305/305**; compile, whitespace, lock, deterministic CLI
-and restricted-source scans also pass.
+bound request SHA-256. Twelve focused sizing tests and the complete suite passed
+**305/305**. The qualified fixture produced quantity `9.708733`, budget `100.00`
+and planned loss `99.9999984436650`; request SHA-256 is
+`393d74071bc590b80ddbdc53ce6bcc250091e0b0b60b89f52fe907b548825590`.
+Current candidates were blocked before sizing. Compile, whitespace, lock,
+deterministic CLI, restricted-source scans and unchanged P3 evidence gates passed.
+Exposure and cash caps remain P4-003, which has not started.
 
 ### P4-003 — Cash, notional and exposure limits
 

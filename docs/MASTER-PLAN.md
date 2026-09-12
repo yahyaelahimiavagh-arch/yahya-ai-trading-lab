@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0، P1، P2 و P3 RUNTIME ACCEPTED**
-قدم جاری: **P4-001 MERGED — P4-002 IMPLEMENTED, RUNTIME PENDING**
+قدم جاری: **P4-002 RUNTIME ACCEPTED — P4-003 NOT STARTED**
 
 ## منشأ و حدود سند
 
@@ -48,20 +48,20 @@ NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only ب�
 ## نمای پیشرفت فعلی — 2026-09-12
 
 جای فعلی پروژه: چهار فاز اول توسعه، یعنی P0 تا P3، در runtime پذیرفته و روی
-`main` بسته شده‌اند. P4 فاز فعال است. P4-001 از ده checkpoint این فاز پس از
-GitHub Actions موفق در checkpoint `be3c042` روی `main` merge شده است. P4-002
-محاسبه دقیق اندازه موقعیت را روی شاخه مستقل پیاده‌سازی کرده و runtime آن در انتظار است.
+`main` بسته شده‌اند. P4 فاز فعال است. P4-001 در checkpoint `be3c042` روی `main`
+merge شده است. P4-002 محاسبه دقیق اندازه موقعیت را روی شاخه مستقل پیاده‌سازی و در
+GitHub Actions run `34702613220` با 305 تست تأیید کرده است؛ P4-003 شروع نشده است.
 
 | معیار | انجام‌شده | باقی‌مانده | تفسیر صحیح |
 |---|---:|---:|---|
 | فازهای تحویل نرم‌افزاری P0 تا P9 | 4 از 10 | 6 فاز | **40% بر مبنای شمارش ساده فازها**؛ تخمین زمان یا حجم کار نیست |
-| checkpointهای P4 | 1 از 10 | 9 checkpoint | P4-001 روی `main` بسته شده؛ P4-002 هنوز پذیرفته نشده |
+| checkpointهای P4 | 2 از 10 | 8 checkpoint | P4-001 روی `main`؛ P4-002 runtime accepted روی PR #4 |
 | فازهای پیش از Forward Validation | P0 تا P3 | P4 تا P9 | پس از آن P10 باید روی داده جدید اجرا و پذیرفته شود |
 | مسیر Live | هیچ | P4 تا P10 و ممیزی‌های P11 | P11 همچنان LOCKED و مشروط به تأیید صریح است |
 
 ### کار باقی‌مانده تا نسخه آزمایشی نرم‌افزار
 
-1. تکمیل P4-002 تا P4-010: sizing دقیق، exposure، state، protective gate،
+1. تکمیل P4-003 تا P4-010: exposure، state، protective gate،
    circuit breaker، Kill Switch، adapter، سناریوها و ممیزی نهایی.
 2. P5: اجرای کنترل‌شده Paper/Testnet زیر Risk Manager؛ مجوز TRADE فعلاً خاموش است.
 3. P6: AI Analyst ساختاریافته، فقط پیشنهاد/`NO_TRADE` و بدون اجرای مستقیم.
@@ -193,3 +193,7 @@ network، credential، broker یا order endpoint پیاده‌سازی می‌�
 P4-001 در GitHub Actions run `34701891824` با **293 تست** پذیرفته و در checkpoint
 `be3c042` merge شد. candidateهای فعلی برای ورود رد شدند و خروج کاهنده ریسک زیر
 Kill Switch مجاز ماند. P4-002 اکنون روی شاخه مستقل در حال اجراست.
+
+P4-002 در GitHub Actions run `34702613220` با **305 تست** پذیرفته شد. sizing
+هزینه‌محور و رو‌به‌پایین است؛ candidateهای ناکافی پیش از محاسبه مسدود می‌شوند.
+P4-003 هنوز شروع نشده است.

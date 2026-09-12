@@ -767,6 +767,12 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
   approval is emitted by this sizing step.
 - Twelve focused sizing tests and the complete local suite passed **305/305**.
   Deterministic CLI, compile, whitespace, lock and restricted-source scans passed.
-- GitHub runtime acceptance is pending and is not claimed here.
+- GitHub Actions run `34702613220` passed **305/305** tests, deterministic sizing
+  runtime, compile, whitespace, lock and restricted-source scans. Both P3 replays
+  and the independent final audit passed with the unchanged evidence index.
+- Qualified fixture runtime: quantity `9.708733`, risk budget `100.00`, planned
+  loss `99.9999984436650`, request SHA-256
+  `393d74071bc590b80ddbdc53ce6bcc250091e0b0b60b89f52fe907b548825590`.
+- P4-002 is runtime accepted on PR #4. P4-003 has not started.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.

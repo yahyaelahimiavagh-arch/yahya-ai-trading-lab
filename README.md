@@ -501,4 +501,7 @@ uv run --locked python -m yatl risk-sizing-check
 Current candidates remain blocked before sizing because their evidence is
 insufficient. This step returns a sizing record, not a trade approval; cash,
 notional and exposure limits belong to P4-003. No exchange order is possible.
-Local verification passed all **305 tests**; GitHub runtime acceptance is pending.
+GitHub Actions run `34702613220` passed all **305 tests**, deterministic sizing,
+safety scans and unchanged P3 evidence gates. Qualified-fixture quantity was
+`9.708733` for a `100.00` budget with planned loss `99.9999984436650`.
+P4-002 is runtime accepted on PR #4; P4-003 has not started.
