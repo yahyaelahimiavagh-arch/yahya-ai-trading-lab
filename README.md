@@ -517,4 +517,8 @@ uv run --locked python -m yatl risk-limit-check
 
 It returns canonical PASS/REJECT evidence only. It cannot approve a trade, borrow
 cash, use leverage or submit an order. State transitions remain P4-004.
-Local verification passed all **314 tests**; GitHub runtime acceptance is pending.
+GitHub Actions run `34714934702` passed all **314 tests**, safety scans, the exact
+limit runtime and unchanged accepted-public-data replay/audit gates. Runtime
+recorded `normal=PASS/WITHIN_LIMITS`,
+`low_cash=REJECT/CASH_INSUFFICIENT`, notional `1019.9266734825` and cap
+`2500.00`. P4-003 is runtime accepted on PR #5; P4-004 has not started.

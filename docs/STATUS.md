@@ -790,8 +790,12 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
   P2 intent. Point-in-time state transitions remain P4-004.
 - Nine focused limit tests and the complete local suite passed **314/314**.
   Deterministic CLI, compile, whitespace, lock and restricted-source scans passed.
-- GitHub runtime acceptance is pending and is not claimed here.
-- PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
-  NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
+- GitHub Actions run `34714934702` passed both jobs: all **314/314** tests and
+  safety gates, plus accepted-public-data reconstruction, two byte-equal candidate
+  runs and the independent P3 audit. The unchanged evidence index SHA-256 is
+  `59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
+- Exact limit runtime: `normal=PASS/WITHIN_LIMITS`,
+  `low_cash=REJECT/CASH_INSUFFICIENT`, notional `1019.9266734825`, cap `2500.00`.
+- P4-003 is runtime accepted on PR #5. Merge is pending; P4-004 has not started.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
