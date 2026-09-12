@@ -23,7 +23,8 @@ from .strategy import (DecisionReason, LongSetup, StrategyAction,
                        SignalAdapterError, EvaluationError, EvaluationPlan,
                        EvidenceLabel, SymbolEvidence, assess_evidence,
                        CandidateRunError, candidate_matrix_sha256,
-                       run_and_write_candidate_matrix)
+                       run_and_write_candidate_matrix,
+                       P3AuditError, audit_p3)
 from .backtest import (AcceptedBacktestDataset, ArtifactError, BacktestClock,
                        BacktestClockError, BacktestConfigError,
                        BacktestContractError, BacktestLoadError, BacktestSpec,
@@ -420,6 +421,11 @@ def main():
     candidate_runs.add_argument("--database", default="data/p1/market.sqlite3")
     candidate_runs.add_argument("--manifest", default="manifests/p1-market-data.json")
     candidate_runs.add_argument("--output", default="data/p3/p3-009-evidence")
+    p3_audit = commands.add_parser(
+        "p3-audit", help="Run the complete P3 acceptance audit")
+    p3_audit.add_argument("--database", default="data/p1/market.sqlite3")
+    p3_audit.add_argument("--manifest", default="manifests/p1-market-data.json")
+    p3_audit.add_argument("--evidence", default="data/p3/p3-009-evidence")
     regime = commands.add_parser("strategy-regime-check",
                                  help="Classify accepted closed 4h data for both symbols")
     regime.add_argument("--database", default="data/p1/market.sqlite3")
@@ -655,6 +661,15 @@ def main():
                       f"label={evaluation.label.value} trades={evaluation.total_trades} "
                       f"report_sha256={evaluation.sha256}")
             print("PAPER ONLY | LIVE_MASTER_LOCK=OFF | Public data | No exchange order")
+        elif args.command == "p3-audit":
+            result = audit_p3(args.database, args.manifest, args.evidence)
+            print(f"OK: P3 final acceptance audit; candidates={result.candidates} "
+                  f"symbols={result.symbols} runs={result.runs} "
+                  f"files={result.files} p2_artifacts={result.p2_artifacts} "
+                  f"trades={result.trades}")
+            print(f"index_sha256={result.index_sha256} "
+                  "labels=INSUFFICIENT_EVIDENCE/INSUFFICIENT_EVIDENCE")
+            print("PAPER ONLY | LIVE_MASTER_LOCK=OFF | No exchange order")
         elif args.command == "strategy-regime-check":
             for symbol in SYMBOLS:
                 spec = latest_spec_from_manifest(args.manifest, symbol, hours=24)
@@ -766,6 +781,7 @@ def main():
             BreakoutStrategyError, SignalAdapterError,
             EvaluationError,
             CandidateRunError,
+            P3AuditError,
             CheckpointRebuildError,
             HealthError, PaperWorkflowError,
             PublicRestError, QualityError,
