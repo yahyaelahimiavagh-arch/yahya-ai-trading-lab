@@ -136,6 +136,19 @@ class PublicRestTests(unittest.TestCase):
         for kwargs in ({"timeout": 0}, {"timeout": True}, {"max_attempts": 0}, {"max_attempts": 4}):
             with self.subTest(kwargs=kwargs), self.assertRaises(ValueError):
                 BinancePublicRestClient(**kwargs)
+        with self.assertRaises(ValueError):
+            BinancePublicRestClient(base_url="https://example.com")
+
+    def test_official_market_data_only_host_is_explicitly_allowlisted(self):
+        from yatl.data import BINANCE_MARKET_DATA_BASE_URL
+        client = BinancePublicRestClient(
+            opener=self.opener, sleeper=self.sleep,
+            base_url=BINANCE_MARKET_DATA_BASE_URL)
+        self.opener.open.return_value = response({"serverTime": 1_700_000_000_000})
+        self.assertEqual(client.server_time(), 1700000000000)
+        request = self.opener.open.call_args.args[0]
+        self.assertEqual(request.full_url,
+                         "https://data-api.binance.vision/api/v3/time")
 
     @patch("yatl.__main__.BinancePublicRestClient")
     @patch("sys.argv", ["yatl", "data-check"])

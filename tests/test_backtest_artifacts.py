@@ -4,7 +4,7 @@ import json
 import os
 import unittest
 from dataclasses import replace
-from decimal import Decimal
+from decimal import Decimal, localcontext
 from pathlib import Path
 from unittest.mock import patch
 from uuid import uuid4
@@ -72,6 +72,13 @@ class BacktestArtifactTests(unittest.TestCase):
         self.assertEqual(first["metrics"]["net_pnl_quote"], "19.3700100")
         self.assertEqual(first["equity_curve"]["points"], 3)
         self.assertEqual(len(first["result_sha256"]), 64)
+
+    def test_reconciliation_is_independent_of_ambient_decimal_precision(self):
+        dataset, fills, report = scenario()
+        with localcontext() as context:
+            context.prec = 4
+            manifest = build_run_manifest(dataset, fills, report)
+        self.assertEqual(manifest["metrics"]["net_pnl_quote"], "19.3700100")
 
     def test_material_data_and_run_changes_change_input_digest(self):
         dataset, fills, report = scenario()

@@ -6,7 +6,8 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import HTTPRedirectHandler, ProxyHandler, Request, build_opener
 
-from .config import BINANCE_PUBLIC_BASE_URL, INTERVAL_MILLISECONDS, SYMBOLS
+from .config import (BINANCE_MARKET_DATA_BASE_URL, BINANCE_PUBLIC_BASE_URL,
+                     INTERVAL_MILLISECONDS, SYMBOLS)
 
 
 ENDPOINT_PARAMETERS = {
@@ -15,6 +16,7 @@ ENDPOINT_PARAMETERS = {
     "/api/v3/klines": frozenset({"symbol", "interval", "limit", "startTime", "endTime"}),
 }
 MAX_RESPONSE_BYTES = 8_000_000
+PUBLIC_BASE_URLS = (BINANCE_PUBLIC_BASE_URL, BINANCE_MARKET_DATA_BASE_URL)
 
 
 class PublicRestError(Exception):
@@ -35,24 +37,27 @@ def _positive_milliseconds(value, name):
 class BinancePublicRestClient:
     """Three allowlisted GET operations against the primary Binance Spot host."""
 
-    def __init__(self, *, timeout=15, max_attempts=3, opener=None, sleeper=None):
+    def __init__(self, *, timeout=15, max_attempts=3, opener=None, sleeper=None,
+                 base_url=BINANCE_PUBLIC_BASE_URL):
         if type(timeout) not in (int, float) or isinstance(timeout, bool) or not 1 <= timeout <= 30:
             raise ValueError("timeout must be between 1 and 30 seconds")
         if type(max_attempts) is not int or not 1 <= max_attempts <= 3:
             raise ValueError("max_attempts must be between 1 and 3")
+        if base_url not in PUBLIC_BASE_URLS:
+            raise ValueError("Public REST base URL is not allowlisted")
         self._timeout = timeout
         self._max_attempts = max_attempts
         self._opener = opener or build_opener(ProxyHandler({}), NoPublicRedirects())
         self._sleep = sleeper or time.sleep
+        self._base_url = base_url
 
-    @staticmethod
-    def _url(endpoint, params):
+    def _url(self, endpoint, params):
         if endpoint not in ENDPOINT_PARAMETERS:
             raise PublicRestError("Public REST endpoint is not allowlisted")
         if not isinstance(params, dict) or set(params) - ENDPOINT_PARAMETERS[endpoint]:
             raise PublicRestError("Public REST parameters are not allowlisted")
         query = urlencode(list(params.items()))
-        url = BINANCE_PUBLIC_BASE_URL + endpoint
+        url = self._base_url + endpoint
         return url + ("?" + query if query else "")
 
     @staticmethod
