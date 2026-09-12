@@ -143,14 +143,19 @@ def _trades(fills, report):
             entry = None
     if entry is not None or len(trades) != report.trade_count:
         raise ArtifactError("Artifact must contain only completed reported trades")
-    if (sum((Decimal(item["gross_pnl_quote"]) for item in trades), Decimal(0))
-            != report.gross_pnl_quote
-            or sum((Decimal(item["net_pnl_quote"]) for item in trades), Decimal(0))
-            != report.net_pnl_quote
-            or sum((Decimal(item["fee_quote"]) for item in trades), Decimal(0))
-            != report.total_fee_quote
-            or sum((Decimal(item["slippage_quote"]) for item in trades), Decimal(0))
-            != report.total_slippage_quote):
+    with localcontext() as context:
+        context.prec = DECIMAL_PRECISION
+        gross_pnl = sum((Decimal(item["gross_pnl_quote"]) for item in trades),
+                        Decimal(0))
+        net_pnl = sum((Decimal(item["net_pnl_quote"]) for item in trades),
+                      Decimal(0))
+        fees = sum((Decimal(item["fee_quote"]) for item in trades), Decimal(0))
+        slippage = sum((Decimal(item["slippage_quote"]) for item in trades),
+                       Decimal(0))
+    if (gross_pnl != report.gross_pnl_quote
+            or net_pnl != report.net_pnl_quote
+            or fees != report.total_fee_quote
+            or slippage != report.total_slippage_quote):
         raise ArtifactError("Artifact trades do not reconcile with performance metrics")
     return trades
 
