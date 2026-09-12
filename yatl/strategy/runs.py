@@ -513,5 +513,7 @@ def run_and_write_candidate_matrix(database_path, manifest_path, output_dir):
     except (ArtifactError, BacktestClockError, CostModelError, EvaluationError,
             MetricsError, PortfolioError, SignalAdapterError,
             StrategyContractError, TrendStrategyError, BreakoutStrategyError,
-            TypeError, ValueError):
-        raise CandidateRunError("Accepted candidate matrix failed safely") from None
+            TypeError, ValueError) as error:
+        error_type = type(error).__name__
+        raise CandidateRunError(
+            f"Accepted candidate matrix failed safely ({error_type})") from None
