@@ -819,6 +819,13 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
   Protective gates remain P4-005 and circuit breakers remain P4-006.
 - Twelve focused state tests and the complete local suite passed **326/326**.
   Deterministic CLI, compile, whitespace, lock and restricted-source scans passed.
-- GitHub runtime acceptance is pending and is not claimed here.
+- GitHub Actions run `34717094100` passed both jobs: all **326/326** tests and
+  safety/runtime gates, plus public-checkpoint reconstruction, two byte-equal
+  candidate runs and the independent P3 audit. Evidence index SHA-256 remained
+  `59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
+- Exact state runtime: sequence `2`, session PnL `-100`, consecutive losses `1`,
+  gross exposure `0`, state SHA-256
+  `1b6700b922e2f7f6693b381222c81ebc10a1362c01dc4eca576dc6cb02e05bd0`.
+- P4-004 is runtime accepted on PR #6. Merge is pending; P4-005 has not started.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.

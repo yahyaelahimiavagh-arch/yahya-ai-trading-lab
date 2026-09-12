@@ -535,6 +535,10 @@ uv run --locked python -m yatl risk-state-check
 It deterministically maintains UTC session start equity, session realized PnL,
 all-time equity peak, gross Spot exposure and consecutive closed losses. Missing,
 duplicate, stale, out-of-order, cross-symbol and semantically inconsistent updates
-fail closed. Local verification passed all **326 tests**; GitHub runtime acceptance
-is pending. Circuit-breaker decisions remain P4-006 and no trade approval or order
-is emitted.
+fail closed. GitHub Actions run `34717094100` passed all **326 tests**, safety
+scans, the new state runtime and unchanged public-data replay/audit gates. The
+loss fixture ended at sequence 2 with session PnL `-100`, one consecutive loss,
+zero exposure and state SHA-256
+`1b6700b922e2f7f6693b381222c81ebc10a1362c01dc4eca576dc6cb02e05bd0`.
+P4-004 is runtime accepted on PR #6; circuit-breaker decisions remain P4-006 and
+no trade approval or order is emitted.
