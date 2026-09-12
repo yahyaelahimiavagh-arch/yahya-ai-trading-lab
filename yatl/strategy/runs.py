@@ -510,7 +510,10 @@ def run_and_write_candidate_matrix(database_path, manifest_path, output_dir):
         return result
     except CandidateRunError:
         raise
-    except (ArtifactError, BacktestClockError, CostModelError, EvaluationError,
+    except ArtifactError as error:
+        raise CandidateRunError(
+            f"Accepted candidate artifact failed safely: {error}") from None
+    except (BacktestClockError, CostModelError, EvaluationError,
             MetricsError, PortfolioError, SignalAdapterError,
             StrategyContractError, TrendStrategyError, BreakoutStrategyError,
             TypeError, ValueError) as error:
