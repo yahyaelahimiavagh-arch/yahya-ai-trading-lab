@@ -166,7 +166,14 @@ def audit_p3(database_path="data/p1/market.sqlite3",
                                            "baseline-buy-hold.json")))
         if len(p2_names) != 16:
             raise P3AuditError("P3 P2-artifact coverage is incomplete")
-        audited = tuple(audit_run_manifest(evidence[name]) for name in p2_names)
+        audited = []
+        for name in p2_names:
+            try:
+                audited.append(audit_run_manifest(evidence[name]))
+            except P2AuditError as error:
+                raise P3AuditError(
+                    f"P3 embedded P2 artifact failed ({name}): {error}") from None
+        audited = tuple(audited)
         if len(audited) != 16 or any(item.symbol not in SYMBOLS for item in audited):
             raise P3AuditError("P3 P2-artifact audit is inconsistent")
         digest = hashlib.sha256(
