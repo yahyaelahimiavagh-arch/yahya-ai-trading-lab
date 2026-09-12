@@ -1,6 +1,6 @@
 # P4 — Risk Manager implementation plan
 
-Status: **IN PROGRESS — P4-002 RUNTIME ACCEPTED; P4-003 NOT STARTED**
+Status: **IN PROGRESS — P4-002 MERGED; P4-003 IMPLEMENTED, GITHUB RUNTIME PENDING**
 Entry baseline: P3 runtime accepted and squash-merged in commit `90d5847` with all
 283 tests and GitHub Actions run `34699734574` passing.
 Exit condition: an independent, deterministic and fail-closed manager binds each
@@ -87,6 +87,16 @@ Exposure and cash caps remain P4-003, which has not started.
 Enforce the 25% single-position and gross-exposure caps, one-position limit and
 cash sufficiency without leverage. Reject overlapping or exposure-increasing
 requests atomically.
+
+Implementation: an immutable assessment binds the accepted P4-002 sizing result
+and records entry notional, entry fee, required cash, current/prospective gross
+exposure and both frozen 25% limits. It rejects limit breaches before cash
+shortage when both apply, rejects insufficient cash without leverage, and emits
+no approval. The one-position invariant remains enforced by the P4 request/sizing
+contracts. GitHub runtime acceptance is pending and is not claimed here.
+Nine focused limit tests and the complete local suite pass **314/314**. The
+deterministic runtime records a normal PASS and a low-cash rejection; compile,
+whitespace, lock and restricted-source scans also pass.
 
 ### P4-004 — Point-in-time portfolio/session state
 

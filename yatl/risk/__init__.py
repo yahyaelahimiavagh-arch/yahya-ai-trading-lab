@@ -18,6 +18,13 @@ from .sizing import (
     RiskSizingError,
     size_entry,
 )
+from .limits import (
+    EntryLimitAssessment,
+    LimitReason,
+    LimitStatus,
+    RiskLimitError,
+    assess_entry_limits,
+)
 
 __all__ = [
     "POLICY_ID",
@@ -34,4 +41,9 @@ __all__ = [
     "PositionSize",
     "RiskSizingError",
     "size_entry",
+    "EntryLimitAssessment",
+    "LimitReason",
+    "LimitStatus",
+    "RiskLimitError",
+    "assess_entry_limits",
 ]

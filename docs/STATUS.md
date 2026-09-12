@@ -753,8 +753,8 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
 
 ## P4-002 implementation record — 2026-09-12
 
-- Entry checkpoint: `be3c042` on `main`; work is isolated on branch
-  `p4-002-position-sizing`.
+- Entry checkpoint: `be3c042` on `main`; PR #4 was squash-merged after all final
+  gates passed, producing checkpoint `bc2bd30` on `main`.
 - Added exact cost-aware loss-budget sizing for qualified Paper-only entry fixtures.
   Current `INSUFFICIENT_EVIDENCE` candidates fail closed before any quantity is
   calculated.
@@ -773,6 +773,25 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
 - Qualified fixture runtime: quantity `9.708733`, risk budget `100.00`, planned
   loss `99.9999984436650`, request SHA-256
   `393d74071bc590b80ddbdc53ce6bcc250091e0b0b60b89f52fe907b548825590`.
-- P4-002 is runtime accepted on PR #4. P4-003 has not started.
+- P4-002 is runtime accepted and merged.
+
+## P4-003 implementation record — 2026-09-12
+
+- Entry checkpoint: `bc2bd30` on `main`; work is isolated on branch
+  `p4-003-exposure-limits`.
+- Added an immutable cash/notional/exposure assessment bound to the P4-002 sizing
+  result and original risk-request SHA-256.
+- Entry notional includes adverse entry slippage; cash required also includes the
+  entry fee. Insufficient cash is rejected without leverage.
+- The prospective position must satisfy both the 25% single-position cap and the
+  25% gross-exposure cap. Combined cap violations take deterministic precedence
+  over cash shortage; all outputs are canonical and tamper-checked.
+- This step emits PASS/REJECT assessment evidence only, never a risk approval or
+  P2 intent. Point-in-time state transitions remain P4-004.
+- Nine focused limit tests and the complete local suite passed **314/314**.
+  Deterministic CLI, compile, whitespace, lock and restricted-source scans passed.
+- GitHub runtime acceptance is pending and is not claimed here.
+- PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
+  NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.

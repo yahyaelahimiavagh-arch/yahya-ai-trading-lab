@@ -43,6 +43,8 @@ jobs:
         run: uv run --locked python -m yatl risk-contract-check
       - name: P4 exact sizing runtime
         run: uv run --locked python -m yatl risk-sizing-check
+      - name: P4 cash and exposure limits runtime
+        run: uv run --locked python -m yatl risk-limit-check
 
   accepted-public-data:
     runs-on: ubuntu-latest

@@ -504,4 +504,17 @@ notional and exposure limits belong to P4-003. No exchange order is possible.
 GitHub Actions run `34702613220` passed all **305 tests**, deterministic sizing,
 safety scans and unchanged P3 evidence gates. Qualified-fixture quantity was
 `9.708733` for a `100.00` budget with planned loss `99.9999984436650`.
-P4-002 is runtime accepted on PR #4; P4-003 has not started.
+P4-002 was runtime accepted and merged in `bc2bd30`.
+
+## P4-003 — Cash, notional and exposure limits
+
+The limit layer checks the P4-002 quantity against available cash, entry fee,
+the 25% single-position cap and the 25% gross-exposure cap:
+
+```powershell
+uv run --locked python -m yatl risk-limit-check
+```
+
+It returns canonical PASS/REJECT evidence only. It cannot approve a trade, borrow
+cash, use leverage or submit an order. State transitions remain P4-004.
+Local verification passed all **314 tests**; GitHub runtime acceptance is pending.
