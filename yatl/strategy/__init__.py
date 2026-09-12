@@ -22,6 +22,11 @@ from .evaluate import (MIN_EVALUATION_DAYS, MIN_TOTAL_TRADES,
                        EvaluationPlan, EvaluationReport, EvidenceLabel,
                        EvidenceReason, SymbolEvidence, assess_evidence,
                        evaluation_input_sha256)
+from .runs import (EVALUATION_END_MS, EVALUATION_START_MS, TRAINING_START_MS,
+                   CandidateMatrixResult, CandidateRunError,
+                   CandidateSymbolResult, candidate_matrix_sha256,
+                   evaluation_plan, run_accepted_candidate_matrix,
+                   run_and_write_candidate_matrix, write_candidate_matrix)
 
 __all__ = [
     "ParameterRule", "RegistryError", "StrategyConfiguration",
@@ -36,6 +41,11 @@ __all__ = [
     "EvaluationError", "EvaluationPlan", "EvaluationReport",
     "EvidenceLabel", "EvidenceReason", "SymbolEvidence", "assess_evidence",
     "evaluation_input_sha256",
+    "TRAINING_START_MS", "EVALUATION_START_MS", "EVALUATION_END_MS",
+    "CandidateRunError", "CandidateSymbolResult", "CandidateMatrixResult",
+    "candidate_matrix_sha256", "evaluation_plan",
+    "run_accepted_candidate_matrix", "run_and_write_candidate_matrix",
+    "write_candidate_matrix",
     "MarketRegime", "RegimeError", "RegimeReason", "RegimeResult", "classify_regime",
     "DecisionReason",
     "FeatureError",

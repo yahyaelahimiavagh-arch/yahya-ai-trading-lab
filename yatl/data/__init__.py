@@ -17,6 +17,8 @@ from .stream import PublicKlineStream, StreamError, StreamRunResult, stream_url
 from .health import DataHealthReport, HealthError, build_health_report
 from .dataset import DatasetError, build_datasets, manifest_json, write_manifest
 from .audit import AuditError, P1AuditResult, audit_p1_manifest
+from .rebuild import (CheckpointRebuildError, CheckpointRebuildResult,
+                      rebuild_accepted_database)
 
 __all__ = [
     "BINANCE_PUBLIC_BASE_URL",
@@ -26,6 +28,8 @@ __all__ = [
     "CandleValidationError",
     "CandleStore",
     "ClosedCandleConflict",
+    "CheckpointRebuildError",
+    "CheckpointRebuildResult",
     "DATA_SOURCE",
     "DataHealthReport",
     "DatasetError",
@@ -49,6 +53,7 @@ __all__ = [
     "audit_p1_manifest",
     "build_health_report",
     "build_datasets",
+    "rebuild_accepted_database",
     "duplicate_candle_keys",
     "normalize_rest_kline",
     "normalize_websocket_kline",

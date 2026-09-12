@@ -21,7 +21,9 @@ from .strategy import (DecisionReason, LongSetup, StrategyAction,
                        BreakoutStrategyError, evaluate_breakout,
                        FIXED_RESEARCH_QUANTITY, ResearchSignalAdapter,
                        SignalAdapterError, EvaluationError, EvaluationPlan,
-                       EvidenceLabel, SymbolEvidence, assess_evidence)
+                       EvidenceLabel, SymbolEvidence, assess_evidence,
+                       CandidateRunError, candidate_matrix_sha256,
+                       run_and_write_candidate_matrix)
 from .backtest import (AcceptedBacktestDataset, ArtifactError, BacktestClock,
                        BacktestClockError, BacktestConfigError,
                        BacktestContractError, BacktestLoadError, BacktestSpec,
@@ -39,7 +41,8 @@ from .data import (BinancePublicRestClient, Candle, CandleStore,
                    QualityError, StorageError, SYMBOLS, analyze_open_times,
                    PublicKlineStream, StreamError, download_range,
                    DatasetError, HealthError, build_datasets, build_health_report,
-                   normalize_rest_kline, write_manifest, AuditError, audit_p1_manifest)
+                   normalize_rest_kline, write_manifest, AuditError, audit_p1_manifest,
+                   CheckpointRebuildError, rebuild_accepted_database)
 
 
 def _storage_runtime_check():
@@ -411,6 +414,12 @@ def main():
                         help="Verify P3 decisions through the P2 paper lifecycle")
     commands.add_parser("strategy-evaluation-check",
                         help="Verify pre-registered P3 evidence labels")
+    candidate_runs = commands.add_parser(
+        "strategy-candidate-check",
+        help="Run the frozen P3 candidates and baselines on accepted data")
+    candidate_runs.add_argument("--database", default="data/p1/market.sqlite3")
+    candidate_runs.add_argument("--manifest", default="manifests/p1-market-data.json")
+    candidate_runs.add_argument("--output", default="data/p3/p3-009-evidence")
     regime = commands.add_parser("strategy-regime-check",
                                  help="Classify accepted closed 4h data for both symbols")
     regime.add_argument("--database", default="data/p1/market.sqlite3")
@@ -437,6 +446,11 @@ def main():
     dataset.add_argument("--days", type=int, default=30)
     dataset.add_argument("--database", default="data/p1/market.sqlite3")
     dataset.add_argument("--manifest", default="manifests/p1-market-data.json")
+    restore = commands.add_parser(
+        "dataset-restore-checkpoint",
+        help="Rebuild the accepted public dataset without changing its manifest")
+    restore.add_argument("--database", default="data/p1/market.sqlite3")
+    restore.add_argument("--manifest", default="manifests/p1-market-data.json")
     audit = commands.add_parser("p1-audit", help="Audit the fixed P1 acceptance manifest")
     audit.add_argument("--manifest", default="manifests/p1-market-data.json")
     collect = commands.add_parser("candles", help="Save recent candles to CSV")
@@ -630,6 +644,17 @@ def main():
             print(f"minimum_days=180 minimum_trades=30_per_symbol/60_pooled "
                   f"replay_equal=true report_sha256={qualified.sha256}")
             print("RESEARCH ONLY | Qualification is not trading approval | No exchange order")
+        elif args.command == "strategy-candidate-check":
+            result = run_and_write_candidate_matrix(
+                args.database, args.manifest, args.output)
+            print(f"OK: accepted-data candidate matrix; runs={len(result.runs)} "
+                  f"index_sha256={candidate_matrix_sha256(result)}")
+            for evaluation in result.evaluations:
+                print(f"{evaluation.plan.identity.strategy_id}/"
+                      f"{evaluation.plan.identity.version}: "
+                      f"label={evaluation.label.value} trades={evaluation.total_trades} "
+                      f"report_sha256={evaluation.sha256}")
+            print("PAPER ONLY | LIVE_MASTER_LOCK=OFF | Public data | No exchange order")
         elif args.command == "strategy-regime-check":
             for symbol in SYMBOLS:
                 spec = latest_spec_from_manifest(args.manifest, symbol, hours=24)
@@ -714,6 +739,12 @@ def main():
                       f"rows={report['total_rows']} backtest_ready={str(report['backtest_ready']).lower()}")
             print(f"OK: {len(manifest['datasets'])} public-real closed datasets; manifest={path}")
             print("SPOT PUBLIC DATA ONLY | No credentials | No execution")
+        elif args.command == "dataset-restore-checkpoint":
+            result = rebuild_accepted_database(args.database, args.manifest)
+            print(f"OK: accepted dataset checkpoint rebuilt; datasets={result.datasets} "
+                  f"closed_rows={result.closed_rows} "
+                  f"manifest_generated_at_ms={result.manifest_generated_at_ms}")
+            print("SPOT PUBLIC DATA ONLY | No credentials | No execution | Manifest unchanged")
         elif args.command == "p1-audit":
             result = audit_p1_manifest(args.manifest)
             print(f"OK: P1 manifest acceptance gate; datasets={result.datasets} "
@@ -734,6 +765,8 @@ def main():
             DatasetError, FeatureError, RegimeError, RegistryError, TrendStrategyError,
             BreakoutStrategyError, SignalAdapterError,
             EvaluationError,
+            CandidateRunError,
+            CheckpointRebuildError,
             HealthError, PaperWorkflowError,
             PublicRestError, QualityError,
             StorageError, StrategyContractError, StreamError,

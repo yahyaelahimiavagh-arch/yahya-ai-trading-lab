@@ -1,0 +1,78 @@
+name: P3-009 deterministic gates
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p3-009-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit-and-safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12.14
+      - name: Install locked runner
+        run: python -m pip install uv==0.12.11
+      - name: Sync exact dependencies
+        run: uv sync --locked
+      - name: Complete test suite
+        run: uv run --locked python -m unittest discover -s tests -v
+      - name: Compile and whitespace gates
+        run: |
+          uv run --locked python -m compileall -q yatl
+          git diff --check
+      - name: Safety boundary scan
+        run: |
+          git check-ignore -q .env
+          test -z "$(git ls-files | rg '(^|/)\.env$')"
+          ! rg -n 'api/v3/(order|orderList)|fapi|dapi|withdraw' yatl/strategy
+          ! rg -n 'from yatl\.account|import yatl\.account|BinancePublicRestClient' yatl/strategy
+
+  accepted-public-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12.14
+      - name: Install locked runner
+        run: python -m pip install uv==0.12.11
+      - name: Sync exact dependencies
+        run: uv sync --locked
+      - name: Rebuild accepted public checkpoint
+        run: |
+          uv run --locked python -m yatl dataset-restore-checkpoint \
+            --database data/p1/market.sqlite3 \
+            --manifest manifests/p1-market-data.json
+          uv run --locked python -m yatl p1-audit \
+            --manifest manifests/p1-market-data.json
+      - name: Run P3-009 twice
+        run: |
+          uv run --locked python -m yatl strategy-candidate-check \
+            --database data/p1/market.sqlite3 \
+            --manifest manifests/p1-market-data.json \
+            --output data/p3/p3-009-evidence
+          uv run --locked python -m yatl strategy-candidate-check \
+            --database data/p1/market.sqlite3 \
+            --manifest manifests/p1-market-data.json \
+            --output data/p3/p3-009-evidence-replay
+          diff -r data/p3/p3-009-evidence data/p3/p3-009-evidence-replay
+          sha256sum data/p3/p3-009-evidence/p3-009-index.json
+      - name: Publish reproducible evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: p3-009-evidence
+          path: data/p3/p3-009-evidence/
+          if-no-files-found: error
+          retention-days: 30
