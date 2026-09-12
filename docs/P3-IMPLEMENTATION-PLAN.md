@@ -1,6 +1,6 @@
 # P3 — Strategy Framework implementation plan
 
-Status: **IN PROGRESS — P3-008 RUNTIME ACCEPTED; P3-009 NOT STARTED**
+Status: **RUNTIME ACCEPTED — P3-010 FINAL AUDIT PASS, 2026-09-12**
 Entry baseline: P2 accepted in commit `9cbc197` with a clean working tree.
 Exit condition: deterministic, versioned BTCUSDT/ETHUSDT Spot strategy candidates produce
 point-in-time signals through the accepted P2 engine, pass anti-lookahead and reproducibility
@@ -194,7 +194,7 @@ evidence diff and all artifact uploads passed. The 21-file index SHA-256 is
 `INSUFFICIENT_EVIDENCE` for the frozen reasons `EVALUATION_WINDOW_TOO_SHORT`
 and `MINIMUM_TRADES_NOT_MET`; no tuning followed the result. Complete suite:
 278/278. Point-in-time, future-isolation, explicit-cost and safety scans passed.
-P3-010 remains NOT STARTED.
+P3-009 is runtime accepted; P3-010 final audit evidence is recorded below.
 
 ### P3-010 — P3 final audit and checkpoint
 
@@ -204,6 +204,16 @@ scan; verify frozen configuration digests and evidence labels.
 Acceptance: mark P3 runtime accepted only when every software gate passes and commit a clean
 baseline. A strategy may remain unqualified; P4 can still build independent risk controls, but
 no candidate proceeds toward P5/P10 without its required evidence.
+
+Acceptance: **PASS, runtime 2026-09-12, GitHub Actions run `34699232936`.**
+The final gate independently rebuilt the accepted checkpoint, recomputed the complete
+candidate matrix a third time and byte-compared all 21 evidence files. It audited 16 embedded
+P2 artifacts and 35 closed trades across two candidates, two symbols and four runs. All three
+matrix computations produced index SHA-256
+`59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
+The complete suite passed 283/283. Both candidate labels remain
+`INSUFFICIENT_EVIDENCE`; P3 framework runtime is accepted without a profitability claim,
+trade permission or parameter tuning. P4 has not started.
 
 ## Intended module boundaries
 
