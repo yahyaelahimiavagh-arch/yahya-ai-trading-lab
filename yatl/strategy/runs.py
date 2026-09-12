@@ -399,10 +399,15 @@ def run_accepted_candidate_matrix(database_path, manifest_path):
                     != tuple(item.reference for item in zero_fills)):
                 raise CandidateRunError("Costs changed candidate decisions or references")
             drag = zero_report.net_pnl_quote - report.net_pnl_quote
-            if ((report.trade_count and drag <= 0)
-                    or (not report.trade_count and drag != 0)
-                    or drag != report.total_cost_quote):
-                raise CandidateRunError("Candidate cost drag is inconsistent")
+            if report.trade_count and drag <= 0:
+                raise CandidateRunError(
+                    "Candidate trading costs did not reduce paper results")
+            if not report.trade_count and drag != 0:
+                raise CandidateRunError(
+                    "No-trade candidate produced nonzero cost drag")
+            if drag != report.total_cost_quote:
+                raise CandidateRunError(
+                    "Candidate cost drag differs from reported fill costs")
             future = _candidate_execution(_future_mutation(dataset), identity)
             if (report, encoded, trace, fills) != future:
                 raise CandidateRunError("Future data changed sealed candidate evidence")
