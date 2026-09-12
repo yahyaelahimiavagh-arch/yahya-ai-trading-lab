@@ -25,6 +25,8 @@ from .strategy import (DecisionReason, LongSetup, StrategyAction,
                        CandidateRunError, candidate_matrix_sha256,
                        run_and_write_candidate_matrix,
                        P3AuditError, audit_p3)
+from .risk import (PortfolioRiskState, RiskContractError, RiskDecision,
+                   RiskDisposition, RiskReason, RiskRequest)
 from .backtest import (AcceptedBacktestDataset, ArtifactError, BacktestClock,
                        BacktestClockError, BacktestConfigError,
                        BacktestContractError, BacktestLoadError, BacktestSpec,
@@ -238,6 +240,33 @@ def _strategy_contract_runtime_check():
     return no_trade, entry
 
 
+def _risk_contract_runtime_check():
+    _, entry = _strategy_contract_runtime_check()
+    flat = PortfolioRiskState(
+        entry.symbol, entry.decision_time_ms, "10000", "10000", "0", "105",
+        "10100",
+    )
+    blocked_request = RiskRequest(entry, EvidenceLabel.INSUFFICIENT_EVIDENCE, flat)
+    blocked = RiskDecision(
+        blocked_request, RiskDisposition.REJECT, RiskReason.EVIDENCE_NOT_QUALIFIED,
+    )
+    exit_decision = StrategyDecision(
+        entry.context, StrategyAction.EXIT_LONG, DecisionReason.STRATEGY_EXIT,
+    )
+    positioned = PortfolioRiskState(
+        exit_decision.symbol, exit_decision.decision_time_ms, "9900", "9000",
+        "0.01", "105", "10100", "-100", 3, 1, True,
+    )
+    exit_request = RiskRequest(
+        exit_decision, EvidenceLabel.INSUFFICIENT_EVIDENCE, positioned,
+    )
+    approved_exit = RiskDecision(
+        exit_request, RiskDisposition.APPROVE_PAPER,
+        RiskReason.EXIT_REDUCES_RISK, "0.01",
+    )
+    return blocked, approved_exit
+
+
 def _strategy_adapter_runtime_check():
     start = 1_699_999_200_000
 
@@ -399,6 +428,8 @@ def main():
     p2_audit.add_argument("--hours", type=int, default=24)
     commands.add_parser("strategy-contract-check",
                         help="Verify the P3 research-only signal boundary")
+    commands.add_parser("risk-contract-check",
+                        help="Verify the P4 paper-only risk boundary")
     commands.add_parser("strategy-feature-check",
                         help="Verify point-in-time Decimal P3 features")
     commands.add_parser("strategy-registry-check",
@@ -584,6 +615,15 @@ def main():
             print(f"OK: P3 signal contract; actions={no_trade.action.value}/"
                   f"{entry.action.value} context_sha256={entry.context_sha256}")
             print("PAPER ONLY | No sizing | No credentials | No exchange order")
+        elif args.command == "risk-contract-check":
+            blocked, approved_exit = _risk_contract_runtime_check()
+            if (blocked, approved_exit) != _risk_contract_runtime_check():
+                raise RiskContractError("Risk contract replay mismatch")
+            print(f"OK: P4 risk contract; entry={blocked.disposition.value}/"
+                  f"{blocked.reason.value} "
+                  f"exit_under_kill_switch={approved_exit.disposition.value} "
+                  f"request_sha256={blocked.request_sha256}")
+            print("PAPER ONLY | LIVE_MASTER_LOCK=OFF | No credentials | No exchange order")
         elif args.command == "strategy-registry-check":
             identity = StrategyIdentity("RESEARCH_FIXTURE", "1.0.0")
             registry = StrategyRegistry((StrategyDefinition(identity, (
@@ -782,6 +822,7 @@ def main():
             EvaluationError,
             CandidateRunError,
             P3AuditError,
+            RiskContractError,
             CheckpointRebuildError,
             HealthError, PaperWorkflowError,
             PublicRestError, QualityError,

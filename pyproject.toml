@@ -1,7 +1,7 @@
 [project]
 name = "yahya-ai-trading-lab"
 version = "0.1.0"
-description = "P0-P2 accepted: paper-only Spot data and deterministic backtesting"
+description = "P0-P3 accepted: paper-only Spot research and deterministic risk controls"
 requires-python = ">=3.12,<3.13"
 dependencies = ["websockets==17.1"]
 
