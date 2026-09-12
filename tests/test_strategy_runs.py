@@ -13,7 +13,7 @@ from yatl.strategy import (BREAKOUT_IDENTITY, EVALUATION_END_MS,
                            EvidenceLabel, candidate_matrix_sha256,
                            evaluation_plan, run_accepted_candidate_matrix,
                            write_candidate_matrix)
-from yatl.strategy.runs import _exact_difference
+from yatl.strategy.runs import _exact_difference, _plain
 
 
 def candles(symbol, interval):
@@ -58,6 +58,16 @@ class AcceptedCandidateRunTests(unittest.TestCase):
             drag = _exact_difference(
                 Decimal("19.3700100"), Decimal("0.0000001"))
         self.assertEqual(drag, Decimal("19.3700099"))
+
+    def test_evidence_reporting_quantizes_only_at_40_digit_boundary(self):
+        value = Decimal(
+            "0.12345678901234567890123456789012345678905")
+        with localcontext() as context:
+            context.prec = 4
+            encoded = _plain(value)
+        self.assertEqual(
+            encoded, "0.123456789012345678901234567890123456789")
+        self.assertLessEqual(len(encoded.partition(".")[2]), 40)
 
     def test_full_candidate_symbol_matrix_is_deterministic_and_insufficient(self):
         first = self.matrix

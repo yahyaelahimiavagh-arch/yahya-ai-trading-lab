@@ -4,7 +4,7 @@ import hashlib
 import json
 import shutil
 from dataclasses import dataclass, replace
-from decimal import Decimal, localcontext
+from decimal import Decimal, ROUND_HALF_EVEN, localcontext
 from pathlib import Path
 from uuid import uuid4
 
@@ -40,6 +40,7 @@ MATRIX_KIND = "YATL_P3_ACCEPTED_DATA_CANDIDATE_MATRIX"
 MATRIX_SCHEMA_VERSION = 1
 MAX_EVIDENCE_FILES = 32
 MAX_INDEX_BYTES = 2 * 1024 * 1024
+REPORT_DECIMAL_QUANTUM = Decimal("1e-40")
 CANDIDATES = (
     (TREND_IDENTITY, TREND_CONFIGURATION.sha256, evaluate_trend_pullback),
     (BREAKOUT_IDENTITY, BREAKOUT_CONFIGURATION.sha256, evaluate_breakout),
@@ -61,6 +62,15 @@ def _sha256(value):
 
 
 def _plain(value):
+    if type(value) is not Decimal or not value.is_finite():
+        raise CandidateRunError("Report decimal is invalid")
+    if value.as_tuple().exponent < -40:
+        with localcontext() as arithmetic:
+            arithmetic.prec = DECIMAL_PRECISION
+            value = value.quantize(
+                REPORT_DECIMAL_QUANTUM, rounding=ROUND_HALF_EVEN)
+    if value == 0:
+        return "0"
     text = format(value, "f")
     return text.rstrip("0").rstrip(".") if "." in text else text
 
