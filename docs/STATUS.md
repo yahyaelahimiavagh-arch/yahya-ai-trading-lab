@@ -666,8 +666,8 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
 
 ## P3-009 evidence — 2026-09-12
 
-- Entry checkpoint: `1409bb6` on `main`; work is isolated in PR #1 on branch
-  `p3-009-accepted-data-runs` and remains unmerged.
+- Entry checkpoint: `1409bb6` on `main`; PR #1 was squash-merged after all runtime
+  gates passed, producing checkpoint `013cbbc` on `main`.
 - Added atomic reconstruction of the exact accepted public Spot checkpoint from
   the tracked P1 manifest. Runtime rebuilt six BTCUSDT/ETHUSDT datasets with
   **7,560 closed rows** and the unchanged manifest timestamp `1788971310603`.
@@ -695,5 +695,33 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
   were made independent of ambient precision; evidence is quantized only at the
   explicit 40-decimal reporting boundary using deterministic half-even rounding.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
-  NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION. P3-010 has not
-  started.
+  NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
+
+## P3-010 final audit evidence — 2026-09-12
+
+- Entry checkpoint: `013cbbc` on `main`; final-audit work is isolated in PR #2 on
+  branch `p3-010-final-audit` and remains unmerged pending review.
+- Added a fail-closed independent P3 audit that validates the accepted P1 manifest,
+  source safety boundaries, frozen candidate configuration digests, exact expected
+  evidence mapping and every embedded P2 artifact.
+- The audit rejects missing, extra, changing, oversized or symlinked evidence and
+  locks exact trade counts, report hashes, evidence labels and frozen reasons.
+- GitHub Actions run `34699232936` restored six accepted datasets with **7,560
+  closed rows**, ran the candidate matrix twice with a recursive byte-equal diff,
+  then recomputed and audited it independently a third time.
+- Every computation produced evidence index SHA-256
+  `59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
+  Final audit: **2 candidates, 2 symbols, 4 runs, 21 files, 16 P2 artifacts,
+  35 closed trades**.
+- The complete suite passed **283/283**. Compile, whitespace, lock, `.env`, forbidden
+  endpoint and credential-import gates passed; evidence publication also passed.
+- Runtime exposed and closed one audit-contract gap: P2 now correctly accepts
+  same-bar protective exits where `entry_time == exit_time`, matching the already
+  accepted fill/artifact contracts, with a regression test.
+- Both candidates remain **`INSUFFICIENT_EVIDENCE`** for
+  `EVALUATION_WINDOW_TOO_SHORT` and `MINIMUM_TRADES_NOT_MET`. No parameter or
+  evaluation window was changed after observing results.
+- P3 framework runtime is accepted; this is not candidate qualification,
+  profitability evidence or permission to trade. P4 has not started.
+- PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
+  NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.

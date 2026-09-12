@@ -111,7 +111,7 @@ def _audit_trades(trades, spec):
             entry_time = trade["entry_time_ms"]
             exit_time = trade["exit_time_ms"]
             if (type(entry_time) is not int or type(exit_time) is not int
-                    or not spec.start_time_ms <= entry_time < exit_time < spec.end_time_ms
+                    or not spec.start_time_ms <= entry_time <= exit_time < spec.end_time_ms
                     or previous_exit is not None and entry_time <= previous_exit):
                 raise P2AuditError("Artifact trade time order is invalid")
             try:

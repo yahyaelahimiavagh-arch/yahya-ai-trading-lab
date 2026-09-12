@@ -1,4 +1,4 @@
-name: P3-009 deterministic gates
+name: P3 final deterministic gates
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: p3-009-${{ github.ref }}
+  group: p3-final-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -69,6 +69,12 @@ jobs:
             --output data/p3/p3-009-evidence-replay
           diff -r data/p3/p3-009-evidence data/p3/p3-009-evidence-replay
           sha256sum data/p3/p3-009-evidence/p3-009-index.json
+      - name: Run independent P3 final audit
+        run: |
+          uv run --locked python -m yatl p3-audit \
+            --database data/p1/market.sqlite3 \
+            --manifest manifests/p1-market-data.json \
+            --evidence data/p3/p3-009-evidence
       - name: Publish reproducible evidence
         uses: actions/upload-artifact@v4
         with:

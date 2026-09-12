@@ -448,4 +448,22 @@ Runtime on 2026-09-12 produced index SHA-256
 `RANGE_BREAKOUT/1.0.0` closed 4; both remain honestly labelled
 `INSUFFICIENT_EVIDENCE` because the 20-day evaluation window and per-symbol/
 pooled trade minima do not satisfy the frozen P3 protocol. No parameter was
-changed in response to the result. P3-010 has not started.
+changed in response to the result. P3-010 final-audit evidence follows.
+
+## P3-010 — Final deterministic audit
+
+The final audit independently rebuilds and byte-compares the complete P3 evidence
+set, validates every embedded P2 artifact and enforces the frozen configuration,
+trade-count, label and safety contracts:
+
+```powershell
+uv run --locked python -m yatl p3-audit
+```
+
+GitHub Actions run `34699232936` passed the complete 283-test suite and three
+deterministic matrix computations. Each produced index SHA-256
+`59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
+The final audit verified 2 candidates, 2 symbols, 4 runs, 21 evidence files,
+16 P2 artifacts and 35 closed trades. Both candidates remain
+`INSUFFICIENT_EVIDENCE`; P3 framework runtime is accepted without a profitability
+claim or trade permission. P4 has not started.

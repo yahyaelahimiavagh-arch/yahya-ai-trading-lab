@@ -7,8 +7,10 @@ from unittest.mock import patch
 
 from yatl.__main__ import main
 from yatl.backtest import (AcceptedBacktestDataset, BacktestSpec, P2AuditError,
+                           FillReason, FillReference, IntentAction, apply_costs,
                            artifact_json, audit_p2, audit_run_manifest,
                            run_scripted_scenario)
+from yatl.backtest.audit import _audit_trades
 from yatl.data import Candle, DATA_SOURCE, INTERVAL_MILLISECONDS
 
 
@@ -37,6 +39,36 @@ def encoded(name="SINGLE_ROUND_TRIP"):
 
 
 class P2AuditTests(unittest.TestCase):
+    def test_same_bar_protective_exit_matches_accepted_fill_contract(self):
+        spec = BacktestSpec("BTCUSDT", START, END)
+        entry_reference = FillReference(
+            IntentAction.ENTER_LONG, "BTCUSDT", START, START,
+            "0.001", "100", FillReason.NEXT_PRIMARY_OPEN)
+        exit_reference = FillReference(
+            IntentAction.EXIT_LONG, "BTCUSDT", START, START,
+            "0.001", "99", FillReason.STOP)
+        entry = apply_costs(entry_reference, spec)
+        exit_fill = apply_costs(exit_reference, spec)
+        trade = {
+            "entry_time_ms": START,
+            "exit_time_ms": START,
+            "quantity": "0.001",
+            "entry_reference_price": "100",
+            "entry_execution_price": format(entry.execution_price, "f"),
+            "exit_reference_price": "99",
+            "exit_execution_price": format(exit_fill.execution_price, "f"),
+            "exit_reason": "STOP",
+            "gross_pnl_quote": "-0.001",
+            "net_pnl_quote": format(entry.cash_delta + exit_fill.cash_delta, "f"),
+            "fee_quote": format(entry.fee_quote + exit_fill.fee_quote, "f"),
+            "slippage_quote": format(
+                entry.slippage_quote + exit_fill.slippage_quote, "f"),
+        }
+        fill_inputs, _, _ = _audit_trades([trade], spec)
+        self.assertEqual(len(fill_inputs), 2)
+        self.assertEqual(fill_inputs[0]["fill_time_ms"],
+                         fill_inputs[1]["fill_time_ms"])
+
     def test_independent_artifact_audit_accepts_all_scenario_shapes(self):
         expected = {"NO_TRADE": 0, "SINGLE_ROUND_TRIP": 1,
                     "CONTROLLED_MULTI_TRADE": 3}

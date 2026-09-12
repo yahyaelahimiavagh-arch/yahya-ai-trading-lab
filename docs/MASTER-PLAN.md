@@ -1,8 +1,8 @@
 # YATL — نقشه مرجع اجرا و وضعیت پروژه
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
-وضعیت جاری: **P0، P1 و P2 RUNTIME ACCEPTED**
-قدم جاری: **P3-008 RUNTIME ACCEPTED — P3-009 NOT STARTED**
+وضعیت جاری: **P0، P1، P2 و P3 RUNTIME ACCEPTED**
+قدم جاری: **P3 RUNTIME ACCEPTED — P4 NOT STARTED**
 
 ## منشأ و حدود سند
 
@@ -35,7 +35,7 @@ NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only ب�
 | P0 Foundation | محیط، Git، امنیت، Testnet، آموزش و تمرین دستی Paper | **RUNTIME ACCEPTED — 2026-09-09** |
 | P1 Market Data Layer | REST، دانلود تاریخی، WebSocket، نرمال‌سازی، SQLite، حذف تکرار، تشخیص شکاف، گزارش سلامت BTC/ETH | **RUNTIME ACCEPTED — checkpoint `4e77e34`** |
 | P2 Backtesting Engine | آزمون تاریخی تکرارپذیر با کارمزد، لغزش و جلوگیری از استفاده از آینده | **RUNTIME ACCEPTED — checkpoint `9cbc197`** |
-| P3 Strategy Framework | چارچوب مشترک استراتژی و قواعد روشن سیگنال/عدم معامله | در حال اجرا؛ P3-007 در `2e43a12` ثبت شد؛ P3-008 با 265 تست و runtime PASS تکمیل شد |
+| P3 Strategy Framework | چارچوب مشترک استراتژی و قواعد روشن سیگنال/عدم معامله | **RUNTIME ACCEPTED — final audit run `34699232936`** |
 | P4 Risk Manager | اندازه موقعیت، محدودیت ریسک و Kill Switch مستقل | شروع نشده |
 | P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | شروع نشده؛ مجوز TRADE فعلی خاموش |
 | P6 AI Analyst | تحلیل ساختاریافته و NO_TRADE بدون دسترسی مستقیم به اجرا | شروع نشده |
@@ -129,3 +129,19 @@ P3 تا checkpoint نهایی P2 باز نمی‌شود.
 چارچوب از قدرت شواهد عملکرد جدا می‌ماند؛ داده ۳۰روزه فقط smoke/integration است و نتیجه
 ناکافی بدون دست‌کاری پارامترها `INSUFFICIENT_EVIDENCE` ثبت می‌شود. P3-001 اکنون قرارداد
 research-only سیگنال را پیاده‌سازی کرده و checkpoint آن در انتظار ثبت است.
+
+## P3 closure record — 2026-09-12
+
+- ممیزی نهایی مستقل، ماتریس هر دو candidate و هر دو نماد را برای چهار run بازسازی کرد و
+  ۲۱ فایل شواهد، ۱۶ artifact موتور P2 و ۳۵ معامله بسته را byte-for-byte تطبیق داد.
+- مجموعه کامل **283 تست** را بدون خطا گذراند. GitHub Actions run `34699232936`
+  بازسازی dataset، دو اجرای مستقل candidate matrix، diff بازگشتی، ممیزی سوم و انتشار
+  شواهد را با موفقیت تکمیل کرد.
+- SHA-256 شاخص شواهد در هر سه اجرا
+  `59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`
+  باقی ماند.
+- هر دو candidate با دلایل از پیش منجمدشده `EVALUATION_WINDOW_TOO_SHORT` و
+  `MINIMUM_TRADES_NOT_MET` در وضعیت **`INSUFFICIENT_EVIDENCE`** ماندند؛ هیچ پارامتر
+  یا بازه‌ای پس از مشاهده نتیجه تغییر نکرد.
+- پذیرش P3 فقط پذیرش runtime چارچوب است و ادعای سوددهی یا مجوز معامله نیست.
+  P4 هنوز شروع نشده است.
