@@ -699,8 +699,8 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
 
 ## P3-010 final audit evidence — 2026-09-12
 
-- Entry checkpoint: `013cbbc` on `main`; final-audit work is isolated in PR #2 on
-  branch `p3-010-final-audit` and remains unmerged pending review.
+- Entry checkpoint: `013cbbc` on `main`; PR #2 was squash-merged after all runtime
+  gates passed, producing checkpoint `90d5847` on `main`.
 - Added a fail-closed independent P3 audit that validates the accepted P1 manifest,
   source safety boundaries, frozen candidate configuration digests, exact expected
   evidence mapping and every embedded P2 artifact.
@@ -723,5 +723,24 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
   evaluation window was changed after observing results.
 - P3 framework runtime is accepted; this is not candidate qualification,
   profitability evidence or permission to trade. P4 has not started.
+- PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
+  NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
+
+## P4-001 implementation record — 2026-09-12
+
+- Entry checkpoint: `90d5847` on `main`; work is isolated on branch
+  `p4-001-risk-contract`.
+- Frozen the sequential P4 plan and conservative `P4_RISK_V1` engineering policy.
+- Added immutable policy, portfolio-state, risk-request and risk-decision contracts
+  with canonical SHA-256 binding strategy context, evidence eligibility and exact
+  point-in-time portfolio facts.
+- Current P3 candidates are explicitly prevented from Paper entry approval while
+  their label remains `INSUFFICIENT_EVIDENCE`.
+- Kill Switch blocks entry approval but cannot block a matching risk-reducing exit.
+- Ten focused tests and the complete local suite passed **293/293**. Offline
+  `risk-contract-check`, compile, whitespace, lock and restricted-source scans
+  passed. GitHub runtime acceptance remains pending.
+- This checkpoint adds contracts only; sizing, state transitions and circuit-breaker
+  engines remain ordered future P4 steps and are not claimed complete.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.

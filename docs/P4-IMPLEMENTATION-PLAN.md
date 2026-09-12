@@ -1,0 +1,133 @@
+# P4 — Risk Manager implementation plan
+
+Status: **IN PROGRESS — P4-001 IMPLEMENTED, GITHUB RUNTIME PENDING**
+Entry baseline: P3 runtime accepted and squash-merged in commit `90d5847` with all
+283 tests and GitHub Actions run `34699734574` passing.
+Exit condition: an independent, deterministic and fail-closed manager binds each
+strategy decision to point-in-time portfolio state, evidence eligibility and a
+frozen risk policy; computes paper quantity; enforces loss, exposure and circuit-
+breaker limits; and emits reproducible approvals/rejections without any exchange
+execution capability.
+
+## Fixed boundaries
+
+- PAPER ONLY and `LIVE_MASTER_LOCK=OFF` remain hard invariants.
+- Only long-only BTCUSDT/ETHUSDT Spot research is representable. No Short, Margin,
+  Futures, leverage, withdrawal, broker or order endpoint is permitted.
+- P4 is independent from strategy logic. It may reject any entry and may not alter
+  a P3 signal, setup, parameter, evidence label or market input.
+- An entry cannot receive paper approval unless its frozen P3 evidence label is
+  `QUALIFIED_FOR_P4_RESEARCH`. Current accepted candidates remain
+  `INSUFFICIENT_EVIDENCE` and therefore cannot be approved for entry.
+- Risk-reducing exits remain allowed while a kill switch is active; new or
+  increased exposure is blocked.
+- All financial inputs and calculations use validated decimal strings and
+  deterministic `Decimal` arithmetic. Float, implicit rounding and guessed state
+  are rejected.
+- P4 consumes no API credential, account endpoint, network transport or AI output.
+  It produces a local Paper decision, never an exchange order.
+
+## Frozen initial policy `P4_RISK_V1`
+
+- maximum planned loss per trade: 1% of point-in-time equity;
+- maximum single-position notional: 25% of equity;
+- maximum total gross exposure: 25% of equity;
+- maximum concurrent open positions: one;
+- session-loss circuit breaker: 2% of session-start equity;
+- peak-to-current drawdown circuit breaker: 10%;
+- consecutive-loss circuit breaker: three closed losing trades;
+- approved markets: BTCUSDT and ETHUSDT Spot, long-only, Paper only.
+
+These are conservative engineering fixtures for P4 validation, not a live-risk
+recommendation. Any future change requires a new policy version and new evidence.
+
+## Delivery sequence
+
+### P4-001 — Risk contracts and safety boundary
+
+Define immutable policy, portfolio state, request and decision records. Bind each
+request to strategy context/evidence/state with a canonical SHA-256. Enforce
+fail-closed action/reason/quantity semantics and prove that insufficient evidence
+cannot receive entry approval while exits remain possible under Kill Switch.
+
+Acceptance: focused unit tests, complete regression suite, deterministic offline
+CLI, compile/whitespace/lock checks and source scans proving no credentials,
+network client or exchange-order path.
+
+Implementation evidence: ten focused tests and the complete local suite pass
+**293/293**. The offline `risk-contract-check` replay is deterministic, blocks the
+current insufficient-evidence entry and permits the matching exit under Kill
+Switch. GitHub runtime acceptance is pending and is not claimed here.
+
+### P4-002 — Exact loss-budget position sizing
+
+Compute quantity from equity, entry, invalidation and the 1% loss budget, including
+explicit P2 fees/slippage. Round downward to frozen research increments and reject
+zero, non-finite, over-budget or under-specified results.
+
+### P4-003 — Cash, notional and exposure limits
+
+Enforce the 25% single-position and gross-exposure caps, one-position limit and
+cash sufficiency without leverage. Reject overlapping or exposure-increasing
+requests atomically.
+
+### P4-004 — Point-in-time portfolio/session state
+
+Build deterministic state transitions for equity peak, session start, realized
+loss, open exposure and consecutive losses. Reject stale, duplicate, missing or
+out-of-order state.
+
+### P4-005 — Protective-level and cost-aware gate
+
+Validate that every approved long entry has a reachable protective stop below
+entry, positive post-cost reward and a quantity whose worst planned paper loss
+does not exceed the frozen budget.
+
+### P4-006 — Loss and drawdown circuit breakers
+
+Trigger entry blocks at the frozen session-loss, drawdown and consecutive-loss
+limits, including exact-boundary and recovery semantics. Never block risk-reducing
+exits.
+
+### P4-007 — Kill Switch state machine
+
+Implement explicit inactive, triggered and manually-resettable Paper states with
+immutable reasons, monotonic event time, deterministic replay and fail-closed
+startup. No automatic reset is permitted.
+
+### P4-008 — P3-to-P2 risk adapter
+
+Place P4 between P3 decisions and P2 paper intents. Prove that no entry reaches the
+P2 adapter without a matching P4 approval and exact approved quantity, while exits
+remain safe and atomic.
+
+### P4-009 — Deterministic adversarial scenario matrix
+
+Replay boundary, gap, cost, loss-streak, drawdown, stale-state, insufficient-
+evidence and Kill Switch scenarios for BTCUSDT/ETHUSDT. Repeat and byte-compare
+canonical evidence artifacts.
+
+### P4-010 — P4 final audit and checkpoint
+
+Independently recompute sizing, limits, transitions and artifacts; run the complete
+suite and safety scans; verify policy/configuration digests and exact decisions.
+Accept P4 runtime only when every gate passes. P5 remains unopened and no trading
+permission is granted by P4 acceptance.
+
+## Intended module boundaries
+
+```text
+yatl/risk/contracts.py      immutable policy, state, request and decision records
+yatl/risk/sizing.py         exact cost-aware loss-budget sizing
+yatl/risk/limits.py         cash, notional and exposure checks
+yatl/risk/state.py          point-in-time portfolio/session transitions
+yatl/risk/protective.py     stop, reward and worst-loss validation
+yatl/risk/circuit.py        loss, drawdown and streak breakers
+yatl/risk/kill_switch.py    explicit deterministic state machine
+yatl/risk/adapter.py        guarded P3-to-P2 paper bridge
+yatl/risk/scenarios.py      deterministic adversarial evidence matrix
+yatl/risk/audit.py          independent final P4 acceptance gate
+```
+
+No new dependency is planned. Any addition requires demonstrated need, a pinned
+lock update and its own checkpoint evidence.

@@ -1,4 +1,4 @@
-name: P3 final deterministic gates
+name: P4 deterministic gates
 
 on:
   pull_request:
@@ -37,6 +37,10 @@ jobs:
           test -z "$(git ls-files | rg '(^|/)\.env$')"
           ! rg -n 'api/v3/(order|orderList)|fapi|dapi|withdraw' yatl/strategy
           ! rg -n 'from yatl\.account|import yatl\.account|BinancePublicRestClient' yatl/strategy
+          ! rg -n 'api/v3/(order|orderList)|/fapi|/dapi|withdraw\(' yatl/risk
+          ! rg -n 'from yatl\.account|import yatl\.account|BinancePublicRestClient' yatl/risk
+      - name: P4 risk contract runtime
+        run: uv run --locked python -m yatl risk-contract-check
 
   accepted-public-data:
     runs-on: ubuntu-latest

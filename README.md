@@ -1,6 +1,6 @@
 # Yahya AI Trading Lab
 
-P0، P1 و P2 با شواهد runtime پذیرفته شده‌اند. P3 در حال اجراست؛ مراحل ۰۰۱ تا ۰۰۴ پیاده‌سازی و بررسی شده‌اند.
+P0، P1، P2 و P3 با شواهد runtime پذیرفته شده‌اند. P4-001 قرارداد مستقل Risk Manager را پیاده‌سازی می‌کند.
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
@@ -37,11 +37,11 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 ## مسیر بعدی
 
 مرجع ترتیب اجرا: [نقشه پروژه](docs/MASTER-PLAN.md).
-وضعیت جاری **P0، P1 و P2 پذیرفته‌شده در runtime** است. P1 در `4e77e34` بسته شد.
+وضعیت جاری **P0، P1، P2 و P3 پذیرفته‌شده در runtime** است. P1 در `4e77e34` بسته شد.
 P2 بارگذاری point-in-time، ساعت رویداد، fill محافظه‌کارانه، هزینه، دفتر پرتفوی،
 معیارها، artifact تکرارپذیر و شش سناریوی واقعی BTC/ETH را تکمیل کرده است. ممیزی
-نهایی P2 همه این gateها را بازسازی و تأیید می‌کند. P3 در حال اجراست؛ مرحله بعدی P3-009 است.
-ترتیب و معیارهای P3 در `docs/P3-IMPLEMENTATION-PLAN.md` قفل شده‌اند.
+نهایی P2 همه این gateها را بازسازی و تأیید می‌کند. P3 در `90d5847` بسته شد و P4-001
+اکنون در حال اجراست. ترتیب و معیارهای P4 در `docs/P4-IMPLEMENTATION-PLAN.md` قفل شده‌اند.
 
 P3-001 قرارداد research-only سیگنال را اضافه می‌کند. تصمیم فقط یکی از `NO_TRADE`،
 `ENTER_LONG` یا `EXIT_LONG` است و به context نقطه‌زمانی و digest آن متصل می‌شود.
@@ -466,4 +466,19 @@ deterministic matrix computations. Each produced index SHA-256
 The final audit verified 2 candidates, 2 symbols, 4 runs, 21 evidence files,
 16 P2 artifacts and 35 closed trades. Both candidates remain
 `INSUFFICIENT_EVIDENCE`; P3 framework runtime is accepted without a profitability
-claim or trade permission. P4 has not started.
+claim or trade permission.
+
+## P4-001 — Independent risk contract
+
+P4 starts with immutable Paper-only policy, portfolio-state, request and decision
+records. Each request binds the exact P3 context, evidence label and point-in-time
+portfolio state to a canonical SHA-256:
+
+```powershell
+uv run --locked python -m yatl risk-contract-check
+```
+
+The frozen `P4_RISK_V1` contract prevents an `INSUFFICIENT_EVIDENCE` candidate
+from receiving entry approval. A Kill Switch blocks new exposure but never a
+matching risk-reducing exit. This step does not yet implement position sizing or
+the circuit-breaker engine and cannot submit an exchange order.
