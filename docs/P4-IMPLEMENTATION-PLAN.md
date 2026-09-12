@@ -1,6 +1,6 @@
 # P4 — Risk Manager implementation plan
 
-Status: **IN PROGRESS — P4-001 IMPLEMENTED, GITHUB RUNTIME PENDING**
+Status: **IN PROGRESS — P4-001 RUNTIME ACCEPTED; P4-002 NOT STARTED**
 Entry baseline: P3 runtime accepted and squash-merged in commit `90d5847` with all
 283 tests and GitHub Actions run `34699734574` passing.
 Exit condition: an independent, deterministic and fail-closed manager binds each
@@ -54,10 +54,13 @@ Acceptance: focused unit tests, complete regression suite, deterministic offline
 CLI, compile/whitespace/lock checks and source scans proving no credentials,
 network client or exchange-order path.
 
-Implementation evidence: ten focused tests and the complete local suite pass
-**293/293**. The offline `risk-contract-check` replay is deterministic, blocks the
-current insufficient-evidence entry and permits the matching exit under Kill
-Switch. GitHub runtime acceptance is pending and is not claimed here.
+Acceptance: **PASS, runtime 2026-09-12, GitHub Actions run `34700810982`.** Ten
+focused tests and the complete suite passed **293/293**. The deterministic
+`risk-contract-check` blocked the current insufficient-evidence entry and permitted
+the matching exit under Kill Switch with request SHA-256
+`af474a99f84d4303d092f1a9e86de74b444ac7938f38776573dca6910fbf3414`.
+Compile, whitespace, lock and restricted-source scans passed. The accepted P3
+matrix replay and final audit also passed unchanged. P4-002 has not started.
 
 ### P4-002 — Exact loss-budget position sizing
 

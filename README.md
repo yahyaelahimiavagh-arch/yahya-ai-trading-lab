@@ -482,3 +482,7 @@ The frozen `P4_RISK_V1` contract prevents an `INSUFFICIENT_EVIDENCE` candidate
 from receiving entry approval. A Kill Switch blocks new exposure but never a
 matching risk-reducing exit. This step does not yet implement position sizing or
 the circuit-breaker engine and cannot submit an exchange order.
+
+GitHub Actions run `34700810982` passed all **293 tests**, the deterministic P4
+runtime check, safety scans and the unchanged P3 evidence replay. P4-001 is runtime
+accepted on its PR branch; P4-002 has not started.

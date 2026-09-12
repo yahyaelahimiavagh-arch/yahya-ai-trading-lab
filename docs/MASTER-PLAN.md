@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0، P1، P2 و P3 RUNTIME ACCEPTED**
-قدم جاری: **P4 IN PROGRESS — P4-001 RISK CONTRACT**
+قدم جاری: **P4-001 RUNTIME ACCEPTED — P4-002 NOT STARTED**
 
 ## منشأ و حدود سند
 
@@ -36,7 +36,7 @@ NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only ب�
 | P1 Market Data Layer | REST، دانلود تاریخی، WebSocket، نرمال‌سازی، SQLite، حذف تکرار، تشخیص شکاف، گزارش سلامت BTC/ETH | **RUNTIME ACCEPTED — checkpoint `4e77e34`** |
 | P2 Backtesting Engine | آزمون تاریخی تکرارپذیر با کارمزد، لغزش و جلوگیری از استفاده از آینده | **RUNTIME ACCEPTED — checkpoint `9cbc197`** |
 | P3 Strategy Framework | چارچوب مشترک استراتژی و قواعد روشن سیگنال/عدم معامله | **RUNTIME ACCEPTED — final audit run `34699232936`** |
-| P4 Risk Manager | اندازه موقعیت، محدودیت ریسک و Kill Switch مستقل | **در حال اجرا؛ P4-001 روی شاخه مستقل** |
+| P4 Risk Manager | اندازه موقعیت، محدودیت ریسک و Kill Switch مستقل | **در حال اجرا؛ P4-001 runtime accepted** |
 | P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | شروع نشده؛ مجوز TRADE فعلی خاموش |
 | P6 AI Analyst | تحلیل ساختاریافته و NO_TRADE بدون دسترسی مستقیم به اجرا | شروع نشده |
 | P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | شروع نشده |
@@ -154,3 +154,7 @@ research-only سیگنال را پیاده‌سازی کرده و checkpoint آ�
 Kill Switch را از پیش محدود می‌کند. candidateهای فعلی با برچسب
 `INSUFFICIENT_EVIDENCE` اجازه ورود نمی‌گیرند. P4-001 قرارداد و مرز ایمنی را بدون
 network، credential، broker یا order endpoint پیاده‌سازی می‌کند.
+
+P4-001 در GitHub Actions run `34700810982` با **293 تست** پذیرفته شد. candidateهای
+فعلی برای ورود رد شدند و خروج کاهنده ریسک زیر Kill Switch مجاز ماند. P4-002 هنوز
+شروع نشده است.

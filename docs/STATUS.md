@@ -737,10 +737,16 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
 - Current P3 candidates are explicitly prevented from Paper entry approval while
   their label remains `INSUFFICIENT_EVIDENCE`.
 - Kill Switch blocks entry approval but cannot block a matching risk-reducing exit.
-- Ten focused tests and the complete local suite passed **293/293**. Offline
-  `risk-contract-check`, compile, whitespace, lock and restricted-source scans
-  passed. GitHub runtime acceptance remains pending.
+- Ten focused tests and the complete suite passed **293/293** in GitHub Actions
+  run `34700810982`. `risk-contract-check` deterministically returned
+  `REJECT/EVIDENCE_NOT_QUALIFIED` for entry and `APPROVE_PAPER` for the matching
+  exit under Kill Switch; request SHA-256:
+  `af474a99f84d4303d092f1a9e86de74b444ac7938f38776573dca6910fbf3414`.
+- Compile, whitespace, lock and restricted-source scans passed. The accepted P3
+  evidence replay and final audit also passed with the unchanged index SHA-256
+  `59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
 - This checkpoint adds contracts only; sizing, state transitions and circuit-breaker
   engines remain ordered future P4 steps and are not claimed complete.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
+- P4-001 is runtime accepted on the PR branch. P4-002 has not started.
