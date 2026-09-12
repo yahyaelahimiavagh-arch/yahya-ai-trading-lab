@@ -27,7 +27,8 @@ from .strategy import (DecisionReason, LongSetup, StrategyAction,
                        P3AuditError, audit_p3)
 from .risk import (PortfolioRiskState, RiskContractError, RiskDecision,
                    RiskDisposition, RiskReason, RiskRequest,
-                   RiskSizingError, size_entry)
+                   RiskSizingError, size_entry,
+                   RiskLimitError, assess_entry_limits)
 from .backtest import (AcceptedBacktestDataset, ArtifactError, BacktestClock,
                        BacktestClockError, BacktestConfigError,
                        BacktestContractError, BacktestLoadError, BacktestSpec,
@@ -285,6 +286,21 @@ def _risk_sizing_runtime_check():
     return result
 
 
+def _risk_limit_runtime_check():
+    position_size = _risk_sizing_runtime_check()
+    normal = assess_entry_limits(position_size)
+    low_cash_request = replace(
+        position_size.request,
+        portfolio=replace(position_size.request.portfolio, cash_quote="500"),
+    )
+    low_cash = assess_entry_limits(size_entry(low_cash_request))
+    replay = (assess_entry_limits(position_size),
+              assess_entry_limits(size_entry(low_cash_request)))
+    if (normal, low_cash) != replay:
+        raise RiskLimitError("Entry-limit replay mismatch")
+    return normal, low_cash
+
+
 def _strategy_adapter_runtime_check():
     start = 1_699_999_200_000
 
@@ -450,6 +466,8 @@ def main():
                         help="Verify the P4 paper-only risk boundary")
     commands.add_parser("risk-sizing-check",
                         help="Verify exact cost-aware P4 position sizing")
+    commands.add_parser("risk-limit-check",
+                        help="Verify P4 cash, notional and exposure limits")
     commands.add_parser("strategy-feature-check",
                         help="Verify point-in-time Decimal P3 features")
     commands.add_parser("strategy-registry-check",
@@ -653,6 +671,14 @@ def main():
                   f"request_sha256={result.request_sha256}")
             print("current_candidates=BLOCKED/INSUFFICIENT_EVIDENCE | "
                   "PAPER ONLY | No credentials | No exchange order")
+        elif args.command == "risk-limit-check":
+            normal, low_cash = _risk_limit_runtime_check()
+            print(f"OK: P4 entry limits; normal={normal.status.value}/"
+                  f"{normal.reason.value} low_cash={low_cash.status.value}/"
+                  f"{low_cash.reason.value} "
+                  f"notional={normal.entry_notional_quote} "
+                  f"cap={normal.position_limit_quote}")
+            print("PAPER ONLY | No approval | No leverage | No exchange order")
         elif args.command == "strategy-registry-check":
             identity = StrategyIdentity("RESEARCH_FIXTURE", "1.0.0")
             registry = StrategyRegistry((StrategyDefinition(identity, (
@@ -853,6 +879,7 @@ def main():
             P3AuditError,
             RiskContractError,
             RiskSizingError,
+            RiskLimitError,
             CheckpointRebuildError,
             HealthError, PaperWorkflowError,
             PublicRestError, QualityError,

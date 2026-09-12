@@ -1,6 +1,6 @@
 # P4 — Risk Manager implementation plan
 
-Status: **IN PROGRESS — P4-002 RUNTIME ACCEPTED; P4-003 NOT STARTED**
+Status: **IN PROGRESS — P4-002 MERGED; P4-003 RUNTIME ACCEPTED ON PR #5**
 Entry baseline: P3 runtime accepted and squash-merged in commit `90d5847` with all
 283 tests and GitHub Actions run `34699734574` passing.
 Exit condition: an independent, deterministic and fail-closed manager binds each
@@ -80,13 +80,30 @@ and planned loss `99.9999984436650`; request SHA-256 is
 `393d74071bc590b80ddbdc53ce6bcc250091e0b0b60b89f52fe907b548825590`.
 Current candidates were blocked before sizing. Compile, whitespace, lock,
 deterministic CLI, restricted-source scans and unchanged P3 evidence gates passed.
-Exposure and cash caps remain P4-003, which has not started.
+Exposure and cash caps are implemented by the subsequent P4-003 checkpoint.
 
 ### P4-003 — Cash, notional and exposure limits
 
 Enforce the 25% single-position and gross-exposure caps, one-position limit and
 cash sufficiency without leverage. Reject overlapping or exposure-increasing
 requests atomically.
+
+Implementation: an immutable assessment binds the accepted P4-002 sizing result
+and records entry notional, entry fee, required cash, current/prospective gross
+exposure and both frozen 25% limits. It rejects limit breaches before cash
+shortage when both apply, rejects insufficient cash without leverage, and emits
+no approval. The one-position invariant remains enforced by the P4 request/sizing
+contracts.
+
+Acceptance: **PASS, runtime 2026-09-12, GitHub Actions run `34714934702`.** Nine
+focused limit tests and the complete suite passed **314/314**. The deterministic
+runtime recorded `normal=PASS/WITHIN_LIMITS`,
+`low_cash=REJECT/CASH_INSUFFICIENT`, entry notional `1019.9266734825` and cap
+`2500.00`. Compile, whitespace, lock and restricted-source scans passed. The
+accepted public checkpoint was rebuilt with 7,560 rows; the candidate matrix was
+byte-equal across two runs and the independent P3 audit retained index SHA-256
+`59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
+P4-004 has not started.
 
 ### P4-004 — Point-in-time portfolio/session state
 
