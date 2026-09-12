@@ -180,8 +180,21 @@ Run both frozen candidates on BTCUSDT and ETHUSDT through P2, repeat every run, 
 and record exact results. The current accepted 30-day dataset is an integration/smoke window; if
 sample gates fail, retain `INSUFFICIENT_EVIDENCE` and do not tune around the result.
 
-Acceptance: deterministic artifacts for every candidate/symbol/baseline pair, explicit cost drag,
+Acceptance criteria: deterministic artifacts for every candidate/symbol/baseline pair, explicit cost drag,
 point-in-time proof and honest evidence labels.
+
+Acceptance: **PASS, runtime 2026-09-12, GitHub Actions run `34687728494`.** The
+accepted public Spot checkpoint rebuilt as six datasets and 7,560 closed rows.
+Both frozen candidates ran on BTCUSDT and ETHUSDT through P2 twice; the recursive
+evidence diff and all artifact uploads passed. The 21-file index SHA-256 is
+`59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
+
+`TREND_PULLBACK/1.0.0` recorded 12 BTCUSDT and 19 ETHUSDT closed trades;
+`RANGE_BREAKOUT/1.0.0` recorded 1 and 3. Both labels are
+`INSUFFICIENT_EVIDENCE` for the frozen reasons `EVALUATION_WINDOW_TOO_SHORT`
+and `MINIMUM_TRADES_NOT_MET`; no tuning followed the result. Complete suite:
+278/278. Point-in-time, future-isolation, explicit-cost and safety scans passed.
+P3-010 remains NOT STARTED.
 
 ### P3-010 — P3 final audit and checkpoint
 
@@ -203,6 +216,7 @@ yatl/strategy/trend.py        trend-pullback candidate v1
 yatl/strategy/breakout.py     breakout candidate v1
 yatl/strategy/adapter.py      paper-only bridge to P2
 yatl/strategy/evaluate.py     evidence protocol and labels
+yatl/strategy/runs.py         accepted-data candidate/baseline evidence matrix
 yatl/strategy/audit.py        final P3 acceptance gate
 ```
 

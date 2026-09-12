@@ -424,4 +424,28 @@ uv run --locked python -m yatl strategy-evaluation-check
 P3-008: 265 tests passed. Runtime reproduced all three labels and a canonical
 report. Mutating data after the frozen cutoff leaves the input digest unchanged;
 mutating visible data changes it. The current 30-day dataset cannot pass the
-180-day evidence gate. P3-009 has not started.
+180-day evidence gate.
+
+## P3-009 — Accepted public-data candidate runs
+
+The accepted 30-day BTCUSDT and ETHUSDT Spot checkpoint can be reconstructed
+without credentials and both frozen candidates can then be replayed through the
+P2 paper lifecycle:
+
+```powershell
+uv run --locked python -m yatl dataset-restore-checkpoint
+uv run --locked python -m yatl strategy-candidate-check
+```
+
+Each candidate/symbol run records costed and zero-cost artifacts, no-trade and
+Buy-and-Hold baselines, a point-in-time decision trace, cost drag and future-data
+isolation proof. GitHub Actions runs the matrix twice and requires a recursive
+byte-equal diff before publishing the 21-file evidence artifact.
+
+Runtime on 2026-09-12 produced index SHA-256
+`59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
+`TREND_PULLBACK/1.0.0` closed 31 pooled trades and
+`RANGE_BREAKOUT/1.0.0` closed 4; both remain honestly labelled
+`INSUFFICIENT_EVIDENCE` because the 20-day evaluation window and per-symbol/
+pooled trade minima do not satisfy the frozen P3 protocol. No parameter was
+changed in response to the result. P3-010 has not started.

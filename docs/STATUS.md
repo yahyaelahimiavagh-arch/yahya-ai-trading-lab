@@ -663,3 +663,37 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
   PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE;
   NO WITHDRAWAL API; NO AI DIRECT EXECUTION. TRADE permissions remain disabled.
 - P3-008 runtime accepted. Next: P3-009 accepted-data candidate runs; not started.
+
+## P3-009 evidence — 2026-09-12
+
+- Entry checkpoint: `1409bb6` on `main`; work is isolated in PR #1 on branch
+  `p3-009-accepted-data-runs` and remains unmerged.
+- Added atomic reconstruction of the exact accepted public Spot checkpoint from
+  the tracked P1 manifest. Runtime rebuilt six BTCUSDT/ETHUSDT datasets with
+  **7,560 closed rows** and the unchanged manifest timestamp `1788971310603`.
+- Added the deterministic four-run matrix for frozen `TREND_PULLBACK/1.0.0` and
+  `RANGE_BREAKOUT/1.0.0`, each on BTCUSDT and ETHUSDT through the accepted P2
+  paper clock, signal adapter, fills, costs, ledger, metrics and artifacts.
+- Every run includes costed and zero-cost candidate artifacts, no-trade and
+  Buy-and-Hold baselines, explicit cost drag, decision trace, input SHA-256,
+  point-in-time proof and future-cutoff mutation proof: **21 files total**.
+- GitHub Actions run `34687728494`: both candidate matrices completed and the
+  recursive replay diff passed byte-for-byte. Evidence index SHA-256:
+  `59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
+- `TREND_PULLBACK`: BTCUSDT 12 trades, ETHUSDT 19, pooled 31; report SHA-256
+  `d2e4ec2d1c8064bf2c133439293880890a5fcf72a7f23329172d44b5e7f7be82`.
+- `RANGE_BREAKOUT`: BTCUSDT 1 trade, ETHUSDT 3, pooled 4; report SHA-256
+  `63be327a16cd922088923f108b964ff7d24d1a9a4cec6149669cb291c8dd99d0`.
+- Both candidates are **`INSUFFICIENT_EVIDENCE`**, with frozen reasons
+  `EVALUATION_WINDOW_TOO_SHORT` and `MINIMUM_TRADES_NOT_MET`. This is not a
+  rejection, qualification, profitability claim or permission to trade. No
+  parameter or window was changed after observing the results.
+- Complete suite: **278 passed, 0 failed**. Compile, whitespace, `.env`, forbidden
+  endpoint and strategy credential-import scans passed. The accepted-data job,
+  two-run replay and evidence publication also passed.
+- During runtime hardening, exact Decimal reconciliation and cost-drag arithmetic
+  were made independent of ambient precision; evidence is quantized only at the
+  explicit 40-decimal reporting boundary using deterministic half-even rounding.
+- PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
+  NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION. P3-010 has not
+  started.
