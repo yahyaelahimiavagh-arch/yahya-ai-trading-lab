@@ -65,6 +65,14 @@ def _plain(value):
     return text.rstrip("0").rstrip(".") if "." in text else text
 
 
+def _exact_difference(left, right):
+    if type(left) is not Decimal or type(right) is not Decimal:
+        raise CandidateRunError("Exact difference inputs are invalid")
+    with localcontext() as arithmetic:
+        arithmetic.prec = DECIMAL_PRECISION
+        return left - right
+
+
 def _candidate(identity):
     for item in CANDIDATES:
         if item[0] == identity:
@@ -398,7 +406,8 @@ def run_accepted_candidate_matrix(database_path, manifest_path):
                     or tuple(item.reference for item in fills)
                     != tuple(item.reference for item in zero_fills)):
                 raise CandidateRunError("Costs changed candidate decisions or references")
-            drag = zero_report.net_pnl_quote - report.net_pnl_quote
+            drag = _exact_difference(
+                zero_report.net_pnl_quote, report.net_pnl_quote)
             if report.trade_count and drag <= 0:
                 raise CandidateRunError(
                     "Candidate trading costs did not reduce paper results")

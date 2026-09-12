@@ -1,6 +1,7 @@
 import tempfile
 import unittest
 import json
+from decimal import Decimal, localcontext
 from pathlib import Path
 from unittest.mock import patch
 
@@ -12,6 +13,7 @@ from yatl.strategy import (BREAKOUT_IDENTITY, EVALUATION_END_MS,
                            EvidenceLabel, candidate_matrix_sha256,
                            evaluation_plan, run_accepted_candidate_matrix,
                            write_candidate_matrix)
+from yatl.strategy.runs import _exact_difference
 
 
 def candles(symbol, interval):
@@ -49,6 +51,13 @@ class AcceptedCandidateRunTests(unittest.TestCase):
         breakout = evaluation_plan(BREAKOUT_IDENTITY)
         self.assertNotEqual(trend.sha256, breakout.sha256)
         self.assertEqual(trend.evaluation_days, 20)
+
+    def test_cost_drag_subtraction_ignores_ambient_decimal_precision(self):
+        with localcontext() as context:
+            context.prec = 4
+            drag = _exact_difference(
+                Decimal("19.3700100"), Decimal("0.0000001"))
+        self.assertEqual(drag, Decimal("19.3700099"))
 
     def test_full_candidate_symbol_matrix_is_deterministic_and_insufficient(self):
         first = self.matrix
