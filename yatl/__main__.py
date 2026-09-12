@@ -26,7 +26,8 @@ from .strategy import (DecisionReason, LongSetup, StrategyAction,
                        run_and_write_candidate_matrix,
                        P3AuditError, audit_p3)
 from .risk import (PortfolioRiskState, RiskContractError, RiskDecision,
-                   RiskDisposition, RiskReason, RiskRequest)
+                   RiskDisposition, RiskReason, RiskRequest,
+                   RiskSizingError, size_entry)
 from .backtest import (AcceptedBacktestDataset, ArtifactError, BacktestClock,
                        BacktestClockError, BacktestConfigError,
                        BacktestContractError, BacktestLoadError, BacktestSpec,
@@ -267,6 +268,23 @@ def _risk_contract_runtime_check():
     return blocked, approved_exit
 
 
+def _risk_sizing_runtime_check():
+    blocked, _ = _risk_contract_runtime_check()
+    try:
+        size_entry(blocked.request)
+    except RiskSizingError:
+        pass
+    else:
+        raise RiskSizingError("Insufficient-evidence entry was sized")
+    qualified_fixture = replace(
+        blocked.request, evidence_label=EvidenceLabel.QUALIFIED_FOR_P4_RESEARCH,
+    )
+    result = size_entry(qualified_fixture)
+    if result != size_entry(qualified_fixture):
+        raise RiskSizingError("Position sizing replay mismatch")
+    return result
+
+
 def _strategy_adapter_runtime_check():
     start = 1_699_999_200_000
 
@@ -430,6 +448,8 @@ def main():
                         help="Verify the P3 research-only signal boundary")
     commands.add_parser("risk-contract-check",
                         help="Verify the P4 paper-only risk boundary")
+    commands.add_parser("risk-sizing-check",
+                        help="Verify exact cost-aware P4 position sizing")
     commands.add_parser("strategy-feature-check",
                         help="Verify point-in-time Decimal P3 features")
     commands.add_parser("strategy-registry-check",
@@ -624,6 +644,15 @@ def main():
                   f"exit_under_kill_switch={approved_exit.disposition.value} "
                   f"request_sha256={blocked.request_sha256}")
             print("PAPER ONLY | LIVE_MASTER_LOCK=OFF | No credentials | No exchange order")
+        elif args.command == "risk-sizing-check":
+            result = _risk_sizing_runtime_check()
+            print(f"OK: P4 exact position sizing; "
+                  f"qualified_fixture_quantity={result.quantity} "
+                  f"risk_budget={result.risk_budget_quote} "
+                  f"planned_loss={result.planned_loss_quote} "
+                  f"request_sha256={result.request_sha256}")
+            print("current_candidates=BLOCKED/INSUFFICIENT_EVIDENCE | "
+                  "PAPER ONLY | No credentials | No exchange order")
         elif args.command == "strategy-registry-check":
             identity = StrategyIdentity("RESEARCH_FIXTURE", "1.0.0")
             registry = StrategyRegistry((StrategyDefinition(identity, (
@@ -823,6 +852,7 @@ def main():
             CandidateRunError,
             P3AuditError,
             RiskContractError,
+            RiskSizingError,
             CheckpointRebuildError,
             HealthError, PaperWorkflowError,
             PublicRestError, QualityError,

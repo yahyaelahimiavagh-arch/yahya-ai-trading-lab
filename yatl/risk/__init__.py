@@ -10,6 +10,14 @@ from .contracts import (
     RiskReason,
     RiskRequest,
 )
+from .sizing import (
+    FEE_BPS,
+    QUANTITY_STEP,
+    SLIPPAGE_BPS,
+    PositionSize,
+    RiskSizingError,
+    size_entry,
+)
 
 __all__ = [
     "POLICY_ID",
@@ -20,4 +28,10 @@ __all__ = [
     "RiskPolicy",
     "RiskReason",
     "RiskRequest",
+    "FEE_BPS",
+    "QUANTITY_STEP",
+    "SLIPPAGE_BPS",
+    "PositionSize",
+    "RiskSizingError",
+    "size_entry",
 ]

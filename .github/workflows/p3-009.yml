@@ -41,6 +41,8 @@ jobs:
           ! rg -n 'from yatl\.account|import yatl\.account|BinancePublicRestClient' yatl/risk
       - name: P4 risk contract runtime
         run: uv run --locked python -m yatl risk-contract-check
+      - name: P4 exact sizing runtime
+        run: uv run --locked python -m yatl risk-sizing-check
 
   accepted-public-data:
     runs-on: ubuntu-latest

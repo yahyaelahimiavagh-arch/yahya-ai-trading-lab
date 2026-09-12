@@ -728,8 +728,8 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
 
 ## P4-001 implementation record — 2026-09-12
 
-- Entry checkpoint: `90d5847` on `main`; work is isolated on branch
-  `p4-001-risk-contract`.
+- Entry checkpoint: `90d5847` on `main`; PR #3 was squash-merged after all final
+  gates passed, producing checkpoint `be3c042` on `main`.
 - Frozen the sequential P4 plan and conservative `P4_RISK_V1` engineering policy.
 - Added immutable policy, portfolio-state, risk-request and risk-decision contracts
   with canonical SHA-256 binding strategy context, evidence eligibility and exact
@@ -749,4 +749,30 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
   engines remain ordered future P4 steps and are not claimed complete.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
-- P4-001 is runtime accepted on the PR branch. P4-002 has not started.
+- P4-001 is runtime accepted and merged.
+
+## P4-002 implementation record — 2026-09-12
+
+- Entry checkpoint: `be3c042` on `main`; work is isolated on branch
+  `p4-002-position-sizing`.
+- Added exact cost-aware loss-budget sizing for qualified Paper-only entry fixtures.
+  Current `INSUFFICIENT_EVIDENCE` candidates fail closed before any quantity is
+  calculated.
+- Frozen costs match accepted P2 defaults: 10 bps fee and 5 bps adverse slippage
+  on entry and stop. Quantity is rounded downward to the `0.000001` research step.
+- The sizing result binds the P4 request SHA-256 and records adjusted prices, budget,
+  loss per unit, fee, slippage and planned loss. Any tampering is rejected.
+- Calculations use an isolated 256-digit Decimal context and are independent of
+  ambient precision. Exposure, cash and notional limits remain P4-003 and no
+  approval is emitted by this sizing step.
+- Twelve focused sizing tests and the complete local suite passed **305/305**.
+  Deterministic CLI, compile, whitespace, lock and restricted-source scans passed.
+- GitHub Actions run `34702613220` passed **305/305** tests, deterministic sizing
+  runtime, compile, whitespace, lock and restricted-source scans. Both P3 replays
+  and the independent final audit passed with the unchanged evidence index.
+- Qualified fixture runtime: quantity `9.708733`, risk budget `100.00`, planned
+  loss `99.9999984436650`, request SHA-256
+  `393d74071bc590b80ddbdc53ce6bcc250091e0b0b60b89f52fe907b548825590`.
+- P4-002 is runtime accepted on PR #4. P4-003 has not started.
+- PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
+  NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
