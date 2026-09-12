@@ -2,7 +2,7 @@ import dataclasses
 import unittest
 
 from yatl.data import (
-    BINANCE_PUBLIC_BASE_URL,
+    BINANCE_MARKET_DATA_BASE_URL, BINANCE_PUBLIC_BASE_URL,
     Candle,
     CandleValidationError,
     DATA_SOURCE,
@@ -38,6 +38,8 @@ def candle(**changes):
 class DataConfigurationTests(unittest.TestCase):
     def test_policy_is_exact_and_immutable(self):
         self.assertEqual(BINANCE_PUBLIC_BASE_URL, "https://api.binance.com")
+        self.assertEqual(BINANCE_MARKET_DATA_BASE_URL,
+                         "https://data-api.binance.vision")
         self.assertEqual(DATA_SOURCE, "BINANCE_SPOT_PUBLIC")
         self.assertEqual(SYMBOLS, ("BTCUSDT", "ETHUSDT"))
         self.assertEqual(dict(INTERVAL_MILLISECONDS), {

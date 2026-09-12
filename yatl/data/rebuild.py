@@ -6,7 +6,8 @@ from pathlib import Path
 from uuid import uuid4
 
 from .audit import AuditError, MAX_MANIFEST_BYTES, audit_p1_manifest
-from .config import DATA_SOURCE, INTERVAL_MILLISECONDS, SYMBOLS
+from .config import (BINANCE_MARKET_DATA_BASE_URL, DATA_SOURCE,
+                     INTERVAL_MILLISECONDS, SYMBOLS)
 from .health import HealthError, build_health_report
 from .history import HistoricalDownloadError, download_range
 from .normalize import NormalizationError, normalize_rest_kline
@@ -60,7 +61,8 @@ def rebuild_accepted_database(database_path, manifest_path, *, client=None):
     if target.exists():
         raise CheckpointRebuildError("Existing database will not be overwritten")
     manifest = _manifest_snapshot(manifest_path)
-    client = client or BinancePublicRestClient()
+    client = client or BinancePublicRestClient(
+        base_url=BINANCE_MARKET_DATA_BASE_URL)
     if not isinstance(client, BinancePublicRestClient):
         raise CheckpointRebuildError("A Binance public REST client is required")
 

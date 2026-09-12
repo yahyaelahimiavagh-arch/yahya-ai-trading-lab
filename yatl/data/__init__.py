@@ -2,6 +2,7 @@
 
 from .config import (
     BINANCE_PUBLIC_BASE_URL,
+    BINANCE_MARKET_DATA_BASE_URL,
     DATA_SOURCE,
     INTERVAL_MILLISECONDS,
     SYMBOLS,
@@ -22,6 +23,7 @@ from .rebuild import (CheckpointRebuildError, CheckpointRebuildResult,
 
 __all__ = [
     "BINANCE_PUBLIC_BASE_URL",
+    "BINANCE_MARKET_DATA_BASE_URL",
     "AuditError",
     "BinancePublicRestClient",
     "Candle",

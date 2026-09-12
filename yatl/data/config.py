@@ -8,6 +8,7 @@ from types import MappingProxyType
 
 
 BINANCE_PUBLIC_BASE_URL = "https://api.binance.com"
+BINANCE_MARKET_DATA_BASE_URL = "https://data-api.binance.vision"
 DATA_SOURCE = "BINANCE_SPOT_PUBLIC"
 SYMBOLS = ("BTCUSDT", "ETHUSDT")
 INTERVAL_MILLISECONDS = MappingProxyType({
