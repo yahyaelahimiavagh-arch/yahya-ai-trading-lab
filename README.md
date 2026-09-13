@@ -656,4 +656,9 @@ Every one of the 16 runs emits canonical secret-free JSON. The complete matrix i
 executed twice and the two evidence directories must be byte-identical before the
 index is published. Existing output is never overwritten. Local verification has
 passed 11 scenario tests, 109 focused P4 tests and the complete **392/392** suite.
-GitHub public-data runtime evidence and acceptance are pending.
+GitHub Actions run `34769959024` passed both jobs and every safety/runtime gate.
+The accepted public checkpoint rebuilt 6 datasets and 7,560 closed rows; both P4
+matrices were byte-identical and produced index SHA-256
+`56c945c38571af294bb44bfd7e788f314d9ee3e9fc76457c6bedb018daae0783`.
+The unchanged P3 audit retained 35 trades and both candidate labels remain
+`INSUFFICIENT_EVIDENCE`. P4-009 is runtime accepted on PR #11; merge is pending.

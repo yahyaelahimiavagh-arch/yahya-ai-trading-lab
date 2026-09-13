@@ -982,6 +982,14 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
   overwrite, and CI runs the matrix twice with a recursive byte comparison.
 - Eleven scenario tests, 109 focused P4 tests and the complete local suite passed
   **392/392**. Compile and whitespace gates passed.
-- GitHub Actions public-data runtime evidence is pending; P4-009 is not yet accepted.
+- GitHub Actions run `34769959024` passed both jobs: all **392/392** tests, every
+  safety/runtime gate, public-checkpoint reconstruction, two byte-equal P3 matrices,
+  the independent P3 audit and two byte-equal 16-run P4 scenario matrices.
+- P4 scenario index SHA-256 is
+  `56c945c38571af294bb44bfd7e788f314d9ee3e9fc76457c6bedb018daae0783`; the complete
+  17-file evidence package was published as `p4-009-evidence`.
+- Runtime public-data evidence remained 6 datasets, 7,560 closed rows and 35 P3
+  trades. Both candidate labels remain `INSUFFICIENT_EVIDENCE`.
+- P4-009 is runtime accepted on PR #11. Merge is pending.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.

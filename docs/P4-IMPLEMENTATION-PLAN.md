@@ -1,6 +1,6 @@
 # P4 — Risk Manager implementation plan
 
-Status: **IN PROGRESS — P4-008 MERGED; P4-009 IMPLEMENTED, RUNTIME PENDING**
+Status: **IN PROGRESS — P4-008 MERGED; P4-009 RUNTIME ACCEPTED ON PR #11**
 Entry baseline: P3 runtime accepted and squash-merged in commit `90d5847` with all
 283 tests and GitHub Actions run `34699734574` passing.
 Exit condition: an independent, deterministic and fail-closed manager binds each
@@ -265,9 +265,15 @@ digest, strategy context, circuit, Kill Switch, authorization and fill evidence.
 The atomic writer refuses overwrite; CI runs the complete matrix twice and requires
 byte-identical directories.
 
-Local evidence: **11/11** scenario tests, **109/109** focused P4 tests and the
-complete suite **392/392** passed. Compile, whitespace, lock and restricted-source
-scans remain required in GitHub Actions. Public-data runtime acceptance is pending.
+Acceptance: **PASS, runtime 2026-09-13, GitHub Actions run `34769959024`.** Eleven
+scenario tests, 109 focused P4 tests and the complete suite passed **392/392**.
+Compile, whitespace, lock and restricted-source scans passed. The accepted public
+checkpoint rebuilt 6 datasets and 7,560 closed rows. Both 16-run scenario matrices
+were byte-identical and produced index SHA-256
+`56c945c38571af294bb44bfd7e788f314d9ee3e9fc76457c6bedb018daae0783`; the 17-file
+evidence package was published. The unchanged independent P3 audit retained 2
+candidates, 2 symbols, 4 runs, 21 files, 16 P2 artifacts and 35 trades with both
+labels `INSUFFICIENT_EVIDENCE`. Merge is pending.
 
 ### P4-010 — P4 final audit and checkpoint
 
