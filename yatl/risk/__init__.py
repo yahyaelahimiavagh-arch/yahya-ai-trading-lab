@@ -25,6 +25,14 @@ from .limits import (
     RiskLimitError,
     assess_entry_limits,
 )
+from .state import (
+    CloseOutcome,
+    ManagedPortfolioState,
+    PortfolioObservation,
+    PortfolioStateTransition,
+    RiskStateError,
+    apply_portfolio_observation,
+)
 
 __all__ = [
     "POLICY_ID",
@@ -46,4 +54,10 @@ __all__ = [
     "LimitStatus",
     "RiskLimitError",
     "assess_entry_limits",
+    "CloseOutcome",
+    "ManagedPortfolioState",
+    "PortfolioObservation",
+    "PortfolioStateTransition",
+    "RiskStateError",
+    "apply_portfolio_observation",
 ]

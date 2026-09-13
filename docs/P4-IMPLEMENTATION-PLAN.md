@@ -1,6 +1,6 @@
 # P4 — Risk Manager implementation plan
 
-Status: **IN PROGRESS — P4-002 MERGED; P4-003 RUNTIME ACCEPTED ON PR #5**
+Status: **IN PROGRESS — P4-003 MERGED; P4-004 RUNTIME ACCEPTED ON PR #6**
 Entry baseline: P3 runtime accepted and squash-merged in commit `90d5847` with all
 283 tests and GitHub Actions run `34699734574` passing.
 Exit condition: an independent, deterministic and fail-closed manager binds each
@@ -103,13 +103,34 @@ runtime recorded `normal=PASS/WITHIN_LIMITS`,
 accepted public checkpoint was rebuilt with 7,560 rows; the candidate matrix was
 byte-equal across two runs and the independent P3 audit retained index SHA-256
 `59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
-P4-004 has not started.
+P4-003 was squash-merged from PR #5 in checkpoint `27dfd86`.
 
 ### P4-004 — Point-in-time portfolio/session state
 
 Build deterministic state transitions for equity peak, session start, realized
 loss, open exposure and consecutive losses. Reject stale, duplicate, missing or
 out-of-order state.
+
+Implementation: complete aligned hourly paper observations are applied only in a
+strictly increasing, gap-free sequence. Every resulting immutable state binds the
+observation SHA-256 and predecessor state SHA-256. The engine deterministically
+maintains UTC session start time/equity, session realized PnL, all-time equity peak,
+one-position gross Spot exposure and consecutive closed losses. Close outcome/PnL,
+position disappearance or mutation, session boundary, symbol and sequence
+inconsistencies fail closed. It can project validated facts into the accepted
+P4-001 request contract but cannot activate a Kill Switch, approve a trade or emit
+an order.
+
+Acceptance: **PASS, runtime 2026-09-12, GitHub Actions run `34717094100`.** Twelve
+focused state tests and the complete suite passed **326/326**. The deterministic
+loss fixture ended at sequence 2 with session PnL `-100`, one consecutive loss,
+zero gross exposure and state SHA-256
+`1b6700b922e2f7f6693b381222c81ebc10a1362c01dc4eca576dc6cb02e05bd0`.
+Compile, whitespace, lock and restricted-source scans passed. The accepted public
+checkpoint rebuilt 7,560 rows; two candidate runs were byte-equal and the
+independent P3 audit retained evidence index SHA-256
+`59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
+P4-005 has not started.
 
 ### P4-005 — Protective-level and cost-aware gate
 

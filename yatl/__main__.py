@@ -28,7 +28,9 @@ from .strategy import (DecisionReason, LongSetup, StrategyAction,
 from .risk import (PortfolioRiskState, RiskContractError, RiskDecision,
                    RiskDisposition, RiskReason, RiskRequest,
                    RiskSizingError, size_entry,
-                   RiskLimitError, assess_entry_limits)
+                   RiskLimitError, assess_entry_limits,
+                   CloseOutcome, PortfolioObservation, RiskStateError,
+                   apply_portfolio_observation)
 from .backtest import (AcceptedBacktestDataset, ArtifactError, BacktestClock,
                        BacktestClockError, BacktestConfigError,
                        BacktestContractError, BacktestLoadError, BacktestSpec,
@@ -301,6 +303,35 @@ def _risk_limit_runtime_check():
     return normal, low_cash
 
 
+def _risk_state_runtime_check():
+    start = 1_699_999_200_000
+    observations = (
+        PortfolioObservation(
+            "BTCUSDT", 0, start, "10000", "10000", "0", "100",
+            start_new_session=True,
+        ),
+        PortfolioObservation(
+            "BTCUSDT", 1, start + 3_600_000, "10000", "9000", "10", "100",
+        ),
+        PortfolioObservation(
+            "BTCUSDT", 2, start + 7_200_000, "9900", "9900", "0", "100",
+            "-100", CloseOutcome.LOSS,
+        ),
+    )
+
+    def replay():
+        state = None
+        for observation in observations:
+            state = apply_portfolio_observation(state, observation).current
+        return state
+
+    first = replay()
+    second = replay()
+    if first != second:
+        raise RiskStateError("Portfolio-state replay mismatch")
+    return first
+
+
 def _strategy_adapter_runtime_check():
     start = 1_699_999_200_000
 
@@ -468,6 +499,8 @@ def main():
                         help="Verify exact cost-aware P4 position sizing")
     commands.add_parser("risk-limit-check",
                         help="Verify P4 cash, notional and exposure limits")
+    commands.add_parser("risk-state-check",
+                        help="Verify deterministic P4 portfolio/session transitions")
     commands.add_parser("strategy-feature-check",
                         help="Verify point-in-time Decimal P3 features")
     commands.add_parser("strategy-registry-check",
@@ -679,6 +712,14 @@ def main():
                   f"notional={normal.entry_notional_quote} "
                   f"cap={normal.position_limit_quote}")
             print("PAPER ONLY | No approval | No leverage | No exchange order")
+        elif args.command == "risk-state-check":
+            state = _risk_state_runtime_check()
+            print(f"OK: P4 portfolio/session state; sequence={state.sequence} "
+                  f"session_pnl={state.session_realized_pnl_quote} "
+                  f"consecutive_losses={state.consecutive_losses} "
+                  f"gross_exposure={state.gross_exposure_quote} "
+                  f"state_sha256={state.state_sha256}")
+            print("PAPER ONLY | Hash-chained state | No credentials | No exchange order")
         elif args.command == "strategy-registry-check":
             identity = StrategyIdentity("RESEARCH_FIXTURE", "1.0.0")
             registry = StrategyRegistry((StrategyDefinition(identity, (
@@ -880,6 +921,7 @@ def main():
             RiskContractError,
             RiskSizingError,
             RiskLimitError,
+            RiskStateError,
             CheckpointRebuildError,
             HealthError, PaperWorkflowError,
             PublicRestError, QualityError,

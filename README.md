@@ -521,4 +521,24 @@ GitHub Actions run `34714934702` passed all **314 tests**, safety scans, the exa
 limit runtime and unchanged accepted-public-data replay/audit gates. Runtime
 recorded `normal=PASS/WITHIN_LIMITS`,
 `low_cash=REJECT/CASH_INSUFFICIENT`, notional `1019.9266734825` and cap
-`2500.00`. P4-003 is runtime accepted on PR #5; P4-004 has not started.
+`2500.00`. P4-003 was runtime accepted and merged in `27dfd86`.
+
+## P4-004 — Point-in-time portfolio/session state
+
+The state layer accepts complete hourly paper-ledger observations in a strict
+sequence and produces a canonical SHA-256-linked state chain:
+
+```powershell
+uv run --locked python -m yatl risk-state-check
+```
+
+It deterministically maintains UTC session start equity, session realized PnL,
+all-time equity peak, gross Spot exposure and consecutive closed losses. Missing,
+duplicate, stale, out-of-order, cross-symbol and semantically inconsistent updates
+fail closed. GitHub Actions run `34717094100` passed all **326 tests**, safety
+scans, the new state runtime and unchanged public-data replay/audit gates. The
+loss fixture ended at sequence 2 with session PnL `-100`, one consecutive loss,
+zero exposure and state SHA-256
+`1b6700b922e2f7f6693b381222c81ebc10a1362c01dc4eca576dc6cb02e05bd0`.
+P4-004 is runtime accepted on PR #6; circuit-breaker decisions remain P4-006 and
+no trade approval or order is emitted.

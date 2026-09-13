@@ -796,6 +796,36 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
   `59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
 - Exact limit runtime: `normal=PASS/WITHIN_LIMITS`,
   `low_cash=REJECT/CASH_INSUFFICIENT`, notional `1019.9266734825`, cap `2500.00`.
-- P4-003 is runtime accepted on PR #5. Merge is pending; P4-004 has not started.
+- P4-003 was runtime accepted and squash-merged from PR #5, producing checkpoint
+  `27dfd86` on `main`.
+- PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
+  NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
+
+## P4-004 implementation record — 2026-09-12
+
+- Entry checkpoint: `27dfd86` on `main`; work is isolated on branch
+  `p4-004-portfolio-session-state`.
+- Added complete aligned hourly portfolio observations and deterministic immutable
+  state transitions. Every state binds its observation and predecessor with
+  canonical SHA-256 digests.
+- State tracks UTC session start time/equity, session realized PnL, all-time peak
+  equity, one-position gross Spot exposure and consecutive closed losses using an
+  isolated 256-digit Decimal context.
+- Duplicate, missing, stale, out-of-order and cross-symbol observations fail
+  closed. Close/PnL mismatches, silent position changes, invalid UTC session resets
+  and tampered transition results are rejected.
+- The managed state projects validated facts into the accepted P4-001 contract;
+  it does not activate circuit breakers, approve a trade or submit an order.
+  Protective gates remain P4-005 and circuit breakers remain P4-006.
+- Twelve focused state tests and the complete local suite passed **326/326**.
+  Deterministic CLI, compile, whitespace, lock and restricted-source scans passed.
+- GitHub Actions run `34717094100` passed both jobs: all **326/326** tests and
+  safety/runtime gates, plus public-checkpoint reconstruction, two byte-equal
+  candidate runs and the independent P3 audit. Evidence index SHA-256 remained
+  `59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
+- Exact state runtime: sequence `2`, session PnL `-100`, consecutive losses `1`,
+  gross exposure `0`, state SHA-256
+  `1b6700b922e2f7f6693b381222c81ebc10a1362c01dc4eca576dc6cb02e05bd0`.
+- P4-004 is runtime accepted on PR #6. Merge is pending; P4-005 has not started.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
