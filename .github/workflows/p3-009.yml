@@ -47,6 +47,8 @@ jobs:
         run: uv run --locked python -m yatl risk-limit-check
       - name: P4 portfolio and session state runtime
         run: uv run --locked python -m yatl risk-state-check
+      - name: P4 protective and cost gate runtime
+        run: uv run --locked python -m yatl risk-protective-check
 
   accepted-public-data:
     runs-on: ubuntu-latest

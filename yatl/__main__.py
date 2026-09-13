@@ -30,7 +30,8 @@ from .risk import (PortfolioRiskState, RiskContractError, RiskDecision,
                    RiskSizingError, size_entry,
                    RiskLimitError, assess_entry_limits,
                    CloseOutcome, PortfolioObservation, RiskStateError,
-                   apply_portfolio_observation)
+                   apply_portfolio_observation,
+                   ProtectiveGateError, assess_protective_entry)
 from .backtest import (AcceptedBacktestDataset, ArtifactError, BacktestClock,
                        BacktestClockError, BacktestConfigError,
                        BacktestContractError, BacktestLoadError, BacktestSpec,
@@ -332,6 +333,27 @@ def _risk_state_runtime_check():
     return first
 
 
+def _risk_protective_runtime_check():
+    normal_limit, _ = _risk_limit_runtime_check()
+    normal = assess_protective_entry(normal_limit)
+    sized = normal_limit.position_size
+    weak_decision = replace(
+        sized.request.strategy_decision,
+        setup=LongSetup("105", "95", "105.1"),
+    )
+    weak_request = replace(sized.request, strategy_decision=weak_decision)
+    weak_target = assess_protective_entry(
+        assess_entry_limits(size_entry(weak_request)),
+    )
+    replay = (
+        assess_protective_entry(normal_limit),
+        assess_protective_entry(assess_entry_limits(size_entry(weak_request))),
+    )
+    if (normal, weak_target) != replay:
+        raise ProtectiveGateError("Protective-gate replay mismatch")
+    return normal, weak_target
+
+
 def _strategy_adapter_runtime_check():
     start = 1_699_999_200_000
 
@@ -501,6 +523,8 @@ def main():
                         help="Verify P4 cash, notional and exposure limits")
     commands.add_parser("risk-state-check",
                         help="Verify deterministic P4 portfolio/session transitions")
+    commands.add_parser("risk-protective-check",
+                        help="Verify P4 protective levels and post-cost reward")
     commands.add_parser("strategy-feature-check",
                         help="Verify point-in-time Decimal P3 features")
     commands.add_parser("strategy-registry-check",
@@ -720,6 +744,14 @@ def main():
                   f"gross_exposure={state.gross_exposure_quote} "
                   f"state_sha256={state.state_sha256}")
             print("PAPER ONLY | Hash-chained state | No credentials | No exchange order")
+        elif args.command == "risk-protective-check":
+            normal, weak_target = _risk_protective_runtime_check()
+            print(f"OK: P4 protective entry gate; normal={normal.status.value}/"
+                  f"{normal.reason.value} weak_target={weak_target.status.value}/"
+                  f"{weak_target.reason.value} worst_loss={normal.worst_loss_quote} "
+                  f"net_reward={normal.net_reward_quote} "
+                  f"gate_sha256={normal.gate_sha256}")
+            print("PAPER ONLY | No approval | No credentials | No exchange order")
         elif args.command == "strategy-registry-check":
             identity = StrategyIdentity("RESEARCH_FIXTURE", "1.0.0")
             registry = StrategyRegistry((StrategyDefinition(identity, (
@@ -922,6 +954,7 @@ def main():
             RiskSizingError,
             RiskLimitError,
             RiskStateError,
+            ProtectiveGateError,
             CheckpointRebuildError,
             HealthError, PaperWorkflowError,
             PublicRestError, QualityError,

@@ -826,6 +826,33 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
 - Exact state runtime: sequence `2`, session PnL `-100`, consecutive losses `1`,
   gross exposure `0`, state SHA-256
   `1b6700b922e2f7f6693b381222c81ebc10a1362c01dc4eca576dc6cb02e05bd0`.
-- P4-004 is runtime accepted on PR #6. Merge is pending; P4-005 has not started.
+- P4-004 was runtime accepted and squash-merged from PR #6, producing checkpoint
+  `99cd8d5` on `main`.
+- PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
+  NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
+
+## P4-005 implementation record — 2026-09-13
+
+- Entry checkpoint: `99cd8d5` on `main`; work is isolated on branch
+  `p4-005-protective-cost-gate`.
+- Added an immutable protective assessment bound to the accepted P4-003 limit
+  evidence, P4-002 sizing result and original risk-request SHA-256.
+- Independently recomputes adverse entry, stop and target execution prices, quote
+  fees on both sides, worst planned stop loss and net target reward using the
+  frozen P2 costs: 10 bps fee and 5 bps adverse slippage.
+- Prior cash/notional/exposure rejection has deterministic priority. Otherwise,
+  invalid protective levels, loss-budget breach and non-positive post-cost reward
+  fail closed. Worst loss must exactly match the accepted sizing evidence.
+- This gate emits canonical PASS/REJECT evidence and a material SHA-256 only; it
+  cannot approve a trade, create a P2 intent or submit an order. Circuit-breaker
+  decisions remain P4-006.
+- Twelve focused gate tests, 55 focused P4 tests and the complete local suite
+  passed **338/338**. Deterministic CLI, compile, whitespace, lock and restricted-
+  source scans passed.
+- Runtime normal fixture: `PASS/PROTECTIVE_GATE_PASSED`, worst loss
+  `99.9999984436650`, net reward `93.8834966536650`, gate SHA-256
+  `950dd5ed79315453701b122ddd2e3a93b9002d8c2e1628e5ba3e89d048718ae9`.
+  A raw-positive weak target is rejected as `NON_POSITIVE_POST_COST_REWARD`.
+- GitHub runtime acceptance is pending and is not claimed here.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
