@@ -1,8 +1,8 @@
 # Yahya AI Trading Lab
 
-P0، P1، P2 و P3 با شواهد runtime پذیرفته شده‌اند. P4 فاز فعال است؛
-P4-001 تا P4-009 روی `main` merge شده‌اند و P4-010 ممیزی مستقل نهایی Risk
-Manager را برای اعتبارسنجی GitHub آماده کرده است.
+P0 تا P4 با شواهد runtime پذیرفته و روی `main` بسته شده‌اند. P4-010 ممیزی مستقل
+نهایی Risk Manager را در checkpoint `f3a5575` تکمیل کرده است. P5 مرحله بعدی است
+اما هنوز باز نشده و هیچ مجوز معامله‌ای فعال نیست.
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
@@ -39,13 +39,13 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 ## مسیر بعدی
 
 مرجع ترتیب اجرا: [نقشه پروژه](docs/MASTER-PLAN.md).
-وضعیت جاری **P0، P1، P2 و P3 پذیرفته‌شده در runtime** است. P1 در `4e77e34` بسته شد.
+وضعیت جاری **P0 تا P4 پذیرفته‌شده در runtime** است. P1 در `4e77e34` بسته شد.
 P2 بارگذاری point-in-time، ساعت رویداد، fill محافظه‌کارانه، هزینه، دفتر پرتفوی،
 معیارها، artifact تکرارپذیر و شش سناریوی واقعی BTC/ETH را تکمیل کرده است. ممیزی
 نهایی P2 همه این gateها را بازسازی و تأیید می‌کند. P3 در `90d5847` بسته شد؛
-P4-001 تا P4-009 نیز به‌ترتیب پذیرفته و روی `main` merge شده‌اند و P4-010 اکنون
-در حال اعتبارسنجی است. ترتیب و معیارهای P4 در `docs/P4-IMPLEMENTATION-PLAN.md`
-قفل شده‌اند.
+P4-001 تا P4-010 نیز به‌ترتیب پذیرفته و روی `main` merge شده‌اند. P4 در
+checkpoint `f3a5575` بسته شد؛ P5 همچنان unopened است. ترتیب و شواهد P4 در
+`docs/P4-IMPLEMENTATION-PLAN.md` قفل شده‌اند.
 
 P3-001 قرارداد research-only سیگنال را اضافه می‌کند. تصمیم فقط یکی از `NO_TRADE`،
 `ENTER_LONG` یا `EXIT_LONG` است و به context نقطه‌زمانی و digest آن متصل می‌شود.
@@ -684,5 +684,6 @@ decisions. The frozen policy SHA-256 is
 `cb72fffad317e05638e60ad4a93b96bb78e356b52677330ecd6149095b65e2c7` and the
 evidence index remains
 `56c945c38571af294bb44bfd7e788f314d9ee3e9fc76457c6bedb018daae0783`.
-Final-HEAD validation and merge are pending; P5 remains unopened. This audit
+Final-HEAD run `34771969717` also passed both jobs. P4-010 was squash-merged from
+PR #12 in checkpoint `f3a5575`; P4 is closed and P5 remains unopened. This audit
 cannot grant trade permission or submit an exchange order.
