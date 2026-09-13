@@ -629,8 +629,14 @@ can reach P2. Missing or insufficient evidence becomes `HOLD` with no fill;
 existing positions can still exit atomically under an active Kill Switch. The
 accepted P3 `ResearchSignalAdapter` remains unchanged and is restricted to frozen
 research replay. Local verification passed 16 adapter tests, 98 focused P4 tests
-and all **381/381** tests. Runtime recorded entry quantity `18.894653`, blocked an
+and all **381/381** tests. GitHub Actions run `34764015703` passed both jobs and
+all safety/runtime gates. Runtime recorded entry quantity `18.894653`, blocked an
 insufficient-evidence entry, closed the position under Kill Switch and produced
 authorization SHA-256
 `3c65d4dca84c2ef17b73130461ee19552e3279a4b7a9753f0206fd8628b0ae72`.
-GitHub runtime acceptance is pending.
+The accepted public checkpoint rebuilt 6 datasets and 7,560 closed rows; two
+candidate matrices were byte-identical and the independent audit retained 2
+candidates, 2 symbols, 4 runs, 21 files, 16 P2 artifacts and 35 trades with index
+SHA-256 `59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
+Both labels remain `INSUFFICIENT_EVIDENCE`. P4-008 is runtime accepted on PR #10;
+merge is pending.

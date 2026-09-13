@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0، P1، P2 و P3 RUNTIME ACCEPTED**
-قدم جاری: **P4-008 IMPLEMENTED — GITHUB RUNTIME PENDING**
+قدم جاری: **P4-008 RUNTIME ACCEPTED ON PR #10 — MERGE PENDING**
 
 ## منشأ و حدود سند
 
@@ -36,7 +36,7 @@ NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only ب�
 | P1 Market Data Layer | REST، دانلود تاریخی، WebSocket، نرمال‌سازی، SQLite، حذف تکرار، تشخیص شکاف، گزارش سلامت BTC/ETH | **RUNTIME ACCEPTED — checkpoint `4e77e34`** |
 | P2 Backtesting Engine | آزمون تاریخی تکرارپذیر با کارمزد، لغزش و جلوگیری از استفاده از آینده | **RUNTIME ACCEPTED — checkpoint `9cbc197`** |
 | P3 Strategy Framework | چارچوب مشترک استراتژی و قواعد روشن سیگنال/عدم معامله | **RUNTIME ACCEPTED — final audit run `34699232936`** |
-| P4 Risk Manager | اندازه موقعیت، محدودیت ریسک و Kill Switch مستقل | **در حال اجرا؛ P4-007 merge شده، P4-008 در حال اعتبارسنجی** |
+| P4 Risk Manager | اندازه موقعیت، محدودیت ریسک و Kill Switch مستقل | **در حال اجرا؛ P4-007 merge شده، P4-008 runtime پذیرفته** |
 | P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | شروع نشده؛ مجوز TRADE فعلی خاموش |
 | P6 AI Analyst | تحلیل ساختاریافته و NO_TRADE بدون دسترسی مستقیم به اجرا | شروع نشده |
 | P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | شروع نشده |
@@ -58,19 +58,19 @@ notional و exposure را روی PR #5 پیاده‌سازی کرد و در chec
 مدارشکن‌های زیان session، drawdown و باخت متوالی را پیاده‌سازی کرد و در checkpoint
 `98320df` merge شد. P4-007 state machine قفل‌شونده Kill Switch را پیاده‌سازی کرد،
 در final HEAD run `34754437777` پذیرفته شد و از PR #9 در checkpoint `e09dc0e`
-merge شد. P4-008 adapter محافظت‌شده P3→P4→P2 را پیاده‌سازی کرده و runtime GitHub
-آن هنوز در انتظار است.
+merge شد. P4-008 adapter محافظت‌شده P3→P4→P2 را پیاده‌سازی کرده و runtime آن در
+GitHub Actions run `34764015703` پذیرفته شده است؛ merge نهایی در انتظار است.
 
 | معیار | انجام‌شده | باقی‌مانده | تفسیر صحیح |
 |---|---:|---:|---|
 | فازهای تحویل نرم‌افزاری P0 تا P9 | 4 از 10 | 6 فاز | **40% بر مبنای شمارش ساده فازها**؛ تخمین زمان یا حجم کار نیست |
-| checkpointهای P4 | 7 از 10 | 3 checkpoint | P4-001 تا P4-007 روی `main`؛ P4-008 فقط محلی سبز است و هنوز runtime پذیرفته نشده |
+| checkpointهای P4 | 8 از 10 | 2 checkpoint | P4-001 تا P4-007 روی `main`؛ P4-008 runtime پذیرفته و merge آن در انتظار است |
 | فازهای پیش از Forward Validation | P0 تا P3 | P4 تا P9 | پس از آن P10 باید روی داده جدید اجرا و پذیرفته شود |
 | مسیر Live | هیچ | P4 تا P10 و ممیزی‌های P11 | P11 همچنان LOCKED و مشروط به تأیید صریح است |
 
 ### کار باقی‌مانده تا نسخه آزمایشی نرم‌افزار
 
-1. پذیرش runtime P4-008 و تکمیل P4-009 تا P4-010: سناریوهای adversarial و ممیزی
+1. merge کردن P4-008 و تکمیل P4-009 تا P4-010: سناریوهای adversarial و ممیزی
    نهایی.
 2. P5: اجرای کنترل‌شده Paper/Testnet زیر Risk Manager؛ مجوز TRADE فعلاً خاموش است.
 3. P6: AI Analyst ساختاریافته، فقط پیشنهاد/`NO_TRADE` و بدون اجرای مستقیم.
@@ -222,6 +222,8 @@ reset دستی همراه شواهد clear جدید پیاده‌سازی شد. 
 `34754437777` هر دو job، کل **365/365** تست، اسکن‌های ایمنی، runtime state machine
 و بازسازی/بازپخش/ممیزی بدون تغییر داده عمومی را پذیرفت. PR #9 در checkpoint
 `e09dc0e` merge شد. P4-008 adapter محافظت‌شده P3→P4→P2 را پیاده‌سازی کرده است:
-16 تست adapter، 98 تست متمرکز P4 و کل **381/381** تست محلی سبز هستند؛ runtime
-GitHub هنوز در انتظار است و تا آن زمان checkpoint پذیرفته‌شده P4 همان 7 از 10
-باقی می‌ماند.
+16 تست adapter، 98 تست متمرکز P4 و کل **381/381** تست سبز شدند. GitHub Actions run
+`34764015703` هر دو job، اسکن‌های ایمنی، runtime adapter، بازسازی 6 dataset و 7,560
+ردیف بسته، دو اجرای byte-identical و ممیزی مستقل P3 با 35 معامله را پذیرفت. هر دو
+candidate همچنان `INSUFFICIENT_EVIDENCE` هستند. P4-008 runtime پذیرفته شده و merge
+PR #10 در انتظار است؛ بنابراین 8 از 10 checkpoint فاز P4 پذیرفته شده‌اند.

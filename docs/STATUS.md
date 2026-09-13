@@ -954,6 +954,13 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
 - Runtime approved entry quantity `18.894653`, blocked insufficient evidence,
   exited safely under Kill Switch and produced authorization SHA-256
   `3c65d4dca84c2ef17b73130461ee19552e3279a4b7a9753f0206fd8628b0ae72`.
-- GitHub Actions runtime acceptance is pending; no acceptance claim is made yet.
+- GitHub Actions run `34764015703` passed both jobs: all **381/381** tests, every
+  safety/runtime gate, public-checkpoint reconstruction, two byte-equal candidate
+  matrices and the independent P3 audit.
+- Runtime public-data evidence remained 6 datasets, 7,560 closed rows, 2 candidates,
+  2 symbols, 4 runs, 21 files, 16 P2 artifacts and 35 trades. Index SHA-256 remained
+  `59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`; both labels
+  remain `INSUFFICIENT_EVIDENCE`.
+- P4-008 is runtime accepted on PR #10. Merge is pending.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
