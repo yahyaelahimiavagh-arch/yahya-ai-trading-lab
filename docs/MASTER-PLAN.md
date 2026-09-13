@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0، P1، P2 و P3 RUNTIME ACCEPTED**
-قدم جاری: **P4-010 IMPLEMENTED — GITHUB RUNTIME PENDING**
+قدم جاری: **P4-010 RUNTIME ACCEPTED ON PR #12 — FINAL HEAD/MERGE PENDING**
 
 ## منشأ و حدود سند
 
@@ -36,7 +36,7 @@ NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only ب�
 | P1 Market Data Layer | REST، دانلود تاریخی، WebSocket، نرمال‌سازی، SQLite، حذف تکرار، تشخیص شکاف، گزارش سلامت BTC/ETH | **RUNTIME ACCEPTED — checkpoint `4e77e34`** |
 | P2 Backtesting Engine | آزمون تاریخی تکرارپذیر با کارمزد، لغزش و جلوگیری از استفاده از آینده | **RUNTIME ACCEPTED — checkpoint `9cbc197`** |
 | P3 Strategy Framework | چارچوب مشترک استراتژی و قواعد روشن سیگنال/عدم معامله | **RUNTIME ACCEPTED — final audit run `34699232936`** |
-| P4 Risk Manager | اندازه موقعیت، محدودیت ریسک و Kill Switch مستقل | **در حال اجرا؛ P4-009 merge شده، P4-010 runtime در انتظار** |
+| P4 Risk Manager | اندازه موقعیت، محدودیت ریسک و Kill Switch مستقل | **P4-010 runtime پذیرفته؛ final HEAD/merge در انتظار** |
 | P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | شروع نشده؛ مجوز TRADE فعلی خاموش |
 | P6 AI Analyst | تحلیل ساختاریافته و NO_TRADE بدون دسترسی مستقیم به اجرا | شروع نشده |
 | P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | شروع نشده |
@@ -62,18 +62,19 @@ merge شد. P4-008 adapter محافظت‌شده P3→P4→P2 را پیاده‌
 `34764434584` را گذراند و از PR #10 در checkpoint `b268fa7` merge شد. P4-009
 ماتریس adversarial را پیاده‌سازی کرده و runtime آن در GitHub Actions run
 final HEAD run `34770395981` را گذراند و از PR #11 در checkpoint `23b2f5b`
-merge شد. P4-010 ممیزی مستقل نهایی را پیاده‌سازی کرده و runtime آن در انتظار است.
+merge شد. P4-010 ممیزی مستقل نهایی را پیاده‌سازی کرده و GitHub Actions run
+`34771596172` را با 401 تست و همه gateها گذرانده است؛ final HEAD و merge در انتظارند.
 
 | معیار | انجام‌شده | باقی‌مانده | تفسیر صحیح |
 |---|---:|---:|---|
 | فازهای تحویل نرم‌افزاری P0 تا P9 | 4 از 10 | 6 فاز | **40% بر مبنای شمارش ساده فازها**؛ تخمین زمان یا حجم کار نیست |
-| checkpointهای P4 | 9 از 10 | 1 checkpoint | P4-001 تا P4-009 روی `main`؛ P4-010 پیاده‌سازی شده و runtime آن در انتظار است |
+| checkpointهای P4 | 10 از 10 runtime | merge نهایی | P4-001 تا P4-009 روی `main`؛ P4-010 روی PR #12 پذیرفته و final HEAD/merge در انتظار است |
 | فازهای پیش از Forward Validation | P0 تا P3 | P4 تا P9 | پس از آن P10 باید روی داده جدید اجرا و پذیرفته شود |
 | مسیر Live | هیچ | P4 تا P10 و ممیزی‌های P11 | P11 همچنان LOCKED و مشروط به تأیید صریح است |
 
 ### کار باقی‌مانده تا نسخه آزمایشی نرم‌افزار
 
-1. اجرای runtime و پذیرش P4-010: ممیزی مستقل نهایی Risk Manager.
+1. اجرای final HEAD و merge P4-010 پس از تأیید صریح؛ سپس بستن P4.
 2. P5: اجرای کنترل‌شده Paper/Testnet زیر Risk Manager؛ مجوز TRADE فعلاً خاموش است.
 3. P6: AI Analyst ساختاریافته، فقط پیشنهاد/`NO_TRADE` و بدون اجرای مستقیم.
 4. P7 تا P9: Journal/Analytics، Dashboard و Telegram محدود و ایمن.
@@ -237,5 +238,9 @@ index سناریوها
 P3 بدون تغییر ماند و هر دو candidate همچنان `INSUFFICIENT_EVIDENCE` هستند. Final
 HEAD run `34770395981` نیز سبز شد و PR #11 در checkpoint `23b2f5b` merge شد.
 P4-010 ممیزی مستقل policy digest، بسته 17 فایلی، تصمیم‌های دقیق و بازسازی
-byte-for-byte را پیاده‌سازی کرده است؛ runtime آن هنوز پذیرفته نشده و بنابراین 9 از
-10 checkpoint فاز P4 پذیرفته شده‌اند.
+byte-for-byte را پیاده‌سازی کرده است. GitHub Actions run `34771596172` کل
+**401/401** تست، 118 تست متمرکز P4، بازسازی 6 dataset و 7,560 ردیف، دو ماتریس
+byte-identical و ممیزی نهایی 16 run/17 file را پذیرفت. Policy SHA-256 برابر
+`cb72fffad317e05638e60ad4a93b96bb78e356b52677330ecd6149095b65e2c7` است.
+هر 10 checkpoint در runtime پذیرفته‌اند، اما P4 تا final HEAD و merge PR #12 بسته
+اعلام نمی‌شود و P5 همچنان باز نشده است.

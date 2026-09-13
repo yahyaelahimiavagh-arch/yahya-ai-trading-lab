@@ -1009,7 +1009,17 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
   risk-reducing exit under active Kill Switch.
 - It recomputes all 16 runs from the accepted BTCUSDT/ETHUSDT public Spot
   checkpoint and requires the complete evidence package to match byte-for-byte.
-- Nine focused audit tests pass locally. Complete-suite and GitHub runtime gates
-  are pending; P4 is not yet accepted and P5 remains unopened.
+- Nine focused audit tests, 118 focused P4 tests and the complete suite passed
+  **401/401**. Compile, lock, whitespace and restricted-source scans passed.
+- GitHub Actions run `34771596172` passed both jobs. It rebuilt 6 datasets and
+  7,560 closed rows, reproduced both 16-run P4 matrices byte-for-byte and passed
+  the independent 16-run/17-file final P4 audit with exact decisions and replay
+  equality.
+- The evidence index SHA-256 remains
+  `56c945c38571af294bb44bfd7e788f314d9ee3e9fc76457c6bedb018daae0783`; frozen
+  policy SHA-256 is
+  `cb72fffad317e05638e60ad4a93b96bb78e356b52677330ecd6149095b65e2c7`.
+- Runtime is accepted on PR #12. Final HEAD validation and merge are pending; P4
+  is not yet closed and P5 remains unopened.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.

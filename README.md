@@ -677,6 +677,12 @@ to match byte-for-byte:
 uv run --locked python -m yatl p4-audit
 ```
 
-The implementation and nine focused audit tests are complete locally. GitHub
-runtime acceptance is pending; P4 and P5 are not yet accepted or opened. This
-audit cannot grant trade permission or submit an exchange order.
+GitHub Actions run `34771596172` passed 9 focused audit tests, 118 focused P4
+tests and the complete **401/401** suite. It rebuilt 6 datasets and 7,560 closed
+rows, reproduced both 16-run matrices byte-for-byte and accepted all exact
+decisions. The frozen policy SHA-256 is
+`cb72fffad317e05638e60ad4a93b96bb78e356b52677330ecd6149095b65e2c7` and the
+evidence index remains
+`56c945c38571af294bb44bfd7e788f314d9ee3e9fc76457c6bedb018daae0783`.
+Final-HEAD validation and merge are pending; P5 remains unopened. This audit
+cannot grant trade permission or submit an exchange order.

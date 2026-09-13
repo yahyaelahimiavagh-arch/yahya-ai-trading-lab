@@ -1,6 +1,6 @@
 # P4 — Risk Manager implementation plan
 
-Status: **IN PROGRESS — P4-009 MERGED; P4-010 GITHUB RUNTIME PENDING**
+Status: **P4-010 RUNTIME ACCEPTED ON PR #12 — FINAL HEAD/MERGE PENDING**
 Entry baseline: P3 runtime accepted and squash-merged in commit `90d5847` with all
 283 tests and GitHub Actions run `34699734574` passing.
 Exit condition: an independent, deterministic and fail-closed manager binds each
@@ -290,7 +290,19 @@ recomputes internal and index SHA-256 values, validates exact symbol/scenario or
 and independently checks every boundary rejection, gap/stale failure, qualified
 Paper quantity and risk-reducing Kill Switch exit. It then rebuilds all 16 runs
 from the accepted public Spot data and requires byte-for-byte equality. Nine
-focused tests are locally complete; GitHub runtime evidence is pending.
+focused tests are locally complete.
+
+Acceptance: **PASS on PR runtime, 2026-09-13, GitHub Actions run
+`34771596172`; final HEAD/merge pending.** Nine audit tests, 118 focused P4 tests
+and the complete suite passed **401/401**. Compile, lock, whitespace and restricted-
+source scans passed. The accepted public checkpoint rebuilt 6 datasets and 7,560
+closed rows. Both 16-run matrices were byte-identical; the independent audit
+validated 17 canonical files, exact scenario decisions and replay equality. The
+index SHA-256 remained
+`56c945c38571af294bb44bfd7e788f314d9ee3e9fc76457c6bedb018daae0783`; the frozen
+policy SHA-256 is
+`cb72fffad317e05638e60ad4a93b96bb78e356b52677330ecd6149095b65e2c7`.
+P5 remains unopened and no trading permission is granted.
 
 ## Intended module boundaries
 
