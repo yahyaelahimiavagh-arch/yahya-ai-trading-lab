@@ -1,6 +1,6 @@
 # P4 — Risk Manager implementation plan
 
-Status: **IN PROGRESS — P4-007 MERGED; P4-008 RUNTIME ACCEPTED ON PR #10**
+Status: **IN PROGRESS — P4-008 MERGED; P4-009 IMPLEMENTED, RUNTIME PENDING**
 Entry baseline: P3 runtime accepted and squash-merged in commit `90d5847` with all
 283 tests and GitHub Actions run `34699734574` passing.
 Exit condition: an independent, deterministic and fail-closed manager binds each
@@ -246,13 +246,28 @@ The accepted public checkpoint rebuilt 6 datasets and 7,560 closed rows. Two
 candidate matrices were byte-identical; the independent P3 audit retained 2
 candidates, 2 symbols, 4 runs, 21 files, 16 P2 artifacts, 35 trades and index
 SHA-256 `59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
-Both labels remain `INSUFFICIENT_EVIDENCE`. Merge is pending.
+Both labels remain `INSUFFICIENT_EVIDENCE`. Final HEAD run `34764434584` also
+passed both jobs. P4-008 was squash-merged from PR #10 in checkpoint `b268fa7`.
 
 ### P4-009 — Deterministic adversarial scenario matrix
 
 Replay boundary, gap, cost, loss-streak, drawdown, stale-state, insufficient-
 evidence and Kill Switch scenarios for BTCUSDT/ETHUSDT. Repeat and byte-compare
 canonical evidence artifacts.
+
+Implementation: eight pre-registered scenarios run for each accepted public Spot
+symbol. Exact session-loss, consecutive-loss and drawdown boundaries latch the
+Kill Switch and block entry. A missing expected fill candle and stale state fail
+closed without mutating Paper state. Post-cost rejection and insufficient evidence
+produce no fill. An exact position-reducing exit remains available under an active
+Kill Switch. Each of the 16 runs records canonical JSON bound to policy, public-data
+digest, strategy context, circuit, Kill Switch, authorization and fill evidence.
+The atomic writer refuses overwrite; CI runs the complete matrix twice and requires
+byte-identical directories.
+
+Local evidence: **11/11** scenario tests, **109/109** focused P4 tests and the
+complete suite **392/392** passed. Compile, whitespace, lock and restricted-source
+scans remain required in GitHub Actions. Public-data runtime acceptance is pending.
 
 ### P4-010 — P4 final audit and checkpoint
 

@@ -961,6 +961,27 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
   2 symbols, 4 runs, 21 files, 16 P2 artifacts and 35 trades. Index SHA-256 remained
   `59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`; both labels
   remain `INSUFFICIENT_EVIDENCE`.
-- P4-008 is runtime accepted on PR #10. Merge is pending.
+- Final HEAD GitHub Actions run `34764434584` passed both jobs. P4-008 was
+  squash-merged from PR #10 in checkpoint `b268fa7`.
+- PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
+  NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
+
+## P4-009 implementation record — 2026-09-13
+
+- Entry checkpoint: P4-008 squash-merged in `b268fa7`; implementation branch
+  `p4-009-adversarial-scenarios`.
+- Added eight pre-registered adversarial scenarios for each BTCUSDT and ETHUSDT
+  accepted public Spot dataset: session-loss boundary, gap, post-cost rejection,
+  consecutive-loss boundary, drawdown boundary, stale state, insufficient evidence
+  and Kill Switch exit.
+- Boundary, cost and evidence failures block entry without a fill. Gap and stale-
+  state failures preserve adapter state atomically; the gap event can be retried.
+  Exact risk-reducing exit remains available under an active Kill Switch.
+- Each of 16 runs emits canonical JSON bound to policy, dataset/context digests and
+  the full P4 evidence chain. The index is deterministic, the atomic writer refuses
+  overwrite, and CI runs the matrix twice with a recursive byte comparison.
+- Eleven scenario tests, 109 focused P4 tests and the complete local suite passed
+  **392/392**. Compile and whitespace gates passed.
+- GitHub Actions public-data runtime evidence is pending; P4-009 is not yet accepted.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.

@@ -37,7 +37,9 @@ from .risk import (PortfolioRiskState, RiskContractError, RiskDecision,
                    KillSwitchError, KillSwitchEvent, KillSwitchEventType,
                    apply_kill_switch_event,
                    RiskAdapterError, RiskManagedPaperAdapter,
-                   authorize_paper_request)
+                   authorize_paper_request,
+                   RiskScenarioError, run_and_write_adversarial_matrix,
+                   scenario_matrix_sha256)
 from .backtest import (AcceptedBacktestDataset, ArtifactError, BacktestClock,
                        BacktestClockError, BacktestConfigError,
                        BacktestContractError, BacktestLoadError, BacktestSpec,
@@ -802,6 +804,15 @@ def main():
                         help="Verify the fail-closed P4 Paper Kill Switch")
     commands.add_parser("risk-adapter-check",
                         help="Verify the P4-authorized bridge into P2 Paper")
+    risk_scenarios = commands.add_parser(
+        "risk-scenario-check",
+        help="Replay P4 adversarial scenarios on accepted public data")
+    risk_scenarios.add_argument("--database", default="data/p1/market.sqlite3")
+    risk_scenarios.add_argument(
+        "--manifest", default="manifests/p1-market-data.json")
+    risk_scenarios.add_argument("--hours", type=int, default=24)
+    risk_scenarios.add_argument(
+        "--output", default="data/p4/p4-009-evidence")
     commands.add_parser("strategy-feature-check",
                         help="Verify point-in-time Decimal P3 features")
     commands.add_parser("strategy-registry-check",
@@ -1056,6 +1067,14 @@ def main():
                   f"flat={str(not has_position).lower()} "
                   f"authorization_sha256={entry.authorization_sha256}")
             print("PAPER ONLY | Exact approved quantity | No credentials | No exchange order")
+        elif args.command == "risk-scenario-check":
+            result = run_and_write_adversarial_matrix(
+                args.database, args.manifest, args.output, hours=args.hours,
+            )
+            print(f"OK: P4 adversarial matrix; scenarios=8 symbols=2 "
+                  f"runs={len(result.runs)} replay_equal=true "
+                  f"index_sha256={scenario_matrix_sha256(result)}")
+            print("PAPER ONLY | LIVE_MASTER_LOCK=OFF | Public Spot data | No exchange order")
         elif args.command == "strategy-registry-check":
             identity = StrategyIdentity("RESEARCH_FIXTURE", "1.0.0")
             registry = StrategyRegistry((StrategyDefinition(identity, (
@@ -1261,6 +1280,7 @@ def main():
             ProtectiveGateError,
             KillSwitchError,
             RiskAdapterError,
+            RiskScenarioError,
             CheckpointRebuildError,
             HealthError, PaperWorkflowError,
             PublicRestError, QualityError,
