@@ -853,6 +853,10 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
   `99.9999984436650`, net reward `93.8834966536650`, gate SHA-256
   `950dd5ed79315453701b122ddd2e3a93b9002d8c2e1628e5ba3e89d048718ae9`.
   A raw-positive weak target is rejected as `NON_POSITIVE_POST_COST_REWARD`.
-- GitHub runtime acceptance is pending and is not claimed here.
+- GitHub Actions run `34747422371` passed both jobs: all **338/338** tests and
+  safety/runtime gates, plus public-checkpoint reconstruction, two byte-equal
+  candidate runs and the independent P3 audit. Evidence index SHA-256 remained
+  `59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
+- P4-005 is runtime accepted on PR #7. Merge is pending; P4-006 has not started.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.

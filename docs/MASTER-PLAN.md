@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0، P1، P2 و P3 RUNTIME ACCEPTED**
-قدم جاری: **P4-004 MERGED — P4-005 IMPLEMENTED, RUNTIME PENDING**
+قدم جاری: **P4-005 RUNTIME ACCEPTED ON PR #7 — MERGE PENDING**
 
 ## منشأ و حدود سند
 
@@ -53,19 +53,19 @@ merge شده است. P4-002 محاسبه دقیق اندازه موقعیت را
 GitHub Actions تأیید و در checkpoint `bc2bd30` merge کرده است. P4-003 کنترل cash،
 notional و exposure را روی PR #5 پیاده‌سازی کرد و در checkpoint `27dfd86` merge
 شد. P4-004 مدیریت point-in-time وضعیت portfolio/session را روی PR #6 پیاده‌سازی
-کرد و در checkpoint `99cd8d5` merge شد. P4-005 protective/cost gate را روی شاخه
-مستقل پیاده‌سازی کرده و runtime GitHub آن در انتظار است.
+کرد و در checkpoint `99cd8d5` merge شد. P4-005 protective/cost gate را روی PR #7
+پیاده‌سازی کرده و runtime آن پذیرفته شده است؛ merge نهایی هنوز انجام نشده است.
 
 | معیار | انجام‌شده | باقی‌مانده | تفسیر صحیح |
 |---|---:|---:|---|
 | فازهای تحویل نرم‌افزاری P0 تا P9 | 4 از 10 | 6 فاز | **40% بر مبنای شمارش ساده فازها**؛ تخمین زمان یا حجم کار نیست |
-| checkpointهای P4 | 4 از 10 | 6 checkpoint | P4-001 تا P4-004 روی `main`؛ P4-005 هنوز runtime پذیرفته نشده است |
+| checkpointهای P4 | 5 از 10 | 5 checkpoint | P4-001 تا P4-004 روی `main`؛ P4-005 runtime پذیرفته و merge آن در انتظار است |
 | فازهای پیش از Forward Validation | P0 تا P3 | P4 تا P9 | پس از آن P10 باید روی داده جدید اجرا و پذیرفته شود |
 | مسیر Live | هیچ | P4 تا P10 و ممیزی‌های P11 | P11 همچنان LOCKED و مشروط به تأیید صریح است |
 
 ### کار باقی‌مانده تا نسخه آزمایشی نرم‌افزار
 
-1. تکمیل P4-005 تا P4-010: protective gate،
+1. merge کردن P4-005 و تکمیل P4-006 تا P4-010: circuit breaker،
    circuit breaker، Kill Switch، adapter، سناریوها و ممیزی نهایی.
 2. P5: اجرای کنترل‌شده Paper/Testnet زیر Risk Manager؛ مجوز TRADE فعلاً خاموش است.
 3. P6: AI Analyst ساختاریافته، فقط پیشنهاد/`NO_TRADE` و بدون اجرای مستقیم.
@@ -207,4 +207,6 @@ P4-002 در checkpoint `bc2bd30` merge شد. P4-003 در GitHub Actions run
 P4-004 در GitHub Actions run `34717094100` با **326 تست**، runtime هش‌زنجیره‌ای
 state، اسکن‌های ایمنی و بازپخش/ممیزی بدون تغییر داده‌های پذیرفته‌شده قبول و در
 checkpoint `99cd8d5` merge شد. P4-005 اکنون روی شاخه مستقل پیاده‌سازی شده و
-پذیرش runtime آن در انتظار است.
+در GitHub Actions run `34747422371` با **338 تست**، protective runtime، اسکن‌های
+ایمنی و بازپخش/ممیزی بدون تغییر داده‌های پذیرفته‌شده قبول شد. PR #7 آماده بازبینی
+نهایی است؛ P4-006 شروع نشده است.
