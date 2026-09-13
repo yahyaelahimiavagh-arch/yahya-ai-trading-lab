@@ -55,20 +55,21 @@ notional و exposure را روی PR #5 پیاده‌سازی کرد و در chec
 شد. P4-004 مدیریت point-in-time وضعیت portfolio/session را روی PR #6 پیاده‌سازی
 کرد و در checkpoint `99cd8d5` merge شد. P4-005 protective/cost gate را روی PR #7
 پیاده‌سازی کرد و پس از قبولی runtime در checkpoint `41411ef` merge شد. P4-006
-مدارشکن‌های زیان session، drawdown و باخت متوالی را پیاده‌سازی کرده و runtime آن
-در PR #8 پذیرفته شده است؛ merge نهایی هنوز انجام نشده است.
+مدارشکن‌های زیان session، drawdown و باخت متوالی را پیاده‌سازی کرد و در checkpoint
+`98320df` merge شد. P4-007 state machine قفل‌شونده Kill Switch را پیاده‌سازی کرده
+و runtime آن در PR #9 پذیرفته شده است؛ merge نهایی هنوز انجام نشده است.
 
 | معیار | انجام‌شده | باقی‌مانده | تفسیر صحیح |
 |---|---:|---:|---|
 | فازهای تحویل نرم‌افزاری P0 تا P9 | 4 از 10 | 6 فاز | **40% بر مبنای شمارش ساده فازها**؛ تخمین زمان یا حجم کار نیست |
-| checkpointهای P4 | 6 از 10 | 4 checkpoint | P4-001 تا P4-005 روی `main`؛ P4-006 runtime پذیرفته و merge آن در انتظار است |
+| checkpointهای P4 | 7 از 10 | 3 checkpoint | P4-001 تا P4-006 روی `main`؛ P4-007 runtime پذیرفته و merge آن در انتظار است |
 | فازهای پیش از Forward Validation | P0 تا P3 | P4 تا P9 | پس از آن P10 باید روی داده جدید اجرا و پذیرفته شود |
 | مسیر Live | هیچ | P4 تا P10 و ممیزی‌های P11 | P11 همچنان LOCKED و مشروط به تأیید صریح است |
 
 ### کار باقی‌مانده تا نسخه آزمایشی نرم‌افزار
 
-1. merge کردن P4-006 و تکمیل P4-007 تا P4-010: Kill Switch، adapter، سناریوهای
-   adversarial و ممیزی نهایی.
+1. merge کردن P4-007 و تکمیل P4-008 تا P4-010: adapter، سناریوهای adversarial و
+   ممیزی نهایی.
 2. P5: اجرای کنترل‌شده Paper/Testnet زیر Risk Manager؛ مجوز TRADE فعلاً خاموش است.
 3. P6: AI Analyst ساختاریافته، فقط پیشنهاد/`NO_TRADE` و بدون اجرای مستقیم.
 4. P7 تا P9: Journal/Analytics، Dashboard و Telegram محدود و ایمن.
@@ -212,6 +213,10 @@ checkpoint `99cd8d5` merge شد. P4-005 در GitHub Actions run `34747781858` ب
 **338 تست**، protective runtime، اسکن‌های ایمنی و بازپخش/ممیزی بدون تغییر داده‌های
 پذیرفته‌شده قبول و از PR #7 در checkpoint `41411ef` merge شد. P4-006 مدارشکن‌های
 دقیق session loss، drawdown و loss streak را پیاده‌سازی کرد. GitHub Actions run
-`34749363210` هر دو job، کل **352/352** تست، اسکن‌های ایمنی، runtime مدارشکن و
-بازسازی/بازپخش/ممیزی بدون تغییر داده عمومی را پذیرفت. PR #8 آماده بازبینی نهایی
-است؛ merge در انتظار است و P4-007 شروع نشده است.
+`34749628926` هر دو job، کل **352/352** تست، اسکن‌های ایمنی، runtime مدارشکن و
+بازسازی/بازپخش/ممیزی بدون تغییر داده عمومی را پذیرفت. PR #8 در checkpoint
+`98320df` merge شد. P4-007 Kill Switch با startup فعال، latch بدون reset خودکار و
+reset دستی همراه شواهد clear جدید پیاده‌سازی شد. GitHub Actions run `34754067911`
+هر دو job، کل **365/365** تست، اسکن‌های ایمنی، runtime state machine و بازسازی/
+بازپخش/ممیزی بدون تغییر داده عمومی را پذیرفت. PR #9 آماده بازبینی نهایی است؛ merge
+در انتظار است و P4-008 شروع نشده است.
