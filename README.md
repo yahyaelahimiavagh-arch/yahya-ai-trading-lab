@@ -606,5 +606,8 @@ only an explicit manual-reset event with newer clear circuit evidence can return
 the state to inactive. Duplicate, missing, stale or out-of-order events and reused
 circuit evidence fail closed. Entry is blocked while active, while a matching
 risk-reducing exit remains permitted. Local verification passed 13 focused Kill
-Switch tests, 82 focused P4 tests and all **365/365** tests. GitHub Actions runtime
-acceptance is pending on the P4-007 pull request.
+Switch tests, 82 focused P4 tests and all **365/365** tests. GitHub Actions run
+`34754067911` passed both jobs, including every safety/runtime gate, reconstruction
+of 6 public datasets and 7,560 closed rows, two byte-identical candidate matrices
+and the unchanged independent P3 audit. P4-007 is runtime accepted on PR #9;
+merge is pending.
