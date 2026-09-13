@@ -33,6 +33,13 @@ from .state import (
     RiskStateError,
     apply_portfolio_observation,
 )
+from .protective import (
+    ProtectiveAssessment,
+    ProtectiveGateError,
+    ProtectiveReason,
+    ProtectiveStatus,
+    assess_protective_entry,
+)
 
 __all__ = [
     "POLICY_ID",
@@ -60,4 +67,9 @@ __all__ = [
     "PortfolioStateTransition",
     "RiskStateError",
     "apply_portfolio_observation",
+    "ProtectiveAssessment",
+    "ProtectiveGateError",
+    "ProtectiveReason",
+    "ProtectiveStatus",
+    "assess_protective_entry",
 ]

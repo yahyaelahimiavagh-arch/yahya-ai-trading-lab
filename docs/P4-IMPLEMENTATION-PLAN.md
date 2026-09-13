@@ -1,6 +1,6 @@
 # P4 — Risk Manager implementation plan
 
-Status: **IN PROGRESS — P4-003 MERGED; P4-004 RUNTIME ACCEPTED ON PR #6**
+Status: **IN PROGRESS — P4-004 MERGED; P4-005 RUNTIME ACCEPTED ON PR #7**
 Entry baseline: P3 runtime accepted and squash-merged in commit `90d5847` with all
 283 tests and GitHub Actions run `34699734574` passing.
 Exit condition: an independent, deterministic and fail-closed manager binds each
@@ -130,13 +130,33 @@ Compile, whitespace, lock and restricted-source scans passed. The accepted publi
 checkpoint rebuilt 7,560 rows; two candidate runs were byte-equal and the
 independent P3 audit retained evidence index SHA-256
 `59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
-P4-005 has not started.
+P4-004 was squash-merged from PR #6 in checkpoint `99cd8d5`.
 
 ### P4-005 — Protective-level and cost-aware gate
 
 Validate that every approved long entry has a reachable protective stop below
 entry, positive post-cost reward and a quantity whose worst planned paper loss
 does not exceed the frozen budget.
+
+Implementation: a tamper-checked assessment binds the accepted P4-003 limit and
+P4-002 sizing evidence. It independently recomputes adverse entry/stop/target
+execution prices, entry/exit quote fees, worst stop loss and net target reward
+under the frozen 10 bps fee and 5 bps slippage assumptions. Prior limit rejection
+takes deterministic precedence. Otherwise, invalid protective levels, budget
+breach or non-positive post-cost reward fail closed. The worst loss must exactly
+equal the accepted sizing result.
+
+Acceptance: **PASS, runtime 2026-09-13, GitHub Actions run `34747422371`.** Twelve
+focused gate tests, 55 focused P4 tests and the complete suite passed **338/338**.
+Runtime recorded `normal=PASS/PROTECTIVE_GATE_PASSED`,
+`weak_target=REJECT/NON_POSITIVE_POST_COST_REWARD`, worst loss
+`99.9999984436650`, net reward `93.8834966536650` and gate SHA-256
+`950dd5ed79315453701b122ddd2e3a93b9002d8c2e1628e5ba3e89d048718ae9`.
+Compile, whitespace, lock and restricted-source scans passed. The accepted public
+checkpoint rebuilt 7,560 rows; two candidate runs were byte-equal and the
+independent P3 audit retained evidence index SHA-256
+`59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
+P4-006 has not started.
 
 ### P4-006 — Loss and drawdown circuit breakers
 

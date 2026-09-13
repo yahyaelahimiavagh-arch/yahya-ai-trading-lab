@@ -540,5 +540,28 @@ scans, the new state runtime and unchanged public-data replay/audit gates. The
 loss fixture ended at sequence 2 with session PnL `-100`, one consecutive loss,
 zero exposure and state SHA-256
 `1b6700b922e2f7f6693b381222c81ebc10a1362c01dc4eca576dc6cb02e05bd0`.
-P4-004 is runtime accepted on PR #6; circuit-breaker decisions remain P4-006 and
-no trade approval or order is emitted.
+P4-004 was runtime accepted and merged in `99cd8d5`; circuit-breaker decisions
+remain P4-006 and no trade approval or order is emitted.
+
+## P4-005 — Protective-level and post-cost gate
+
+The protective gate independently recomputes adverse entry, stop and target
+execution prices, both-side fees, worst planned loss and target reward after all
+accepted P2 costs:
+
+```powershell
+uv run --locked python -m yatl risk-protective-check
+```
+
+A valid setup must retain a reachable stop below entry, stay inside the frozen 1%
+loss budget and have strictly positive post-cost reward. Prior cash/exposure
+rejection has deterministic priority. The gate produces immutable SHA-256-bound
+PASS/REJECT evidence only. Local verification passed all **338 tests**; GitHub
+Actions run `34747422371` then passed the complete suite, safety scans, protective
+runtime and unchanged public-data replay/audit gates. Runtime recorded
+`normal=PASS/PROTECTIVE_GATE_PASSED`,
+`weak_target=REJECT/NON_POSITIVE_POST_COST_REWARD`, worst loss
+`99.9999984436650`, net reward `93.8834966536650` and gate SHA-256
+`950dd5ed79315453701b122ddd2e3a93b9002d8c2e1628e5ba3e89d048718ae9`.
+P4-005 is runtime accepted on PR #7. Circuit breakers remain P4-006 and no
+approval or order is emitted.
