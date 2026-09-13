@@ -29,9 +29,11 @@ from .risk import (PortfolioRiskState, RiskContractError, RiskDecision,
                    RiskDisposition, RiskReason, RiskRequest,
                    RiskSizingError, size_entry,
                    RiskLimitError, assess_entry_limits,
-                   CloseOutcome, PortfolioObservation, RiskStateError,
+                   CloseOutcome, ManagedPortfolioState, PortfolioObservation,
+                   RiskStateError,
                    apply_portfolio_observation,
-                   ProtectiveGateError, assess_protective_entry)
+                   ProtectiveGateError, assess_protective_entry,
+                   CircuitBreakerError, assess_circuit_breakers)
 from .backtest import (AcceptedBacktestDataset, ArtifactError, BacktestClock,
                        BacktestClockError, BacktestConfigError,
                        BacktestContractError, BacktestLoadError, BacktestSpec,
@@ -354,6 +356,52 @@ def _risk_protective_runtime_check():
     return normal, weak_target
 
 
+def _risk_circuit_runtime_check():
+    _, entry = _strategy_contract_runtime_check()
+    boundary_state = ManagedPortfolioState(
+        symbol="BTCUSDT",
+        sequence=3,
+        decision_time_ms=entry.decision_time_ms,
+        session_start_time_ms=entry.decision_time_ms,
+        session_start_equity_quote="10000",
+        equity_quote="9800",
+        cash_quote="9800",
+        position_quantity="0",
+        mark_price="105",
+        peak_equity_quote="10000",
+        session_realized_pnl_quote="-200",
+        consecutive_losses=3,
+        open_positions=0,
+        gross_exposure_quote="0",
+        previous_state_sha256="0" * 64,
+        observation_sha256="1" * 64,
+    )
+    boundary_request = RiskRequest(
+        entry,
+        EvidenceLabel.QUALIFIED_FOR_P4_RESEARCH,
+        boundary_state.to_risk_state(),
+    )
+    boundary = assess_circuit_breakers(boundary_request, boundary_state)
+    recovered_state = replace(
+        boundary_state,
+        session_start_equity_quote="9800",
+        session_realized_pnl_quote="0",
+        consecutive_losses=0,
+        observation_sha256="2" * 64,
+    )
+    recovered_request = replace(
+        boundary_request,
+        portfolio=recovered_state.to_risk_state(),
+    )
+    recovered = assess_circuit_breakers(recovered_request, recovered_state)
+    if (boundary, recovered) != (
+        assess_circuit_breakers(boundary_request, boundary_state),
+        assess_circuit_breakers(recovered_request, recovered_state),
+    ):
+        raise CircuitBreakerError("Circuit-breaker replay mismatch")
+    return boundary, recovered
+
+
 def _strategy_adapter_runtime_check():
     start = 1_699_999_200_000
 
@@ -525,6 +573,8 @@ def main():
                         help="Verify deterministic P4 portfolio/session transitions")
     commands.add_parser("risk-protective-check",
                         help="Verify P4 protective levels and post-cost reward")
+    commands.add_parser("risk-circuit-check",
+                        help="Verify P4 loss, drawdown and streak breakers")
     commands.add_parser("strategy-feature-check",
                         help="Verify point-in-time Decimal P3 features")
     commands.add_parser("strategy-registry-check",
@@ -751,6 +801,17 @@ def main():
                   f"{weak_target.reason.value} worst_loss={normal.worst_loss_quote} "
                   f"net_reward={normal.net_reward_quote} "
                   f"gate_sha256={normal.gate_sha256}")
+            print("PAPER ONLY | No approval | No credentials | No exchange order")
+        elif args.command == "risk-circuit-check":
+            boundary, recovered = _risk_circuit_runtime_check()
+            triggered = ",".join(item.value for item in boundary.triggered_breakers)
+            print(f"OK: P4 circuit breakers; boundary="
+                  f"{boundary.disposition.value}/{boundary.reason.value} "
+                  f"triggered={triggered} recovered="
+                  f"{recovered.disposition.value}/{recovered.reason.value} "
+                  f"session_loss={boundary.session_loss_quote}/"
+                  f"{boundary.session_loss_limit_quote} "
+                  f"circuit_sha256={boundary.circuit_sha256}")
             print("PAPER ONLY | No approval | No credentials | No exchange order")
         elif args.command == "strategy-registry-check":
             identity = StrategyIdentity("RESEARCH_FIXTURE", "1.0.0")

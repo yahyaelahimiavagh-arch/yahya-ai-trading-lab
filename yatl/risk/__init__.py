@@ -40,6 +40,14 @@ from .protective import (
     ProtectiveStatus,
     assess_protective_entry,
 )
+from .circuit import (
+    CircuitAssessment,
+    CircuitBreaker,
+    CircuitBreakerError,
+    CircuitDisposition,
+    CircuitReason,
+    assess_circuit_breakers,
+)
 
 __all__ = [
     "POLICY_ID",
@@ -72,4 +80,10 @@ __all__ = [
     "ProtectiveReason",
     "ProtectiveStatus",
     "assess_protective_entry",
+    "CircuitAssessment",
+    "CircuitBreaker",
+    "CircuitBreakerError",
+    "CircuitDisposition",
+    "CircuitReason",
+    "assess_circuit_breakers",
 ]

@@ -1,6 +1,7 @@
 # Yahya AI Trading Lab
 
-P0، P1، P2 و P3 با شواهد runtime پذیرفته شده‌اند. P4-001 قرارداد مستقل Risk Manager را پیاده‌سازی می‌کند.
+P0، P1، P2 و P3 با شواهد runtime پذیرفته شده‌اند. P4 فاز فعال است و
+P4-006 مدارشکن‌های مستقل Risk Manager را پیاده‌سازی می‌کند.
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
@@ -40,8 +41,10 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 وضعیت جاری **P0، P1، P2 و P3 پذیرفته‌شده در runtime** است. P1 در `4e77e34` بسته شد.
 P2 بارگذاری point-in-time، ساعت رویداد، fill محافظه‌کارانه، هزینه، دفتر پرتفوی،
 معیارها، artifact تکرارپذیر و شش سناریوی واقعی BTC/ETH را تکمیل کرده است. ممیزی
-نهایی P2 همه این gateها را بازسازی و تأیید می‌کند. P3 در `90d5847` بسته شد و P4-001
-اکنون در حال اجراست. ترتیب و معیارهای P4 در `docs/P4-IMPLEMENTATION-PLAN.md` قفل شده‌اند.
+نهایی P2 همه این gateها را بازسازی و تأیید می‌کند. P3 در `90d5847` بسته شد؛
+P4-001 تا P4-005 نیز به‌ترتیب پذیرفته و روی `main` merge شده‌اند و P4-006 اکنون
+در حال اعتبارسنجی است. ترتیب و معیارهای P4 در `docs/P4-IMPLEMENTATION-PLAN.md`
+قفل شده‌اند.
 
 P3-001 قرارداد research-only سیگنال را اضافه می‌کند. تصمیم فقط یکی از `NO_TRADE`،
 `ENTER_LONG` یا `EXIT_LONG` است و به context نقطه‌زمانی و digest آن متصل می‌شود.
@@ -563,5 +566,27 @@ runtime and unchanged public-data replay/audit gates. Runtime recorded
 `weak_target=REJECT/NON_POSITIVE_POST_COST_REWARD`, worst loss
 `99.9999984436650`, net reward `93.8834966536650` and gate SHA-256
 `950dd5ed79315453701b122ddd2e3a93b9002d8c2e1628e5ba3e89d048718ae9`.
-P4-005 is runtime accepted on PR #7. Circuit breakers remain P4-006 and no
-approval or order is emitted.
+P4-005 is runtime accepted and PR #7 was squash-merged in `41411ef`. No approval
+or order is emitted.
+
+## P4-006 — Loss and drawdown circuit breakers
+
+The circuit layer binds a risk request to the exact managed portfolio-state SHA,
+then evaluates the frozen 2% session loss, 10% peak-to-current drawdown and three-
+loss streak limits using isolated 256-digit Decimal arithmetic:
+
+```powershell
+uv run --locked python -m yatl risk-circuit-check
+```
+
+Every exact boundary blocks new entry. A later valid state clears the relevant
+condition only when it is strictly back inside its limit; UTC session reset clears
+session loss and a recorded win/breakeven clears the loss streak. Risk-reducing
+exits are never blocked. The immutable result records stable breaker order and a
+material SHA-256, but does not latch a Kill Switch or emit approval/execution.
+GitHub Actions run `34749363210` passed 14 focused circuit tests, 69 focused P4
+tests, the complete **352/352** suite and every safety/runtime gate. The accepted
+public checkpoint rebuilt 6 datasets and 7,560 closed rows; two candidate runs
+were byte-identical and the independent audit retained index SHA-256
+`59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
+P4-006 is runtime accepted on PR #8; merge is pending.
