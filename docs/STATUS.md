@@ -1019,7 +1019,8 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
   `56c945c38571af294bb44bfd7e788f314d9ee3e9fc76457c6bedb018daae0783`; frozen
   policy SHA-256 is
   `cb72fffad317e05638e60ad4a93b96bb78e356b52677330ecd6149095b65e2c7`.
-- Runtime is accepted on PR #12. Final HEAD validation and merge are pending; P4
-  is not yet closed and P5 remains unopened.
+- Final HEAD GitHub Actions run `34771969717` passed both jobs with **401/401**
+  tests and unchanged deterministic evidence. P4-010 was squash-merged from PR
+  #12 in checkpoint `f3a5575`; P4 is closed and P5 remains unopened.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
