@@ -1,8 +1,8 @@
 # Yahya AI Trading Lab
 
 P0، P1، P2 و P3 با شواهد runtime پذیرفته شده‌اند. P4 فاز فعال است؛
-P4-007 روی `main` merge شده و P4-008 adapter محافظت‌شده P3→P4→P2 را برای
-اعتبارسنجی GitHub آماده کرده است.
+P4-001 تا P4-009 روی `main` merge شده‌اند و P4-010 ممیزی مستقل نهایی Risk
+Manager را برای اعتبارسنجی GitHub آماده کرده است.
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
@@ -43,7 +43,7 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 P2 بارگذاری point-in-time، ساعت رویداد، fill محافظه‌کارانه، هزینه، دفتر پرتفوی،
 معیارها، artifact تکرارپذیر و شش سناریوی واقعی BTC/ETH را تکمیل کرده است. ممیزی
 نهایی P2 همه این gateها را بازسازی و تأیید می‌کند. P3 در `90d5847` بسته شد؛
-P4-001 تا P4-007 نیز به‌ترتیب پذیرفته و روی `main` merge شده‌اند و P4-008 اکنون
+P4-001 تا P4-009 نیز به‌ترتیب پذیرفته و روی `main` merge شده‌اند و P4-010 اکنون
 در حال اعتبارسنجی است. ترتیب و معیارهای P4 در `docs/P4-IMPLEMENTATION-PLAN.md`
 قفل شده‌اند.
 
@@ -656,9 +656,33 @@ Every one of the 16 runs emits canonical secret-free JSON. The complete matrix i
 executed twice and the two evidence directories must be byte-identical before the
 index is published. Existing output is never overwritten. Local verification has
 passed 11 scenario tests, 109 focused P4 tests and the complete **392/392** suite.
-GitHub Actions run `34769959024` passed both jobs and every safety/runtime gate.
+GitHub Actions final HEAD run `34770395981` passed both jobs and every
+safety/runtime gate.
 The accepted public checkpoint rebuilt 6 datasets and 7,560 closed rows; both P4
 matrices were byte-identical and produced index SHA-256
 `56c945c38571af294bb44bfd7e788f314d9ee3e9fc76457c6bedb018daae0783`.
 The unchanged P3 audit retained 35 trades and both candidate labels remain
-`INSUFFICIENT_EVIDENCE`. P4-009 is runtime accepted on PR #11; merge is pending.
+`INSUFFICIENT_EVIDENCE`. P4-009 was squash-merged from PR #11 in checkpoint
+`23b2f5b`.
+
+## P4-010 — Independent final P4 audit
+
+The final gate independently validates the frozen `P4_RISK_V1` policy digest,
+the exact 17-file canonical evidence package, every internal and index SHA-256,
+scenario coverage/order and each fail-closed decision. It then recomputes the
+complete matrix from the accepted public Spot checkpoint and requires every file
+to match byte-for-byte:
+
+```powershell
+uv run --locked python -m yatl p4-audit
+```
+
+GitHub Actions run `34771596172` passed 9 focused audit tests, 118 focused P4
+tests and the complete **401/401** suite. It rebuilt 6 datasets and 7,560 closed
+rows, reproduced both 16-run matrices byte-for-byte and accepted all exact
+decisions. The frozen policy SHA-256 is
+`cb72fffad317e05638e60ad4a93b96bb78e356b52677330ecd6149095b65e2c7` and the
+evidence index remains
+`56c945c38571af294bb44bfd7e788f314d9ee3e9fc76457c6bedb018daae0783`.
+Final-HEAD validation and merge are pending; P5 remains unopened. This audit
+cannot grant trade permission or submit an exchange order.

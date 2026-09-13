@@ -1,6 +1,6 @@
 # P4 — Risk Manager implementation plan
 
-Status: **IN PROGRESS — P4-008 MERGED; P4-009 RUNTIME ACCEPTED ON PR #11**
+Status: **P4-010 RUNTIME ACCEPTED ON PR #12 — FINAL HEAD/MERGE PENDING**
 Entry baseline: P3 runtime accepted and squash-merged in commit `90d5847` with all
 283 tests and GitHub Actions run `34699734574` passing.
 Exit condition: an independent, deterministic and fail-closed manager binds each
@@ -265,7 +265,8 @@ digest, strategy context, circuit, Kill Switch, authorization and fill evidence.
 The atomic writer refuses overwrite; CI runs the complete matrix twice and requires
 byte-identical directories.
 
-Acceptance: **PASS, runtime 2026-09-13, GitHub Actions run `34769959024`.** Eleven
+Acceptance: **PASS, runtime 2026-09-13, final HEAD GitHub Actions run
+`34770395981`.** Eleven
 scenario tests, 109 focused P4 tests and the complete suite passed **392/392**.
 Compile, whitespace, lock and restricted-source scans passed. The accepted public
 checkpoint rebuilt 6 datasets and 7,560 closed rows. Both 16-run scenario matrices
@@ -273,7 +274,8 @@ were byte-identical and produced index SHA-256
 `56c945c38571af294bb44bfd7e788f314d9ee3e9fc76457c6bedb018daae0783`; the 17-file
 evidence package was published. The unchanged independent P3 audit retained 2
 candidates, 2 symbols, 4 runs, 21 files, 16 P2 artifacts and 35 trades with both
-labels `INSUFFICIENT_EVIDENCE`. Merge is pending.
+labels `INSUFFICIENT_EVIDENCE`. P4-009 was squash-merged from PR #11 in checkpoint
+`23b2f5b`.
 
 ### P4-010 — P4 final audit and checkpoint
 
@@ -281,6 +283,26 @@ Independently recompute sizing, limits, transitions and artifacts; run the compl
 suite and safety scans; verify policy/configuration digests and exact decisions.
 Accept P4 runtime only when every gate passes. P5 remains unopened and no trading
 permission is granted by P4 acceptance.
+
+Implementation: a separate fail-closed auditor freezes the exact policy digest,
+reads only the expected 17 canonical JSON files without following symlinks,
+recomputes internal and index SHA-256 values, validates exact symbol/scenario order
+and independently checks every boundary rejection, gap/stale failure, qualified
+Paper quantity and risk-reducing Kill Switch exit. It then rebuilds all 16 runs
+from the accepted public Spot data and requires byte-for-byte equality. Nine
+focused tests are locally complete.
+
+Acceptance: **PASS on PR runtime, 2026-09-13, GitHub Actions run
+`34771596172`; final HEAD/merge pending.** Nine audit tests, 118 focused P4 tests
+and the complete suite passed **401/401**. Compile, lock, whitespace and restricted-
+source scans passed. The accepted public checkpoint rebuilt 6 datasets and 7,560
+closed rows. Both 16-run matrices were byte-identical; the independent audit
+validated 17 canonical files, exact scenario decisions and replay equality. The
+index SHA-256 remained
+`56c945c38571af294bb44bfd7e788f314d9ee3e9fc76457c6bedb018daae0783`; the frozen
+policy SHA-256 is
+`cb72fffad317e05638e60ad4a93b96bb78e356b52677330ecd6149095b65e2c7`.
+P5 remains unopened and no trading permission is granted.
 
 ## Intended module boundaries
 

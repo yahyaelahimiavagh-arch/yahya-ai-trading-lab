@@ -39,7 +39,8 @@ from .risk import (PortfolioRiskState, RiskContractError, RiskDecision,
                    RiskAdapterError, RiskManagedPaperAdapter,
                    authorize_paper_request,
                    RiskScenarioError, run_and_write_adversarial_matrix,
-                   scenario_matrix_sha256)
+                   scenario_matrix_sha256,
+                   P4AuditError, audit_p4)
 from .backtest import (AcceptedBacktestDataset, ArtifactError, BacktestClock,
                        BacktestClockError, BacktestConfigError,
                        BacktestContractError, BacktestLoadError, BacktestSpec,
@@ -813,6 +814,13 @@ def main():
     risk_scenarios.add_argument("--hours", type=int, default=24)
     risk_scenarios.add_argument(
         "--output", default="data/p4/p4-009-evidence")
+    p4_audit = commands.add_parser(
+        "p4-audit", help="Run the complete P4 acceptance audit")
+    p4_audit.add_argument("--database", default="data/p1/market.sqlite3")
+    p4_audit.add_argument(
+        "--manifest", default="manifests/p1-market-data.json")
+    p4_audit.add_argument(
+        "--evidence", default="data/p4/p4-009-evidence")
     commands.add_parser("strategy-feature-check",
                         help="Verify point-in-time Decimal P3 features")
     commands.add_parser("strategy-registry-check",
@@ -1075,6 +1083,16 @@ def main():
                   f"runs={len(result.runs)} replay_equal=true "
                   f"index_sha256={scenario_matrix_sha256(result)}")
             print("PAPER ONLY | LIVE_MASTER_LOCK=OFF | Public Spot data | No exchange order")
+        elif args.command == "p4-audit":
+            result = audit_p4(args.database, args.manifest, args.evidence)
+            print(f"OK: P4 final acceptance audit; symbols={result.symbols} "
+                  f"scenarios={result.scenarios} runs={result.runs} "
+                  f"files={result.files}")
+            print(f"index_sha256={result.index_sha256} "
+                  f"policy_sha256={result.policy_sha256} "
+                  "exact_decisions=true replay_equal=true")
+            print("PAPER ONLY | LIVE_MASTER_LOCK=OFF | P5 unopened | "
+                  "No trade permission | No exchange order")
         elif args.command == "strategy-registry-check":
             identity = StrategyIdentity("RESEARCH_FIXTURE", "1.0.0")
             registry = StrategyRegistry((StrategyDefinition(identity, (

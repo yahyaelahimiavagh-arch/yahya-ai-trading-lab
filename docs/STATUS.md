@@ -982,14 +982,44 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
   overwrite, and CI runs the matrix twice with a recursive byte comparison.
 - Eleven scenario tests, 109 focused P4 tests and the complete local suite passed
   **392/392**. Compile and whitespace gates passed.
-- GitHub Actions run `34769959024` passed both jobs: all **392/392** tests, every
-  safety/runtime gate, public-checkpoint reconstruction, two byte-equal P3 matrices,
+- GitHub Actions final HEAD run `34770395981` passed both jobs: all **392/392**
+  tests, every safety/runtime gate, public-checkpoint reconstruction, two byte-equal P3 matrices,
   the independent P3 audit and two byte-equal 16-run P4 scenario matrices.
 - P4 scenario index SHA-256 is
   `56c945c38571af294bb44bfd7e788f314d9ee3e9fc76457c6bedb018daae0783`; the complete
   17-file evidence package was published as `p4-009-evidence`.
 - Runtime public-data evidence remained 6 datasets, 7,560 closed rows and 35 P3
   trades. Both candidate labels remain `INSUFFICIENT_EVIDENCE`.
-- P4-009 is runtime accepted on PR #11. Merge is pending.
+- P4-009 was runtime accepted and squash-merged from PR #11 in checkpoint
+  `23b2f5b`.
+- PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
+  NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
+
+## P4-010 implementation record — 2026-09-13
+
+- Entry checkpoint: P4-009 squash-merged in `23b2f5b`; implementation branch
+  `p4-010-final-audit`.
+- Added a separate fail-closed P4 auditor that freezes the canonical
+  `P4_RISK_V1` policy digest, accepts exactly the expected 17 regular evidence
+  files and rejects symlinks, extras, omissions, size violations, noncanonical
+  JSON, forbidden secret material and changed internal/index SHA-256 values.
+- The auditor independently checks exact decisions for all eight scenarios on
+  both symbols, including boundary breakers, post-cost/evidence blocks, atomic
+  gap and stale-state rejection, exact approved Paper quantity and the
+  risk-reducing exit under active Kill Switch.
+- It recomputes all 16 runs from the accepted BTCUSDT/ETHUSDT public Spot
+  checkpoint and requires the complete evidence package to match byte-for-byte.
+- Nine focused audit tests, 118 focused P4 tests and the complete suite passed
+  **401/401**. Compile, lock, whitespace and restricted-source scans passed.
+- GitHub Actions run `34771596172` passed both jobs. It rebuilt 6 datasets and
+  7,560 closed rows, reproduced both 16-run P4 matrices byte-for-byte and passed
+  the independent 16-run/17-file final P4 audit with exact decisions and replay
+  equality.
+- The evidence index SHA-256 remains
+  `56c945c38571af294bb44bfd7e788f314d9ee3e9fc76457c6bedb018daae0783`; frozen
+  policy SHA-256 is
+  `cb72fffad317e05638e60ad4a93b96bb78e356b52677330ecd6149095b65e2c7`.
+- Runtime is accepted on PR #12. Final HEAD validation and merge are pending; P4
+  is not yet closed and P5 remains unopened.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.

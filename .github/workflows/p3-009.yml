@@ -105,6 +105,12 @@ jobs:
             --output data/p4/p4-009-evidence-replay
           diff -r data/p4/p4-009-evidence data/p4/p4-009-evidence-replay
           sha256sum data/p4/p4-009-evidence/p4-009-index.json
+      - name: Run independent P4 final audit
+        run: |
+          uv run --locked python -m yatl p4-audit \
+            --database data/p1/market.sqlite3 \
+            --manifest manifests/p1-market-data.json \
+            --evidence data/p4/p4-009-evidence
       - name: Publish reproducible evidence
         uses: actions/upload-artifact@v4
         with:
