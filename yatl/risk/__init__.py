@@ -77,6 +77,11 @@ from .scenarios import (
     scenario_matrix_sha256,
     write_adversarial_scenario_matrix,
 )
+from .audit import (
+    P4AuditError,
+    P4AuditResult,
+    audit_p4,
+)
 
 __all__ = [
     "POLICY_ID",
@@ -138,4 +143,7 @@ __all__ = [
     "scenario_artifact_json",
     "scenario_matrix_sha256",
     "write_adversarial_scenario_matrix",
+    "P4AuditError",
+    "P4AuditResult",
+    "audit_p4",
 ]
