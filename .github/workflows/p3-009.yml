@@ -93,10 +93,29 @@ jobs:
             --database data/p1/market.sqlite3 \
             --manifest manifests/p1-market-data.json \
             --evidence data/p3/p3-009-evidence
+      - name: Run P4-009 adversarial matrix twice
+        run: |
+          uv run --locked python -m yatl risk-scenario-check \
+            --database data/p1/market.sqlite3 \
+            --manifest manifests/p1-market-data.json \
+            --output data/p4/p4-009-evidence
+          uv run --locked python -m yatl risk-scenario-check \
+            --database data/p1/market.sqlite3 \
+            --manifest manifests/p1-market-data.json \
+            --output data/p4/p4-009-evidence-replay
+          diff -r data/p4/p4-009-evidence data/p4/p4-009-evidence-replay
+          sha256sum data/p4/p4-009-evidence/p4-009-index.json
       - name: Publish reproducible evidence
         uses: actions/upload-artifact@v4
         with:
           name: p3-009-evidence
           path: data/p3/p3-009-evidence/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Publish P4 adversarial evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: p4-009-evidence
+          path: data/p4/p4-009-evidence/
           if-no-files-found: error
           retention-days: 30

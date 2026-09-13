@@ -638,5 +638,27 @@ The accepted public checkpoint rebuilt 6 datasets and 7,560 closed rows; two
 candidate matrices were byte-identical and the independent audit retained 2
 candidates, 2 symbols, 4 runs, 21 files, 16 P2 artifacts and 35 trades with index
 SHA-256 `59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
-Both labels remain `INSUFFICIENT_EVIDENCE`. P4-008 is runtime accepted on PR #10;
-merge is pending.
+Both labels remain `INSUFFICIENT_EVIDENCE`. Final HEAD run `34764434584` also
+passed both jobs. P4-008 was squash-merged from PR #10 in checkpoint `b268fa7`.
+
+## P4-009 — Deterministic adversarial scenario matrix
+
+The P4 matrix replays eight fail-closed scenarios for each accepted BTCUSDT and
+ETHUSDT public Spot dataset: exact session-loss boundary, missing expected fill
+candle, post-cost rejection, consecutive-loss boundary, drawdown boundary, stale
+state, insufficient evidence and a risk-reducing exit under active Kill Switch:
+
+```powershell
+uv run --locked python -m yatl risk-scenario-check
+```
+
+Every one of the 16 runs emits canonical secret-free JSON. The complete matrix is
+executed twice and the two evidence directories must be byte-identical before the
+index is published. Existing output is never overwritten. Local verification has
+passed 11 scenario tests, 109 focused P4 tests and the complete **392/392** suite.
+GitHub Actions run `34769959024` passed both jobs and every safety/runtime gate.
+The accepted public checkpoint rebuilt 6 datasets and 7,560 closed rows; both P4
+matrices were byte-identical and produced index SHA-256
+`56c945c38571af294bb44bfd7e788f314d9ee3e9fc76457c6bedb018daae0783`.
+The unchanged P3 audit retained 35 trades and both candidate labels remain
+`INSUFFICIENT_EVIDENCE`. P4-009 is runtime accepted on PR #11; merge is pending.

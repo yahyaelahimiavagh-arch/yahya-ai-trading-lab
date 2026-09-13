@@ -66,6 +66,17 @@ from .adapter import (
     RiskManagedPaperAdapter,
     authorize_paper_request,
 )
+from .scenarios import (
+    SCENARIOS,
+    RiskScenarioError,
+    RiskScenarioMatrixResult,
+    RiskScenarioResult,
+    run_adversarial_scenario_matrix,
+    run_and_write_adversarial_matrix,
+    scenario_artifact_json,
+    scenario_matrix_sha256,
+    write_adversarial_scenario_matrix,
+)
 
 __all__ = [
     "POLICY_ID",
@@ -118,4 +129,13 @@ __all__ = [
     "RiskAuthorization",
     "RiskManagedPaperAdapter",
     "authorize_paper_request",
+    "SCENARIOS",
+    "RiskScenarioError",
+    "RiskScenarioMatrixResult",
+    "RiskScenarioResult",
+    "run_adversarial_scenario_matrix",
+    "run_and_write_adversarial_matrix",
+    "scenario_artifact_json",
+    "scenario_matrix_sha256",
+    "write_adversarial_scenario_matrix",
 ]
