@@ -35,7 +35,9 @@ from .risk import (PortfolioRiskState, RiskContractError, RiskDecision,
                    ProtectiveGateError, assess_protective_entry,
                    CircuitBreakerError, assess_circuit_breakers,
                    KillSwitchError, KillSwitchEvent, KillSwitchEventType,
-                   apply_kill_switch_event)
+                   apply_kill_switch_event,
+                   RiskAdapterError, RiskManagedPaperAdapter,
+                   authorize_paper_request)
 from .backtest import (AcceptedBacktestDataset, ArtifactError, BacktestClock,
                        BacktestClockError, BacktestConfigError,
                        BacktestContractError, BacktestLoadError, BacktestSpec,
@@ -500,6 +502,129 @@ def _risk_kill_switch_runtime_check():
     return first
 
 
+def _risk_adapter_runtime_check():
+    start = 1_699_999_200_000
+
+    def snapshot(decision_time):
+        def completed(interval):
+            duration = INTERVAL_MILLISECONDS[interval]
+            opened = (decision_time // duration) * duration - duration
+            return (Candle(
+                DATA_SOURCE, "BTCUSDT", interval, opened,
+                opened + duration - 1, "95", "106", "90", "100",
+                "100", "10000", 20, True,
+            ),)
+        return MarketSnapshot(
+            "BTCUSDT", decision_time, completed("1h"), completed("15m"),
+            completed("4h"),
+        )
+
+    def managed(decision_time, *, quantity="0", equity="10000",
+                cash="10000", session_pnl="0", losses=0, digest="1"):
+        exposure = Decimal(quantity) * Decimal("100")
+        return ManagedPortfolioState(
+            "BTCUSDT", (decision_time - start) // 3_600_000, decision_time,
+            start, "10000", equity, cash, quantity, "100", "10000",
+            session_pnl, losses, 0 if Decimal(quantity) == 0 else 1,
+            format(exposure, "f"),
+            None if decision_time == start else "0" * 64,
+            digest * 64,
+        )
+
+    entry_view = snapshot(start)
+    entry_event = DecisionEvent(0, start, start, entry_view)
+    entry_decision = StrategyDecision(
+        StrategyContext(TREND_PULLBACK_IDENTITY, entry_view),
+        StrategyAction.ENTER_LONG, DecisionReason.TREND_PULLBACK_ENTRY,
+        LongSetup("100", "95", "115"),
+    )
+    entry_state = managed(start)
+    entry_request = RiskRequest(
+        entry_decision, EvidenceLabel.QUALIFIED_FOR_P4_RESEARCH,
+        entry_state.to_risk_state(),
+    )
+    entry_circuit = assess_circuit_breakers(entry_request, entry_state)
+    startup = apply_kill_switch_event(
+        None, KillSwitchEvent(0, start - 1, KillSwitchEventType.STARTUP),
+    ).current
+    inactive = apply_kill_switch_event(
+        startup,
+        KillSwitchEvent(
+            1, start, KillSwitchEventType.MANUAL_RESET, entry_circuit, True,
+        ),
+    ).current
+    protective = assess_protective_entry(
+        assess_entry_limits(size_entry(entry_request)),
+    )
+    entry_authorization = authorize_paper_request(
+        entry_request, entry_state, inactive, entry_circuit, protective,
+    )
+    adapter = RiskManagedPaperAdapter(TREND_PULLBACK_IDENTITY, "BTCUSDT")
+    entry_bar = Candle(
+        DATA_SOURCE, "BTCUSDT", "1h", start, start + 3_600_000 - 1,
+        "100", "106", "99", "100", "100", "10000", 20, True,
+    )
+    entry_step = adapter.process(entry_event, entry_authorization, entry_bar)
+
+    blocked_request = replace(
+        entry_request, evidence_label=EvidenceLabel.INSUFFICIENT_EVIDENCE,
+    )
+    blocked_circuit = assess_circuit_breakers(blocked_request, entry_state)
+    blocked_startup = apply_kill_switch_event(
+        None, KillSwitchEvent(0, start - 1, KillSwitchEventType.STARTUP),
+    ).current
+    blocked_inactive = apply_kill_switch_event(
+        blocked_startup,
+        KillSwitchEvent(
+            1, start, KillSwitchEventType.MANUAL_RESET, blocked_circuit, True,
+        ),
+    ).current
+    blocked_authorization = authorize_paper_request(
+        blocked_request, entry_state, blocked_inactive, blocked_circuit,
+    )
+    blocked_adapter = RiskManagedPaperAdapter(TREND_PULLBACK_IDENTITY, "BTCUSDT")
+    blocked_step = blocked_adapter.process(
+        entry_event, blocked_authorization, entry_bar,
+    )
+
+    exit_time = start + 3_600_000
+    exit_view = snapshot(exit_time)
+    exit_event = DecisionEvent(1, exit_time, exit_time, exit_view)
+    exit_decision = StrategyDecision(
+        StrategyContext(TREND_PULLBACK_IDENTITY, exit_view),
+        StrategyAction.EXIT_LONG, DecisionReason.STRATEGY_EXIT,
+    )
+    quantity = entry_authorization.decision.approved_quantity
+    exit_state = managed(
+        exit_time, quantity=quantity, equity="9800", cash="8800",
+        session_pnl="-200", losses=3, digest="2",
+    )
+    exit_request = RiskRequest(
+        exit_decision, EvidenceLabel.QUALIFIED_FOR_P4_RESEARCH,
+        exit_state.to_risk_state(kill_switch_active=True),
+    )
+    exit_circuit = assess_circuit_breakers(exit_request, exit_state)
+    active = apply_kill_switch_event(
+        inactive,
+        KillSwitchEvent(
+            2, exit_time, KillSwitchEventType.CIRCUIT_OBSERVATION,
+            exit_circuit,
+        ),
+    ).current
+    exit_authorization = authorize_paper_request(
+        exit_request, exit_state, active, exit_circuit,
+    )
+    exit_bar = Candle(
+        DATA_SOURCE, "BTCUSDT", "1h", exit_time,
+        exit_time + 3_600_000 - 1, "101", "102", "100", "101",
+        "100", "10000", 20, True,
+    )
+    exit_step = adapter.process(exit_event, exit_authorization, exit_bar)
+    if adapter.has_position or blocked_adapter.has_position:
+        raise RiskAdapterError("P4-authorized adapter did not finish flat")
+    return entry_step, blocked_step, exit_step, adapter.has_position
+
+
 def _strategy_adapter_runtime_check():
     start = 1_699_999_200_000
 
@@ -675,6 +800,8 @@ def main():
                         help="Verify P4 loss, drawdown and streak breakers")
     commands.add_parser("risk-kill-switch-check",
                         help="Verify the fail-closed P4 Paper Kill Switch")
+    commands.add_parser("risk-adapter-check",
+                        help="Verify the P4-authorized bridge into P2 Paper")
     commands.add_parser("strategy-feature-check",
                         help="Verify point-in-time Decimal P3 features")
     commands.add_parser("strategy-registry-check",
@@ -921,6 +1048,14 @@ def main():
                   f"clear_observation={states[3].reason.value} "
                   f"final_state_sha256={states[-1].state_sha256}")
             print("PAPER ONLY | Manual reset only | No credentials | No exchange order")
+        elif args.command == "risk-adapter-check":
+            entry, blocked, exit_step, has_position = _risk_adapter_runtime_check()
+            print(f"OK: P4-authorized P2 adapter; entry={entry.outcome.value} "
+                  f"quantity={entry.intent.quantity} blocked={blocked.outcome.value} "
+                  f"exit_under_kill_switch={exit_step.outcome.value} "
+                  f"flat={str(not has_position).lower()} "
+                  f"authorization_sha256={entry.authorization_sha256}")
+            print("PAPER ONLY | Exact approved quantity | No credentials | No exchange order")
         elif args.command == "strategy-registry-check":
             identity = StrategyIdentity("RESEARCH_FIXTURE", "1.0.0")
             registry = StrategyRegistry((StrategyDefinition(identity, (
@@ -1125,6 +1260,7 @@ def main():
             RiskStateError,
             ProtectiveGateError,
             KillSwitchError,
+            RiskAdapterError,
             CheckpointRebuildError,
             HealthError, PaperWorkflowError,
             PublicRestError, QualityError,

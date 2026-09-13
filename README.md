@@ -1,7 +1,8 @@
 # Yahya AI Trading Lab
 
-P0، P1، P2 و P3 با شواهد runtime پذیرفته شده‌اند. P4 فاز فعال است و
-P4-006 مدارشکن‌های مستقل Risk Manager را پیاده‌سازی می‌کند.
+P0، P1، P2 و P3 با شواهد runtime پذیرفته شده‌اند. P4 فاز فعال است؛
+P4-007 روی `main` merge شده و P4-008 adapter محافظت‌شده P3→P4→P2 را برای
+اعتبارسنجی GitHub آماده کرده است.
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
@@ -42,7 +43,7 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 P2 بارگذاری point-in-time، ساعت رویداد، fill محافظه‌کارانه، هزینه، دفتر پرتفوی،
 معیارها، artifact تکرارپذیر و شش سناریوی واقعی BTC/ETH را تکمیل کرده است. ممیزی
 نهایی P2 همه این gateها را بازسازی و تأیید می‌کند. P3 در `90d5847` بسته شد؛
-P4-001 تا P4-005 نیز به‌ترتیب پذیرفته و روی `main` merge شده‌اند و P4-006 اکنون
+P4-001 تا P4-007 نیز به‌ترتیب پذیرفته و روی `main` merge شده‌اند و P4-008 اکنون
 در حال اعتبارسنجی است. ترتیب و معیارهای P4 در `docs/P4-IMPLEMENTATION-PLAN.md`
 قفل شده‌اند.
 
@@ -606,8 +607,30 @@ only an explicit manual-reset event with newer clear circuit evidence can return
 the state to inactive. Duplicate, missing, stale or out-of-order events and reused
 circuit evidence fail closed. Entry is blocked while active, while a matching
 risk-reducing exit remains permitted. Local verification passed 13 focused Kill
-Switch tests, 82 focused P4 tests and all **365/365** tests. GitHub Actions run
-`34754067911` passed both jobs, including every safety/runtime gate, reconstruction
+Switch tests, 82 focused P4 tests and all **365/365** tests. Final HEAD GitHub
+Actions run `34754437777` passed both jobs, including every safety/runtime gate, reconstruction
 of 6 public datasets and 7,560 closed rows, two byte-identical candidate matrices
-and the unchanged independent P3 audit. P4-007 is runtime accepted on PR #9;
-merge is pending.
+and the unchanged independent P3 audit. P4-007 was squash-merged from PR #9 in
+checkpoint `e09dc0e`.
+
+## P4-008 — Guarded P3-to-P2 Paper adapter
+
+The new adapter binds the original P3 decision, P4 request, managed portfolio
+state, latest circuit assessment, Kill Switch state and protective evidence into
+one deterministic authorization before invoking the frozen P2 Paper adapter:
+
+```powershell
+uv run --locked python -m yatl risk-adapter-check
+```
+
+Qualified entry requires complete matching evidence, a clear latest circuit and
+an inactive Kill Switch. The exact P4-approved quantity is the only quantity that
+can reach P2. Missing or insufficient evidence becomes `HOLD` with no fill;
+existing positions can still exit atomically under an active Kill Switch. The
+accepted P3 `ResearchSignalAdapter` remains unchanged and is restricted to frozen
+research replay. Local verification passed 16 adapter tests, 98 focused P4 tests
+and all **381/381** tests. Runtime recorded entry quantity `18.894653`, blocked an
+insufficient-evidence entry, closed the position under Kill Switch and produced
+authorization SHA-256
+`3c65d4dca84c2ef17b73130461ee19552e3279a4b7a9753f0206fd8628b0ae72`.
+GitHub runtime acceptance is pending.

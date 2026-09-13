@@ -922,7 +922,7 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
   `FAIL_CLOSED_STARTUP`; clear observation remains
   `LATCHED_UNTIL_MANUAL_RESET`; final state SHA-256
   `fba2237ec930c44a4e87b9be4fcb45baaa497e96ff279095d7b06047a0cd02ec`.
-- GitHub Actions run `34754067911` passed both jobs: all **365/365** tests and every
+- Final HEAD GitHub Actions run `34754437777` passed both jobs: all **365/365** tests and every
   safety/runtime gate, plus public-checkpoint reconstruction, two byte-equal
   candidate runs and the independent P3 audit.
 - Runtime public-data evidence remained 6 datasets, 7,560 closed rows, 2
@@ -930,6 +930,30 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
   SHA-256 remained
   `59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`; both
   labels remain `INSUFFICIENT_EVIDENCE`.
-- P4-007 is runtime accepted on PR #9. Merge is pending; P4-008 has not started.
+- P4-007 was runtime accepted and squash-merged from PR #9 in checkpoint `e09dc0e`.
+- PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
+  NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
+
+## P4-008 implementation record — 2026-09-13
+
+- Entry checkpoint: P4-007 squash-merged in `e09dc0e`; implementation branch
+  `p4-008-risk-adapter`.
+- Added a deterministic `RiskAuthorization` that binds the P3 decision, P4 request,
+  managed portfolio state, latest circuit evidence, Kill Switch state, optional
+  protective assessment and recomputed final P4 decision.
+- The guarded adapter accepts no raw strategy/risk decision. Qualified entry needs
+  complete matching evidence, a clear latest circuit and an inactive Kill Switch;
+  only the exact approved quantity can reach the P2 Paper adapter.
+- Missing, insufficient or rejected entry evidence becomes `HOLD` without a fill.
+  Exact position-reducing exits remain available under an active Kill Switch.
+- Adapter state changes only after P2 succeeds, so a P2 failure is atomic and the
+  same event can be retried. The accepted P3 research adapter remains unchanged and
+  is not the P4 execution path.
+- Sixteen adapter tests, 98 focused P4 tests and the complete local suite passed
+  **381/381**. Deterministic CLI, compile and whitespace gates passed.
+- Runtime approved entry quantity `18.894653`, blocked insufficient evidence,
+  exited safely under Kill Switch and produced authorization SHA-256
+  `3c65d4dca84c2ef17b73130461ee19552e3279a4b7a9753f0206fd8628b0ae72`.
+- GitHub Actions runtime acceptance is pending; no acceptance claim is made yet.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
