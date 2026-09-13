@@ -893,6 +893,36 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
   SHA-256 remained
   `59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a` and both
   labels remain `INSUFFICIENT_EVIDENCE`.
-- P4-006 is runtime accepted on PR #8. Merge is pending; P4-007 has not started.
+- Final HEAD GitHub Actions run `34749628926` passed both jobs. P4-006 was
+  squash-merged from PR #8 in checkpoint `98320df`.
+- PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
+  NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
+
+## P4-007 implementation record — 2026-09-13
+
+- Entry checkpoint: P4-006 squash-merged in `98320df`; implementation branch
+  `p4-007-kill-switch-state-machine`.
+- Added explicit immutable `STARTUP`, `CIRCUIT_OBSERVATION` and `MANUAL_RESET`
+  events with deterministic canonical SHA-256 identities.
+- Startup is unconditionally fail-closed as `TRIGGERED/FAIL_CLOSED_STARTUP`.
+  Sequence and event time must increase strictly, circuit evidence cannot be from
+  the future, and duplicate or stale circuit state cannot be consumed twice.
+- Any active circuit reason latches the switch and breaker reasons accumulate in
+  stable policy order. A later clear observation records
+  `LATCHED_UNTIL_MANUAL_RESET` and cannot reset automatically.
+- Reset requires a triggered prior state, explicit manual confirmation and newer
+  clear circuit evidence. The resulting state is hash-chained to its predecessor.
+- The state flag blocks qualified entry through the existing P4 sizing boundary
+  while an exact risk-reducing exit remains allowed.
+- Thirteen focused Kill Switch tests, 82 focused P4 tests and the complete local
+  suite passed **365/365**. Deterministic CLI, compile, whitespace, lock and
+  restricted-source scans passed.
+- Runtime lifecycle:
+  `TRIGGERED/INACTIVE/TRIGGERED/TRIGGERED/INACTIVE`; startup reason
+  `FAIL_CLOSED_STARTUP`; clear observation remains
+  `LATCHED_UNTIL_MANUAL_RESET`; final state SHA-256
+  `fba2237ec930c44a4e87b9be4fcb45baaa497e96ff279095d7b06047a0cd02ec`.
+- GitHub Actions runtime evidence is pending; P4-007 is not yet accepted and P4-008
+  has not started.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.

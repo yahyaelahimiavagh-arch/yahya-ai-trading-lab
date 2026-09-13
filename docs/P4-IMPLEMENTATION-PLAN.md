@@ -1,6 +1,6 @@
 # P4 — Risk Manager implementation plan
 
-Status: **IN PROGRESS — P4-005 MERGED; P4-006 RUNTIME ACCEPTED ON PR #8**
+Status: **IN PROGRESS — P4-006 MERGED; P4-007 IMPLEMENTED, RUNTIME PENDING**
 Entry baseline: P3 runtime accepted and squash-merged in commit `90d5847` with all
 283 tests and GitHub Actions run `34699734574` passing.
 Exit condition: an independent, deterministic and fail-closed manager binds each
@@ -185,14 +185,34 @@ The accepted public checkpoint rebuilt 6 datasets and 7,560 closed rows. Two
 candidate matrices were byte-identical; the independent P3 audit retained 2
 candidates, 2 symbols, 4 runs, 21 files, 16 P2 artifacts, 35 trades and index
 SHA-256 `59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
-Both labels remain `INSUFFICIENT_EVIDENCE`. P4-006 is runtime accepted on PR #8;
-merge is pending and P4-007 has not started.
+Both labels remain `INSUFFICIENT_EVIDENCE`. Final HEAD GitHub Actions run
+`34749628926` also passed both jobs. P4-006 was squash-merged from PR #8 in
+checkpoint `98320df`.
 
 ### P4-007 — Kill Switch state machine
 
 Implement explicit inactive, triggered and manually-resettable Paper states with
 immutable reasons, monotonic event time, deterministic replay and fail-closed
 startup. No automatic reset is permitted.
+
+Implementation: the first accepted event must be sequence-zero `STARTUP`, which
+always produces `TRIGGERED/FAIL_CLOSED_STARTUP`. Circuit observations and explicit
+manual-reset events then advance strict sequence and event time while every state
+binds its predecessor and source-event SHA-256. Circuit evidence must be newer
+than the last consumed state and cannot come from the future. Active breaker
+reasons accumulate in frozen order. A clear observation remains latched; only a
+manual-confirmed reset carrying newer, fully clear circuit evidence produces
+`INACTIVE/MANUAL_RESET`. The state exposes only a boolean safety flag and never an
+approval, operator identity, credential or execution command.
+
+Local verification: **13/13** focused Kill Switch tests, **82/82** focused P4 tests
+and the complete suite passed **365/365**. Compile, whitespace, lock and restricted-
+source scans passed. The deterministic lifecycle recorded
+`TRIGGERED/INACTIVE/TRIGGERED/TRIGGERED/INACTIVE`, startup reason
+`FAIL_CLOSED_STARTUP`, clear-observation reason `LATCHED_UNTIL_MANUAL_RESET` and
+final state SHA-256
+`fba2237ec930c44a4e87b9be4fcb45baaa497e96ff279095d7b06047a0cd02ec`.
+GitHub Actions runtime evidence is required before acceptance.
 
 ### P4-008 — P3-to-P2 risk adapter
 

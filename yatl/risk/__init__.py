@@ -48,6 +48,16 @@ from .circuit import (
     CircuitReason,
     assess_circuit_breakers,
 )
+from .kill_switch import (
+    KillSwitchError,
+    KillSwitchEvent,
+    KillSwitchEventType,
+    KillSwitchMode,
+    KillSwitchReason,
+    KillSwitchState,
+    KillSwitchTransition,
+    apply_kill_switch_event,
+)
 
 __all__ = [
     "POLICY_ID",
@@ -86,4 +96,12 @@ __all__ = [
     "CircuitDisposition",
     "CircuitReason",
     "assess_circuit_breakers",
+    "KillSwitchError",
+    "KillSwitchEvent",
+    "KillSwitchEventType",
+    "KillSwitchMode",
+    "KillSwitchReason",
+    "KillSwitchState",
+    "KillSwitchTransition",
+    "apply_kill_switch_event",
 ]

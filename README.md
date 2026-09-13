@@ -589,4 +589,22 @@ tests, the complete **352/352** suite and every safety/runtime gate. The accepte
 public checkpoint rebuilt 6 datasets and 7,560 closed rows; two candidate runs
 were byte-identical and the independent audit retained index SHA-256
 `59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
-P4-006 is runtime accepted on PR #8; merge is pending.
+Final HEAD GitHub Actions run `34749628926` also passed both jobs. P4-006 was
+squash-merged from PR #8 in checkpoint `98320df`.
+
+## P4-007 — Fail-closed Kill Switch state machine
+
+The Paper Kill Switch begins active on every fresh startup, consumes ordered
+P4-006 circuit evidence and records every transition in a canonical SHA-256 chain:
+
+```powershell
+uv run --locked python -m yatl risk-kill-switch-check
+```
+
+A circuit trigger latches the switch. Later clear observations cannot reset it;
+only an explicit manual-reset event with newer clear circuit evidence can return
+the state to inactive. Duplicate, missing, stale or out-of-order events and reused
+circuit evidence fail closed. Entry is blocked while active, while a matching
+risk-reducing exit remains permitted. Local verification passed 13 focused Kill
+Switch tests, 82 focused P4 tests and all **365/365** tests. GitHub Actions runtime
+acceptance is pending on the P4-007 pull request.

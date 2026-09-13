@@ -33,7 +33,9 @@ from .risk import (PortfolioRiskState, RiskContractError, RiskDecision,
                    RiskStateError,
                    apply_portfolio_observation,
                    ProtectiveGateError, assess_protective_entry,
-                   CircuitBreakerError, assess_circuit_breakers)
+                   CircuitBreakerError, assess_circuit_breakers,
+                   KillSwitchError, KillSwitchEvent, KillSwitchEventType,
+                   apply_kill_switch_event)
 from .backtest import (AcceptedBacktestDataset, ArtifactError, BacktestClock,
                        BacktestClockError, BacktestConfigError,
                        BacktestContractError, BacktestLoadError, BacktestSpec,
@@ -402,6 +404,102 @@ def _risk_circuit_runtime_check():
     return boundary, recovered
 
 
+def _risk_kill_switch_runtime_check():
+    start = 1_699_999_200_000
+
+    def assessment(decision_time, *, session_start="10000", equity="10000",
+                   session_pnl="0", losses=0, digest_character="1"):
+        def completed(interval):
+            duration = INTERVAL_MILLISECONDS[interval]
+            opened = (decision_time // duration) * duration - duration
+            return (Candle(
+                DATA_SOURCE, "BTCUSDT", interval, opened,
+                opened + duration - 1, "95", "105", "90", "100",
+                "100", "10000", 20, True,
+            ),)
+
+        snapshot = MarketSnapshot(
+            "BTCUSDT", decision_time, completed("1h"), completed("15m"),
+            completed("4h"),
+        )
+        context = StrategyContext(
+            StrategyIdentity("RISK_FIXTURE", "1.0.0"), snapshot,
+        )
+        decision = StrategyDecision(
+            context, StrategyAction.ENTER_LONG,
+            DecisionReason.TREND_PULLBACK_ENTRY,
+            LongSetup("100", "95", "115"),
+        )
+        state = ManagedPortfolioState(
+            symbol="BTCUSDT",
+            sequence=(decision_time - start) // 3_600_000,
+            decision_time_ms=decision_time,
+            session_start_time_ms=start,
+            session_start_equity_quote=session_start,
+            equity_quote=equity,
+            cash_quote=equity,
+            position_quantity="0",
+            mark_price="100",
+            peak_equity_quote="10000",
+            session_realized_pnl_quote=session_pnl,
+            consecutive_losses=losses,
+            open_positions=0,
+            gross_exposure_quote="0",
+            previous_state_sha256=(
+                None if decision_time == start else "0" * 64
+            ),
+            observation_sha256=digest_character * 64,
+        )
+        request = RiskRequest(
+            decision, EvidenceLabel.QUALIFIED_FOR_P4_RESEARCH,
+            state.to_risk_state(),
+        )
+        return assess_circuit_breakers(request, state)
+
+    clear = assessment(start)
+    boundary = assessment(
+        start + 3_600_000, equity="9800", session_pnl="-200", losses=3,
+        digest_character="2",
+    )
+    recovered = assessment(
+        start + 2 * 3_600_000, session_start="9800", equity="9800",
+        digest_character="3",
+    )
+    final_clear = assessment(
+        start + 3 * 3_600_000, session_start="9800", equity="9800",
+        digest_character="4",
+    )
+    events = (
+        KillSwitchEvent(0, start - 1, KillSwitchEventType.STARTUP),
+        KillSwitchEvent(1, start, KillSwitchEventType.MANUAL_RESET, clear, True),
+        KillSwitchEvent(
+            2, start + 3_600_000, KillSwitchEventType.CIRCUIT_OBSERVATION,
+            boundary,
+        ),
+        KillSwitchEvent(
+            3, start + 2 * 3_600_000,
+            KillSwitchEventType.CIRCUIT_OBSERVATION, recovered,
+        ),
+        KillSwitchEvent(
+            4, start + 3 * 3_600_000, KillSwitchEventType.MANUAL_RESET,
+            final_clear, True,
+        ),
+    )
+
+    def replay():
+        state = None
+        states = []
+        for event in events:
+            state = apply_kill_switch_event(state, event).current
+            states.append(state)
+        return tuple(states)
+
+    first = replay()
+    if first != replay():
+        raise KillSwitchError("Kill Switch replay mismatch")
+    return first
+
+
 def _strategy_adapter_runtime_check():
     start = 1_699_999_200_000
 
@@ -575,6 +673,8 @@ def main():
                         help="Verify P4 protective levels and post-cost reward")
     commands.add_parser("risk-circuit-check",
                         help="Verify P4 loss, drawdown and streak breakers")
+    commands.add_parser("risk-kill-switch-check",
+                        help="Verify the fail-closed P4 Paper Kill Switch")
     commands.add_parser("strategy-feature-check",
                         help="Verify point-in-time Decimal P3 features")
     commands.add_parser("strategy-registry-check",
@@ -813,6 +913,14 @@ def main():
                   f"{boundary.session_loss_limit_quote} "
                   f"circuit_sha256={boundary.circuit_sha256}")
             print("PAPER ONLY | No approval | No credentials | No exchange order")
+        elif args.command == "risk-kill-switch-check":
+            states = _risk_kill_switch_runtime_check()
+            path = "/".join(state.mode.value for state in states)
+            print(f"OK: P4 Kill Switch state machine; path={path} "
+                  f"startup={states[0].reason.value} "
+                  f"clear_observation={states[3].reason.value} "
+                  f"final_state_sha256={states[-1].state_sha256}")
+            print("PAPER ONLY | Manual reset only | No credentials | No exchange order")
         elif args.command == "strategy-registry-check":
             identity = StrategyIdentity("RESEARCH_FIXTURE", "1.0.0")
             registry = StrategyRegistry((StrategyDefinition(identity, (
@@ -1016,6 +1124,7 @@ def main():
             RiskLimitError,
             RiskStateError,
             ProtectiveGateError,
+            KillSwitchError,
             CheckpointRebuildError,
             HealthError, PaperWorkflowError,
             PublicRestError, QualityError,
