@@ -41,6 +41,13 @@ from .risk import (PortfolioRiskState, RiskContractError, RiskDecision,
                    RiskScenarioError, run_and_write_adversarial_matrix,
                    scenario_matrix_sha256,
                    P4AuditError, audit_p4)
+from .execution import (
+    ExecutionContractError,
+    RecoveryReadiness,
+    RecoveryReason,
+    RecoveryStatus,
+    assess_local_paper_authorization,
+)
 from .backtest import (AcceptedBacktestDataset, ArtifactError, BacktestClock,
                        BacktestClockError, BacktestConfigError,
                        BacktestContractError, BacktestLoadError, BacktestSpec,
@@ -628,6 +635,32 @@ def _risk_adapter_runtime_check():
     return entry_step, blocked_step, exit_step, adapter.has_position
 
 
+def _paper_execution_contract_runtime_check():
+    entry, blocked, exit_step, _ = _risk_adapter_runtime_check()
+    startup = RecoveryReadiness()
+    ready = RecoveryReadiness(
+        RecoveryStatus.READY,
+        RecoveryReason.RECONCILIATION_PASSED,
+        "a" * 64,
+    )
+    startup_result = assess_local_paper_authorization(
+        entry.authorization, startup,
+    )
+    candidate_result = assess_local_paper_authorization(
+        blocked.authorization, ready,
+    )
+    entry_result = assess_local_paper_authorization(
+        entry.authorization, ready,
+    )
+    exit_result = assess_local_paper_authorization(
+        exit_step.authorization, ready,
+    )
+    replay = assess_local_paper_authorization(entry.authorization, ready)
+    if entry_result != replay or entry_result.decision_sha256 != replay.decision_sha256:
+        raise ExecutionContractError("P5 execution contract replay mismatch")
+    return startup_result, candidate_result, entry_result, exit_result
+
+
 def _strategy_adapter_runtime_check():
     start = 1_699_999_200_000
 
@@ -805,6 +838,10 @@ def main():
                         help="Verify the fail-closed P4 Paper Kill Switch")
     commands.add_parser("risk-adapter-check",
                         help="Verify the P4-authorized bridge into P2 Paper")
+    commands.add_parser(
+        "paper-execution-contract-check",
+        help="Verify the fail-closed P5 local Paper execution boundary",
+    )
     risk_scenarios = commands.add_parser(
         "risk-scenario-check",
         help="Replay P4 adversarial scenarios on accepted public data")
@@ -1075,6 +1112,23 @@ def main():
                   f"flat={str(not has_position).lower()} "
                   f"authorization_sha256={entry.authorization_sha256}")
             print("PAPER ONLY | Exact approved quantity | No credentials | No exchange order")
+        elif args.command == "paper-execution-contract-check":
+            startup, candidate, entry, exit_result = (
+                _paper_execution_contract_runtime_check()
+            )
+            print(
+                "OK: P5 local Paper execution contract; "
+                f"startup={startup.disposition.value}/{startup.reason.value} "
+                f"candidate={candidate.disposition.value}/{candidate.reason.value} "
+                f"entry={entry.disposition.value} "
+                f"exit={exit_result.disposition.value} "
+                f"quantity={entry.approved_quantity} "
+                f"decision_sha256={entry.decision_sha256}"
+            )
+            print(
+                "PAPER ONLY | LOCAL_PAPER | LIVE_MASTER_LOCK=OFF | "
+                "No credentials | No external transport | No exchange order"
+            )
         elif args.command == "risk-scenario-check":
             result = run_and_write_adversarial_matrix(
                 args.database, args.manifest, args.output, hours=args.hours,
@@ -1299,6 +1353,7 @@ def main():
             KillSwitchError,
             RiskAdapterError,
             RiskScenarioError,
+            ExecutionContractError,
             CheckpointRebuildError,
             HealthError, PaperWorkflowError,
             PublicRestError, QualityError,
