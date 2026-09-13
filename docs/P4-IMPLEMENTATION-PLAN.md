@@ -1,6 +1,6 @@
 # P4 — Risk Manager implementation plan
 
-Status: **IN PROGRESS — P4-006 MERGED; P4-007 RUNTIME ACCEPTED ON PR #9**
+Status: **IN PROGRESS — P4-007 MERGED; P4-008 RUNTIME ACCEPTED ON PR #10**
 Entry baseline: P3 runtime accepted and squash-merged in commit `90d5847` with all
 283 tests and GitHub Actions run `34699734574` passing.
 Exit condition: an independent, deterministic and fail-closed manager binds each
@@ -205,7 +205,7 @@ manual-confirmed reset carrying newer, fully clear circuit evidence produces
 `INACTIVE/MANUAL_RESET`. The state exposes only a boolean safety flag and never an
 approval, operator identity, credential or execution command.
 
-Acceptance: **PASS, runtime 2026-09-13, GitHub Actions run `34754067911`.**
+Acceptance: **PASS, runtime 2026-09-13, final HEAD GitHub Actions run `34754437777`.**
 Thirteen focused Kill Switch tests, 82 focused P4 tests and the complete suite
 passed **365/365**. Compile, whitespace, lock and restricted-source scans passed.
 The deterministic lifecycle recorded
@@ -217,14 +217,36 @@ The accepted public checkpoint rebuilt 6 datasets and 7,560 closed rows. Two
 candidate matrices were byte-identical; the independent P3 audit retained 2
 candidates, 2 symbols, 4 runs, 21 files, 16 P2 artifacts, 35 trades and index
 SHA-256 `59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
-Both labels remain `INSUFFICIENT_EVIDENCE`. P4-007 is runtime accepted on PR #9;
-merge is pending and P4-008 has not started.
+Both labels remain `INSUFFICIENT_EVIDENCE`. P4-007 was squash-merged from PR #9
+in checkpoint `e09dc0e`.
 
 ### P4-008 — P3-to-P2 risk adapter
 
 Place P4 between P3 decisions and P2 paper intents. Prove that no entry reaches the
 P2 adapter without a matching P4 approval and exact approved quantity, while exits
 remain safe and atomic.
+
+Implementation: `RiskAuthorization` deterministically binds the original strategy
+decision, risk request, managed state, latest circuit evidence, Kill Switch state,
+optional protective assessment and recomputed final P4 decision. The guarded
+adapter accepts only that complete authorization—not a raw P3 or P4 decision—and
+passes the exact approved quantity into P2. Rejected or incomplete entry evidence
+is converted to `HOLD` without a fill. Exact position-reducing exits remain allowed
+under an active Kill Switch, and a P2 failure leaves adapter state unchanged so the
+event is safely retryable. The frozen P3 research adapter is unchanged and is not
+the P4 execution path.
+
+Acceptance: **PASS, runtime 2026-09-13, GitHub Actions run `34764015703`.**
+Sixteen adapter tests, 98 focused P4 tests and the complete suite passed
+**381/381**. Compile, whitespace, lock and restricted-source scans passed. The
+deterministic runtime approved quantity `18.894653`, blocked the insufficient-
+evidence entry, closed the position under Kill Switch and recorded authorization SHA-256
+`3c65d4dca84c2ef17b73130461ee19552e3279a4b7a9753f0206fd8628b0ae72`.
+The accepted public checkpoint rebuilt 6 datasets and 7,560 closed rows. Two
+candidate matrices were byte-identical; the independent P3 audit retained 2
+candidates, 2 symbols, 4 runs, 21 files, 16 P2 artifacts, 35 trades and index
+SHA-256 `59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
+Both labels remain `INSUFFICIENT_EVIDENCE`. Merge is pending.
 
 ### P4-009 — Deterministic adversarial scenario matrix
 

@@ -53,6 +53,8 @@ jobs:
         run: uv run --locked python -m yatl risk-circuit-check
       - name: P4 fail-closed Kill Switch runtime
         run: uv run --locked python -m yatl risk-kill-switch-check
+      - name: P4-authorized P2 Paper adapter runtime
+        run: uv run --locked python -m yatl risk-adapter-check
 
   accepted-public-data:
     runs-on: ubuntu-latest

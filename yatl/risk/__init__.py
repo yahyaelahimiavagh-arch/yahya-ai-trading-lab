@@ -58,6 +58,14 @@ from .kill_switch import (
     KillSwitchTransition,
     apply_kill_switch_event,
 )
+from .adapter import (
+    RiskAdapterError,
+    RiskAdapterOutcome,
+    RiskAdapterStep,
+    RiskAuthorization,
+    RiskManagedPaperAdapter,
+    authorize_paper_request,
+)
 
 __all__ = [
     "POLICY_ID",
@@ -104,4 +112,10 @@ __all__ = [
     "KillSwitchState",
     "KillSwitchTransition",
     "apply_kill_switch_event",
+    "RiskAdapterError",
+    "RiskAdapterOutcome",
+    "RiskAdapterStep",
+    "RiskAuthorization",
+    "RiskManagedPaperAdapter",
+    "authorize_paper_request",
 ]
