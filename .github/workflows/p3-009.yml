@@ -49,6 +49,8 @@ jobs:
         run: uv run --locked python -m yatl risk-state-check
       - name: P4 protective and cost gate runtime
         run: uv run --locked python -m yatl risk-protective-check
+      - name: P4 loss and drawdown circuit-breaker runtime
+        run: uv run --locked python -m yatl risk-circuit-check
 
   accepted-public-data:
     runs-on: ubuntu-latest

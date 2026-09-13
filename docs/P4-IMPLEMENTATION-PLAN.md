@@ -1,6 +1,6 @@
 # P4 — Risk Manager implementation plan
 
-Status: **IN PROGRESS — P4-004 MERGED; P4-005 RUNTIME ACCEPTED ON PR #7**
+Status: **IN PROGRESS — P4-005 MERGED; P4-006 IMPLEMENTED, RUNTIME PENDING**
 Entry baseline: P3 runtime accepted and squash-merged in commit `90d5847` with all
 283 tests and GitHub Actions run `34699734574` passing.
 Exit condition: an independent, deterministic and fail-closed manager binds each
@@ -156,13 +156,31 @@ Compile, whitespace, lock and restricted-source scans passed. The accepted publi
 checkpoint rebuilt 7,560 rows; two candidate runs were byte-equal and the
 independent P3 audit retained evidence index SHA-256
 `59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
-P4-006 has not started.
+Final HEAD GitHub Actions run `34747781858` also passed both jobs. P4-005 was
+squash-merged from PR #7 in checkpoint `41411ef`.
 
 ### P4-006 — Loss and drawdown circuit breakers
 
 Trigger entry blocks at the frozen session-loss, drawdown and consecutive-loss
 limits, including exact-boundary and recovery semantics. Never block risk-reducing
 exits.
+
+Implementation: a tamper-checked assessment binds the exact risk-request and
+managed-state SHA-256 values. It evaluates session loss against 2% of session-start
+equity, drawdown against 10% of peak equity and the closed-loss streak against
+three, using isolated 256-digit Decimal arithmetic. Equality triggers each breaker.
+Triggered reasons use a frozen stable order; entries block, `NO_TRADE` remains no
+action and risk-reducing exits remain allowed even when all breakers are active.
+Recovery is derived only from a subsequent valid P4-004 state and is not latched;
+the explicit latched state machine remains P4-007.
+
+Local verification: **14/14** focused circuit tests, **69/69** focused P4 tests and
+the complete suite passed **352/352**. Compile, whitespace, lock and restricted-
+source scans passed. The deterministic fixture recorded
+`boundary=BLOCK_ENTRY/MULTIPLE_LIMITS`,
+`recovered=CLEAR/WITHIN_LIMITS`, exact session loss `200/200.00` and circuit
+SHA-256 `4ebfb40ed34e5157a25878e37ac1b51eb85feb42d7b179f57ba530dfa5c10180`.
+GitHub Actions runtime evidence is required before acceptance.
 
 ### P4-007 — Kill Switch state machine
 

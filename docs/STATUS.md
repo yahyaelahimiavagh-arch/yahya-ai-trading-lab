@@ -857,6 +857,35 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
   safety/runtime gates, plus public-checkpoint reconstruction, two byte-equal
   candidate runs and the independent P3 audit. Evidence index SHA-256 remained
   `59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
-- P4-005 is runtime accepted on PR #7. Merge is pending; P4-006 has not started.
+- Final HEAD GitHub Actions run `34747781858` passed both jobs. P4-005 was
+  squash-merged from PR #7 in checkpoint `41411ef`.
+- PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
+  NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
+
+## P4-006 implementation record — 2026-09-13
+
+- Entry checkpoint: P4-005 squash-merged in `41411ef`; implementation branch
+  `p4-006-circuit-breakers`.
+- Added an immutable circuit assessment bound to both the exact P4 risk-request
+  SHA-256 and P4-004 managed-state SHA-256.
+- Exact 256-digit Decimal checks trigger at session loss greater than or equal to
+  2% of session-start equity and drawdown greater than or equal to 10% of peak
+  equity. A streak triggers at three or more consecutive closed losses.
+- Stable reason order is session loss, drawdown, then consecutive losses. Any
+  active breaker blocks entry; `NO_TRADE` remains no action and risk-reducing exits
+  remain allowed even when all three breakers are active.
+- Recovery is observational and fail-closed: only a subsequent valid managed state
+  below the relevant boundary clears it. A valid UTC session reset clears session
+  loss; a recorded win or breakeven resets the streak. Latching and manual reset
+  remain exclusively P4-007.
+- Fourteen focused circuit tests, 69 focused P4 tests and the complete local suite
+  passed **352/352**. Deterministic CLI, compile, whitespace, lock and restricted-
+  source scans passed.
+- Runtime fixture: `boundary=BLOCK_ENTRY/MULTIPLE_LIMITS`, triggered session-loss
+  and consecutive-loss breakers, `recovered=CLEAR/WITHIN_LIMITS`, exact session
+  loss `200/200.00`, circuit SHA-256
+  `4ebfb40ed34e5157a25878e37ac1b51eb85feb42d7b179f57ba530dfa5c10180`.
+- GitHub Actions runtime evidence is pending; P4-006 is not yet accepted and P4-007
+  has not started.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
