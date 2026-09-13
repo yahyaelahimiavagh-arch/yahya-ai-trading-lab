@@ -885,7 +885,14 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
   and consecutive-loss breakers, `recovered=CLEAR/WITHIN_LIMITS`, exact session
   loss `200/200.00`, circuit SHA-256
   `4ebfb40ed34e5157a25878e37ac1b51eb85feb42d7b179f57ba530dfa5c10180`.
-- GitHub Actions runtime evidence is pending; P4-006 is not yet accepted and P4-007
-  has not started.
+- GitHub Actions run `34749363210` passed both jobs: all **352/352** tests and
+  safety/runtime gates, plus public-checkpoint reconstruction, two byte-equal
+  candidate runs and the independent P3 audit.
+- Runtime public-data evidence remained 6 datasets, 7,560 closed rows, 2
+  candidates, 2 symbols, 4 runs, 21 files, 16 P2 artifacts and 35 trades. Index
+  SHA-256 remained
+  `59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a` and both
+  labels remain `INSUFFICIENT_EVIDENCE`.
+- P4-006 is runtime accepted on PR #8. Merge is pending; P4-007 has not started.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.

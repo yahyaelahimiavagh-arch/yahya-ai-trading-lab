@@ -1,6 +1,6 @@
 # P4 — Risk Manager implementation plan
 
-Status: **IN PROGRESS — P4-005 MERGED; P4-006 IMPLEMENTED, RUNTIME PENDING**
+Status: **IN PROGRESS — P4-005 MERGED; P4-006 RUNTIME ACCEPTED ON PR #8**
 Entry baseline: P3 runtime accepted and squash-merged in commit `90d5847` with all
 283 tests and GitHub Actions run `34699734574` passing.
 Exit condition: an independent, deterministic and fail-closed manager binds each
@@ -174,13 +174,19 @@ action and risk-reducing exits remain allowed even when all breakers are active.
 Recovery is derived only from a subsequent valid P4-004 state and is not latched;
 the explicit latched state machine remains P4-007.
 
-Local verification: **14/14** focused circuit tests, **69/69** focused P4 tests and
-the complete suite passed **352/352**. Compile, whitespace, lock and restricted-
-source scans passed. The deterministic fixture recorded
+Acceptance: **PASS, runtime 2026-09-13, GitHub Actions run `34749363210`.**
+Fourteen focused circuit tests, 69 focused P4 tests and the complete suite passed
+**352/352**. Compile, whitespace, lock and restricted-source scans passed. The
+deterministic fixture recorded
 `boundary=BLOCK_ENTRY/MULTIPLE_LIMITS`,
 `recovered=CLEAR/WITHIN_LIMITS`, exact session loss `200/200.00` and circuit
 SHA-256 `4ebfb40ed34e5157a25878e37ac1b51eb85feb42d7b179f57ba530dfa5c10180`.
-GitHub Actions runtime evidence is required before acceptance.
+The accepted public checkpoint rebuilt 6 datasets and 7,560 closed rows. Two
+candidate matrices were byte-identical; the independent P3 audit retained 2
+candidates, 2 symbols, 4 runs, 21 files, 16 P2 artifacts, 35 trades and index
+SHA-256 `59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
+Both labels remain `INSUFFICIENT_EVIDENCE`. P4-006 is runtime accepted on PR #8;
+merge is pending and P4-007 has not started.
 
 ### P4-007 — Kill Switch state machine
 

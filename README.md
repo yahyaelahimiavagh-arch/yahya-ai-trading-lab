@@ -584,5 +584,9 @@ condition only when it is strictly back inside its limit; UTC session reset clea
 session loss and a recorded win/breakeven clears the loss streak. Risk-reducing
 exits are never blocked. The immutable result records stable breaker order and a
 material SHA-256, but does not latch a Kill Switch or emit approval/execution.
-Local verification passed 14 focused tests, 69 focused P4 tests and all **352/352**
-tests. GitHub Actions runtime acceptance is pending on the P4-006 pull request.
+GitHub Actions run `34749363210` passed 14 focused circuit tests, 69 focused P4
+tests, the complete **352/352** suite and every safety/runtime gate. The accepted
+public checkpoint rebuilt 6 datasets and 7,560 closed rows; two candidate runs
+were byte-identical and the independent audit retained index SHA-256
+`59f0af64843baeb2ecf593142e3247be190bb24c8768de80dd971bc677d8e92a`.
+P4-006 is runtime accepted on PR #8; merge is pending.
