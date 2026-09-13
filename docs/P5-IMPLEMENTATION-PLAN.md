@@ -1,6 +1,6 @@
 # P5 — Local Paper execution, reconciliation and recovery plan
 
-Status: **P5-001 IMPLEMENTED LOCALLY — CI/PR VALIDATION PENDING**
+Status: **P5-001 RUNTIME VERIFIED ON PR #14 — MERGE APPROVAL PENDING**
 
 Entry baseline: P4 runtime accepted and merged in checkpoint `f3a5575`; the
 authoritative documentation closeout is `c0d94d2`. The complete baseline suite
@@ -54,8 +54,10 @@ suite passed **414/414**. `paper-execution-contract-check` deterministically rec
 `entry=ACCEPT_LOCAL_PAPER`, exact quantity `18.894653` and decision SHA-256
 `4de1cda05b4dd3778e5dd18e1b8f633b76e77e8ba0572e6d1e4ce2e819c51f05`.
 Compile, whitespace, lock and restricted-source scans passed; `uv.lock` remained
-unchanged. This is implementation evidence only. Final-HEAD GitHub Actions and
-merge are pending, so P5-001 is not yet accepted and P5-002 remains unopened.
+unchanged. GitHub Actions run `34782576386` passed both jobs on implementation
+commit `0f44230c`, including the P5 runtime and safety scan. Final documentation-HEAD
+validation and explicit merge approval remain pending, so P5-001 is not yet merged
+and P5-002 remains unopened.
 
 ### P5-002 — Transactional intent journal and idempotency
 

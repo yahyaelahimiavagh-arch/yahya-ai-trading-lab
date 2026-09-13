@@ -1040,7 +1040,7 @@ Status: **PLANNED BEFORE IMPLEMENTATION**.
 
 ## P5-001 implementation record — 2026-09-13
 
-Status: **IMPLEMENTED LOCALLY — CI/PR VALIDATION PENDING**.
+Status: **RUNTIME VERIFIED ON PR #14 — MERGE APPROVAL PENDING**.
 
 - Added immutable `P5_LOCAL_PAPER_V1` policy. It rejects any external transport,
   credential, order endpoint, leverage, withdrawal, AI execution or master-lock
@@ -1063,7 +1063,11 @@ Status: **IMPLEMENTED LOCALLY — CI/PR VALIDATION PENDING**.
 - Compile, whitespace, locked sync and restricted-source scans passed. `uv.lock`
   SHA-256 remained
   `03cbb4101a3f90b2f387d82295f835fff607f53b4476059e01c7f0c8d85e289b`.
-- GitHub Actions final-HEAD evidence is pending. P5-001 is not accepted; P5-002 is
-  unopened.
+- GitHub Actions run `34782576386` passed both `unit-and-safety` and
+  `accepted-public-data` on implementation commit `0f44230c`. This included the
+  complete suite, safety scan, P5 runtime, deterministic replay and independent P3/P4
+  audits.
+- Final documentation-HEAD validation and explicit merge approval are pending.
+  PR #14 remains Draft; P5-001 is not merged and P5-002 is unopened.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.

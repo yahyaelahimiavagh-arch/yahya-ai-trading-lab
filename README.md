@@ -2,8 +2,8 @@
 
 P0 تا P4 با شواهد runtime پذیرفته و روی `main` بسته شده‌اند. P4-010 ممیزی مستقل
 نهایی Risk Manager را در checkpoint `f3a5575` تکمیل کرده است. P5-001 اکنون یک
-implementation candidate روی شاخه مستقل است؛ تا قبولی final-HEAD و merge پذیرفته
-نیست و هیچ مجوز معامله‌ای فعال نشده است.
+implementation candidate روی شاخه مستقل است؛ runtime آن در PR #14 تأیید شده اما
+تا تأیید صریح و merge پذیرفته نیست و هیچ مجوز معامله‌ای فعال نشده است.
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
@@ -706,6 +706,6 @@ uv run --locked python -m yatl paper-execution-contract-check
 The focused P5-001 suite passed 13 tests and the complete local suite passed
 **414/414**. The runtime entry decision SHA-256 is
 `4de1cda05b4dd3778e5dd18e1b8f633b76e77e8ba0572e6d1e4ce2e819c51f05`.
-This is local implementation evidence only; GitHub Actions final-HEAD validation
-and merge are pending. The contract performs no fill, persistence or external
-request.
+GitHub Actions run `34782576386` passed both jobs on implementation commit
+`0f44230c`; final documentation-HEAD validation and merge approval remain pending.
+The contract performs no fill, persistence or external request.

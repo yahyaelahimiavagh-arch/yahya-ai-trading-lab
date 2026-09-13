@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P4 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P5-001 IMPLEMENTATION CANDIDATE — CI/PR VALIDATION PENDING**
+قدم جاری: **P5-001 RUNTIME VERIFIED ON PR #14 — MERGE APPROVAL PENDING**
 
 ## منشأ و حدود سند
 
@@ -37,7 +37,7 @@ NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only ب�
 | P2 Backtesting Engine | آزمون تاریخی تکرارپذیر با کارمزد، لغزش و جلوگیری از استفاده از آینده | **RUNTIME ACCEPTED — checkpoint `9cbc197`** |
 | P3 Strategy Framework | چارچوب مشترک استراتژی و قواعد روشن سیگنال/عدم معامله | **RUNTIME ACCEPTED — final audit run `34699232936`** |
 | P4 Risk Manager | اندازه موقعیت، محدودیت ریسک و Kill Switch مستقل | **RUNTIME ACCEPTED — checkpoint `f3a5575`** |
-| P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | **P5-001 candidate؛ local 414/414 PASS؛ CI/PR pending** |
+| P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | **P5-001 candidate؛ run `34782576386` PASS؛ merge pending** |
 | P6 AI Analyst | تحلیل ساختاریافته و NO_TRADE بدون دسترسی مستقیم به اجرا | شروع نشده |
 | P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | شروع نشده |
 | P8 Dashboard | نمایش وضعیت، معاملات، عملکرد و خطاها | شروع نشده |
@@ -263,6 +263,7 @@ startup پیش‌فرض exposure را می‌بندد، candidateهای فعلی
 runtime decision SHA-256 برابر
 `4de1cda05b4dd3778e5dd18e1b8f633b76e77e8ba0572e6d1e4ce2e819c51f05` است.
 Compile، whitespace، lock و restricted-source scan پاس شدند؛ `uv.lock` بدون تغییر
-است. این فقط شواهد محلی candidate است و پذیرش به final-HEAD GitHub Actions وابسته
-است. هیچ TRADE permission، order endpoint، credential یا external transport ایجاد
-نشده است.
+است. GitHub Actions run `34782576386` هر دو job را روی implementation commit
+`0f44230c` گذراند. final documentation-HEAD و تأیید صریح merge هنوز pending هستند؛
+PR #14 Draft است. هیچ TRADE permission، order endpoint، credential یا external
+transport ایجاد نشده است.
