@@ -61,6 +61,8 @@ jobs:
         run: uv run --locked python -m yatl risk-adapter-check
       - name: P5 local Paper execution contract runtime
         run: uv run --locked python -m yatl paper-execution-contract-check
+      - name: P5 transactional intent journal runtime
+        run: uv run --locked python -m yatl paper-execution-journal-check
 
   accepted-public-data:
     runs-on: ubuntu-latest

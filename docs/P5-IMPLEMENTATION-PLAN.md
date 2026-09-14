@@ -1,6 +1,6 @@
 # P5 — Local Paper execution, reconciliation and recovery plan
 
-Status: **P5-001 RUNTIME ACCEPTED AND MERGED — P5-002 NEXT BUT UNOPENED**
+Status: **P5-001 ACCEPTED/MERGED — P5-002 ACTIONS PASS, MERGE PENDING**
 
 Entry baseline: P4 runtime accepted and merged in checkpoint `f3a5575`; the
 authoritative documentation closeout is `c0d94d2`. The complete baseline suite
@@ -58,7 +58,7 @@ unchanged. Final-HEAD GitHub Actions run `34782981428` passed both jobs on commi
 `b665f2b`, including **414/414** complete tests, **13/13** focused tests, the P5
 runtime and safety scan. PR #14 was squash-merged at checkpoint
 `557747194fe8cdda75704d1bc3d067901f184450`. P5-001 is runtime accepted and merged;
-P5-002 is next but remains unopened.
+P5-002 subsequently opened as the candidate recorded below.
 
 ### P5-002 — Transactional intent journal and idempotency
 
@@ -70,6 +70,21 @@ cannot create a second effect.
 Acceptance: transaction rollback, uniqueness, canonical export, reopen and
 concurrent-attempt tests; SQLite binary bytes are not treated as deterministic
 evidence.
+
+Local candidate evidence: **PASS, 2026-09-14.** Twelve focused tests and the
+complete suite passed **426/426**. Tests cover rollback after an injected
+post-insert failure, exactly one effect under four concurrent duplicate attempts,
+same-authorization conflict, reopen, sorted canonical export, schema drift and
+tamper detection. `paper-execution-journal-check` recorded one effect, identical
+retry/reopen, exact quantity `18.894653`, intent SHA-256
+`206920d659e27113762959457eb88e7124582eb365963694fbd70c56af4e620a` and canonical
+evidence SHA-256
+`fd7aa4412b9c2fd6b10a5167465aae27bee0d515cf02cf8e7112ea435b881cb6`.
+Compile, whitespace, lock and restricted-source scans passed; no dependency or
+`uv.lock` change exists. Implementation-head GitHub Actions run `34899280632`
+passed both jobs on commit `ff8b6bd`, including **426/426** tests and all runtime,
+safety, replay and audit gates. Final documentation HEAD verification and explicit
+merge approval remain pending; P5-002 is not merged and P5-003 remains unopened.
 
 ### P5-003 — Local Paper order state machine
 
