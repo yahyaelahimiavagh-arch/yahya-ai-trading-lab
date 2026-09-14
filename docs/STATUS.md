@@ -1040,7 +1040,7 @@ Status: **PLANNED BEFORE IMPLEMENTATION**.
 
 ## P5-001 implementation record — 2026-09-13
 
-Status: **RUNTIME VERIFIED ON PR #14 — MERGE APPROVAL PENDING**.
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `5577471`**.
 
 - Added immutable `P5_LOCAL_PAPER_V1` policy. It rejects any external transport,
   credential, order endpoint, leverage, withdrawal, AI execution or master-lock
@@ -1063,11 +1063,12 @@ Status: **RUNTIME VERIFIED ON PR #14 — MERGE APPROVAL PENDING**.
 - Compile, whitespace, locked sync and restricted-source scans passed. `uv.lock`
   SHA-256 remained
   `03cbb4101a3f90b2f387d82295f835fff607f53b4476059e01c7f0c8d85e289b`.
-- GitHub Actions run `34782576386` passed both `unit-and-safety` and
-  `accepted-public-data` on implementation commit `0f44230c`. This included the
-  complete suite, safety scan, P5 runtime, deterministic replay and independent P3/P4
-  audits.
-- Final documentation-HEAD validation and explicit merge approval are pending.
-  PR #14 remains Draft; P5-001 is not merged and P5-002 is unopened.
+- Final-HEAD GitHub Actions run `34782981428` passed both `unit-and-safety` and
+  `accepted-public-data` on commit `b665f2b`. This included **414/414** complete
+  tests, **13/13** focused P5-001 tests, the safety scan, P5 runtime, deterministic
+  replay and independent P3/P4 audits.
+- PR #14 was squash-merged into `main` at checkpoint
+  `557747194fe8cdda75704d1bc3d067901f184450`. P5-001 is runtime accepted and
+  merged; P5-002 is next but remains unopened.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.

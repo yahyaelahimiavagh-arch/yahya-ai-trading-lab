@@ -1,8 +1,8 @@
 # YATL — نقشه مرجع اجرا و وضعیت پروژه
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
-وضعیت جاری: **P0 تا P4 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P5-001 RUNTIME VERIFIED ON PR #14 — MERGE APPROVAL PENDING**
+وضعیت جاری: **P0 تا P4 و P5-001 RUNTIME ACCEPTED AND MERGED**
+قدم جاری: **P5-002 NEXT BUT UNOPENED**
 
 ## منشأ و حدود سند
 
@@ -37,7 +37,7 @@ NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only ب�
 | P2 Backtesting Engine | آزمون تاریخی تکرارپذیر با کارمزد، لغزش و جلوگیری از استفاده از آینده | **RUNTIME ACCEPTED — checkpoint `9cbc197`** |
 | P3 Strategy Framework | چارچوب مشترک استراتژی و قواعد روشن سیگنال/عدم معامله | **RUNTIME ACCEPTED — final audit run `34699232936`** |
 | P4 Risk Manager | اندازه موقعیت، محدودیت ریسک و Kill Switch مستقل | **RUNTIME ACCEPTED — checkpoint `f3a5575`** |
-| P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | **P5-001 candidate؛ run `34782576386` PASS؛ merge pending** |
+| P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | **P5-001 RUNTIME ACCEPTED AND MERGED؛ P5-002 unopened** |
 | P6 AI Analyst | تحلیل ساختاریافته و NO_TRADE بدون دسترسی مستقیم به اجرا | شروع نشده |
 | P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | شروع نشده |
 | P8 Dashboard | نمایش وضعیت، معاملات، عملکرد و خطاها | شروع نشده |
@@ -89,9 +89,9 @@ P5 هنوز باز نشده است.
 - Live بخشی از درصد تحویل نرم‌افزاری نیست. P11 تنها در صورت پذیرش P10، ممیزی امنیتی،
   آماده‌بودن حساب و تأیید صریح جداگانه بررسی می‌شود.
 
-بنابراین گزارش کوتاه این است: **50% فازهای نرم‌افزاری بسته شده و P5-001 اکنون
-implementation candidate است.** P5 هنوز runtime accepted نیست. این عدد پیشرفت
-مهندسی است، نه درصد آمادگی برای سود یا Live.
+بنابراین گزارش کوتاه این است: **50% فازهای نرم‌افزاری بسته شده‌اند؛ P5-001 runtime
+accepted و merge شده و P5-002 مرحله بعدی اما هنوز unopened است.** خود فاز P5 هنوز
+بسته نشده است. این عدد پیشرفت مهندسی است، نه درصد آمادگی برای سود یا Live.
 
 در گفت‌وگوی قبلی برای P10 بازه ۳۰–۶۰ روز واقعی بازار مطرح شده است؛ این تخمین است،
 نه تضمین کافی‌بودن نمونه. تاریخ‌های قبلی پایان توسعه و شروع Live، تعهد اجرایی نیستند.
@@ -248,7 +248,7 @@ byte-identical و ممیزی نهایی 16 run/17 file را پذیرفت. Policy
 را گذراند و PR #12 در checkpoint `f3a5575` merge شد. بنابراین P4 بسته است؛ P5
 همچنان باز نشده و هیچ مجوز TRADE یا Live ایجاد نشده است.
 
-## P5 planning and P5-001 candidate record — 2026-09-13
+## P5 planning and P5-001 accepted record — 2026-09-13/14
 
 برنامه ترتیبی P5 در `docs/P5-IMPLEMENTATION-PLAN.md` پیش از کد ثبت شد. منابع
 NautilusTrader، Jesse، Freqtrade، Hummingbot و CCXT با repository رسمی، license و
@@ -263,7 +263,8 @@ startup پیش‌فرض exposure را می‌بندد، candidateهای فعلی
 runtime decision SHA-256 برابر
 `4de1cda05b4dd3778e5dd18e1b8f633b76e77e8ba0572e6d1e4ce2e819c51f05` است.
 Compile، whitespace، lock و restricted-source scan پاس شدند؛ `uv.lock` بدون تغییر
-است. GitHub Actions run `34782576386` هر دو job را روی implementation commit
-`0f44230c` گذراند. final documentation-HEAD و تأیید صریح merge هنوز pending هستند؛
-PR #14 Draft است. هیچ TRADE permission، order endpoint، credential یا external
-transport ایجاد نشده است.
+است. Final-HEAD GitHub Actions run `34782981428` هر دو job را با **414/414** تست
+کامل و **13/13** تست متمرکز گذراند. PR #14 با squash-merge در checkpoint
+`557747194fe8cdda75704d1bc3d067901f184450` بسته شد؛ بنابراین P5-001 runtime
+accepted and merged است و P5-002 مرحله بعدی اما هنوز unopened است. هیچ TRADE
+permission، order endpoint، credential یا external transport ایجاد نشده است.

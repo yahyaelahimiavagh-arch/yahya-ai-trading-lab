@@ -1,9 +1,9 @@
 # Yahya AI Trading Lab
 
 P0 تا P4 با شواهد runtime پذیرفته و روی `main` بسته شده‌اند. P4-010 ممیزی مستقل
-نهایی Risk Manager را در checkpoint `f3a5575` تکمیل کرده است. P5-001 اکنون یک
-implementation candidate روی شاخه مستقل است؛ runtime آن در PR #14 تأیید شده اما
-تا تأیید صریح و merge پذیرفته نیست و هیچ مجوز معامله‌ای فعال نشده است.
+نهایی Risk Manager را در checkpoint `f3a5575` تکمیل کرده است. P5-001 نیز در PR #14
+runtime accepted و با squash-merge در checkpoint `5577471` روی `main` بسته شد.
+P5-002 مرحله بعدی است اما هنوز باز نشده و هیچ مجوز معامله‌ای فعال نشده است.
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
@@ -46,7 +46,7 @@ P2 بارگذاری point-in-time، ساعت رویداد، fill محافظه‌
 نهایی P2 همه این gateها را بازسازی و تأیید می‌کند. P3 در `90d5847` بسته شد؛
 P4-001 تا P4-010 نیز به‌ترتیب پذیرفته و روی `main` merge شده‌اند. P4 در
 checkpoint `f3a5575` بسته شد. P5-001 قرارداد اجرای Local Paper و recovery boundary
-را به‌عنوان candidate آغاز کرده است. ترتیب P5 در
+را runtime accepted و merge کرده است؛ P5-002 هنوز باز نشده است. ترتیب P5 در
 `docs/P5-IMPLEMENTATION-PLAN.md` و شواهد P4 در
 `docs/P4-IMPLEMENTATION-PLAN.md` قفل شده‌اند.
 
@@ -706,6 +706,7 @@ uv run --locked python -m yatl paper-execution-contract-check
 The focused P5-001 suite passed 13 tests and the complete local suite passed
 **414/414**. The runtime entry decision SHA-256 is
 `4de1cda05b4dd3778e5dd18e1b8f633b76e77e8ba0572e6d1e4ce2e819c51f05`.
-GitHub Actions run `34782576386` passed both jobs on implementation commit
-`0f44230c`; final documentation-HEAD validation and merge approval remain pending.
-The contract performs no fill, persistence or external request.
+Final-HEAD GitHub Actions run `34782981428` passed both jobs and PR #14 was
+squash-merged in checkpoint `557747194fe8cdda75704d1bc3d067901f184450`.
+P5-001 is runtime accepted and merged; P5-002 is next but unopened. The contract
+performs no fill, persistence or external request.
