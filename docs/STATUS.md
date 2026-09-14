@@ -1075,7 +1075,7 @@ Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `5577471`**.
 
 ## P5-002 implementation candidate — 2026-09-14
 
-Status: **LOCAL RUNTIME PASS — ACTIONS AND MERGE APPROVAL PENDING**.
+Status: **IMPLEMENTATION-HEAD ACTIONS PASS — MERGE APPROVAL PENDING**.
 
 - Added a standard-library SQLite journal that accepts only a reconstructable
   `ACCEPT_LOCAL_PAPER` P5 decision; blocked, no-action, raw and forged inputs fail
@@ -1096,8 +1096,12 @@ Status: **LOCAL RUNTIME PASS — ACTIONS AND MERGE APPROVAL PENDING**.
   `206920d659e27113762959457eb88e7124582eb365963694fbd70c56af4e620a` and canonical
   evidence SHA-256
   `fd7aa4412b9c2fd6b10a5167465aae27bee0d515cf02cf8e7112ea435b881cb6`.
-- This is candidate evidence, not runtime acceptance. GitHub Actions and explicit
-  merge approval remain pending. P5-003 is unopened.
+- Implementation-head GitHub Actions run `34899280632` passed both
+  `unit-and-safety` and `accepted-public-data` on commit `ff8b6bd`, including
+  **426/426** tests, locked sync, compile/whitespace, restricted-source scans,
+  P5-001/P5-002 runtimes and deterministic accepted-data replay/audits.
+- This remains an unmerged candidate. Final documentation HEAD verification and
+  explicit merge approval are pending. P5-003 is unopened.
 - No P2 fill, order lifecycle, external transport, endpoint or permission was
   added. PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE;
   NO WITHDRAWAL API; NO TRADE PERMISSION; NO ORDER ENDPOINTS;

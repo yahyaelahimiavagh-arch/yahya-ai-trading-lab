@@ -1,6 +1,6 @@
 # P5 — Local Paper execution, reconciliation and recovery plan
 
-Status: **P5-001 ACCEPTED/MERGED — P5-002 CANDIDATE, ACTIONS/MERGE PENDING**
+Status: **P5-001 ACCEPTED/MERGED — P5-002 ACTIONS PASS, MERGE PENDING**
 
 Entry baseline: P4 runtime accepted and merged in checkpoint `f3a5575`; the
 authoritative documentation closeout is `c0d94d2`. The complete baseline suite
@@ -81,9 +81,10 @@ retry/reopen, exact quantity `18.894653`, intent SHA-256
 evidence SHA-256
 `fd7aa4412b9c2fd6b10a5167465aae27bee0d515cf02cf8e7112ea435b881cb6`.
 Compile, whitespace, lock and restricted-source scans passed; no dependency or
-`uv.lock` change exists. This evidence is a candidate pending final-HEAD GitHub
-Actions and explicit merge approval; P5-002 is not runtime accepted/merged and
-P5-003 remains unopened.
+`uv.lock` change exists. Implementation-head GitHub Actions run `34899280632`
+passed both jobs on commit `ff8b6bd`, including **426/426** tests and all runtime,
+safety, replay and audit gates. Final documentation HEAD verification and explicit
+merge approval remain pending; P5-002 is not merged and P5-003 remains unopened.
 
 ### P5-003 — Local Paper order state machine
 

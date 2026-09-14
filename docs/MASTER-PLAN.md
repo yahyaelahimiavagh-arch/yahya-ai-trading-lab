@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P4 و P5-001 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P5-002 CANDIDATE — ACTIONS AND MERGE APPROVAL PENDING**
+قدم جاری: **P5-002 CANDIDATE — IMPLEMENTATION ACTIONS PASS, MERGE APPROVAL PENDING**
 
 ## منشأ و حدود سند
 
@@ -90,9 +90,9 @@ merge شد. P4-010 ممیزی مستقل نهایی را پیاده‌سازی �
   آماده‌بودن حساب و تأیید صریح جداگانه بررسی می‌شود.
 
 بنابراین گزارش کوتاه این است: **50% فازهای نرم‌افزاری بسته شده‌اند؛ P5-001 runtime
-accepted و merge شده و P5-002 یک candidate با Actions و merge approval pending
-است.** خود فاز P5 هنوز بسته نشده است. این عدد پیشرفت مهندسی است، نه درصد آمادگی
-برای سود یا Live.
+accepted و merge شده و P5-002 یک candidate با implementation Actions سبز و merge
+approval pending است.** خود فاز P5 هنوز بسته نشده است. این عدد پیشرفت مهندسی
+است، نه درصد آمادگی برای سود یا Live.
 
 در گفت‌وگوی قبلی برای P10 بازه ۳۰–۶۰ روز واقعی بازار مطرح شده است؛ این تخمین است،
 نه تضمین کافی‌بودن نمونه. تاریخ‌های قبلی پایان توسعه و شروع Live، تعهد اجرایی نیستند.
@@ -279,7 +279,8 @@ P5-002 یک journal تراکنشی SQLite فقط برای intentهای Local Pap
 با quantity دقیق `18.894653`، intent SHA-256
 `206920d659e27113762959457eb88e7124582eb365963694fbd70c56af4e620a` و evidence
 SHA-256 `fd7aa4412b9c2fd6b10a5167465aae27bee0d515cf02cf8e7112ea435b881cb6`
-ثبت کرد. این وضعیت فقط candidate محلی است؛ Actions و تأیید merge pending هستند،
-P5-002 هنوز runtime accepted/merged نیست و P5-003 unopened باقی می‌ماند. درصد کل
-همچنان 50% است و هیچ order lifecycle، endpoint، credential یا TRADE permission
-اضافه نشده است.
+ثبت کرد. Implementation-head GitHub Actions run `34899280632` هر دو job را روی
+commit `ff8b6bd` با **426/426** تست و runtime/safety gateها گذراند. final
+documentation HEAD verification و تأیید merge pending هستند؛ P5-002 هنوز merge
+نشده و P5-003 unopened باقی می‌ماند. درصد کل همچنان 50% است و هیچ order lifecycle،
+endpoint، credential یا TRADE permission اضافه نشده است.

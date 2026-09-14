@@ -3,9 +3,9 @@
 P0 تا P4 با شواهد runtime پذیرفته و روی `main` بسته شده‌اند. P4-010 ممیزی مستقل
 نهایی Risk Manager را در checkpoint `f3a5575` تکمیل کرده است. P5-001 نیز در PR #14
 runtime accepted و با squash-merge در checkpoint `5577471` روی `main` بسته شد.
-P5-002 transactional intent journal اکنون یک candidate محلی با **426/426** تست
-PASS است؛ پذیرش runtime و merge آن تا قبولی final-HEAD Actions و تأیید صریح باز است.
-هیچ مجوز معامله‌ای فعال نشده است.
+P5-002 transactional intent journal اکنون candidate با **426/426** تست PASS و
+implementation-head Actions سبز است؛ merge آن تا تأیید صریح باز می‌ماند. هیچ
+مجوز معامله‌ای فعال نشده است.
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
@@ -731,6 +731,8 @@ attempts, schema drift and tamper detection passed. The runtime recorded one
 effect, exact quantity `18.894653`, intent SHA-256
 `206920d659e27113762959457eb88e7124582eb365963694fbd70c56af4e620a` and evidence
 SHA-256 `fd7aa4412b9c2fd6b10a5167465aae27bee0d515cf02cf8e7112ea435b881cb6`.
-GitHub Actions and merge approval are pending; P5-002 is not runtime accepted or
-merged, and P5-003 remains unopened. No fill, order lifecycle, external request,
-credential, TRADE permission or order endpoint is included.
+Implementation-head GitHub Actions run `34899280632` passed both jobs on commit
+`ff8b6bd`, including **426/426** tests, runtime and safety gates. Final documentation
+HEAD verification and merge approval remain pending; P5-002 is not merged and
+P5-003 remains unopened. No fill, order lifecycle, external request, credential,
+TRADE permission or order endpoint is included.
