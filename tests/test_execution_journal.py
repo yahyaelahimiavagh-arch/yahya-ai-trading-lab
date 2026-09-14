@@ -116,6 +116,8 @@ class ExecutionIntentJournalTests(unittest.TestCase):
 
     def test_concurrent_duplicate_attempts_commit_one_effect(self):
         decision = _accepted_decision()
+        with ExecutionIntentJournal(self.path):
+            pass
         barrier = threading.Barrier(4)
         results = []
         errors = []

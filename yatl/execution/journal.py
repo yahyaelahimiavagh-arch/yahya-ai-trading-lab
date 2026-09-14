@@ -175,7 +175,6 @@ class ExecutionIntentJournal:
             self._connection.row_factory = sqlite3.Row
             self._connection.execute("PRAGMA foreign_keys = ON")
             self._connection.execute("PRAGMA busy_timeout = 5000")
-            self._connection.execute("PRAGMA journal_mode = WAL")
             self._migrate()
         except ExecutionJournalError:
             if self._connection is not None:
