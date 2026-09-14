@@ -1,8 +1,9 @@
 # Yahya AI Trading Lab
 
 P0 تا P4 با شواهد runtime پذیرفته و روی `main` بسته شده‌اند. P4-010 ممیزی مستقل
-نهایی Risk Manager را در checkpoint `f3a5575` تکمیل کرده است. P5 مرحله بعدی است
-اما هنوز باز نشده و هیچ مجوز معامله‌ای فعال نیست.
+نهایی Risk Manager را در checkpoint `f3a5575` تکمیل کرده است. P5-001 اکنون یک
+implementation candidate روی شاخه مستقل است؛ runtime آن در PR #14 تأیید شده اما
+تا تأیید صریح و merge پذیرفته نیست و هیچ مجوز معامله‌ای فعال نشده است.
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
@@ -44,7 +45,9 @@ P2 بارگذاری point-in-time، ساعت رویداد، fill محافظه‌
 معیارها، artifact تکرارپذیر و شش سناریوی واقعی BTC/ETH را تکمیل کرده است. ممیزی
 نهایی P2 همه این gateها را بازسازی و تأیید می‌کند. P3 در `90d5847` بسته شد؛
 P4-001 تا P4-010 نیز به‌ترتیب پذیرفته و روی `main` merge شده‌اند. P4 در
-checkpoint `f3a5575` بسته شد؛ P5 همچنان unopened است. ترتیب و شواهد P4 در
+checkpoint `f3a5575` بسته شد. P5-001 قرارداد اجرای Local Paper و recovery boundary
+را به‌عنوان candidate آغاز کرده است. ترتیب P5 در
+`docs/P5-IMPLEMENTATION-PLAN.md` و شواهد P4 در
 `docs/P4-IMPLEMENTATION-PLAN.md` قفل شده‌اند.
 
 P3-001 قرارداد research-only سیگنال را اضافه می‌کند. تصمیم فقط یکی از `NO_TRADE`،
@@ -687,3 +690,22 @@ evidence index remains
 Final-HEAD run `34771969717` also passed both jobs. P4-010 was squash-merged from
 PR #12 in checkpoint `f3a5575`; P4 is closed and P5 remains unopened. This audit
 cannot grant trade permission or submit an exchange order.
+
+## P5-001 — Local Paper execution contract
+
+P5 starts with an immutable, effect-free boundary. It accepts only a complete P4
+`RiskAuthorization`, preserves the exact approved quantity and defaults recovery
+readiness to `RECOVERY_REQUIRED/FAIL_CLOSED_STARTUP`. A qualified engineering
+fixture is blocked until deterministic reconciliation evidence is supplied; the
+current insufficient-evidence candidates remain blocked even after readiness.
+
+```powershell
+uv run --locked python -m yatl paper-execution-contract-check
+```
+
+The focused P5-001 suite passed 13 tests and the complete local suite passed
+**414/414**. The runtime entry decision SHA-256 is
+`4de1cda05b4dd3778e5dd18e1b8f633b76e77e8ba0572e6d1e4ce2e819c51f05`.
+GitHub Actions run `34782576386` passed both jobs on implementation commit
+`0f44230c`; final documentation-HEAD validation and merge approval remain pending.
+The contract performs no fill, persistence or external request.

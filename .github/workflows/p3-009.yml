@@ -1,4 +1,4 @@
-name: P4 deterministic gates
+name: P5 deterministic gates
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: p3-final-${{ github.ref }}
+  group: p5-final-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -39,6 +39,10 @@ jobs:
           ! rg -n 'from yatl\.account|import yatl\.account|BinancePublicRestClient' yatl/strategy
           ! rg -n 'api/v3/(order|orderList)|/fapi|/dapi|withdraw\(' yatl/risk
           ! rg -n 'from yatl\.account|import yatl\.account|BinancePublicRestClient' yatl/risk
+          ! rg -n 'api/v3/(order|orderList)|/fapi|/dapi|withdraw\(' yatl/execution
+          ! rg -n 'from yatl\.account|import yatl\.account|BinancePublicRestClient|urllib|http\.client|websockets|socket' yatl/execution
+          ! rg -n 'os\.getenv|os\.environ|dotenv|API_KEY|API_SECRET' yatl/execution
+          ! rg -n 'from yatl\.execution|import yatl\.execution' yatl/strategy yatl/risk
       - name: P4 risk contract runtime
         run: uv run --locked python -m yatl risk-contract-check
       - name: P4 exact sizing runtime
@@ -55,6 +59,8 @@ jobs:
         run: uv run --locked python -m yatl risk-kill-switch-check
       - name: P4-authorized P2 Paper adapter runtime
         run: uv run --locked python -m yatl risk-adapter-check
+      - name: P5 local Paper execution contract runtime
+        run: uv run --locked python -m yatl paper-execution-contract-check
 
   accepted-public-data:
     runs-on: ubuntu-latest

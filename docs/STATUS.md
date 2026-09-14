@@ -1024,3 +1024,50 @@ Status: **IMPLEMENTED AND RUNTIME VERIFIED — CHECKPOINT PENDING**.
   #12 in checkpoint `f3a5575`; P4 is closed and P5 remains unopened.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
+
+## P5 planning baseline — 2026-09-13
+
+Status: **PLANNED BEFORE IMPLEMENTATION**.
+
+- Entry baseline: authoritative `main` commit `c0d94d2`; P4 checkpoint `f3a5575`.
+- The unchanged baseline suite passed **401/401** locally before P5 work.
+- `P5-IMPLEMENTATION-PLAN.md` freezes ten ordered checkpoints for local Paper
+  contracts, journal/idempotency, lifecycle, P2 fills, portfolio projection,
+  reconciliation, recovery, CLI, adversarial scenarios and final audit.
+- `OPEN-SOURCE-DESIGN-REFERENCES.md` records official repository, license and exact
+  reference SHA for NautilusTrader, Jesse, Freqtrade, Hummingbot and CCXT.
+- No external source code was copied and no dependency or lockfile changed.
+
+## P5-001 implementation record — 2026-09-13
+
+Status: **RUNTIME VERIFIED ON PR #14 — MERGE APPROVAL PENDING**.
+
+- Added immutable `P5_LOCAL_PAPER_V1` policy. It rejects any external transport,
+  credential, order endpoint, leverage, withdrawal, AI execution or master-lock
+  change.
+- Recovery readiness defaults to
+  `RECOVERY_REQUIRED/FAIL_CLOSED_STARTUP`. A ready state requires a canonical
+  reconciliation SHA-256; failed reconciliation remains not ready.
+- Only a reconstructable P4 `RiskAuthorization` is accepted. Raw strategy/risk
+  decisions and forged authorization inputs fail closed.
+- Qualified entry and risk-reducing exit fixtures remain `HOLD` until recovery is
+  ready. After ready evidence, their exact P4 quantities are preserved in a
+  local-only authorization. No effect, fill, persistence or network request is
+  performed by P5-001.
+- Current `INSUFFICIENT_EVIDENCE` entry remains
+  `BLOCKED/RISK_NOT_APPROVED` regardless of recovery readiness.
+- Thirteen focused tests and the complete suite passed **414/414** locally.
+- Deterministic runtime recorded qualified quantity `18.894653` and decision
+  SHA-256
+  `4de1cda05b4dd3778e5dd18e1b8f633b76e77e8ba0572e6d1e4ce2e819c51f05`.
+- Compile, whitespace, locked sync and restricted-source scans passed. `uv.lock`
+  SHA-256 remained
+  `03cbb4101a3f90b2f387d82295f835fff607f53b4476059e01c7f0c8d85e289b`.
+- GitHub Actions run `34782576386` passed both `unit-and-safety` and
+  `accepted-public-data` on implementation commit `0f44230c`. This included the
+  complete suite, safety scan, P5 runtime, deterministic replay and independent P3/P4
+  audits.
+- Final documentation-HEAD validation and explicit merge approval are pending.
+  PR #14 remains Draft; P5-001 is not merged and P5-002 is unopened.
+- PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
+  NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
