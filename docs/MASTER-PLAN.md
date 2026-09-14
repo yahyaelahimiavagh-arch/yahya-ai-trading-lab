@@ -1,8 +1,8 @@
 # YATL — نقشه مرجع اجرا و وضعیت پروژه
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
-وضعیت جاری: **P0 تا P4 و P5-001 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P5-002 CANDIDATE — IMPLEMENTATION ACTIONS PASS, MERGE APPROVAL PENDING**
+وضعیت جاری: **P0 تا P4 و P5-001 تا P5-002 RUNTIME ACCEPTED AND MERGED**
+قدم جاری: **P5-003 NEXT BUT UNOPENED**
 
 ## منشأ و حدود سند
 
@@ -37,7 +37,7 @@ NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only ب�
 | P2 Backtesting Engine | آزمون تاریخی تکرارپذیر با کارمزد، لغزش و جلوگیری از استفاده از آینده | **RUNTIME ACCEPTED — checkpoint `9cbc197`** |
 | P3 Strategy Framework | چارچوب مشترک استراتژی و قواعد روشن سیگنال/عدم معامله | **RUNTIME ACCEPTED — final audit run `34699232936`** |
 | P4 Risk Manager | اندازه موقعیت، محدودیت ریسک و Kill Switch مستقل | **RUNTIME ACCEPTED — checkpoint `f3a5575`** |
-| P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | **P5-001 accepted/merged؛ P5-002 candidate با پذیرش pending** |
+| P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | **P5-001 تا P5-002 RUNTIME ACCEPTED AND MERGED؛ P5-003 unopened** |
 | P6 AI Analyst | تحلیل ساختاریافته و NO_TRADE بدون دسترسی مستقیم به اجرا | شروع نشده |
 | P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | شروع نشده |
 | P8 Dashboard | نمایش وضعیت، معاملات، عملکرد و خطاها | شروع نشده |
@@ -90,9 +90,8 @@ merge شد. P4-010 ممیزی مستقل نهایی را پیاده‌سازی �
   آماده‌بودن حساب و تأیید صریح جداگانه بررسی می‌شود.
 
 بنابراین گزارش کوتاه این است: **50% فازهای نرم‌افزاری بسته شده‌اند؛ P5-001 runtime
-accepted و merge شده و P5-002 یک candidate با implementation Actions سبز و merge
-approval pending است.** خود فاز P5 هنوز بسته نشده است. این عدد پیشرفت مهندسی
-است، نه درصد آمادگی برای سود یا Live.
+accepted و merge شده‌اند و P5-003 مرحله بعدی اما هنوز unopened است.** خود فاز P5
+هنوز بسته نشده است. این عدد پیشرفت مهندسی است، نه درصد آمادگی برای سود یا Live.
 
 در گفت‌وگوی قبلی برای P10 بازه ۳۰–۶۰ روز واقعی بازار مطرح شده است؛ این تخمین است،
 نه تضمین کافی‌بودن نمونه. تاریخ‌های قبلی پایان توسعه و شروع Live، تعهد اجرایی نیستند.
@@ -279,8 +278,9 @@ P5-002 یک journal تراکنشی SQLite فقط برای intentهای Local Pap
 با quantity دقیق `18.894653`، intent SHA-256
 `206920d659e27113762959457eb88e7124582eb365963694fbd70c56af4e620a` و evidence
 SHA-256 `fd7aa4412b9c2fd6b10a5167465aae27bee0d515cf02cf8e7112ea435b881cb6`
-ثبت کرد. Implementation-head GitHub Actions run `34899280632` هر دو job را روی
-commit `ff8b6bd` با **426/426** تست و runtime/safety gateها گذراند. final
-documentation HEAD verification و تأیید merge pending هستند؛ P5-002 هنوز merge
-نشده و P5-003 unopened باقی می‌ماند. درصد کل همچنان 50% است و هیچ order lifecycle،
-endpoint، credential یا TRADE permission اضافه نشده است.
+ثبت کرد. Final-HEAD GitHub Actions run `34899971951` هر دو job را روی commit
+`b498759` با **426/426** تست و runtime/safety gateها گذراند. PR #16 در checkpoint
+`ab9d38a55688f772c2c7ca166584e0978fd6163d` squash-merge شد؛ بنابراین P5-002
+runtime accepted and merged است و P5-003 unopened باقی می‌ماند. درصد کل همچنان
+50% است و هیچ order lifecycle، endpoint، credential یا TRADE permission اضافه
+نشده است.

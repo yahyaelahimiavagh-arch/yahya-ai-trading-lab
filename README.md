@@ -3,9 +3,9 @@
 P0 تا P4 با شواهد runtime پذیرفته و روی `main` بسته شده‌اند. P4-010 ممیزی مستقل
 نهایی Risk Manager را در checkpoint `f3a5575` تکمیل کرده است. P5-001 نیز در PR #14
 runtime accepted و با squash-merge در checkpoint `5577471` روی `main` بسته شد.
-P5-002 transactional intent journal اکنون candidate با **426/426** تست PASS و
-implementation-head Actions سبز است؛ merge آن تا تأیید صریح باز می‌ماند. هیچ
-مجوز معامله‌ای فعال نشده است.
+P5-002 transactional intent journal نیز با **426/426** تست و final-HEAD Actions
+سبز، از PR #16 در checkpoint `ab9d38a` روی `main` squash-merge شد. P5-003 مرحله
+بعدی است اما هنوز باز نشده و هیچ مجوز معامله‌ای فعال نشده است.
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
@@ -48,7 +48,8 @@ P2 بارگذاری point-in-time، ساعت رویداد، fill محافظه‌
 نهایی P2 همه این gateها را بازسازی و تأیید می‌کند. P3 در `90d5847` بسته شد؛
 P4-001 تا P4-010 نیز به‌ترتیب پذیرفته و روی `main` merge شده‌اند. P4 در
 checkpoint `f3a5575` بسته شد. P5-001 قرارداد اجرای Local Paper و recovery boundary
-را runtime accepted و merge کرده است؛ P5-002 اکنون candidate است. ترتیب P5 در
+را runtime accepted و merge کرده است؛ P5-002 نیز runtime accepted و merge شده و
+P5-003 هنوز باز نشده است. ترتیب P5 در
 `docs/P5-IMPLEMENTATION-PLAN.md` و شواهد P4 در
 `docs/P4-IMPLEMENTATION-PLAN.md` قفل شده‌اند.
 
@@ -715,7 +716,7 @@ or external request.
 
 ## P5-002 — Transactional local Paper intent journal
 
-The P5-002 candidate persists only an already accepted P5 local Paper decision in
+The accepted P5-002 implementation persists only an already accepted P5 local Paper decision in
 a standard-library SQLite transaction. The authorization SHA-256 is also the one
 durable local-effect identity: identical delivery returns the verified existing
 record, while changed evidence for the same authorization fails closed. Canonical
@@ -731,8 +732,8 @@ attempts, schema drift and tamper detection passed. The runtime recorded one
 effect, exact quantity `18.894653`, intent SHA-256
 `206920d659e27113762959457eb88e7124582eb365963694fbd70c56af4e620a` and evidence
 SHA-256 `fd7aa4412b9c2fd6b10a5167465aae27bee0d515cf02cf8e7112ea435b881cb6`.
-Implementation-head GitHub Actions run `34899280632` passed both jobs on commit
-`ff8b6bd`, including **426/426** tests, runtime and safety gates. Final documentation
-HEAD verification and merge approval remain pending; P5-002 is not merged and
-P5-003 remains unopened. No fill, order lifecycle, external request, credential,
-TRADE permission or order endpoint is included.
+Final-HEAD GitHub Actions run `34899971951` passed both jobs on commit `b498759`,
+including **426/426** tests, runtime and safety gates. PR #16 was squash-merged into
+`main` at checkpoint `ab9d38a55688f772c2c7ca166584e0978fd6163d`. P5-002 is
+runtime accepted and merged; P5-003 remains unopened. No fill, order lifecycle,
+external request, credential, TRADE permission or order endpoint is included.

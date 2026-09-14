@@ -1069,13 +1069,13 @@ Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `5577471`**.
   replay and independent P3/P4 audits.
 - PR #14 was squash-merged into `main` at checkpoint
   `557747194fe8cdda75704d1bc3d067901f184450`. P5-001 is runtime accepted and
-  merged; P5-002 subsequently opened as the candidate recorded below.
+  merged; P5-002 subsequently opened and completed as recorded below.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
 
-## P5-002 implementation candidate — 2026-09-14
+## P5-002 implementation record — 2026-09-14
 
-Status: **IMPLEMENTATION-HEAD ACTIONS PASS — MERGE APPROVAL PENDING**.
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `ab9d38a`**.
 
 - Added a standard-library SQLite journal that accepts only a reconstructable
   `ACCEPT_LOCAL_PAPER` P5 decision; blocked, no-action, raw and forged inputs fail
@@ -1096,12 +1096,13 @@ Status: **IMPLEMENTATION-HEAD ACTIONS PASS — MERGE APPROVAL PENDING**.
   `206920d659e27113762959457eb88e7124582eb365963694fbd70c56af4e620a` and canonical
   evidence SHA-256
   `fd7aa4412b9c2fd6b10a5167465aae27bee0d515cf02cf8e7112ea435b881cb6`.
-- Implementation-head GitHub Actions run `34899280632` passed both
-  `unit-and-safety` and `accepted-public-data` on commit `ff8b6bd`, including
+- Final-HEAD GitHub Actions run `34899971951` passed both
+  `unit-and-safety` and `accepted-public-data` on commit `b498759`, including
   **426/426** tests, locked sync, compile/whitespace, restricted-source scans,
   P5-001/P5-002 runtimes and deterministic accepted-data replay/audits.
-- This remains an unmerged candidate. Final documentation HEAD verification and
-  explicit merge approval are pending. P5-003 is unopened.
+- PR #16 was squash-merged into `main` at checkpoint
+  `ab9d38a55688f772c2c7ca166584e0978fd6163d`. P5-002 is runtime accepted and
+  merged; P5-003 is next but remains unopened.
 - No P2 fill, order lifecycle, external transport, endpoint or permission was
   added. PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE;
   NO WITHDRAWAL API; NO TRADE PERMISSION; NO ORDER ENDPOINTS;
