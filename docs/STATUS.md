@@ -1069,6 +1069,36 @@ Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `5577471`**.
   replay and independent P3/P4 audits.
 - PR #14 was squash-merged into `main` at checkpoint
   `557747194fe8cdda75704d1bc3d067901f184450`. P5-001 is runtime accepted and
-  merged; P5-002 is next but remains unopened.
+  merged; P5-002 subsequently opened as the candidate recorded below.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
+
+## P5-002 implementation candidate — 2026-09-14
+
+Status: **LOCAL RUNTIME PASS — ACTIONS AND MERGE APPROVAL PENDING**.
+
+- Added a standard-library SQLite journal that accepts only a reconstructable
+  `ACCEPT_LOCAL_PAPER` P5 decision; blocked, no-action, raw and forged inputs fail
+  before a write.
+- The P4 authorization SHA-256 is the unique durable local-effect identity.
+  Identical retry returns the verified existing record; changed readiness/decision
+  evidence for the same authorization conflicts and rolls back.
+- The journal transactionally creates one record, verifies stored fields and digest
+  on every read/export, rejects newer schemas and exports stable sorted canonical
+  JSON. SQLite binary bytes are not deterministic evidence.
+- Twelve focused tests passed rollback-after-insert, uniqueness, reopen, canonical
+  export, four concurrent duplicate attempts with one committed effect, tampering,
+  schema drift and safe CLI behavior.
+- The complete local suite passed **426/426**. Compile, whitespace, lockfile and
+  restricted-source gates passed; `uv.lock` and dependencies are unchanged.
+- `paper-execution-journal-check` recorded `effects=1`, `replay_equal=true`,
+  `reopen_equal=true`, exact quantity `18.894653`, intent SHA-256
+  `206920d659e27113762959457eb88e7124582eb365963694fbd70c56af4e620a` and canonical
+  evidence SHA-256
+  `fd7aa4412b9c2fd6b10a5167465aae27bee0d515cf02cf8e7112ea435b881cb6`.
+- This is candidate evidence, not runtime acceptance. GitHub Actions and explicit
+  merge approval remain pending. P5-003 is unopened.
+- No P2 fill, order lifecycle, external transport, endpoint or permission was
+  added. PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE;
+  NO WITHDRAWAL API; NO TRADE PERMISSION; NO ORDER ENDPOINTS;
+  NO AI DIRECT EXECUTION.

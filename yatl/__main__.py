@@ -1,10 +1,12 @@
 import argparse
+import hashlib
 import sys
 from dataclasses import replace
 from datetime import datetime, timezone
 from decimal import Decimal
 from pathlib import Path
 from uuid import uuid4
+from tempfile import TemporaryDirectory
 
 from .market_data import HOSTS, INTERVALS, MarketDataError, candles, ping, save_csv
 from .account import AccountError, read_account
@@ -43,6 +45,8 @@ from .risk import (PortfolioRiskState, RiskContractError, RiskDecision,
                    P4AuditError, audit_p4)
 from .execution import (
     ExecutionContractError,
+    ExecutionIntentJournal,
+    ExecutionJournalError,
     RecoveryReadiness,
     RecoveryReason,
     RecoveryStatus,
@@ -661,6 +665,32 @@ def _paper_execution_contract_runtime_check():
     return startup_result, candidate_result, entry_result, exit_result
 
 
+def _paper_execution_journal_runtime_check():
+    _, _, entry, _ = _paper_execution_contract_runtime_check()
+    with TemporaryDirectory() as directory:
+        database = Path(directory) / "p5-intents.sqlite3"
+        with ExecutionIntentJournal(database) as journal:
+            first = journal.record(entry)
+            replay = journal.record(entry)
+            if first != replay or journal.count() != 1:
+                raise ExecutionJournalError(
+                    "P5 intent replay created a duplicate local effect"
+                )
+            canonical = journal.canonical_json()
+        with ExecutionIntentJournal(database) as reopened:
+            restored = reopened.get(entry.authorization_sha256)
+            if (
+                reopened.schema_version() != 1
+                or reopened.count() != 1
+                or restored != first
+                or reopened.canonical_json() != canonical
+            ):
+                raise ExecutionJournalError(
+                    "P5 execution journal failed deterministic reopen"
+                )
+    return first, hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
 def _strategy_adapter_runtime_check():
     start = 1_699_999_200_000
 
@@ -841,6 +871,10 @@ def main():
     commands.add_parser(
         "paper-execution-contract-check",
         help="Verify the fail-closed P5 local Paper execution boundary",
+    )
+    commands.add_parser(
+        "paper-execution-journal-check",
+        help="Verify the transactional P5 local Paper intent journal",
     )
     risk_scenarios = commands.add_parser(
         "risk-scenario-check",
@@ -1129,6 +1163,19 @@ def main():
                 "PAPER ONLY | LOCAL_PAPER | LIVE_MASTER_LOCK=OFF | "
                 "No credentials | No external transport | No exchange order"
             )
+        elif args.command == "paper-execution-journal-check":
+            intent, evidence_sha256 = _paper_execution_journal_runtime_check()
+            print(
+                "OK: P5 transactional local Paper intent journal; "
+                "effects=1 replay_equal=true reopen_equal=true "
+                f"action={intent.action} quantity={intent.approved_quantity} "
+                f"intent_sha256={intent.intent_sha256} "
+                f"evidence_sha256={evidence_sha256}"
+            )
+            print(
+                "PAPER ONLY | LOCAL_PAPER | LIVE_MASTER_LOCK=OFF | "
+                "No credentials | No external transport | No exchange order"
+            )
         elif args.command == "risk-scenario-check":
             result = run_and_write_adversarial_matrix(
                 args.database, args.manifest, args.output, hours=args.hours,
@@ -1354,6 +1401,7 @@ def main():
             RiskAdapterError,
             RiskScenarioError,
             ExecutionContractError,
+            ExecutionJournalError,
             CheckpointRebuildError,
             HealthError, PaperWorkflowError,
             PublicRestError, QualityError,

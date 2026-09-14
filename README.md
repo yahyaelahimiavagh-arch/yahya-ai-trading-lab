@@ -3,7 +3,9 @@
 P0 تا P4 با شواهد runtime پذیرفته و روی `main` بسته شده‌اند. P4-010 ممیزی مستقل
 نهایی Risk Manager را در checkpoint `f3a5575` تکمیل کرده است. P5-001 نیز در PR #14
 runtime accepted و با squash-merge در checkpoint `5577471` روی `main` بسته شد.
-P5-002 مرحله بعدی است اما هنوز باز نشده و هیچ مجوز معامله‌ای فعال نشده است.
+P5-002 transactional intent journal اکنون یک candidate محلی با **426/426** تست
+PASS است؛ پذیرش runtime و merge آن تا قبولی final-HEAD Actions و تأیید صریح باز است.
+هیچ مجوز معامله‌ای فعال نشده است.
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
@@ -46,7 +48,7 @@ P2 بارگذاری point-in-time، ساعت رویداد، fill محافظه‌
 نهایی P2 همه این gateها را بازسازی و تأیید می‌کند. P3 در `90d5847` بسته شد؛
 P4-001 تا P4-010 نیز به‌ترتیب پذیرفته و روی `main` merge شده‌اند. P4 در
 checkpoint `f3a5575` بسته شد. P5-001 قرارداد اجرای Local Paper و recovery boundary
-را runtime accepted و merge کرده است؛ P5-002 هنوز باز نشده است. ترتیب P5 در
+را runtime accepted و merge کرده است؛ P5-002 اکنون candidate است. ترتیب P5 در
 `docs/P5-IMPLEMENTATION-PLAN.md` و شواهد P4 در
 `docs/P4-IMPLEMENTATION-PLAN.md` قفل شده‌اند.
 
@@ -688,7 +690,7 @@ decisions. The frozen policy SHA-256 is
 evidence index remains
 `56c945c38571af294bb44bfd7e788f314d9ee3e9fc76457c6bedb018daae0783`.
 Final-HEAD run `34771969717` also passed both jobs. P4-010 was squash-merged from
-PR #12 in checkpoint `f3a5575`; P4 is closed and P5 remains unopened. This audit
+PR #12 in checkpoint `f3a5575`; P4 closed while P5 was still unopened. This audit
 cannot grant trade permission or submit an exchange order.
 
 ## P5-001 — Local Paper execution contract
@@ -708,5 +710,27 @@ The focused P5-001 suite passed 13 tests and the complete local suite passed
 `4de1cda05b4dd3778e5dd18e1b8f633b76e77e8ba0572e6d1e4ce2e819c51f05`.
 Final-HEAD GitHub Actions run `34782981428` passed both jobs and PR #14 was
 squash-merged in checkpoint `557747194fe8cdda75704d1bc3d067901f184450`.
-P5-001 is runtime accepted and merged; P5-002 is next but unopened. The contract
-performs no fill, persistence or external request.
+P5-001 is runtime accepted and merged. The contract performs no fill, persistence
+or external request.
+
+## P5-002 — Transactional local Paper intent journal
+
+The P5-002 candidate persists only an already accepted P5 local Paper decision in
+a standard-library SQLite transaction. The authorization SHA-256 is also the one
+durable local-effect identity: identical delivery returns the verified existing
+record, while changed evidence for the same authorization fails closed. Canonical
+JSON, not SQLite binary bytes, is the deterministic evidence surface.
+
+```powershell
+uv run --locked python -m yatl paper-execution-journal-check
+```
+
+Local candidate evidence passed **12/12** focused tests and **426/426** complete
+tests. Rollback, uniqueness, canonical export, reopen, concurrent duplicate
+attempts, schema drift and tamper detection passed. The runtime recorded one
+effect, exact quantity `18.894653`, intent SHA-256
+`206920d659e27113762959457eb88e7124582eb365963694fbd70c56af4e620a` and evidence
+SHA-256 `fd7aa4412b9c2fd6b10a5167465aae27bee0d515cf02cf8e7112ea435b881cb6`.
+GitHub Actions and merge approval are pending; P5-002 is not runtime accepted or
+merged, and P5-003 remains unopened. No fill, order lifecycle, external request,
+credential, TRADE permission or order endpoint is included.

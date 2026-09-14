@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P4 و P5-001 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P5-002 NEXT BUT UNOPENED**
+قدم جاری: **P5-002 CANDIDATE — ACTIONS AND MERGE APPROVAL PENDING**
 
 ## منشأ و حدود سند
 
@@ -37,7 +37,7 @@ NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only ب�
 | P2 Backtesting Engine | آزمون تاریخی تکرارپذیر با کارمزد، لغزش و جلوگیری از استفاده از آینده | **RUNTIME ACCEPTED — checkpoint `9cbc197`** |
 | P3 Strategy Framework | چارچوب مشترک استراتژی و قواعد روشن سیگنال/عدم معامله | **RUNTIME ACCEPTED — final audit run `34699232936`** |
 | P4 Risk Manager | اندازه موقعیت، محدودیت ریسک و Kill Switch مستقل | **RUNTIME ACCEPTED — checkpoint `f3a5575`** |
-| P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | **P5-001 RUNTIME ACCEPTED AND MERGED؛ P5-002 unopened** |
+| P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | **P5-001 accepted/merged؛ P5-002 candidate با پذیرش pending** |
 | P6 AI Analyst | تحلیل ساختاریافته و NO_TRADE بدون دسترسی مستقیم به اجرا | شروع نشده |
 | P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | شروع نشده |
 | P8 Dashboard | نمایش وضعیت، معاملات، عملکرد و خطاها | شروع نشده |
@@ -64,8 +64,8 @@ merge شد. P4-008 adapter محافظت‌شده P3→P4→P2 را پیاده‌
 از PR #11 در checkpoint `23b2f5b`
 merge شد. P4-010 ممیزی مستقل نهایی را پیاده‌سازی کرده و GitHub Actions run
 `34771596172` را با 401 تست و همه gateها گذراند. Final HEAD run `34771969717`
-نیز هر دو job را پذیرفت و PR #12 در checkpoint `f3a5575` merge شد. P4 بسته است؛
-P5 هنوز باز نشده است.
+نیز هر دو job را پذیرفت و PR #12 در checkpoint `f3a5575` merge شد. P4 بسته شد و
+در همان checkpoint، P5 هنوز باز نشده بود.
 
 | معیار | انجام‌شده | باقی‌مانده | تفسیر صحیح |
 |---|---:|---:|---|
@@ -90,8 +90,9 @@ P5 هنوز باز نشده است.
   آماده‌بودن حساب و تأیید صریح جداگانه بررسی می‌شود.
 
 بنابراین گزارش کوتاه این است: **50% فازهای نرم‌افزاری بسته شده‌اند؛ P5-001 runtime
-accepted و merge شده و P5-002 مرحله بعدی اما هنوز unopened است.** خود فاز P5 هنوز
-بسته نشده است. این عدد پیشرفت مهندسی است، نه درصد آمادگی برای سود یا Live.
+accepted و merge شده و P5-002 یک candidate با Actions و merge approval pending
+است.** خود فاز P5 هنوز بسته نشده است. این عدد پیشرفت مهندسی است، نه درصد آمادگی
+برای سود یا Live.
 
 در گفت‌وگوی قبلی برای P10 بازه ۳۰–۶۰ روز واقعی بازار مطرح شده است؛ این تخمین است،
 نه تضمین کافی‌بودن نمونه. تاریخ‌های قبلی پایان توسعه و شروع Live، تعهد اجرایی نیستند.
@@ -245,8 +246,8 @@ byte-for-byte را پیاده‌سازی کرده است. GitHub Actions run `34
 byte-identical و ممیزی نهایی 16 run/17 file را پذیرفت. Policy SHA-256 برابر
 `cb72fffad317e05638e60ad4a93b96bb78e356b52677330ecd6149095b65e2c7` است.
 هر 10 checkpoint در runtime پذیرفته‌اند. Final HEAD run `34771969717` هر دو job
-را گذراند و PR #12 در checkpoint `f3a5575` merge شد. بنابراین P4 بسته است؛ P5
-همچنان باز نشده و هیچ مجوز TRADE یا Live ایجاد نشده است.
+را گذراند و PR #12 در checkpoint `f3a5575` merge شد. بنابراین P4 بسته شد؛ در آن
+checkpoint P5 باز نشده بود و هیچ مجوز TRADE یا Live ایجاد نشد.
 
 ## P5 planning and P5-001 accepted record — 2026-09-13/14
 
@@ -266,5 +267,19 @@ Compile، whitespace، lock و restricted-source scan پاس شدند؛ `uv.lock
 است. Final-HEAD GitHub Actions run `34782981428` هر دو job را با **414/414** تست
 کامل و **13/13** تست متمرکز گذراند. PR #14 با squash-merge در checkpoint
 `557747194fe8cdda75704d1bc3d067901f184450` بسته شد؛ بنابراین P5-001 runtime
-accepted and merged است و P5-002 مرحله بعدی اما هنوز unopened است. هیچ TRADE
+accepted and merged است؛ P5-002 پس از آن به‌صورت candidate باز شد. هیچ TRADE
 permission، order endpoint، credential یا external transport ایجاد نشده است.
+
+P5-002 یک journal تراکنشی SQLite فقط برای intentهای Local Paper پذیرفته‌شده اضافه
+می‌کند. authorization SHA-256 هویت یگانه effect محلی است؛ retry همسان همان رکورد
+تأییدشده را برمی‌گرداند و evidence متفاوت با authorization یکسان بدون mutation رد
+می‌شود. JSON canonical سطح evidence است و byteهای فایل SQLite evidence قطعی محسوب
+نمی‌شوند. 12 تست متمرکز و کل **426/426** تست محلی، rollback، uniqueness، reopen،
+چهار تلاش هم‌زمان، schema drift و tamper detection را گذراندند. runtime یک effect
+با quantity دقیق `18.894653`، intent SHA-256
+`206920d659e27113762959457eb88e7124582eb365963694fbd70c56af4e620a` و evidence
+SHA-256 `fd7aa4412b9c2fd6b10a5167465aae27bee0d515cf02cf8e7112ea435b881cb6`
+ثبت کرد. این وضعیت فقط candidate محلی است؛ Actions و تأیید merge pending هستند،
+P5-002 هنوز runtime accepted/merged نیست و P5-003 unopened باقی می‌ماند. درصد کل
+همچنان 50% است و هیچ order lifecycle، endpoint، credential یا TRADE permission
+اضافه نشده است.
