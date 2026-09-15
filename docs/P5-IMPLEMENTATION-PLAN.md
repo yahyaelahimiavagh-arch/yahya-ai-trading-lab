@@ -1,6 +1,6 @@
 # P5 — Local Paper execution, reconciliation and recovery plan
 
-Status: **P5-001 TO P5-002 RUNTIME ACCEPTED AND MERGED — P5-003 CANDIDATE**
+Status: **P5-001 TO P5-003 RUNTIME ACCEPTED AND MERGED — P5-004 UNOPENED**
 
 Entry baseline: P4 runtime accepted and merged in checkpoint `f3a5575`; the
 authoritative documentation closeout is `c0d94d2`. The complete baseline suite
@@ -85,7 +85,7 @@ Compile, whitespace, lock and restricted-source scans passed; no dependency or
 jobs on commit `b498759`, including **426/426** tests and all runtime, safety,
 replay and audit gates. PR #16 was squash-merged at checkpoint
 `ab9d38a55688f772c2c7ca166584e0978fd6163d`; P5-002 is runtime accepted and
-merged, and P5-003 subsequently opened as the candidate below.
+merged, and P5-003 subsequently opened and completed below.
 
 ### P5-003 — Local Paper order state machine
 
@@ -97,7 +97,7 @@ transport.
 Acceptance: transition table tests, monotonic sequence/time, immutable reason codes,
 hash-chained events and atomic failure behavior.
 
-Local candidate evidence: **PASS, 2026-09-15.** Fourteen focused tests and the
+Accepted evidence: **PASS, 2026-09-15.** Fourteen focused tests and the
 complete suite passed **440/440**. The only lifecycle is `PENDING_LOCAL` →
 `ACTIVE_LOCAL` → `CANCELLED_LOCAL`; impossible, skipped, duplicate, stale,
 out-of-order and tampered transitions fail closed without durable mutation. Event
@@ -109,11 +109,12 @@ canonical evidence SHA-256
 `6364285fae61a03cacde2f20bf5e42a0c6f4f7e674b387c76a68973dee8f25fe`.
 Compile, whitespace, lock and restricted-source scans passed; no dependency or
 `uv.lock` change exists. Implementation-head GitHub Actions run `35029425081`
-passed both jobs on commit `fbca913`, including **440/440** tests and all runtime,
-safety, replay and audit gates. Final documentation-HEAD verification and merge
-approval remain pending, so P5-003 is not runtime accepted or merged. P5-004
-remains unopened. No fill, credential, external transport, TRADE permission or
-order endpoint was added.
+passed both jobs on commit `fbca913`. Final-HEAD run `35029938678` passed both jobs
+on commit `f52b0ff`, including **440/440** tests and all runtime, safety, replay and
+audit gates. PR #18 was squash-merged at checkpoint
+`c96293f038436258a30c9030cbce778750180c1f`; P5-003 is runtime accepted and
+merged. P5-004 remains unopened. No fill, credential, external transport, TRADE
+permission or order endpoint was added.
 
 ### P5-004 — Accepted P2 fill and cost integration
 

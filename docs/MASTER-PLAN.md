@@ -1,8 +1,8 @@
 # YATL — نقشه مرجع اجرا و وضعیت پروژه
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
-وضعیت جاری: **P0 تا P4 و P5-001 تا P5-002 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P5-003 CANDIDATE — FINAL-HEAD ACTIONS AND MERGE APPROVAL PENDING**
+وضعیت جاری: **P0 تا P4 و P5-001 تا P5-003 RUNTIME ACCEPTED AND MERGED**
+قدم جاری: **P5-004 NEXT BUT UNOPENED**
 
 ## منشأ و حدود سند
 
@@ -37,7 +37,7 @@ NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only ب�
 | P2 Backtesting Engine | آزمون تاریخی تکرارپذیر با کارمزد، لغزش و جلوگیری از استفاده از آینده | **RUNTIME ACCEPTED — checkpoint `9cbc197`** |
 | P3 Strategy Framework | چارچوب مشترک استراتژی و قواعد روشن سیگنال/عدم معامله | **RUNTIME ACCEPTED — final audit run `34699232936`** |
 | P4 Risk Manager | اندازه موقعیت، محدودیت ریسک و Kill Switch مستقل | **RUNTIME ACCEPTED — checkpoint `f3a5575`** |
-| P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | **P5-001 تا P5-002 RUNTIME ACCEPTED AND MERGED؛ P5-003 candidate** |
+| P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | **P5-001 تا P5-003 RUNTIME ACCEPTED AND MERGED؛ P5-004 unopened** |
 | P6 AI Analyst | تحلیل ساختاریافته و NO_TRADE بدون دسترسی مستقیم به اجرا | شروع نشده |
 | P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | شروع نشده |
 | P8 Dashboard | نمایش وضعیت، معاملات، عملکرد و خطاها | شروع نشده |
@@ -89,8 +89,8 @@ merge شد. P4-010 ممیزی مستقل نهایی را پیاده‌سازی �
 - Live بخشی از درصد تحویل نرم‌افزاری نیست. P11 تنها در صورت پذیرش P10، ممیزی امنیتی،
   آماده‌بودن حساب و تأیید صریح جداگانه بررسی می‌شود.
 
-بنابراین گزارش کوتاه این است: **50% فازهای نرم‌افزاری بسته شده‌اند؛ P5-001 و P5-002
-runtime accepted و merge شده‌اند و P5-003 فقط candidate محلی است.** خود فاز P5
+بنابراین گزارش کوتاه این است: **50% فازهای نرم‌افزاری بسته شده‌اند؛ P5-001 تا P5-003
+runtime accepted و merge شده‌اند و P5-004 مرحله بعدی اما unopened است.** خود فاز P5
 هنوز بسته نشده است. این عدد پیشرفت مهندسی است، نه درصد آمادگی برای سود یا Live.
 
 در گفت‌وگوی قبلی برای P10 بازه ۳۰–۶۰ روز واقعی بازار مطرح شده است؛ این تخمین است،
@@ -281,7 +281,7 @@ SHA-256 `fd7aa4412b9c2fd6b10a5167465aae27bee0d515cf02cf8e7112ea435b881cb6`
 ثبت کرد. Final-HEAD GitHub Actions run `34899971951` هر دو job را روی commit
 `b498759` با **426/426** تست و runtime/safety gateها گذراند. PR #16 در checkpoint
 `ab9d38a55688f772c2c7ca166584e0978fd6163d` squash-merge شد؛ بنابراین P5-002
-runtime accepted and merged است و P5-003 پس از آن به‌صورت candidate باز شد. درصد
+runtime accepted and merged است و P5-003 پس از آن باز و تکمیل شد. درصد
 کل همچنان 50% است و هیچ endpoint، credential یا TRADE permission اضافه نشده است.
 
 P5-003 یک state machine صریح و فقط محلی برای intent پذیرفته‌شده P5-002 اضافه
@@ -294,7 +294,9 @@ out-of-order یا tampered بدون mutation رد می‌شود. 14 تست مت�
 SHA-256 برابر
 `6364285fae61a03cacde2f20bf5e42a0c6f4f7e674b387c76a68973dee8f25fe` ثبت کرد.
 Implementation-head GitHub Actions run `35029425081` هر دو job را روی commit
-`fbca913` با **440/440** تست و runtime/safety/replay/audit gateها گذراند. P5-003
-هنوز candidate است؛ final documentation-HEAD verification، پذیرش runtime و merge
-آن pending هستند و P5-004 unopened باقی می‌ماند. درصد کل همچنان 50% است. هیچ
-fill، endpoint، credential، external transport یا TRADE permission اضافه نشده است.
+`fbca913` گذراند. Final-HEAD run `35029938678` نیز هر دو job را روی commit
+`f52b0ff` با **440/440** تست و runtime/safety/replay/audit gateها گذراند. PR #18
+در checkpoint `c96293f038436258a30c9030cbce778750180c1f` squash-merge شد؛ بنابراین
+P5-003 runtime accepted and merged است و P5-004 unopened باقی می‌ماند. درصد کل
+همچنان 50% است. هیچ fill، endpoint، credential، external transport یا TRADE
+permission اضافه نشده است.
