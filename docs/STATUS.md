@@ -1110,7 +1110,7 @@ Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `ab9d38a`**.
 
 ## P5-003 candidate implementation record — 2026-09-15
 
-Status: **LOCAL CANDIDATE — ACTIONS AND MERGE APPROVAL PENDING**.
+Status: **IMPLEMENTATION-HEAD ACTIONS PASS — FINAL-HEAD AND MERGE APPROVAL PENDING**.
 
 - Added a separate local-only order schema for reconstructable P5-002 intents.
   The only path is `PENDING_LOCAL` → `ACTIVE_LOCAL` → `CANCELLED_LOCAL`; no fill
@@ -1130,7 +1130,10 @@ Status: **LOCAL CANDIDATE — ACTIONS AND MERGE APPROVAL PENDING**.
   `a5d3bbee2a561b5a195ef92e3c6c5a08f3442a2e91bc0fe2c25d54bbdbdb9796` and
   canonical evidence SHA-256
   `6364285fae61a03cacde2f20bf5e42a0c6f4f7e674b387c76a68973dee8f25fe`.
-- GitHub Actions and merge approval are pending. P5-003 is not runtime accepted or
-  merged, and P5-004 remains unopened.
+- Implementation-head GitHub Actions run `35029425081` passed both
+  `unit-and-safety` and `accepted-public-data` on commit `fbca913`, including
+  **440/440** tests, runtime, safety, deterministic replay and independent audits.
+- Final documentation-HEAD verification and merge approval remain pending. P5-003
+  is not runtime accepted or merged, and P5-004 remains unopened.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.

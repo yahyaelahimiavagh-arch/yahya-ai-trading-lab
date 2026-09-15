@@ -108,9 +108,12 @@ equality, final-state SHA-256
 canonical evidence SHA-256
 `6364285fae61a03cacde2f20bf5e42a0c6f4f7e674b387c76a68973dee8f25fe`.
 Compile, whitespace, lock and restricted-source scans passed; no dependency or
-`uv.lock` change exists. GitHub Actions and merge approval remain pending, so
-P5-003 is not runtime accepted or merged. P5-004 remains unopened. No fill,
-credential, external transport, TRADE permission or order endpoint was added.
+`uv.lock` change exists. Implementation-head GitHub Actions run `35029425081`
+passed both jobs on commit `fbca913`, including **440/440** tests and all runtime,
+safety, replay and audit gates. Final documentation-HEAD verification and merge
+approval remain pending, so P5-003 is not runtime accepted or merged. P5-004
+remains unopened. No fill, credential, external transport, TRADE permission or
+order endpoint was added.
 
 ### P5-004 — Accepted P2 fill and cost integration
 
