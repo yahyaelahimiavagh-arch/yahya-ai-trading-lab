@@ -4,8 +4,10 @@ P0 تا P4 با شواهد runtime پذیرفته و روی `main` بسته شد
 نهایی Risk Manager را در checkpoint `f3a5575` تکمیل کرده است. P5-001 نیز در PR #14
 runtime accepted و با squash-merge در checkpoint `5577471` روی `main` بسته شد.
 P5-002 transactional intent journal نیز با **426/426** تست و final-HEAD Actions
-سبز، از PR #16 در checkpoint `ab9d38a` روی `main` squash-merge شد. P5-003 مرحله
-بعدی است اما هنوز باز نشده و هیچ مجوز معامله‌ای فعال نشده است.
+سبز، از PR #16 در checkpoint `ab9d38a` روی `main` squash-merge شد. P5-003 اکنون
+یک candidate محلی با **440/440** تست و implementation-head Actions سبز است؛
+final-HEAD verification و پذیرش runtime آن هنوز pending هستند و هیچ مجوز معامله‌ای
+فعال نشده است.
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
@@ -49,7 +51,7 @@ P2 بارگذاری point-in-time، ساعت رویداد، fill محافظه‌
 P4-001 تا P4-010 نیز به‌ترتیب پذیرفته و روی `main` merge شده‌اند. P4 در
 checkpoint `f3a5575` بسته شد. P5-001 قرارداد اجرای Local Paper و recovery boundary
 را runtime accepted و merge کرده است؛ P5-002 نیز runtime accepted و merge شده و
-P5-003 هنوز باز نشده است. ترتیب P5 در
+P5-003 فقط به‌عنوان candidate محلی در حال بررسی است. ترتیب P5 در
 `docs/P5-IMPLEMENTATION-PLAN.md` و شواهد P4 در
 `docs/P4-IMPLEMENTATION-PLAN.md` قفل شده‌اند.
 
@@ -735,5 +737,30 @@ SHA-256 `fd7aa4412b9c2fd6b10a5167465aae27bee0d515cf02cf8e7112ea435b881cb6`.
 Final-HEAD GitHub Actions run `34899971951` passed both jobs on commit `b498759`,
 including **426/426** tests, runtime and safety gates. PR #16 was squash-merged into
 `main` at checkpoint `ab9d38a55688f772c2c7ca166584e0978fd6163d`. P5-002 is
-runtime accepted and merged; P5-003 remains unopened. No fill, order lifecycle,
-external request, credential, TRADE permission or order endpoint is included.
+runtime accepted and merged; P5-003 has since opened as the candidate below. No
+fill, external request, credential, TRADE permission or order endpoint is included.
+
+## P5-003 — Local Paper order state machine candidate
+
+The P5-003 candidate adds an explicit local-only order lifecycle for a verified
+P5-002 intent: `PENDING_LOCAL` → `ACTIVE_LOCAL` → `CANCELLED_LOCAL`. Every event
+has a fixed reason, strictly increasing sequence/time and SHA-256 link to the
+previous event. Impossible, skipped, duplicate, stale, out-of-order or tampered
+transitions fail before durable state changes; event and projection writes share
+one SQLite transaction.
+
+```powershell
+uv run --locked python -m yatl paper-order-state-check
+```
+
+Local candidate evidence passed **14/14** focused tests and **440/440** complete
+tests. Runtime replay produced three events, exact final state `CANCELLED_LOCAL`,
+final-state SHA-256
+`a5d3bbee2a561b5a195ef92e3c6c5a08f3442a2e91bc0fe2c25d54bbdbdb9796` and
+canonical evidence SHA-256
+`6364285fae61a03cacde2f20bf5e42a0c6f4f7e674b387c76a68973dee8f25fe`.
+Implementation-head GitHub Actions run `35029425081` passed both jobs on commit
+`fbca913`, including **440/440** tests, runtime, safety, replay and audit gates.
+Final documentation-HEAD verification and merge approval remain pending. P5-003 is
+not runtime accepted or merged, and P5-004 remains unopened. No fill, credential,
+external transport, TRADE permission or order endpoint is included.

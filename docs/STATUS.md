@@ -1102,8 +1102,38 @@ Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `ab9d38a`**.
   P5-001/P5-002 runtimes and deterministic accepted-data replay/audits.
 - PR #16 was squash-merged into `main` at checkpoint
   `ab9d38a55688f772c2c7ca166584e0978fd6163d`. P5-002 is runtime accepted and
-  merged; P5-003 is next but remains unopened.
+  merged; P5-003 subsequently opened as the candidate recorded below.
 - No P2 fill, order lifecycle, external transport, endpoint or permission was
   added. PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE;
   NO WITHDRAWAL API; NO TRADE PERMISSION; NO ORDER ENDPOINTS;
   NO AI DIRECT EXECUTION.
+
+## P5-003 candidate implementation record — 2026-09-15
+
+Status: **IMPLEMENTATION-HEAD ACTIONS PASS — FINAL-HEAD AND MERGE APPROVAL PENDING**.
+
+- Added a separate local-only order schema for reconstructable P5-002 intents.
+  The only path is `PENDING_LOCAL` → `ACTIVE_LOCAL` → `CANCELLED_LOCAL`; no fill
+  or remote venue state is represented.
+- Every event carries a fixed immutable reason, a strictly increasing sequence and
+  timestamp, the previous event SHA-256 and its own canonical SHA-256. Replay
+  verifies the complete chain and current materialized projection.
+- Impossible, skipped, duplicate, stale, out-of-order, intent-mismatched and
+  tampered events fail closed. Event insertion and state projection update use one
+  `BEGIN IMMEDIATE` transaction; injected post-insert failure leaves neither
+  durable event nor projected state.
+- Fourteen focused tests and the complete local suite passed **440/440**. Compile,
+  whitespace, lockfile and restricted-source gates passed; `uv.lock` and
+  dependencies are unchanged.
+- `paper-order-state-check` recorded three events, replay equality, final state
+  `CANCELLED_LOCAL`, final-state SHA-256
+  `a5d3bbee2a561b5a195ef92e3c6c5a08f3442a2e91bc0fe2c25d54bbdbdb9796` and
+  canonical evidence SHA-256
+  `6364285fae61a03cacde2f20bf5e42a0c6f4f7e674b387c76a68973dee8f25fe`.
+- Implementation-head GitHub Actions run `35029425081` passed both
+  `unit-and-safety` and `accepted-public-data` on commit `fbca913`, including
+  **440/440** tests, runtime, safety, deterministic replay and independent audits.
+- Final documentation-HEAD verification and merge approval remain pending. P5-003
+  is not runtime accepted or merged, and P5-004 remains unopened.
+- PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
+  NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
