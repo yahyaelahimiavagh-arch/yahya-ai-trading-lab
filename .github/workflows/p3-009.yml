@@ -63,6 +63,8 @@ jobs:
         run: uv run --locked python -m yatl paper-execution-contract-check
       - name: P5 transactional intent journal runtime
         run: uv run --locked python -m yatl paper-execution-journal-check
+      - name: P5 local Paper order state runtime
+        run: uv run --locked python -m yatl paper-order-state-check
 
   accepted-public-data:
     runs-on: ubuntu-latest

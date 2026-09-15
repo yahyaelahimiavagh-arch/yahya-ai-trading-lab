@@ -47,10 +47,15 @@ from .execution import (
     ExecutionContractError,
     ExecutionIntentJournal,
     ExecutionJournalError,
+    LocalOrderError,
+    LocalOrderEventType,
+    LocalOrderTransitionError,
+    LocalPaperOrderStore,
     RecoveryReadiness,
     RecoveryReason,
     RecoveryStatus,
     assess_local_paper_authorization,
+    build_local_order_event,
 )
 from .backtest import (AcceptedBacktestDataset, ArtifactError, BacktestClock,
                        BacktestClockError, BacktestConfigError,
@@ -691,6 +696,56 @@ def _paper_execution_journal_runtime_check():
     return first, hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
+def _paper_order_state_runtime_check():
+    _, _, entry, _ = _paper_execution_contract_runtime_check()
+    with TemporaryDirectory() as directory:
+        database = Path(directory) / "p5-orders.sqlite3"
+        with ExecutionIntentJournal(database) as journal:
+            intent = journal.record(entry)
+        with LocalPaperOrderStore(database) as store:
+            previous = None
+            transitions = []
+            for sequence, event_type in enumerate((
+                LocalOrderEventType.CREATE,
+                LocalOrderEventType.ACTIVATE,
+                LocalOrderEventType.CANCEL,
+            )):
+                event = build_local_order_event(
+                    intent,
+                    sequence,
+                    1_700_000_000_000 + sequence,
+                    event_type,
+                    previous,
+                )
+                transition = store.apply(event)
+                transitions.append(transition)
+                previous = transition.current
+            try:
+                store.apply(transitions[-1].event)
+            except LocalOrderTransitionError:
+                pass
+            else:
+                raise LocalOrderError("Duplicate local order event was accepted")
+            canonical = store.canonical_json()
+        with LocalPaperOrderStore(database) as reopened:
+            restored = reopened.get_state(intent.authorization_sha256)
+            if (
+                reopened.schema_version() != 1
+                or reopened.count() != 1
+                or restored != transitions[-1].current
+                or reopened.events(intent.authorization_sha256)
+                != tuple(item.event for item in transitions)
+                or reopened.canonical_json() != canonical
+            ):
+                raise LocalOrderError(
+                    "P5 local order lifecycle failed deterministic reopen"
+                )
+    return (
+        tuple(item.current for item in transitions),
+        hashlib.sha256(canonical.encode("utf-8")).hexdigest(),
+    )
+
+
 def _strategy_adapter_runtime_check():
     start = 1_699_999_200_000
 
@@ -875,6 +930,10 @@ def main():
     commands.add_parser(
         "paper-execution-journal-check",
         help="Verify the transactional P5 local Paper intent journal",
+    )
+    commands.add_parser(
+        "paper-order-state-check",
+        help="Verify the durable P5 local Paper order state machine",
     )
     risk_scenarios = commands.add_parser(
         "risk-scenario-check",
@@ -1176,6 +1235,19 @@ def main():
                 "PAPER ONLY | LOCAL_PAPER | LIVE_MASTER_LOCK=OFF | "
                 "No credentials | No external transport | No exchange order"
             )
+        elif args.command == "paper-order-state-check":
+            states, evidence_sha256 = _paper_order_state_runtime_check()
+            path = "/".join(state.status.value for state in states)
+            print(
+                "OK: P5 local Paper order state machine; "
+                f"path={path} events={len(states)} replay_equal=true "
+                f"final_state_sha256={states[-1].state_sha256} "
+                f"evidence_sha256={evidence_sha256}"
+            )
+            print(
+                "PAPER ONLY | LOCAL_PAPER | LIVE_MASTER_LOCK=OFF | "
+                "No fill | No credentials | No external transport | No exchange order"
+            )
         elif args.command == "risk-scenario-check":
             result = run_and_write_adversarial_matrix(
                 args.database, args.manifest, args.output, hours=args.hours,
@@ -1402,6 +1474,7 @@ def main():
             RiskScenarioError,
             ExecutionContractError,
             ExecutionJournalError,
+            LocalOrderError,
             CheckpointRebuildError,
             HealthError, PaperWorkflowError,
             PublicRestError, QualityError,
