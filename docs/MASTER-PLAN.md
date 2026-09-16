@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P4 و P5-001 تا P5-003 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P5-004 NEXT BUT UNOPENED**
+قدم جاری: **P5-004 CANDIDATE — ACTIONS AND MERGE APPROVAL PENDING**
 
 ## منشأ و حدود سند
 
@@ -37,7 +37,7 @@ NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only ب�
 | P2 Backtesting Engine | آزمون تاریخی تکرارپذیر با کارمزد، لغزش و جلوگیری از استفاده از آینده | **RUNTIME ACCEPTED — checkpoint `9cbc197`** |
 | P3 Strategy Framework | چارچوب مشترک استراتژی و قواعد روشن سیگنال/عدم معامله | **RUNTIME ACCEPTED — final audit run `34699232936`** |
 | P4 Risk Manager | اندازه موقعیت، محدودیت ریسک و Kill Switch مستقل | **RUNTIME ACCEPTED — checkpoint `f3a5575`** |
-| P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | **P5-001 تا P5-003 RUNTIME ACCEPTED AND MERGED؛ P5-004 unopened** |
+| P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | **P5-001 تا P5-003 RUNTIME ACCEPTED AND MERGED؛ P5-004 candidate** |
 | P6 AI Analyst | تحلیل ساختاریافته و NO_TRADE بدون دسترسی مستقیم به اجرا | شروع نشده |
 | P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | شروع نشده |
 | P8 Dashboard | نمایش وضعیت، معاملات، عملکرد و خطاها | شروع نشده |
@@ -90,7 +90,7 @@ merge شد. P4-010 ممیزی مستقل نهایی را پیاده‌سازی �
   آماده‌بودن حساب و تأیید صریح جداگانه بررسی می‌شود.
 
 بنابراین گزارش کوتاه این است: **50% فازهای نرم‌افزاری بسته شده‌اند؛ P5-001 تا P5-003
-runtime accepted و merge شده‌اند و P5-004 مرحله بعدی اما unopened است.** خود فاز P5
+runtime accepted و merge شده‌اند و P5-004 فقط candidate محلی است.** خود فاز P5
 هنوز بسته نشده است. این عدد پیشرفت مهندسی است، نه درصد آمادگی برای سود یا Live.
 
 در گفت‌وگوی قبلی برای P10 بازه ۳۰–۶۰ روز واقعی بازار مطرح شده است؛ این تخمین است،
@@ -297,6 +297,19 @@ Implementation-head GitHub Actions run `35029425081` هر دو job را روی c
 `fbca913` گذراند. Final-HEAD run `35029938678` نیز هر دو job را روی commit
 `f52b0ff` با **440/440** تست و runtime/safety/replay/audit gateها گذراند. PR #18
 در checkpoint `c96293f038436258a30c9030cbce778750180c1f` squash-merge شد؛ بنابراین
-P5-003 runtime accepted and merged است و P5-004 unopened باقی می‌ماند. درصد کل
-همچنان 50% است. هیچ fill، endpoint، credential، external transport یا TRADE
-permission اضافه نشده است.
+P5-003 runtime accepted and merged است. Documentation closeout run `35031254350`
+هر دو job را گذراند و PR #19 در checkpoint
+`3d48ef42e0c97361b14c232fd3419ac550bede41` merge شد. P5-004 پس از آن به‌صورت
+candidate باز شد.
+
+P5-004 فقط intent بازسازی‌پذیر P5، رکورد durable متناظر و order state فعال را به
+قراردادهای پذیرفته‌شده `PaperFillEngine` و `apply_costs` در P2 می‌دهد. P2 روی یک
+engine موقت اجرا می‌شود و تنها پس از موفقیت کامل fill و cost commit می‌گردد؛ candle
+یا cost policy نامعتبر state نیمه‌کاره باقی نمی‌گذارد. 15 تست متمرکز P5-004، کل
+**54/54** regression متمرکز P5 و **455/455** تست کامل محلی پاس شدند. runtime دو
+step و دو fill با quantity دقیق `18.894653` و total cost quote دقیق
+`5.6967284321735` را replay کرد و evidence SHA-256 برابر
+`504156f0bdd29bc276e404021deabd63518f5404c315ea13a3a281c23a9a3d79` ثبت شد.
+P5-004 هنوز candidate با Actions و merge approval pending است؛ P5-005 unopened
+باقی می‌ماند. درصد کل همچنان 50% است. هیچ persistence fill/portfolio، endpoint،
+credential، external transport یا TRADE permission اضافه نشده است.

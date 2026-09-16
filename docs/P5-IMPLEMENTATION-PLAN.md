@@ -1,6 +1,6 @@
 # P5 — Local Paper execution, reconciliation and recovery plan
 
-Status: **P5-001 TO P5-003 RUNTIME ACCEPTED AND MERGED — P5-004 UNOPENED**
+Status: **P5-001 TO P5-003 RUNTIME ACCEPTED AND MERGED — P5-004 CANDIDATE**
 
 Entry baseline: P4 runtime accepted and merged in checkpoint `f3a5575`; the
 authoritative documentation closeout is `c0d94d2`. The complete baseline suite
@@ -113,8 +113,8 @@ passed both jobs on commit `fbca913`. Final-HEAD run `35029938678` passed both j
 on commit `f52b0ff`, including **440/440** tests and all runtime, safety, replay and
 audit gates. PR #18 was squash-merged at checkpoint
 `c96293f038436258a30c9030cbce778750180c1f`; P5-003 is runtime accepted and
-merged. P5-004 remains unopened. No fill, credential, external transport, TRADE
-permission or order endpoint was added.
+merged. P5-004 subsequently opened as the candidate below. No fill, credential,
+external transport, TRADE permission or order endpoint was added.
 
 ### P5-004 — Accepted P2 fill and cost integration
 
@@ -124,6 +124,22 @@ fill economics.
 
 Acceptance: exact P4 quantity reaches P2; missing/open/future/gapped fill candles,
 volume breaches and cost-policy mismatches fail atomically.
+
+Local candidate evidence: **PASS, 2026-09-16.** Fifteen focused P5-004 tests,
+**54/54** focused P5 regressions and the complete suite passed **455/455**. The
+adapter requires a reconstructable accepted P5 decision, matching durable intent
+and active P5-003 order state, then delegates directly to the accepted P2
+`PaperFillEngine` and `apply_costs`. A temporary engine copy makes invalid candles,
+volume breaches, out-of-bracket prices and cost-policy mismatches atomic. Exact P4
+quantity `18.894653` reached P2; conservative ambiguous same-bar stop priority was
+preserved. `paper-fill-cost-check` recorded two steps, two fills, flat final state,
+exact total cost quote `5.6967284321735`, replay equality and evidence SHA-256
+`504156f0bdd29bc276e404021deabd63518f5404c315ea13a3a281c23a9a3d79`.
+Compile, whitespace, lock and restricted-source scans passed; no dependency or
+`uv.lock` change exists. GitHub Actions and merge approval remain pending, so
+P5-004 is not runtime accepted or merged. P5-005 remains unopened. No persistent
+fill or portfolio projection, credential, external transport, TRADE permission or
+order endpoint was added.
 
 ### P5-005 — Atomic fill and portfolio projection
 
