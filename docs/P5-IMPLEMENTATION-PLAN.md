@@ -1,6 +1,6 @@
 # P5 — Local Paper execution, reconciliation and recovery plan
 
-Status: **P5-001 TO P5-003 RUNTIME ACCEPTED AND MERGED — P5-004 CANDIDATE**
+Status: **P5-001 TO P5-004 RUNTIME ACCEPTED AND MERGED — P5-005 NEXT BUT UNOPENED**
 
 Entry baseline: P4 runtime accepted and merged in checkpoint `f3a5575`; the
 authoritative documentation closeout is `c0d94d2`. The complete baseline suite
@@ -125,7 +125,7 @@ fill economics.
 Acceptance: exact P4 quantity reaches P2; missing/open/future/gapped fill candles,
 volume breaches and cost-policy mismatches fail atomically.
 
-Local candidate evidence: **PASS, 2026-09-16.** Fifteen focused P5-004 tests,
+Accepted evidence: **PASS, 2026-09-16.** Fifteen focused P5-004 tests,
 **54/54** focused P5 regressions and the complete suite passed **455/455**. The
 adapter requires a reconstructable accepted P5 decision, matching durable intent
 and active P5-003 order state, then delegates directly to the accepted P2
@@ -137,11 +137,12 @@ exact total cost quote `5.6967284321735`, replay equality and evidence SHA-256
 `504156f0bdd29bc276e404021deabd63518f5404c315ea13a3a281c23a9a3d79`.
 Compile, whitespace, lock and restricted-source scans passed; no dependency or
 `uv.lock` change exists. Implementation-head GitHub Actions run `35056541281`
-passed both jobs on commit `f0e4f0f`, including **455/455** tests and all runtime,
-safety, replay and audit gates. Final documentation-HEAD verification and merge
-approval remain pending, so P5-004 is not runtime accepted or merged. P5-005
-remains unopened. No persistent fill or portfolio projection, credential, external
-transport, TRADE permission or order endpoint was added.
+passed both jobs on commit `f0e4f0f`. Final-HEAD run `35056981878` passed both jobs
+on commit `b8f113e`, including **455/455** tests and all runtime, safety, replay and
+audit gates. PR #20 was squash-merged at checkpoint
+`ce655d0535ce9b8bac22c6525e68e115ea8626f2`; P5-004 is runtime accepted and
+merged. P5-005 remains unopened. No persistent fill or portfolio projection,
+credential, external transport, TRADE permission or order endpoint was added.
 
 ### P5-005 — Atomic fill and portfolio projection
 
