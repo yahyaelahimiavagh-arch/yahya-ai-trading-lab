@@ -53,6 +53,9 @@ from .execution import (
     LocalOrderTransitionError,
     LocalPaperFillCostAdapter,
     LocalPaperFillError,
+    DuplicateLocalPaperFill,
+    LocalPaperPortfolioError,
+    LocalPaperPortfolioStore,
     LocalPaperOrderStore,
     RecoveryReadiness,
     RecoveryReason,
@@ -813,6 +816,81 @@ def _paper_fill_cost_runtime_check():
     return steps, hashlib.sha256(evidence.encode("utf-8")).hexdigest()
 
 
+def _paper_portfolio_runtime_check():
+    _, _, entry_decision, exit_decision = _paper_execution_contract_runtime_check()
+    decisions = (entry_decision, exit_decision)
+    entry_time = entry_decision.authorization.request.strategy_decision.decision_time_ms
+    exit_time = exit_decision.authorization.request.strategy_decision.decision_time_ms
+    spec = BacktestSpec(
+        "BTCUSDT", entry_time, exit_time + 3_600_000,
+        initial_cash="10000", fee_bps="10", slippage_bps="5",
+    )
+    with TemporaryDirectory() as directory:
+        database = Path(directory) / "p5-portfolio.sqlite3"
+        with ExecutionIntentJournal(database) as journal:
+            intents = tuple(journal.record(decision) for decision in decisions)
+        with LocalPaperOrderStore(database) as order_store:
+            orders = []
+            for decision, intent in zip(decisions, intents, strict=True):
+                decision_time = (
+                    decision.authorization.request.strategy_decision.decision_time_ms
+                )
+                created = order_store.apply(build_local_order_event(
+                    intent, 0, decision_time - 2, LocalOrderEventType.CREATE,
+                )).current
+                orders.append(order_store.apply(build_local_order_event(
+                    intent, 1, decision_time - 1,
+                    LocalOrderEventType.ACTIVATE, created,
+                )).current)
+
+        def event(decision, sequence):
+            strategy = decision.authorization.request.strategy_decision
+            return DecisionEvent(
+                sequence, strategy.decision_time_ms,
+                strategy.decision_time_ms, strategy.context.snapshot,
+            )
+
+        def bar(decision, price, low, high):
+            opened = decision.authorization.request.strategy_decision.decision_time_ms
+            return Candle(
+                DATA_SOURCE, "BTCUSDT", "1h", opened,
+                opened + 3_600_000 - 1, price, high, low, price,
+                "100", "10000", 20, True,
+            )
+
+        inputs = (
+            (event(entry_decision, 0), entry_decision, intents[0], orders[0],
+             bar(entry_decision, "100", "99", "106"), spec),
+            (event(exit_decision, 1), exit_decision, intents[1], orders[1],
+             bar(exit_decision, "101", "100", "102"), spec),
+        )
+        adapter = LocalPaperFillCostAdapter("BTCUSDT", spec)
+        steps = tuple(adapter.process(*item) for item in inputs)
+        with LocalPaperPortfolioStore(database, spec) as store:
+            store.apply(steps[0], "100")
+            final = store.apply(steps[1], "101").projection
+            try:
+                store.apply(steps[1], "101")
+            except DuplicateLocalPaperFill:
+                pass
+            else:
+                raise LocalPaperPortfolioError("Duplicate durable fill was accepted")
+            canonical = store.canonical_json()
+        with LocalPaperPortfolioStore(database, spec) as reopened:
+            if (
+                reopened.schema_version() != 1
+                or len(reopened.events()) != 2
+                or reopened.get_projection() != final
+                or reopened.canonical_json() != canonical
+                or final.snapshot.asset_quantity != 0
+                or final.snapshot.closed_trades != 1
+            ):
+                raise LocalPaperPortfolioError(
+                    "P5 durable portfolio failed deterministic reopen"
+                )
+    return final, hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
 def _strategy_adapter_runtime_check():
     start = 1_699_999_200_000
 
@@ -1005,6 +1083,10 @@ def main():
     commands.add_parser(
         "paper-fill-cost-check",
         help="Verify P5 delegation to accepted P2 fill and cost contracts",
+    )
+    commands.add_parser(
+        "paper-portfolio-check",
+        help="Verify atomic P5 fill events and accepted P2 portfolio projection",
     )
     risk_scenarios = commands.add_parser(
         "risk-scenario-check",
@@ -1333,6 +1415,23 @@ def main():
             print(
                 "PAPER ONLY | LOCAL_PAPER | LIVE_MASTER_LOCK=OFF | "
                 "Accepted P2 economics | No credentials | No external transport | "
+                "No exchange order"
+            )
+        elif args.command == "paper-portfolio-check":
+            projection, evidence_sha256 = _paper_portfolio_runtime_check()
+            snapshot = projection.snapshot
+            print(
+                "OK: P5 atomic fill and portfolio projection; "
+                f"fills={projection.fill_count} replay_equal=true "
+                f"position={'LONG' if snapshot.asset_quantity > 0 else 'FLAT'} "
+                f"cash={format(snapshot.cash, 'f')} "
+                f"realized_pnl_quote={format(snapshot.realized_pnl_quote, 'f')} "
+                f"projection_sha256={projection.projection_sha256} "
+                f"evidence_sha256={evidence_sha256}"
+            )
+            print(
+                "PAPER ONLY | LOCAL_PAPER | LIVE_MASTER_LOCK=OFF | "
+                "Accepted P2 portfolio | No credentials | No external transport | "
                 "No exchange order"
             )
         elif args.command == "risk-scenario-check":

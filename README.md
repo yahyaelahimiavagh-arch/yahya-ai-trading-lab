@@ -8,8 +8,9 @@ P5-002 transactional intent journal نیز با **426/426** تست و final-HEAD
 Paper order state machine نیز با **440/440** تست و final-HEAD Actions سبز، از PR
 #18 در checkpoint `c96293f` روی `main` squash-merge شد. P5-004 نیز با **455/455**
 تست و final-HEAD Actions سبز، از PR #20 در checkpoint `ce655d0` روی `main`
-squash-merge شد و runtime accepted است. P5-005 مرحله بعدی است اما هنوز باز نشده و
-هیچ مجوز معامله‌ای فعال نشده است.
+squash-merge شد و runtime accepted است. P5-005 اکنون candidate محلی با **471/471**
+تست است؛ GitHub Actions و پذیرش runtime آن هنوز pending هستند و هیچ مجوز معامله‌ای
+فعال نشده است.
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
@@ -53,7 +54,7 @@ P2 بارگذاری point-in-time، ساعت رویداد، fill محافظه‌
 P4-001 تا P4-010 نیز به‌ترتیب پذیرفته و روی `main` merge شده‌اند. P4 در
 checkpoint `f3a5575` بسته شد. P5-001 قرارداد اجرای Local Paper و recovery boundary
 را runtime accepted و merge کرده است؛ P5-002 تا P5-004 نیز runtime accepted و
-merge شده‌اند و P5-005 هنوز باز نشده است. ترتیب P5 در
+merge شده‌اند و P5-005 فقط candidate محلی است. ترتیب P5 در
 `docs/P5-IMPLEMENTATION-PLAN.md` و شواهد P4 در
 `docs/P4-IMPLEMENTATION-PLAN.md` قفل شده‌اند.
 
@@ -794,3 +795,27 @@ squash-merged into `main` at checkpoint
 `ce655d0535ce9b8bac22c6525e68e115ea8626f2`. P5-004 is runtime accepted and
 merged; P5-005 remains unopened. No persistence of fills or portfolio projection,
 credential, external transport, TRADE permission or order endpoint is included.
+
+## P5-005 — Atomic fill and portfolio projection candidate
+
+The P5-005 candidate binds every accepted P5-004 costed fill to its durable intent
+and active local order-state digest, gives it a canonical local fill-event identity,
+and applies the complete fill batch plus the cash, asset, position and realized-PnL
+projection in one SQLite `BEGIN IMMEDIATE` transaction. Before every write, all
+stored fills are replayed through the accepted P2 `PortfolioLedger`; P5 does not
+implement alternate portfolio arithmetic.
+
+```powershell
+uv run --locked python -m yatl paper-portfolio-check
+```
+
+Local candidate evidence passed **16/16** focused P5-005 tests, **70/70** focused
+P5 regressions and **471/471** complete tests. Runtime committed two fills, rejected
+their duplicate replay, reopened byte-equal canonical evidence and finished `FLAT`
+with exact cash `10013.1979245678265`, realized PnL `13.1979245678265`, projection
+SHA-256 `11af7bcf91cd47e1809562f1b04f28c714676643f81e99fbfcfd0546ba93df09`
+and evidence SHA-256
+`03a52caa7914d711a4c8634dcf7f29b366cd1af9b98f0058cb9458f9252bd921`.
+GitHub Actions and merge approval remain pending, so P5-005 is not runtime accepted
+or merged. P5-006 remains unopened. No credential, external transport, TRADE
+permission or order endpoint is included.
