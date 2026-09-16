@@ -1,5 +1,6 @@
 import argparse
 import hashlib
+import json
 import sys
 from dataclasses import replace
 from datetime import datetime, timezone
@@ -50,6 +51,8 @@ from .execution import (
     LocalOrderError,
     LocalOrderEventType,
     LocalOrderTransitionError,
+    LocalPaperFillCostAdapter,
+    LocalPaperFillError,
     LocalPaperOrderStore,
     RecoveryReadiness,
     RecoveryReason,
@@ -746,6 +749,70 @@ def _paper_order_state_runtime_check():
     )
 
 
+def _paper_fill_cost_runtime_check():
+    _, _, entry_decision, exit_decision = _paper_execution_contract_runtime_check()
+    decisions = (entry_decision, exit_decision)
+    entry_time = entry_decision.authorization.request.strategy_decision.decision_time_ms
+    exit_time = exit_decision.authorization.request.strategy_decision.decision_time_ms
+    spec = BacktestSpec(
+        "BTCUSDT", entry_time, exit_time + 3_600_000,
+        fee_bps="10", slippage_bps="5",
+    )
+    with TemporaryDirectory() as directory:
+        database = Path(directory) / "p5-fill-cost.sqlite3"
+        with ExecutionIntentJournal(database) as journal:
+            intents = tuple(journal.record(decision) for decision in decisions)
+        with LocalPaperOrderStore(database) as store:
+            active_states = []
+            for decision, intent in zip(decisions, intents, strict=True):
+                decision_time = (
+                    decision.authorization.request.strategy_decision.decision_time_ms
+                )
+                created = store.apply(build_local_order_event(
+                    intent, 0, decision_time - 2, LocalOrderEventType.CREATE,
+                )).current
+                active_states.append(store.apply(build_local_order_event(
+                    intent, 1, decision_time - 1,
+                    LocalOrderEventType.ACTIVATE, created,
+                )).current)
+
+        def event(decision, sequence):
+            strategy = decision.authorization.request.strategy_decision
+            return DecisionEvent(
+                sequence,
+                strategy.decision_time_ms,
+                strategy.decision_time_ms,
+                strategy.context.snapshot,
+            )
+
+        def bar(decision, price, low, high):
+            opened = decision.authorization.request.strategy_decision.decision_time_ms
+            return Candle(
+                DATA_SOURCE, "BTCUSDT", "1h", opened,
+                opened + 3_600_000 - 1, price, high, low, price,
+                "100", "10000", 20, True,
+            )
+
+        inputs = (
+            (event(entry_decision, 0), entry_decision, intents[0], active_states[0],
+             bar(entry_decision, "100", "99", "106"), spec),
+            (event(exit_decision, 1), exit_decision, intents[1], active_states[1],
+             bar(exit_decision, "101", "100", "102"), spec),
+        )
+        adapter = LocalPaperFillCostAdapter("BTCUSDT", spec)
+        steps = tuple(adapter.process(*item) for item in inputs)
+        replay_adapter = LocalPaperFillCostAdapter("BTCUSDT", spec)
+        replay = tuple(replay_adapter.process(*item) for item in inputs)
+        if steps != replay or adapter.has_position or replay_adapter.has_position:
+            raise LocalPaperFillError("P5 P2 fill/cost replay diverged")
+        evidence = json.dumps(
+            [step.as_record() for step in steps],
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    return steps, hashlib.sha256(evidence.encode("utf-8")).hexdigest()
+
+
 def _strategy_adapter_runtime_check():
     start = 1_699_999_200_000
 
@@ -934,6 +1001,10 @@ def main():
     commands.add_parser(
         "paper-order-state-check",
         help="Verify the durable P5 local Paper order state machine",
+    )
+    commands.add_parser(
+        "paper-fill-cost-check",
+        help="Verify P5 delegation to accepted P2 fill and cost contracts",
     )
     risk_scenarios = commands.add_parser(
         "risk-scenario-check",
@@ -1247,6 +1318,22 @@ def main():
             print(
                 "PAPER ONLY | LOCAL_PAPER | LIVE_MASTER_LOCK=OFF | "
                 "No fill | No credentials | No external transport | No exchange order"
+            )
+        elif args.command == "paper-fill-cost-check":
+            steps, evidence_sha256 = _paper_fill_cost_runtime_check()
+            fills = tuple(fill for step in steps for fill in step.fills)
+            total_cost = sum((fill.total_cost_quote for fill in fills), Decimal(0))
+            print(
+                "OK: P5 accepted P2 fill and cost integration; "
+                f"steps={len(steps)} fills={len(fills)} replay_equal=true "
+                f"quantity={steps[0].references[0].quantity} "
+                f"total_cost_quote={format(total_cost, 'f')} "
+                f"evidence_sha256={evidence_sha256}"
+            )
+            print(
+                "PAPER ONLY | LOCAL_PAPER | LIVE_MASTER_LOCK=OFF | "
+                "Accepted P2 economics | No credentials | No external transport | "
+                "No exchange order"
             )
         elif args.command == "risk-scenario-check":
             result = run_and_write_adversarial_matrix(

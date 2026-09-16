@@ -1137,6 +1137,33 @@ Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `c96293f`**.
   with the same **440/440** complete suite and deterministic evidence. PR #18 was
   squash-merged into `main` at checkpoint
   `c96293f038436258a30c9030cbce778750180c1f`. P5-003 is runtime accepted and
-  merged; P5-004 remains unopened.
+  merged; P5-004 subsequently opened as the candidate recorded below.
+- PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
+  NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
+
+## P5-004 candidate implementation record — 2026-09-16
+
+Status: **IMPLEMENTATION-HEAD ACTIONS PASS — FINAL-HEAD AND MERGE APPROVAL PENDING**.
+
+- Added a local-only adapter that requires matching reconstructable P5 execution
+  decision, durable intent and active P5-003 order state before calling P2.
+- Reuses the accepted P2 `PaperFillEngine` and `apply_costs` directly; no alternate
+  fill, fee, slippage, same-bar or volume economics were implemented.
+- Executes P2 against a temporary engine copy and commits state only after all fill
+  references and costs succeed. Missing, open, future, gapped, low-volume,
+  out-of-bracket and cost-policy-mismatched inputs fail without a partial position.
+- Exact P4-approved quantity `18.894653` reaches both the P2 intent and fill. Entry
+  and exit complete flat; the accepted ambiguous same-bar rule remains stop-first.
+- Fifteen focused P5-004 tests, **54/54** focused P5 regressions and the complete
+  local suite passed **455/455**. Compile, whitespace, lockfile and restricted-source
+  gates passed; `uv.lock` and dependencies are unchanged.
+- `paper-fill-cost-check` recorded `steps=2`, `fills=2`, `replay_equal=true`, exact
+  total cost quote `5.6967284321735` and canonical evidence SHA-256
+  `504156f0bdd29bc276e404021deabd63518f5404c315ea13a3a281c23a9a3d79`.
+- Implementation-head GitHub Actions run `35056541281` passed both
+  `unit-and-safety` and `accepted-public-data` on commit `f0e4f0f`, including
+  **455/455** tests, runtime, safety, deterministic replay and independent audits.
+- Final documentation-HEAD verification and merge approval remain pending. P5-004
+  is not runtime accepted or merged, and P5-005 remains unopened.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.

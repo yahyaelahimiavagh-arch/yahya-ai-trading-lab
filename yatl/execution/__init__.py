@@ -31,6 +31,11 @@ from .state import (
     apply_local_order_event,
     build_local_order_event,
 )
+from .fills import (
+    LocalPaperFillCostAdapter,
+    LocalPaperFillError,
+    LocalPaperFillStep,
+)
 
 __all__ = [
     "EXECUTION_POLICY_ID",
@@ -58,4 +63,7 @@ __all__ = [
     "LocalPaperOrderTransition",
     "apply_local_order_event",
     "build_local_order_event",
+    "LocalPaperFillCostAdapter",
+    "LocalPaperFillError",
+    "LocalPaperFillStep",
 ]
