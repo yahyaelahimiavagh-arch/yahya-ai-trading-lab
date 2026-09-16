@@ -7,8 +7,9 @@ P5-002 transactional intent journal نیز با **426/426** تست و final-HEAD
 سبز، از PR #16 در checkpoint `ab9d38a` روی `main` squash-merge شد. P5-003 local
 Paper order state machine نیز با **440/440** تست و final-HEAD Actions سبز، از PR
 #18 در checkpoint `c96293f` روی `main` squash-merge شد. P5-004 مرحله بعدی است اما
-اکنون candidate محلی با **455/455** تست است؛ Actions و پذیرش runtime آن pending
-هستند و هیچ مجوز معامله‌ای فعال نشده است.
+اکنون candidate محلی با **455/455** تست و implementation-head Actions سبز است؛
+final-HEAD verification و پذیرش runtime آن pending هستند و هیچ مجوز معامله‌ای
+فعال نشده است.
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
@@ -786,7 +787,9 @@ regressions and **455/455** complete tests. Runtime replay produced two steps an
 two fills, preserved exact quantity `18.894653`, ended flat, recorded exact total
 cost quote `5.6967284321735` and canonical evidence SHA-256
 `504156f0bdd29bc276e404021deabd63518f5404c315ea13a3a281c23a9a3d79`.
-GitHub Actions and merge approval remain pending. P5-004 is not runtime accepted
-or merged, and P5-005 remains unopened. No persistence of fills or portfolio
-projection, credential, external transport, TRADE permission or order endpoint is
-included.
+Implementation-head GitHub Actions run `35056541281` passed both jobs on commit
+`f0e4f0f`, including **455/455** tests, runtime, safety, replay and audit gates.
+Final documentation-HEAD verification and merge approval remain pending. P5-004 is
+not runtime accepted or merged, and P5-005 remains unopened. No persistence of
+fills or portfolio projection, credential, external transport, TRADE permission or
+order endpoint is included.

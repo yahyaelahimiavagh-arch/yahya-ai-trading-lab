@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P4 و P5-001 تا P5-003 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P5-004 CANDIDATE — ACTIONS AND MERGE APPROVAL PENDING**
+قدم جاری: **P5-004 CANDIDATE — FINAL-HEAD ACTIONS AND MERGE APPROVAL PENDING**
 
 ## منشأ و حدود سند
 
@@ -310,6 +310,9 @@ engine موقت اجرا می‌شود و تنها پس از موفقیت کام
 step و دو fill با quantity دقیق `18.894653` و total cost quote دقیق
 `5.6967284321735` را replay کرد و evidence SHA-256 برابر
 `504156f0bdd29bc276e404021deabd63518f5404c315ea13a3a281c23a9a3d79` ثبت شد.
-P5-004 هنوز candidate با Actions و merge approval pending است؛ P5-005 unopened
-باقی می‌ماند. درصد کل همچنان 50% است. هیچ persistence fill/portfolio، endpoint،
-credential، external transport یا TRADE permission اضافه نشده است.
+Implementation-head GitHub Actions run `35056541281` هر دو job را روی commit
+`f0e4f0f` با **455/455** تست و runtime/safety/replay/audit gateها گذراند. P5-004
+هنوز candidate است؛ final documentation-HEAD verification و merge approval pending
+هستند و P5-005 unopened باقی می‌ماند. درصد کل همچنان 50% است. هیچ persistence
+fill/portfolio، endpoint، credential، external transport یا TRADE permission اضافه
+نشده است.

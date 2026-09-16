@@ -136,10 +136,12 @@ preserved. `paper-fill-cost-check` recorded two steps, two fills, flat final sta
 exact total cost quote `5.6967284321735`, replay equality and evidence SHA-256
 `504156f0bdd29bc276e404021deabd63518f5404c315ea13a3a281c23a9a3d79`.
 Compile, whitespace, lock and restricted-source scans passed; no dependency or
-`uv.lock` change exists. GitHub Actions and merge approval remain pending, so
-P5-004 is not runtime accepted or merged. P5-005 remains unopened. No persistent
-fill or portfolio projection, credential, external transport, TRADE permission or
-order endpoint was added.
+`uv.lock` change exists. Implementation-head GitHub Actions run `35056541281`
+passed both jobs on commit `f0e4f0f`, including **455/455** tests and all runtime,
+safety, replay and audit gates. Final documentation-HEAD verification and merge
+approval remain pending, so P5-004 is not runtime accepted or merged. P5-005
+remains unopened. No persistent fill or portfolio projection, credential, external
+transport, TRADE permission or order endpoint was added.
 
 ### P5-005 — Atomic fill and portfolio projection
 
