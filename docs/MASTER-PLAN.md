@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P4 و P5-001 تا P5-004 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P5-005 CANDIDATE — ACTIONS AND MERGE APPROVAL PENDING**
+قدم جاری: **P5-005 CANDIDATE — FINAL-HEAD ACTIONS AND MERGE APPROVAL PENDING**
 
 ## منشأ و حدود سند
 
@@ -328,6 +328,8 @@ realized PnL را در یک transaction ثبت می‌کند. پیش از هر w
 `13.1979245678265` رسید. projection SHA-256 برابر
 `11af7bcf91cd47e1809562f1b04f28c714676643f81e99fbfcfd0546ba93df09` و evidence
 SHA-256 برابر `03a52caa7914d711a4c8634dcf7f29b366cd1af9b98f0058cb9458f9252bd921`
-است. P5-005 هنوز candidate است؛ GitHub Actions و merge approval pending هستند و
+است. Implementation-head GitHub Actions run `35142189459` هر دو job را روی commit
+`f5f2392` با **471/471** تست و runtime/safety/replay/audit gateها گذراند. P5-005
+هنوز candidate است؛ final-HEAD verification و merge approval pending هستند و
 P5-006 unopened باقی می‌ماند. درصد کل همچنان 50% است. هیچ endpoint، credential،
 external transport یا TRADE permission اضافه نشده است.

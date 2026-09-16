@@ -167,9 +167,11 @@ duplicate replay, reopened deterministic evidence and finished `FLAT` with cash
 `10013.1979245678265`, realized PnL `13.1979245678265`, projection SHA-256
 `11af7bcf91cd47e1809562f1b04f28c714676643f81e99fbfcfd0546ba93df09` and evidence
 SHA-256 `03a52caa7914d711a4c8634dcf7f29b366cd1af9b98f0058cb9458f9252bd921`.
-GitHub Actions and merge approval remain pending, so P5-005 is not runtime accepted
-or merged. P5-006 remains unopened. No credential, external transport, TRADE
-permission or order endpoint was added.
+Implementation-head GitHub Actions run `35142189459` passed both jobs on commit
+`f5f2392`, including **471/471** tests and all runtime, safety, replay and audit
+gates. Final-HEAD verification and merge approval remain pending, so P5-005 is not
+runtime accepted or merged. P5-006 remains unopened. No credential, external
+transport, TRADE permission or order endpoint was added.
 
 ### P5-006 — Startup reconciliation
 
