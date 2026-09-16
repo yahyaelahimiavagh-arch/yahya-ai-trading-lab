@@ -6,10 +6,10 @@ runtime accepted و با squash-merge در checkpoint `5577471` روی `main` ب
 P5-002 transactional intent journal نیز با **426/426** تست و final-HEAD Actions
 سبز، از PR #16 در checkpoint `ab9d38a` روی `main` squash-merge شد. P5-003 local
 Paper order state machine نیز با **440/440** تست و final-HEAD Actions سبز، از PR
-#18 در checkpoint `c96293f` روی `main` squash-merge شد. P5-004 مرحله بعدی است اما
-اکنون candidate محلی با **455/455** تست و implementation-head Actions سبز است؛
-final-HEAD verification و پذیرش runtime آن pending هستند و هیچ مجوز معامله‌ای
-فعال نشده است.
+#18 در checkpoint `c96293f` روی `main` squash-merge شد. P5-004 نیز با **455/455**
+تست و final-HEAD Actions سبز، از PR #20 در checkpoint `ce655d0` روی `main`
+squash-merge شد و runtime accepted است. P5-005 مرحله بعدی است اما هنوز باز نشده و
+هیچ مجوز معامله‌ای فعال نشده است.
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
@@ -52,8 +52,8 @@ P2 بارگذاری point-in-time، ساعت رویداد، fill محافظه‌
 نهایی P2 همه این gateها را بازسازی و تأیید می‌کند. P3 در `90d5847` بسته شد؛
 P4-001 تا P4-010 نیز به‌ترتیب پذیرفته و روی `main` merge شده‌اند. P4 در
 checkpoint `f3a5575` بسته شد. P5-001 قرارداد اجرای Local Paper و recovery boundary
-را runtime accepted و merge کرده است؛ P5-002 و P5-003 نیز runtime accepted و merge
-شده‌اند و P5-004 فقط به‌عنوان candidate محلی در حال بررسی است. ترتیب P5 در
+را runtime accepted و merge کرده است؛ P5-002 تا P5-004 نیز runtime accepted و
+merge شده‌اند و P5-005 هنوز باز نشده است. ترتیب P5 در
 `docs/P5-IMPLEMENTATION-PLAN.md` و شواهد P4 در
 `docs/P4-IMPLEMENTATION-PLAN.md` قفل شده‌اند.
 
@@ -769,9 +769,9 @@ squash-merged into `main` at checkpoint
 merged; P5-004 subsequently opened as the candidate below. No credential, external
 transport, TRADE permission or order endpoint is included.
 
-## P5-004 — Accepted P2 fill and cost integration candidate
+## P5-004 — Accepted P2 fill and cost integration
 
-The P5-004 candidate accepts only a reconstructable P5 decision, matching durable
+P5-004 accepts only a reconstructable P5 decision, matching durable
 intent and active local order state. It delegates next-open, conservative same-bar,
 volume, fee and slippage behavior directly to the accepted P2 `PaperFillEngine`
 and `apply_costs` contracts. P2 runs on a temporary engine copy and commits only
@@ -782,14 +782,15 @@ leave partial in-memory position state.
 uv run --locked python -m yatl paper-fill-cost-check
 ```
 
-Local candidate evidence passed **15/15** focused tests, **54/54** focused P5
+Accepted evidence passed **15/15** focused tests, **54/54** focused P5
 regressions and **455/455** complete tests. Runtime replay produced two steps and
 two fills, preserved exact quantity `18.894653`, ended flat, recorded exact total
 cost quote `5.6967284321735` and canonical evidence SHA-256
 `504156f0bdd29bc276e404021deabd63518f5404c315ea13a3a281c23a9a3d79`.
 Implementation-head GitHub Actions run `35056541281` passed both jobs on commit
-`f0e4f0f`, including **455/455** tests, runtime, safety, replay and audit gates.
-Final documentation-HEAD verification and merge approval remain pending. P5-004 is
-not runtime accepted or merged, and P5-005 remains unopened. No persistence of
-fills or portfolio projection, credential, external transport, TRADE permission or
-order endpoint is included.
+`f0e4f0f`. Final-HEAD run `35056981878` passed both jobs on commit `b8f113e`,
+including **455/455** tests, runtime, safety, replay and audit gates. PR #20 was
+squash-merged into `main` at checkpoint
+`ce655d0535ce9b8bac22c6525e68e115ea8626f2`. P5-004 is runtime accepted and
+merged; P5-005 remains unopened. No persistence of fills or portfolio projection,
+credential, external transport, TRADE permission or order endpoint is included.

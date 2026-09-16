@@ -1141,9 +1141,9 @@ Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `c96293f`**.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
 
-## P5-004 candidate implementation record — 2026-09-16
+## P5-004 accepted implementation record — 2026-09-16
 
-Status: **IMPLEMENTATION-HEAD ACTIONS PASS — FINAL-HEAD AND MERGE APPROVAL PENDING**.
+Status: **RUNTIME ACCEPTED AND MERGED**.
 
 - Added a local-only adapter that requires matching reconstructable P5 execution
   decision, durable intent and active P5-003 order state before calling P2.
@@ -1161,9 +1161,11 @@ Status: **IMPLEMENTATION-HEAD ACTIONS PASS — FINAL-HEAD AND MERGE APPROVAL PEN
   total cost quote `5.6967284321735` and canonical evidence SHA-256
   `504156f0bdd29bc276e404021deabd63518f5404c315ea13a3a281c23a9a3d79`.
 - Implementation-head GitHub Actions run `35056541281` passed both
-  `unit-and-safety` and `accepted-public-data` on commit `f0e4f0f`, including
-  **455/455** tests, runtime, safety, deterministic replay and independent audits.
-- Final documentation-HEAD verification and merge approval remain pending. P5-004
-  is not runtime accepted or merged, and P5-005 remains unopened.
+  `unit-and-safety` and `accepted-public-data` on commit `f0e4f0f`.
+- Final-HEAD GitHub Actions run `35056981878` passed both jobs on commit `b8f113e`,
+  including **455/455** tests, runtime, safety, deterministic replay and independent
+  audits. PR #20 was squash-merged into `main` at checkpoint
+  `ce655d0535ce9b8bac22c6525e68e115ea8626f2`. P5-004 is runtime accepted and
+  merged; P5-005 remains unopened.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
