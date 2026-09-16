@@ -1102,15 +1102,15 @@ Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `ab9d38a`**.
   P5-001/P5-002 runtimes and deterministic accepted-data replay/audits.
 - PR #16 was squash-merged into `main` at checkpoint
   `ab9d38a55688f772c2c7ca166584e0978fd6163d`. P5-002 is runtime accepted and
-  merged; P5-003 subsequently opened as the candidate recorded below.
+  merged; P5-003 subsequently opened and completed as recorded below.
 - No P2 fill, order lifecycle, external transport, endpoint or permission was
   added. PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE;
   NO WITHDRAWAL API; NO TRADE PERMISSION; NO ORDER ENDPOINTS;
   NO AI DIRECT EXECUTION.
 
-## P5-003 candidate implementation record — 2026-09-15
+## P5-003 implementation record — 2026-09-15
 
-Status: **IMPLEMENTATION-HEAD ACTIONS PASS — FINAL-HEAD AND MERGE APPROVAL PENDING**.
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `c96293f`**.
 
 - Added a separate local-only order schema for reconstructable P5-002 intents.
   The only path is `PENDING_LOCAL` → `ACTIVE_LOCAL` → `CANCELLED_LOCAL`; no fill
@@ -1133,7 +1133,10 @@ Status: **IMPLEMENTATION-HEAD ACTIONS PASS — FINAL-HEAD AND MERGE APPROVAL PEN
 - Implementation-head GitHub Actions run `35029425081` passed both
   `unit-and-safety` and `accepted-public-data` on commit `fbca913`, including
   **440/440** tests, runtime, safety, deterministic replay and independent audits.
-- Final documentation-HEAD verification and merge approval remain pending. P5-003
-  is not runtime accepted or merged, and P5-004 remains unopened.
+- Final-HEAD GitHub Actions run `35029938678` passed both jobs on commit `f52b0ff`
+  with the same **440/440** complete suite and deterministic evidence. PR #18 was
+  squash-merged into `main` at checkpoint
+  `c96293f038436258a30c9030cbce778750180c1f`. P5-003 is runtime accepted and
+  merged; P5-004 remains unopened.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
