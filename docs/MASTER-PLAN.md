@@ -1,8 +1,8 @@
 # YATL — نقشه مرجع اجرا و وضعیت پروژه
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
-وضعیت جاری: **P0 تا P4 و P5-001 تا P5-004 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P5-005 CANDIDATE — FINAL-HEAD ACTIONS AND MERGE APPROVAL PENDING**
+وضعیت جاری: **P0 تا P4 و P5-001 تا P5-005 RUNTIME ACCEPTED AND MERGED**
+قدم جاری: **P5-006 NEXT BUT UNOPENED**
 
 ## منشأ و حدود سند
 
@@ -37,7 +37,7 @@ NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only ب�
 | P2 Backtesting Engine | آزمون تاریخی تکرارپذیر با کارمزد، لغزش و جلوگیری از استفاده از آینده | **RUNTIME ACCEPTED — checkpoint `9cbc197`** |
 | P3 Strategy Framework | چارچوب مشترک استراتژی و قواعد روشن سیگنال/عدم معامله | **RUNTIME ACCEPTED — final audit run `34699232936`** |
 | P4 Risk Manager | اندازه موقعیت، محدودیت ریسک و Kill Switch مستقل | **RUNTIME ACCEPTED — checkpoint `f3a5575`** |
-| P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | **P5-001 تا P5-004 RUNTIME ACCEPTED AND MERGED؛ P5-005 candidate** |
+| P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | **P5-001 تا P5-005 RUNTIME ACCEPTED AND MERGED؛ P5-006 unopened** |
 | P6 AI Analyst | تحلیل ساختاریافته و NO_TRADE بدون دسترسی مستقیم به اجرا | شروع نشده |
 | P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | شروع نشده |
 | P8 Dashboard | نمایش وضعیت، معاملات، عملکرد و خطاها | شروع نشده |
@@ -89,8 +89,8 @@ merge شد. P4-010 ممیزی مستقل نهایی را پیاده‌سازی �
 - Live بخشی از درصد تحویل نرم‌افزاری نیست. P11 تنها در صورت پذیرش P10، ممیزی امنیتی،
   آماده‌بودن حساب و تأیید صریح جداگانه بررسی می‌شود.
 
-بنابراین گزارش کوتاه این است: **50% فازهای نرم‌افزاری بسته شده‌اند؛ P5-001 تا P5-004
-runtime accepted و merge شده‌اند و P5-005 فقط candidate محلی است.** خود فاز P5
+بنابراین گزارش کوتاه این است: **50% فازهای نرم‌افزاری بسته شده‌اند؛ P5-001 تا P5-005
+runtime accepted و merge شده‌اند و P5-006 هنوز باز نشده است.** خود فاز P5
 هنوز بسته نشده است. این عدد پیشرفت مهندسی است، نه درصد آمادگی برای سود یا Live.
 
 در گفت‌وگوی قبلی برای P10 بازه ۳۰–۶۰ روز واقعی بازار مطرح شده است؛ این تخمین است،
@@ -329,7 +329,9 @@ realized PnL را در یک transaction ثبت می‌کند. پیش از هر w
 `11af7bcf91cd47e1809562f1b04f28c714676643f81e99fbfcfd0546ba93df09` و evidence
 SHA-256 برابر `03a52caa7914d711a4c8634dcf7f29b366cd1af9b98f0058cb9458f9252bd921`
 است. Implementation-head GitHub Actions run `35142189459` هر دو job را روی commit
-`f5f2392` با **471/471** تست و runtime/safety/replay/audit gateها گذراند. P5-005
-هنوز candidate است؛ final-HEAD verification و merge approval pending هستند و
-P5-006 unopened باقی می‌ماند. درصد کل همچنان 50% است. هیچ endpoint، credential،
-external transport یا TRADE permission اضافه نشده است.
+`f5f2392` با **471/471** تست و runtime/safety/replay/audit gateها گذراند. Final-HEAD
+run `35142873676` نیز هر دو job را روی commit `919d331` گذراند. PR #22 در
+checkpoint `39e83aedae4ec3b29345bb23ee121bb77e4bd8f8` squash-merge شد؛ بنابراین
+P5-005 runtime accepted and merged است و P5-006 unopened باقی می‌ماند. درصد کل
+همچنان 50% است. هیچ endpoint، credential، external transport یا TRADE permission
+اضافه نشده است.
