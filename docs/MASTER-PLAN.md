@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P4 و P5-001 تا P5-004 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P5-005 NEXT BUT UNOPENED**
+قدم جاری: **P5-005 CANDIDATE — FINAL-HEAD ACTIONS AND MERGE APPROVAL PENDING**
 
 ## منشأ و حدود سند
 
@@ -37,7 +37,7 @@ NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only ب�
 | P2 Backtesting Engine | آزمون تاریخی تکرارپذیر با کارمزد، لغزش و جلوگیری از استفاده از آینده | **RUNTIME ACCEPTED — checkpoint `9cbc197`** |
 | P3 Strategy Framework | چارچوب مشترک استراتژی و قواعد روشن سیگنال/عدم معامله | **RUNTIME ACCEPTED — final audit run `34699232936`** |
 | P4 Risk Manager | اندازه موقعیت، محدودیت ریسک و Kill Switch مستقل | **RUNTIME ACCEPTED — checkpoint `f3a5575`** |
-| P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | **P5-001 تا P5-004 RUNTIME ACCEPTED AND MERGED؛ P5-005 unopened** |
+| P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | **P5-001 تا P5-004 RUNTIME ACCEPTED AND MERGED؛ P5-005 candidate** |
 | P6 AI Analyst | تحلیل ساختاریافته و NO_TRADE بدون دسترسی مستقیم به اجرا | شروع نشده |
 | P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | شروع نشده |
 | P8 Dashboard | نمایش وضعیت، معاملات، عملکرد و خطاها | شروع نشده |
@@ -90,7 +90,7 @@ merge شد. P4-010 ممیزی مستقل نهایی را پیاده‌سازی �
   آماده‌بودن حساب و تأیید صریح جداگانه بررسی می‌شود.
 
 بنابراین گزارش کوتاه این است: **50% فازهای نرم‌افزاری بسته شده‌اند؛ P5-001 تا P5-004
-runtime accepted و merge شده‌اند و P5-005 هنوز باز نشده است.** خود فاز P5
+runtime accepted و merge شده‌اند و P5-005 فقط candidate محلی است.** خود فاز P5
 هنوز بسته نشده است. این عدد پیشرفت مهندسی است، نه درصد آمادگی برای سود یا Live.
 
 در گفت‌وگوی قبلی برای P10 بازه ۳۰–۶۰ روز واقعی بازار مطرح شده است؛ این تخمین است،
@@ -317,3 +317,19 @@ Implementation-head GitHub Actions run `35056541281` هر دو job را روی c
 P5-004 runtime accepted and merged است و P5-005 unopened باقی می‌ماند. درصد کل
 همچنان 50% است. هیچ persistence fill/portfolio، endpoint، credential، external
 transport یا TRADE permission اضافه نشده است.
+
+P5-005 هر fill هزینه‌گذاری‌شده P5-004 را به intent پایدار و digest وضعیت فعال سفارش
+محلی متصل می‌کند و fill eventها همراه با projection کامل cash، asset، position و
+realized PnL را در یک transaction ثبت می‌کند. پیش از هر write، تاریخچه کامل با
+`PortfolioLedger` پذیرفته‌شده P2 بازپخش می‌شود؛ بنابراین arithmetic موازی ایجاد
+نشده است. 16 تست متمرکز P5-005، کل **70/70** regression متمرکز P5 و **471/471**
+تست کامل محلی پاس شدند. runtime دو fill را ثبت و duplicate را رد کرد، پس از reopen
+به `FLAT` با cash دقیق `10013.1979245678265` و realized PnL دقیق
+`13.1979245678265` رسید. projection SHA-256 برابر
+`11af7bcf91cd47e1809562f1b04f28c714676643f81e99fbfcfd0546ba93df09` و evidence
+SHA-256 برابر `03a52caa7914d711a4c8634dcf7f29b366cd1af9b98f0058cb9458f9252bd921`
+است. Implementation-head GitHub Actions run `35142189459` هر دو job را روی commit
+`f5f2392` با **471/471** تست و runtime/safety/replay/audit gateها گذراند. P5-005
+هنوز candidate است؛ final-HEAD verification و merge approval pending هستند و
+P5-006 unopened باقی می‌ماند. درصد کل همچنان 50% است. هیچ endpoint، credential،
+external transport یا TRADE permission اضافه نشده است.

@@ -1,6 +1,6 @@
 # P5 — Local Paper execution, reconciliation and recovery plan
 
-Status: **P5-001 TO P5-004 RUNTIME ACCEPTED AND MERGED — P5-005 NEXT BUT UNOPENED**
+Status: **P5-001 TO P5-004 RUNTIME ACCEPTED AND MERGED — P5-005 CANDIDATE**
 
 Entry baseline: P4 runtime accepted and merged in checkpoint `f3a5575`; the
 authoritative documentation closeout is `c0d94d2`. The complete baseline suite
@@ -152,6 +152,26 @@ incomplete projection cannot be visible.
 
 Acceptance: hand-calculated entry/exit vectors, duplicate fill rejection, rollback
 at each write boundary and exact reconciliation with accepted P2 portfolio results.
+
+Local candidate evidence: **PASS, 2026-09-16.** Sixteen focused P5-005 tests,
+**70/70** focused P5 regressions and the complete suite passed **471/471**. Every
+accepted P5-004 fill receives a canonical local event identity bound to its durable
+intent, active order-state digest and fill-step digest. The complete fill batch and
+materialized cash, asset, cost basis, position, realized/unrealized PnL, equity,
+fees, slippage and closed-trade projection share one `BEGIN IMMEDIATE` transaction.
+Stored history is replayed through the accepted P2 `PortfolioLedger` before every
+write; no alternate accounting model exists. Duplicate, insufficient-cash,
+position mismatch, changed spec, invalid mark, tamper and injected failures roll
+back or fail before mutation. `paper-portfolio-check` committed two fills, rejected
+duplicate replay, reopened deterministic evidence and finished `FLAT` with cash
+`10013.1979245678265`, realized PnL `13.1979245678265`, projection SHA-256
+`11af7bcf91cd47e1809562f1b04f28c714676643f81e99fbfcfd0546ba93df09` and evidence
+SHA-256 `03a52caa7914d711a4c8634dcf7f29b366cd1af9b98f0058cb9458f9252bd921`.
+Implementation-head GitHub Actions run `35142189459` passed both jobs on commit
+`f5f2392`, including **471/471** tests and all runtime, safety, replay and audit
+gates. Final-HEAD verification and merge approval remain pending, so P5-005 is not
+runtime accepted or merged. P5-006 remains unopened. No credential, external
+transport, TRADE permission or order endpoint was added.
 
 ### P5-006 — Startup reconciliation
 

@@ -36,6 +36,14 @@ from .fills import (
     LocalPaperFillError,
     LocalPaperFillStep,
 )
+from .portfolio import (
+    DuplicateLocalPaperFill,
+    LocalPaperFillEvent,
+    LocalPaperPortfolioApplication,
+    LocalPaperPortfolioError,
+    LocalPaperPortfolioProjection,
+    LocalPaperPortfolioStore,
+)
 
 __all__ = [
     "EXECUTION_POLICY_ID",
@@ -66,4 +74,10 @@ __all__ = [
     "LocalPaperFillCostAdapter",
     "LocalPaperFillError",
     "LocalPaperFillStep",
+    "DuplicateLocalPaperFill",
+    "LocalPaperFillEvent",
+    "LocalPaperPortfolioApplication",
+    "LocalPaperPortfolioError",
+    "LocalPaperPortfolioProjection",
+    "LocalPaperPortfolioStore",
 ]
