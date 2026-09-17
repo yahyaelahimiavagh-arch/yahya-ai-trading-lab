@@ -27,6 +27,8 @@ jobs:
         run: uv sync --locked
       - name: Complete test suite
         run: uv run --locked python -m unittest discover -s tests -v
+      - name: P5 startup reconciliation focused gate
+        run: uv run --locked python -m unittest discover -s tests -p 'test_execution_reconcile.py' -v
       - name: Compile and whitespace gates
         run: |
           uv run --locked python -m compileall -q yatl
