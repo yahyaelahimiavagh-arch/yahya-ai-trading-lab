@@ -19,6 +19,7 @@ from .state import STATE_COLUMNS, LocalOrderReason, LocalOrderStatus, LocalPaper
 
 RECOVERY_SNAPSHOT_SCHEMA_VERSION = 1
 MAX_SNAPSHOT_BYTES = 8 * 1024 * 1024
+INTENT_RECORD_KEYS = set(INTENT_COLUMNS) | {"schema_version"}
 
 
 class RecoverySnapshotError(Exception):
@@ -110,7 +111,7 @@ class RecoverySnapshot:
             raise RecoverySnapshotError("Snapshot event count is invalid")
         authorizations = []
         for record in self.intent_records:
-            if not isinstance(record, dict) or set(record) != set(INTENT_COLUMNS):
+            if not isinstance(record, dict) or set(record) != INTENT_RECORD_KEYS:
                 raise RecoverySnapshotError("Snapshot intent anchor is invalid")
             try:
                 rebuilt = LocalPaperIntentRecord(*(record[name] for name in INTENT_COLUMNS))
