@@ -89,6 +89,8 @@ jobs:
         run: uv run --locked python -m yatl paper-fill-cost-check
       - name: P5 atomic fill and portfolio projection runtime
         run: uv run --locked python -m yatl paper-portfolio-check
+      - name: P5 startup reconciliation runtime
+        run: uv run --locked python -m yatl.execution.reconcile_runtime
 
   accepted-public-data:
     runs-on: ubuntu-latest
