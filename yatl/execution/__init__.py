@@ -44,6 +44,13 @@ from .portfolio import (
     LocalPaperPortfolioProjection,
     LocalPaperPortfolioStore,
 )
+from .reconcile import (
+    RECONCILIATION_SCHEMA_VERSION,
+    ReconciliationCode,
+    StartupReconciliationError,
+    StartupReconciliationReport,
+    reconcile_startup,
+)
 
 __all__ = [
     "EXECUTION_POLICY_ID",
@@ -80,4 +87,9 @@ __all__ = [
     "LocalPaperPortfolioError",
     "LocalPaperPortfolioProjection",
     "LocalPaperPortfolioStore",
+    "RECONCILIATION_SCHEMA_VERSION",
+    "ReconciliationCode",
+    "StartupReconciliationError",
+    "StartupReconciliationReport",
+    "reconcile_startup",
 ]
