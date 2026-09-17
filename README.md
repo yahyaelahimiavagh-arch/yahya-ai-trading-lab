@@ -8,9 +8,10 @@ P5-002 transactional intent journal نیز با **426/426** تست و final-HEAD
 Paper order state machine نیز با **440/440** تست و final-HEAD Actions سبز، از PR
 #18 در checkpoint `c96293f` روی `main` squash-merge شد. P5-004 نیز با **455/455**
 تست و final-HEAD Actions سبز، از PR #20 در checkpoint `ce655d0` روی `main`
-squash-merge شد و runtime accepted است. P5-005 اکنون candidate با **471/471** تست
-و implementation-head Actions سبز است؛ final-HEAD verification و پذیرش runtime آن
-هنوز pending هستند و هیچ مجوز معامله‌ای فعال نشده است.
+squash-merge شد و runtime accepted است. P5-005 نیز با **471/471** تست و final-HEAD
+Actions سبز، از PR #22 در checkpoint `39e83ae` روی `main` squash-merge شد و runtime
+accepted است. P5-006 مرحله بعدی است اما هنوز باز نشده و هیچ مجوز معامله‌ای فعال
+نشده است.
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
@@ -53,8 +54,8 @@ P2 بارگذاری point-in-time، ساعت رویداد، fill محافظه‌
 نهایی P2 همه این gateها را بازسازی و تأیید می‌کند. P3 در `90d5847` بسته شد؛
 P4-001 تا P4-010 نیز به‌ترتیب پذیرفته و روی `main` merge شده‌اند. P4 در
 checkpoint `f3a5575` بسته شد. P5-001 قرارداد اجرای Local Paper و recovery boundary
-را runtime accepted و merge کرده است؛ P5-002 تا P5-004 نیز runtime accepted و
-merge شده‌اند و P5-005 فقط candidate محلی است. ترتیب P5 در
+را runtime accepted و merge کرده است؛ P5-002 تا P5-005 نیز runtime accepted و
+merge شده‌اند و P5-006 هنوز باز نشده است. ترتیب P5 در
 `docs/P5-IMPLEMENTATION-PLAN.md` و شواهد P4 در
 `docs/P4-IMPLEMENTATION-PLAN.md` قفل شده‌اند.
 
@@ -796,9 +797,9 @@ squash-merged into `main` at checkpoint
 merged; P5-005 remains unopened. No persistence of fills or portfolio projection,
 credential, external transport, TRADE permission or order endpoint is included.
 
-## P5-005 — Atomic fill and portfolio projection candidate
+## P5-005 — Atomic fill and portfolio projection
 
-The P5-005 candidate binds every accepted P5-004 costed fill to its durable intent
+P5-005 binds every accepted P5-004 costed fill to its durable intent
 and active local order-state digest, gives it a canonical local fill-event identity,
 and applies the complete fill batch plus the cash, asset, position and realized-PnL
 projection in one SQLite `BEGIN IMMEDIATE` transaction. Before every write, all
@@ -809,7 +810,7 @@ implement alternate portfolio arithmetic.
 uv run --locked python -m yatl paper-portfolio-check
 ```
 
-Local candidate evidence passed **16/16** focused P5-005 tests, **70/70** focused
+Accepted evidence passed **16/16** focused P5-005 tests, **70/70** focused
 P5 regressions and **471/471** complete tests. Runtime committed two fills, rejected
 their duplicate replay, reopened byte-equal canonical evidence and finished `FLAT`
 with exact cash `10013.1979245678265`, realized PnL `13.1979245678265`, projection
@@ -818,7 +819,8 @@ and evidence SHA-256
 `03a52caa7914d711a4c8634dcf7f29b366cd1af9b98f0058cb9458f9252bd921`.
 Implementation-head GitHub Actions run `35142189459` passed both
 `unit-and-safety` and `accepted-public-data` on commit `f5f2392`, including
-**471/471** tests and all runtime, safety, replay and audit gates. Final-HEAD
-verification and merge approval remain pending, so P5-005 is not runtime accepted
-or merged. P5-006 remains unopened. No credential, external transport, TRADE
-permission or order endpoint is included.
+**471/471** tests and all runtime, safety, replay and audit gates. Final-HEAD run
+`35142873676` passed both jobs on commit `919d331`. PR #22 was squash-merged into
+`main` at checkpoint `39e83aedae4ec3b29345bb23ee121bb77e4bd8f8`. P5-005 is
+runtime accepted and merged; P5-006 remains unopened. No credential, external
+transport, TRADE permission or order endpoint is included.

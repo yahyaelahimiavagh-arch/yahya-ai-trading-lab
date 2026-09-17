@@ -1170,9 +1170,9 @@ Status: **RUNTIME ACCEPTED AND MERGED**.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
 
-## P5-005 candidate implementation record — 2026-09-16
+## P5-005 accepted implementation record — 2026-09-16
 
-Status: **IMPLEMENTATION-HEAD ACTIONS PASS — FINAL-HEAD AND MERGE APPROVAL PENDING**.
+Status: **RUNTIME ACCEPTED AND MERGED**.
 
 - Added canonical, order-bound local fill-event identities for accepted P5-004
   costed fills. Each event is bound to the durable intent, active local order-state
@@ -1196,7 +1196,9 @@ Status: **IMPLEMENTATION-HEAD ACTIONS PASS — FINAL-HEAD AND MERGE APPROVAL PEN
 - Implementation-head GitHub Actions run `35142189459` passed both
   `unit-and-safety` and `accepted-public-data` on commit `f5f2392`, including
   **471/471** tests, runtime, safety, deterministic replay and independent audits.
-- Final-HEAD verification and merge approval remain pending. P5-005 is not runtime
-  accepted or merged, and P5-006 remains unopened.
+- Final-HEAD GitHub Actions run `35142873676` passed both jobs on commit `919d331`.
+  PR #22 was squash-merged into `main` at checkpoint
+  `39e83aedae4ec3b29345bb23ee121bb77e4bd8f8`. P5-005 is runtime accepted and
+  merged; P5-006 remains unopened.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
