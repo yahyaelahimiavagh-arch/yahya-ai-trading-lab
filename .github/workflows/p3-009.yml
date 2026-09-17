@@ -35,16 +35,34 @@ jobs:
           git diff --check
       - name: Safety boundary scan
         run: |
+          command -v git >/dev/null
+          command -v grep >/dev/null
           git check-ignore -q .env
-          test -z "$(git ls-files | rg '(^|/)\.env$')"
-          ! rg -n 'api/v3/(order|orderList)|fapi|dapi|withdraw' yatl/strategy
-          ! rg -n 'from yatl\.account|import yatl\.account|BinancePublicRestClient' yatl/strategy
-          ! rg -n 'api/v3/(order|orderList)|/fapi|/dapi|withdraw\(' yatl/risk
-          ! rg -n 'from yatl\.account|import yatl\.account|BinancePublicRestClient' yatl/risk
-          ! rg -n 'api/v3/(order|orderList)|/fapi|/dapi|withdraw\(' yatl/execution
-          ! rg -n 'from yatl\.account|import yatl\.account|BinancePublicRestClient|urllib|http\.client|websockets|socket' yatl/execution
-          ! rg -n 'os\.getenv|os\.environ|dotenv|API_KEY|API_SECRET' yatl/execution
-          ! rg -n 'from yatl\.execution|import yatl\.execution' yatl/strategy yatl/risk
+          test -z "$(git ls-files | grep -E '(^|/)\.env$' || true)"
+
+          assert_absent() {
+            local pattern="$1"
+            shift
+            local status=0
+            git grep -nE "$pattern" -- "$@" && status=0 || status=$?
+            if [ "$status" -eq 0 ]; then
+              echo "Forbidden safety-boundary pattern found: $pattern" >&2
+              exit 1
+            fi
+            if [ "$status" -ne 1 ]; then
+              echo "Safety scan failed with status $status: $pattern" >&2
+              exit "$status"
+            fi
+          }
+
+          assert_absent 'api/v3/(order|orderList)|fapi|dapi|withdraw' yatl/strategy
+          assert_absent 'from yatl\.account|import yatl\.account|BinancePublicRestClient' yatl/strategy
+          assert_absent 'api/v3/(order|orderList)|/fapi|/dapi|withdraw\(' yatl/risk
+          assert_absent 'from yatl\.account|import yatl\.account|BinancePublicRestClient' yatl/risk
+          assert_absent 'api/v3/(order|orderList)|/fapi|/dapi|withdraw\(' yatl/execution
+          assert_absent 'from yatl\.account|import yatl\.account|BinancePublicRestClient|urllib|http\.client|websockets|socket' yatl/execution
+          assert_absent 'os\.getenv|os\.environ|dotenv|API_KEY|API_SECRET' yatl/execution
+          assert_absent 'from yatl\.execution|import yatl\.execution' yatl/strategy yatl/risk
       - name: P4 risk contract runtime
         run: uv run --locked python -m yatl risk-contract-check
       - name: P4 exact sizing runtime
