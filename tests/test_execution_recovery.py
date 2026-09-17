@@ -228,6 +228,24 @@ class SnapshotRecoveryTests(unittest.TestCase):
             RecoveryCode.MATCH,
         )
 
+    def test_zero_byte_pending_commit_is_confirmable_but_never_auto_repaired(self):
+        pending = Path(f"{self.snapshot_path}.pending")
+        pending.touch()
+        report = recover_startup(self.path, self.snapshot_path, self.spec)
+        self.assertFalse(report.ready)
+        self.assertEqual(report.code, RecoveryCode.AMBIGUOUS_COMMIT)
+        self.assertIsNotNone(report.manual_confirmation_sha256)
+        with self.assertRaises(RecoverySnapshotError):
+            confirm_pending_snapshot(self.snapshot_path, "f" * 64)
+        confirm_pending_snapshot(
+            self.snapshot_path,
+            report.manual_confirmation_sha256,
+        )
+        self.assertFalse(pending.exists())
+        rebuilt = recover_startup(self.path, self.snapshot_path, self.spec)
+        self.assertTrue(rebuilt.ready)
+        self.assertEqual(rebuilt.code, RecoveryCode.JOURNAL_REBUILD_READY)
+
     def test_crash_before_replace_leaves_no_guessed_repair(self):
         with patch("yatl.execution.recovery.os.replace", side_effect=OSError("crash")):
             with self.assertRaises(RecoverySnapshotError):
