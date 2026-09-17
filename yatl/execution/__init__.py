@@ -51,6 +51,17 @@ from .reconcile import (
     StartupReconciliationReport,
     reconcile_startup,
 )
+from .recovery import (
+    RECOVERY_SNAPSHOT_SCHEMA_VERSION,
+    RecoveryCode,
+    RecoveryReport,
+    RecoverySnapshot,
+    RecoverySnapshotError,
+    confirm_pending_snapshot,
+    create_recovery_snapshot,
+    load_recovery_snapshot,
+    recover_startup,
+)
 
 __all__ = [
     "EXECUTION_POLICY_ID",
@@ -92,4 +103,13 @@ __all__ = [
     "StartupReconciliationError",
     "StartupReconciliationReport",
     "reconcile_startup",
+    "RECOVERY_SNAPSHOT_SCHEMA_VERSION",
+    "RecoveryCode",
+    "RecoveryReport",
+    "RecoverySnapshot",
+    "RecoverySnapshotError",
+    "confirm_pending_snapshot",
+    "create_recovery_snapshot",
+    "load_recovery_snapshot",
+    "recover_startup",
 ]
