@@ -465,12 +465,12 @@ def _pending_confirmation(snapshot_path):
     pending = _pending_path(target)
     try:
         pending_bytes = pending.read_bytes()
-        if not pending_bytes or len(pending_bytes) > MAX_SNAPSHOT_BYTES:
+        if len(pending_bytes) > MAX_SNAPSHOT_BYTES:
             raise RecoverySnapshotError("Pending snapshot evidence is invalid")
         final_sha256 = None
         if target.is_file():
             final_bytes = target.read_bytes()
-            if not final_bytes or len(final_bytes) > MAX_SNAPSHOT_BYTES:
+            if len(final_bytes) > MAX_SNAPSHOT_BYTES:
                 raise RecoverySnapshotError("Final snapshot evidence is invalid")
             final_sha256 = hashlib.sha256(final_bytes).hexdigest()
     except RecoverySnapshotError:
@@ -584,7 +584,7 @@ def recover_startup(path, snapshot_path, spec, policy=None):
         try:
             confirmation = _pending_confirmation(target)
         except RecoverySnapshotError:
-            confirmation = _digest({"schema_version": 1, "unreadable_pending": True})
+            return RecoveryReport(False, RecoveryCode.STORAGE_ERROR)
         return RecoveryReport(
             False,
             RecoveryCode.AMBIGUOUS_COMMIT,
