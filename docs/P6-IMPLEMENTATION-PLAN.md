@@ -1,6 +1,6 @@
 # P6 — AI Analyst implementation plan
 
-Status: **P6-001 / P6-002 RUNTIME ACCEPTED / MERGED — P6-003 CURRENT CANDIDATE**
+Status: **P6-001 / P6-002 / P6-003 RUNTIME ACCEPTED / MERGED — P6-004 CURRENT CANDIDATE**
 
 Entry baseline: P5 runtime accepted and merged at checkpoint
 `cd5ff5651e2d1df509dba6de8bc717a3ba7bf34f`. Final P5 Actions run
@@ -76,15 +76,13 @@ against which later model output is checked.
 Acceptance: deterministic replay, conservative uncertainty behavior and
 `INSUFFICIENT_EVIDENCE` preservation.
 
-Current candidate: branch `p6-003-deterministic-analyst-baseline` adds a non-AI
-reference analyst that consumes only an accepted P6-002 bundle. It emits a fixed,
-fully grounded analysis record spanning P1/P3/P4/P5 evidence. Because P3 remains
-`INSUFFICIENT_EVIDENCE`, the reference result includes explicit uncertainty and
-deterministically resolves to `REVIEW`; it cannot upgrade strategy readiness or
-manufacture certainty. The baseline exposes no execution action, quantity,
-RiskAuthorization, order endpoint, credentials, account payload, provider call or
-network transport. Matching final-head GitHub Actions evidence is required before
-P6-003 can be accepted.
+Accepted: PR #32 was squash-merged at
+`0c0b018d45c1205f75aa0a33bec360209cccc60a` after matching final-head Actions
+run `35457822009` passed both jobs, the **575/575** complete suite, **15/15**
+focused P6-003 tests, the analyst safety scan and deterministic baseline runtime.
+The accepted baseline preserved `INSUFFICIENT_EVIDENCE`, produced five grounded
+claims and conservatively resolved to `REVIEW`. It grants no execution, quantity,
+RiskAuthorization, order, provider/network or trade authority.
 
 ### P6-004 — Model request boundary
 
@@ -94,6 +92,16 @@ only from the accepted evidence bundle.
 
 Acceptance: prompt injection strings remain inert data, bounded size, deterministic
 materialization and no secret/environment access.
+
+Current candidate: branch `p6-004-model-request-boundary` adds an offline,
+provider-neutral request envelope generated solely from an accepted P6-002 evidence
+bundle. Fixed analyst instructions are code-owned and never derived from evidence;
+bundle strings are serialized only beneath an explicit `UNTRUSTED_DATA_ONLY`
+material boundary. Material is canonical JSON with a fixed byte ceiling, digest
+binding and allowlisted accepted evidence only. The envelope declares
+`transport=NONE` and has no provider, network, environment, credential, account,
+execution, quantity, RiskAuthorization, order or trade capability. Matching
+final-head GitHub Actions evidence is required before P6-004 can be accepted.
 
 ### P6-005 — Strict model-response schema
 
