@@ -63,6 +63,18 @@ from .recovery import (
     recover_startup,
 )
 
+from .scenarios import (
+    SCENARIOS as EXECUTION_SCENARIOS,
+    ExecutionScenarioError,
+    ExecutionScenarioMatrixResult,
+    ExecutionScenarioResult,
+    execution_matrix_sha256,
+    run_adversarial_execution_matrix,
+    run_and_write_adversarial_execution_matrix,
+    scenario_artifact_json as execution_scenario_artifact_json,
+    write_adversarial_execution_matrix,
+)
+
 __all__ = [
     "EXECUTION_POLICY_ID",
     "ExecutionContractError",
@@ -112,4 +124,13 @@ __all__ = [
     "create_recovery_snapshot",
     "load_recovery_snapshot",
     "recover_startup",
+    "write_adversarial_execution_matrix",
+    "execution_scenario_artifact_json",
+    "run_and_write_adversarial_execution_matrix",
+    "run_adversarial_execution_matrix",
+    "execution_matrix_sha256",
+    "ExecutionScenarioResult",
+    "ExecutionScenarioMatrixResult",
+    "ExecutionScenarioError",
+    "EXECUTION_SCENARIOS",
 ]
