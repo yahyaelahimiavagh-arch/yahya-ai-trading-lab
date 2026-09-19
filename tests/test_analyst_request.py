@@ -227,7 +227,7 @@ class ModelRequestBoundaryTests(unittest.TestCase):
     def test_no_executable_authority_in_envelope(self):
         record = build_model_request(bundle()).as_record()
         self.assertEqual(record["transport"], "NONE")
-        encoded = json.dumps(record, sort_keys=True)
+        encoded = json.dumps(record, sort_keys=True, separators=(",", ":"))
         for forbidden_key in (
             '"approved_quantity":',
             '"execution_action":',
