@@ -41,6 +41,8 @@ jobs:
         run: uv run --locked python -m unittest discover -s tests -p 'test_analyst_contracts.py' -v
       - name: P6 point-in-time evidence focused gate
         run: uv run --locked python -m unittest discover -s tests -p 'test_analyst_evidence.py' -v
+      - name: P6 deterministic analyst baseline focused gate
+        run: uv run --locked python -m unittest discover -s tests -p 'test_analyst_baseline.py' -v
       - name: Compile and whitespace gates
         run: |
           uv run --locked python -m compileall -q yatl
@@ -80,7 +82,7 @@ jobs:
           assert_absent 'from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|urllib|http\.client|websockets|socket' yatl/analyst
           assert_absent 'os\.getenv|os\.environ|dotenv|API_KEY|API_SECRET' yatl/analyst
           assert_absent 'requests|httpx|aiohttp|openai|anthropic' yatl/analyst
-          assert_absent 'from yatl\.risk|import yatl\.risk|authorize_paper_request|RiskManagedPaperAdapter' yatl/analyst/evidence.py yatl/analyst/evidence_runtime.py
+          assert_absent 'from yatl\.risk|import yatl\.risk|authorize_paper_request|RiskManagedPaperAdapter' yatl/analyst
       - name: P4 risk contract runtime
         run: uv run --locked python -m yatl risk-contract-check
       - name: P4 exact sizing runtime
@@ -129,6 +131,8 @@ jobs:
         run: uv run --locked python -m yatl.analyst.contract_runtime
       - name: P6 point-in-time evidence runtime
         run: uv run --locked python -m yatl.analyst.evidence_runtime
+      - name: P6 deterministic analyst baseline runtime
+        run: uv run --locked python -m yatl.analyst.baseline_runtime
       - name: Publish P5-009 adversarial evidence
         uses: actions/upload-artifact@v4
         with:
