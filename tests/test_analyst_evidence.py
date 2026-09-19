@@ -293,13 +293,15 @@ class PointInTimeEvidenceTests(unittest.TestCase):
     def test_p1_future_market_close_is_rejected(self):
         payload = p1_payload()
         payload["latest_closed_at_ms"] = DECISION_TIME + 1
+        bad = list(materials())
+        bad[0] = material(
+            "E_P1_MARKET",
+            EvidenceLayer.P1_PUBLIC_MARKET,
+            2,
+            payload,
+        )
         with self.assertRaises(EvidenceBundleError):
-            material(
-                "E_P1_MARKET",
-                EvidenceLayer.P1_PUBLIC_MARKET,
-                2,
-                payload,
-            )
+            build_evidence_bundle("BTCUSDT", DECISION_TIME, tuple(bad))
 
     def test_bundle_contains_no_execution_or_secret_capability(self):
         import yatl.analyst.evidence as evidence_module
