@@ -1,6 +1,6 @@
 # P5 — Local Paper execution, reconciliation and recovery plan
 
-Status: **P5-001 TO P5-007 RUNTIME ACCEPTED AND MERGED — P5-008 CURRENT CANDIDATE**
+Status: **P5-001 TO P5-007 RUNTIME ACCEPTED AND MERGED — P5-008 FINAL-HEAD PASS / MERGE PENDING — P5-009 STACKED CANDIDATE**
 
 Entry baseline: P4 runtime accepted and merged in checkpoint `f3a5575`; the
 authoritative documentation closeout is `c0d94d2`. The complete baseline suite
@@ -262,8 +262,13 @@ automatically and durable journal/order/fill/portfolio state is never reset.
 Output is deterministic bounded JSON/text with stable exit codes and never echoes
 paths or invalid spec payloads. CI additionally scans the runner source against
 interactive input, dynamic imports/eval/exec and endpoint/URL capability.
-P5-008 remains implementation-only until matching post-rebase final-head Actions
-evidence passes and the checkpoint receives explicit merge approval.
+Post-rebase final candidate HEAD
+`0b93f90876aea15fb7be62f2c281727c9664f387` passed **506/506** complete tests,
+**13/13** focused P5-008 tests and both GitHub Actions jobs in run
+`35443813531`. The deterministic operator SHA-256 is
+`83fd5e71e8bd73cfa8503f95c6aef5f05190da6f447b1e3513099a59e9e883ac`.
+PR #26 is Ready for Review and mergeable, but remains deliberately unmerged
+pending explicit checkpoint approval.
 
 ### P5-009 — Deterministic adversarial execution matrix
 
@@ -274,6 +279,20 @@ byte for byte.
 
 Acceptance: fixed scenario ordering, exact expected decisions, atomic state checks,
 two identical runs and published evidence index SHA-256.
+
+Current stacked candidate: branch `p5-009-adversarial-execution-matrix` begins from
+P5-008 final candidate HEAD `0b93f90876aea15fb7be62f2c281727c9664f387`.
+The fixed matrix contains nine scenarios for each of BTCUSDT and ETHUSDT:
+duplicate intent, transactional crash/rollback, stale authorization evidence,
+out-of-order order event, journal corruption, snapshot corruption, missing fill
+candle, cost-policy mismatch and ambiguous pending snapshot commit. Every scenario
+uses local engineering fixtures only and explicitly records
+`real_strategy_qualification=false`; no scenario may be interpreted as evidence
+that current strategy candidates are executable. The matrix writes 18 canonical
+scenario artifacts plus `p5-009-index.json`, runs the complete set twice and
+requires byte-identical directories before publishing evidence. P5-009 remains
+implementation-only until matching final-head CI passes and P5-008 is explicitly
+merged first.
 
 ### P5-010 — Independent final audit and checkpoint
 
