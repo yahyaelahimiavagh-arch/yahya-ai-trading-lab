@@ -1,6 +1,6 @@
 # P6 — AI Analyst implementation plan
 
-Status: **P6-001 CURRENT CANDIDATE — CI PENDING**
+Status: **P6-001 RUNTIME ACCEPTED / MERGED — P6-002 CURRENT CANDIDATE**
 
 Entry baseline: P5 runtime accepted and merged at checkpoint
 `cd5ff5651e2d1df509dba6de8bc717a3ba7bf34f`. Final P5 Actions run
@@ -43,16 +43,12 @@ uncertainty and unsupported claims. The only operator-facing disposition is
 Acceptance: deterministic construction/reconstruction, canonical SHA-256,
 invalid-field rejection and source scan proving no execution import/capability.
 
-Current candidate: branch `p6-001-analyst-contracts` starts from the P5
-documentation-closeout baseline on `main`. It adds immutable analysis-only policy,
-point-in-time evidence references, typed analyst claims, canonical analyst input and
-validated analyst reports. The deterministic report mapping is intentionally
-non-executable: fully supported analysis resolves to `NO_TRADE`, explicit
-uncertainty resolves to `REVIEW`, and unsupported/no usable claims resolve to
-`INSUFFICIENT_DATA`. The package has no executor/account/network import,
-credential surface, order endpoint, quantity authority or RiskAuthorization
-mutation capability. Matching final-head GitHub Actions evidence is required before
-P6-001 can be accepted.
+Accepted: PR #30 was squash-merged at
+`0b2fe2768cf355faba173a3498b48b359a5a04a0` after matching final-head Actions
+run `35450498559` passed both jobs, the **542/542** complete suite, **18/18**
+focused P6-001 tests, the safety scan and deterministic analyst runtime. P6-001
+remains analysis-only and grants no execution, quantity, RiskAuthorization or
+trade authority.
 
 ### P6-002 — Point-in-time evidence bundle
 
@@ -62,6 +58,17 @@ future data, mutable ambient state and raw credentials are forbidden.
 
 Acceptance: future-isolation, missing/stale evidence, cross-symbol mismatch and
 canonical bundle digest tests.
+
+Current candidate: branch `p6-002-point-in-time-evidence` adds a frozen,
+read-only bundle requiring exactly one canonical provenance-bound artifact from P1
+public market data, P3 strategy evidence, P4 risk status and P5 safety status.
+Payload schemas are deliberately narrow: credentials, private account payloads,
+trade permission, order endpoints, AI execution authority, quantity authority and
+RiskAuthorization mutation cannot enter the bundle. P3 is pinned to
+`INSUFFICIENT_EVIDENCE`; duplicate/ambiguous evidence, future timestamps, stale
+validity, cross-symbol material, noncanonical JSON and source/provenance digest
+mismatches fail closed. Matching final-head GitHub Actions evidence is required
+before P6-002 can be accepted.
 
 ### P6-003 — Deterministic analyst baseline
 
