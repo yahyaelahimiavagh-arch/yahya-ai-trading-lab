@@ -31,6 +31,8 @@ jobs:
         run: uv run --locked python -m unittest discover -s tests -p 'test_execution_reconcile.py' -v
       - name: P5 snapshot recovery focused gate
         run: uv run --locked python -m unittest discover -s tests -p 'test_execution_recovery.py' -v
+      - name: P5 guarded operator CLI focused gate
+        run: uv run --locked python -m unittest discover -s tests -p 'test_execution_runner.py' -v
       - name: Compile and whitespace gates
         run: |
           uv run --locked python -m compileall -q yatl
@@ -64,6 +66,7 @@ jobs:
           assert_absent 'api/v3/(order|orderList)|/fapi|/dapi|withdraw\(' yatl/execution
           assert_absent 'from yatl\.account|import yatl\.account|BinancePublicRestClient|urllib|http\.client|websockets|socket' yatl/execution
           assert_absent 'os\.getenv|os\.environ|dotenv|API_KEY|API_SECRET' yatl/execution
+          assert_absent 'input\(|importlib|eval\(|exec\(|endpoint|url' yatl/execution/runner.py
           assert_absent 'from yatl\.execution|import yatl\.execution' yatl/strategy yatl/risk
       - name: P4 risk contract runtime
         run: uv run --locked python -m yatl risk-contract-check
@@ -95,6 +98,8 @@ jobs:
         run: uv run --locked python -m yatl.execution.reconcile_runtime
       - name: P5 snapshot recovery runtime
         run: uv run --locked python -m yatl.execution.recovery_runtime
+      - name: P5 guarded operator CLI runtime
+        run: uv run --locked python -m yatl.execution.runner_runtime
 
   accepted-public-data:
     runs-on: ubuntu-latest
