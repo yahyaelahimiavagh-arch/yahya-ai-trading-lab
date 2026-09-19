@@ -1,8 +1,8 @@
 # YATL — نقشه مرجع اجرا و وضعیت پروژه
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
-وضعیت جاری: **P0 تا P4 و P5-001 تا P5-005 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P5-006 NEXT BUT UNOPENED**
+وضعیت جاری: **P0 تا P5 RUNTIME ACCEPTED AND MERGED**
+قدم جاری: **P6 AI ANALYST — PLAN OPENING / IMPLEMENTATION NEXT**
 
 ## منشأ و حدود سند
 
@@ -37,18 +37,22 @@ NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only ب�
 | P2 Backtesting Engine | آزمون تاریخی تکرارپذیر با کارمزد، لغزش و جلوگیری از استفاده از آینده | **RUNTIME ACCEPTED — checkpoint `9cbc197`** |
 | P3 Strategy Framework | چارچوب مشترک استراتژی و قواعد روشن سیگنال/عدم معامله | **RUNTIME ACCEPTED — final audit run `34699232936`** |
 | P4 Risk Manager | اندازه موقعیت، محدودیت ریسک و Kill Switch مستقل | **RUNTIME ACCEPTED — checkpoint `f3a5575`** |
-| P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | **P5-001 تا P5-005 RUNTIME ACCEPTED AND MERGED؛ P5-006 unopened** |
-| P6 AI Analyst | تحلیل ساختاریافته و NO_TRADE بدون دسترسی مستقیم به اجرا | شروع نشده |
+| P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | **RUNTIME ACCEPTED — checkpoint `cd5ff565`** |
+| P6 AI Analyst | تحلیل ساختاریافته و NO_TRADE بدون دسترسی مستقیم به اجرا | **NEXT — implementation plan opened** |
 | P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | شروع نشده |
 | P8 Dashboard | نمایش وضعیت، معاملات، عملکرد و خطاها | شروع نشده |
 | P9 Telegram | هشدار و کنترل محدود طبق قواعد امنیتی | شروع نشده |
 | P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | شروع نشده |
 | P11 Tiny Live Candidate | فقط پس از پذیرش P10، ممیزی امنیت، الزامات حساب و تأیید صریح | LOCKED |
 
-## نمای پیشرفت فعلی — 2026-09-13
+## نمای پیشرفت فعلی — 2026-09-19
 
-جای فعلی پروژه: پنج فاز اول توسعه، یعنی P0 تا P4، در runtime پذیرفته و روی
-`main` بسته شده‌اند. P4-001 در checkpoint `be3c042` روی `main`
+جای فعلی پروژه: شش فاز اول توسعه، یعنی P0 تا P5، در runtime پذیرفته و روی
+`main` بسته شده‌اند. P5-001 تا P5-010 Local Paper execution، journal،
+state machine، fill/cost integration، atomic portfolio projection، startup
+reconciliation، snapshot recovery، guarded operator CLI، adversarial matrix و
+independent final audit را تکمیل کردند. checkpoint نهایی P5
+`cd5ff5651e2d1df509dba6de8bc717a3ba7bf34f` است. P4-001 در checkpoint `be3c042` روی `main`
 merge شده است. P4-002 محاسبه دقیق اندازه موقعیت را روی شاخه مستقل پیاده‌سازی و در
 GitHub Actions تأیید و در checkpoint `bc2bd30` merge کرده است. P4-003 کنترل cash،
 notional و exposure را روی PR #5 پیاده‌سازی کرد و در checkpoint `27dfd86` merge
@@ -69,16 +73,15 @@ merge شد. P4-010 ممیزی مستقل نهایی را پیاده‌سازی �
 
 | معیار | انجام‌شده | باقی‌مانده | تفسیر صحیح |
 |---|---:|---:|---|
-| فازهای تحویل نرم‌افزاری P0 تا P9 | 5 از 10 | 5 فاز | **50% بر مبنای شمارش ساده فازها**؛ تخمین زمان یا حجم کار نیست |
+| فازهای تحویل نرم‌افزاری P0 تا P9 | 6 از 10 | 4 فاز | **60% بر مبنای شمارش ساده فازها**؛ تخمین زمان یا حجم کار نیست |
 | checkpointهای P4 | 10 از 10 | صفر | P4-001 تا P4-010 پذیرفته و روی `main` بسته شده‌اند |
-| فازهای پیش از Forward Validation | P0 تا P4 | P5 تا P9 | پس از آن P10 باید روی داده جدید اجرا و پذیرفته شود |
+| فازهای پیش از Forward Validation | P0 تا P5 | P6 تا P9 | پس از آن P10 باید روی داده جدید اجرا و پذیرفته شود |
 | مسیر Live | هیچ | P5 تا P10 و ممیزی‌های P11 | P11 همچنان LOCKED و مشروط به تأیید صریح است |
 
 ### کار باقی‌مانده تا نسخه آزمایشی نرم‌افزار
 
-1. P5: اجرای کنترل‌شده Paper/Testnet زیر Risk Manager؛ مجوز TRADE فعلاً خاموش است.
-2. P6: AI Analyst ساختاریافته، فقط پیشنهاد/`NO_TRADE` و بدون اجرای مستقیم.
-3. P7 تا P9: Journal/Analytics، Dashboard و Telegram محدود و ایمن.
+1. P6: AI Analyst ساختاریافته، analysis-only و بدون اجرای مستقیم.
+2. P7 تا P9: Journal/Analytics، Dashboard و Telegram محدود و ایمن.
 
 ### کار باقی‌مانده تا ارزیابی عملکرد
 
@@ -89,9 +92,8 @@ merge شد. P4-010 ممیزی مستقل نهایی را پیاده‌سازی �
 - Live بخشی از درصد تحویل نرم‌افزاری نیست. P11 تنها در صورت پذیرش P10، ممیزی امنیتی،
   آماده‌بودن حساب و تأیید صریح جداگانه بررسی می‌شود.
 
-بنابراین گزارش کوتاه این است: **50% فازهای نرم‌افزاری بسته شده‌اند؛ P5-001 تا P5-005
-runtime accepted و merge شده‌اند و P5-006 هنوز باز نشده است.** خود فاز P5
-هنوز بسته نشده است. این عدد پیشرفت مهندسی است، نه درصد آمادگی برای سود یا Live.
+بنابراین گزارش کوتاه این است: **60% فازهای نرم‌افزاری P0 تا P9 بسته شده‌اند؛
+P5-001 تا P5-010 runtime accepted و merge شده‌اند و P6 مرحله بعدی است.** این عدد پیشرفت مهندسی است، نه درصد آمادگی برای سود یا Live.
 
 در گفت‌وگوی قبلی برای P10 بازه ۳۰–۶۰ روز واقعی بازار مطرح شده است؛ این تخمین است،
 نه تضمین کافی‌بودن نمونه. تاریخ‌های قبلی پایان توسعه و شروع Live، تعهد اجرایی نیستند.
