@@ -1,6 +1,6 @@
 # P6 — AI Analyst implementation plan
 
-Status: **OPEN — P6-001 NEXT**
+Status: **P6-001 CURRENT CANDIDATE — CI PENDING**
 
 Entry baseline: P5 runtime accepted and merged at checkpoint
 `cd5ff5651e2d1df509dba6de8bc717a3ba7bf34f`. Final P5 Actions run
@@ -42,6 +42,17 @@ uncertainty and unsupported claims. The only operator-facing disposition is
 
 Acceptance: deterministic construction/reconstruction, canonical SHA-256,
 invalid-field rejection and source scan proving no execution import/capability.
+
+Current candidate: branch `p6-001-analyst-contracts` starts from the P5
+documentation-closeout baseline on `main`. It adds immutable analysis-only policy,
+point-in-time evidence references, typed analyst claims, canonical analyst input and
+validated analyst reports. The deterministic report mapping is intentionally
+non-executable: fully supported analysis resolves to `NO_TRADE`, explicit
+uncertainty resolves to `REVIEW`, and unsupported/no usable claims resolve to
+`INSUFFICIENT_DATA`. The package has no executor/account/network import,
+credential surface, order endpoint, quantity authority or RiskAuthorization
+mutation capability. Matching final-head GitHub Actions evidence is required before
+P6-001 can be accepted.
 
 ### P6-002 — Point-in-time evidence bundle
 
