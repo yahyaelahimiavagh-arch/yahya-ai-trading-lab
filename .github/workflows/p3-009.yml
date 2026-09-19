@@ -33,6 +33,8 @@ jobs:
         run: uv run --locked python -m unittest discover -s tests -p 'test_execution_recovery.py' -v
       - name: P5 guarded operator CLI focused gate
         run: uv run --locked python -m unittest discover -s tests -p 'test_execution_runner.py' -v
+      - name: P5 adversarial execution matrix focused gate
+        run: uv run --locked python -m unittest discover -s tests -p 'test_execution_scenarios.py' -v
       - name: Compile and whitespace gates
         run: |
           uv run --locked python -m compileall -q yatl
@@ -100,6 +102,21 @@ jobs:
         run: uv run --locked python -m yatl.execution.recovery_runtime
       - name: P5 guarded operator CLI runtime
         run: uv run --locked python -m yatl.execution.runner_runtime
+      - name: P5-009 adversarial execution matrix twice
+        run: |
+          uv run --locked python -m yatl.execution.scenarios_runtime \
+            --output data/p5/p5-009-evidence
+          uv run --locked python -m yatl.execution.scenarios_runtime \
+            --output data/p5/p5-009-evidence-replay
+          diff -r data/p5/p5-009-evidence data/p5/p5-009-evidence-replay
+          sha256sum data/p5/p5-009-evidence/p5-009-index.json
+      - name: Publish P5-009 adversarial evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: p5-009-evidence
+          path: data/p5/p5-009-evidence/
+          if-no-files-found: error
+          retention-days: 30
 
   accepted-public-data:
     runs-on: ubuntu-latest
