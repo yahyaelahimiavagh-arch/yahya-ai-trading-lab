@@ -1,6 +1,6 @@
 # P5 — Local Paper execution, reconciliation and recovery plan
 
-Status: **P5-001 TO P5-007 RUNTIME ACCEPTED AND MERGED — P5-008 FINAL-HEAD PASS / MERGE PENDING — P5-009 STACKED CANDIDATE**
+Status: **P5-001 TO P5-007 RUNTIME ACCEPTED AND MERGED — P5-008 FINAL-HEAD PASS / MERGE PENDING — P5-009 FINAL-HEAD PASS / BLOCKED ON P5-008 — P5-010 STACKED CANDIDATE**
 
 Entry baseline: P4 runtime accepted and merged in checkpoint `f3a5575`; the
 authoritative documentation closeout is `c0d94d2`. The complete baseline suite
@@ -290,9 +290,12 @@ uses local engineering fixtures only and explicitly records
 `real_strategy_qualification=false`; no scenario may be interpreted as evidence
 that current strategy candidates are executable. The matrix writes 18 canonical
 scenario artifacts plus `p5-009-index.json`, runs the complete set twice and
-requires byte-identical directories before publishing evidence. P5-009 remains
-implementation-only until matching final-head CI passes and P5-008 is explicitly
-merged first.
+requires byte-identical directories before publishing evidence. Final candidate HEAD `2f217b93f1c99186ce3be8f90c314a1a8d2bdb2d` passed
+**515/515** complete tests, **9/9** focused P5-009 tests and both Actions jobs in
+run `35444249165`. The complete 18-scenario matrix replayed byte-for-byte
+identically and published index SHA-256
+`7e90d6d39fde707b1fc1f0504ec96d3d537863c9a1042d757d3437ccc41690fa`.
+PR #27 is Ready for Review but remains blocked on explicit merge of P5-008 first.
 
 ### P5-010 — Independent final audit and checkpoint
 
@@ -303,6 +306,19 @@ and regression gate. P5 is accepted only at final HEAD after all jobs pass.
 Acceptance: complete suite, focused P5 suite, locked dependency sync, compile and
 whitespace gates, restricted-source scans, two-run equality and independent audit.
 P6 remains unopened and no TRADE permission is granted.
+
+Current stacked candidate: branch `p5-010-independent-final-audit` starts from
+P5-009 final candidate HEAD `2f217b93f1c99186ce3be8f90c314a1a8d2bdb2d`.
+The independent audit freezes the P5 adversarial index SHA-256 and execution-policy
+SHA-256, rereads all 19 evidence files with stable bounded canonical JSON checks,
+independently validates the exact outcome of all 18 scenarios, recomputes the full
+matrix and requires byte-identical evidence, and scans the complete
+`yatl/execution` package for forbidden order, Futures, withdrawal, account,
+credential and environment capability. Evidence with missing/extra/symlink files,
+tampering, noncanonical JSON, forbidden material, policy drift or changed exact
+outcomes fails closed. P5-010 remains a stacked implementation candidate until its
+matching final-head CI passes and earlier P5 checkpoints are explicitly merged in
+order.
 
 ## Intended module boundaries
 
