@@ -1202,3 +1202,38 @@ Status: **RUNTIME ACCEPTED AND MERGED**.
   merged; P5-006 remains unopened.
 - PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
   NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
+
+
+## P5 final closeout — 2026-09-19
+
+Status: **P5 RUNTIME ACCEPTED AND MERGED — PHASE CLOSED**.
+
+Ordered final checkpoints:
+- P5-008 PR #26: clean post-rebase final-head `0b93f908...`; Actions
+  `35443813531` PASS; **506/506** complete and **13/13** focused; squash-merged
+  at `9189033a2d57b89f35b47c773e19b47c675328a0`.
+- P5-009 PR #27: clean post-P5-008 rebase HEAD `43999ae6...`; Actions
+  `35449469004` PASS; deterministic 18-scenario matrix and byte-identical replay;
+  squash-merged at `8a0fd0ec5950e85f16089ea53e74a36d57dfc9ed`.
+- P5-010 PR #28: clean post-P5-009 rebase HEAD `e9e019d8...`; Actions
+  `35449752993` PASS; **524/524** complete and **9/9** focused independent-audit
+  tests; squash-merged at final P5 checkpoint
+  `cd5ff5651e2d1df509dba6de8bc717a3ba7bf34f`.
+
+Final P5 independent audit:
+- symbols=2, scenarios=9, runs=18, evidence files=19;
+- exact_outcomes=true;
+- replay_equal=true;
+- source_safe=true;
+- P5-009 evidence index SHA-256:
+  `7e90d6d39fde707b1fc1f0504ec96d3d537863c9a1042d757d3437ccc41690fa`;
+- P5 execution-policy SHA-256:
+  `d3a7edcad7027c215093d6cc0e11d90d194fda8f918c1e27fdbdd4bba5b98b72`.
+
+Safety status remains unchanged: PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES;
+NO LEVERAGE; NO WITHDRAWAL API; NO TRADE PERMISSION; NO ORDER ENDPOINTS;
+NO AI DIRECT EXECUTION. Current P3 candidate strategies remain
+`INSUFFICIENT_EVIDENCE`; P5 engineering fixtures are not strategy-readiness evidence.
+
+Next phase: **P6 AI Analyst**. P6 begins analysis-only and may not call or influence
+the P5 executor directly.

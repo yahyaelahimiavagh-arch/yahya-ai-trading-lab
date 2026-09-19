@@ -1,17 +1,13 @@
 # Yahya AI Trading Lab
 
-P0 تا P4 با شواهد runtime پذیرفته و روی `main` بسته شده‌اند. P4-010 ممیزی مستقل
-نهایی Risk Manager را در checkpoint `f3a5575` تکمیل کرده است. P5-001 نیز در PR #14
-runtime accepted و با squash-merge در checkpoint `5577471` روی `main` بسته شد.
-P5-002 transactional intent journal نیز با **426/426** تست و final-HEAD Actions
-سبز، از PR #16 در checkpoint `ab9d38a` روی `main` squash-merge شد. P5-003 local
-Paper order state machine نیز با **440/440** تست و final-HEAD Actions سبز، از PR
-#18 در checkpoint `c96293f` روی `main` squash-merge شد. P5-004 نیز با **455/455**
-تست و final-HEAD Actions سبز، از PR #20 در checkpoint `ce655d0` روی `main`
-squash-merge شد و runtime accepted است. P5-005 نیز با **471/471** تست و final-HEAD
-Actions سبز، از PR #22 در checkpoint `39e83ae` روی `main` squash-merge شد و runtime
-accepted است. P5-006 مرحله بعدی است اما هنوز باز نشده و هیچ مجوز معامله‌ای فعال
-نشده است.
+P0 تا P5 با شواهد runtime پذیرفته و روی `main` بسته شده‌اند. P5-010 ممیزی مستقل
+نهایی اجرای Local Paper را با **524/524** تست روی final-head پس از rebase و
+GitHub Actions run `35449752993` تکمیل کرد. PRهای #26، #27 و #28 به‌ترتیب
+squash-merge شدند و checkpoint نهایی P5 روی `main` برابر است با
+`cd5ff5651e2d1df509dba6de8bc717a3ba7bf34f`.
+P6 — AI Analyst مرحله بعدی است. P6 فقط تحلیل ساختاریافته و research-only خواهد بود
+و هیچ دسترسی مستقیم یا غیرمستقیم به executor، credential، TRADE permission یا
+exchange order endpoint ندارد.
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
@@ -48,16 +44,16 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 ## مسیر بعدی
 
 مرجع ترتیب اجرا: [نقشه پروژه](docs/MASTER-PLAN.md).
-وضعیت جاری **P0 تا P4 پذیرفته‌شده در runtime** است. P1 در `4e77e34` بسته شد.
+وضعیت جاری **P0 تا P5 پذیرفته‌شده در runtime و merge‌شده روی main** است. P1 در `4e77e34` بسته شد.
 P2 بارگذاری point-in-time، ساعت رویداد، fill محافظه‌کارانه، هزینه، دفتر پرتفوی،
 معیارها، artifact تکرارپذیر و شش سناریوی واقعی BTC/ETH را تکمیل کرده است. ممیزی
 نهایی P2 همه این gateها را بازسازی و تأیید می‌کند. P3 در `90d5847` بسته شد؛
 P4-001 تا P4-010 نیز به‌ترتیب پذیرفته و روی `main` merge شده‌اند. P4 در
-checkpoint `f3a5575` بسته شد. P5-001 قرارداد اجرای Local Paper و recovery boundary
-را runtime accepted و merge کرده است؛ P5-002 تا P5-005 نیز runtime accepted و
-merge شده‌اند و P5-006 هنوز باز نشده است. ترتیب P5 در
-`docs/P5-IMPLEMENTATION-PLAN.md` و شواهد P4 در
-`docs/P4-IMPLEMENTATION-PLAN.md` قفل شده‌اند.
+checkpoint `f3a5575` بسته شد. P5-001 تا P5-010 نیز به‌ترتیب runtime accepted
+و merge شده‌اند؛ P5 در checkpoint
+`cd5ff5651e2d1df509dba6de8bc717a3ba7bf34f` بسته شد. مرحله بعدی P6 — AI
+Analyst است. ترتیب P5 در `docs/P5-IMPLEMENTATION-PLAN.md` و برنامه P6 در
+`docs/P6-IMPLEMENTATION-PLAN.md` ثبت می‌شوند.
 
 P3-001 قرارداد research-only سیگنال را اضافه می‌کند. تصمیم فقط یکی از `NO_TRADE`،
 `ENTER_LONG` یا `EXIT_LONG` است و به context نقطه‌زمانی و digest آن متصل می‌شود.
