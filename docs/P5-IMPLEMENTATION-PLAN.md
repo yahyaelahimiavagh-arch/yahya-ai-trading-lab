@@ -1,6 +1,6 @@
 # P5 — Local Paper execution, reconciliation and recovery plan
 
-Status: **P5-001 TO P5-007 RUNTIME ACCEPTED AND MERGED — P5-008 FINAL-HEAD PASS / MERGE PENDING — P5-009 FINAL-HEAD PASS / BLOCKED ON P5-008 — P5-010 STACKED CANDIDATE**
+Status: **P5-001 TO P5-010 RUNTIME ACCEPTED AND MERGED — PHASE CLOSED**
 
 Entry baseline: P4 runtime accepted and merged in checkpoint `f3a5575`; the
 authoritative documentation closeout is `c0d94d2`. The complete baseline suite
@@ -267,8 +267,11 @@ Post-rebase final candidate HEAD
 **13/13** focused P5-008 tests and both GitHub Actions jobs in run
 `35443813531`. The deterministic operator SHA-256 is
 `83fd5e71e8bd73cfa8503f95c6aef5f05190da6f447b1e3513099a59e9e883ac`.
-PR #26 is Ready for Review and mergeable, but remains deliberately unmerged
-pending explicit checkpoint approval.
+Post-rebase final-head Actions run `35443813531` passed both jobs with
+**506/506** complete tests and **13/13** focused P5-008 tests. PR #26 was
+squash-merged at checkpoint
+`9189033a2d57b89f35b47c773e19b47c675328a0`; P5-008 is runtime accepted and
+merged.
 
 ### P5-009 — Deterministic adversarial execution matrix
 
@@ -295,7 +298,10 @@ requires byte-identical directories before publishing evidence. Final candidate 
 run `35444249165`. The complete 18-scenario matrix replayed byte-for-byte
 identically and published index SHA-256
 `7e90d6d39fde707b1fc1f0504ec96d3d537863c9a1042d757d3437ccc41690fa`.
-PR #27 is Ready for Review but remains blocked on explicit merge of P5-008 first.
+After the P5-008 merge, P5-009 was cleanly rebased and final-head Actions run
+`35449469004` passed both jobs. PR #27 was squash-merged at checkpoint
+`8a0fd0ec5950e85f16089ea53e74a36d57dfc9ed`; P5-009 is runtime accepted and
+merged.
 
 ### P5-010 — Independent final audit and checkpoint
 
@@ -307,18 +313,22 @@ Acceptance: complete suite, focused P5 suite, locked dependency sync, compile an
 whitespace gates, restricted-source scans, two-run equality and independent audit.
 P6 remains unopened and no TRADE permission is granted.
 
-Current stacked candidate: branch `p5-010-independent-final-audit` starts from
-P5-009 final candidate HEAD `2f217b93f1c99186ce3be8f90c314a1a8d2bdb2d`.
-The independent audit freezes the P5 adversarial index SHA-256 and execution-policy
-SHA-256, rereads all 19 evidence files with stable bounded canonical JSON checks,
-independently validates the exact outcome of all 18 scenarios, recomputes the full
-matrix and requires byte-identical evidence, and scans the complete
-`yatl/execution` package for forbidden order, Futures, withdrawal, account,
-credential and environment capability. Evidence with missing/extra/symlink files,
-tampering, noncanonical JSON, forbidden material, policy drift or changed exact
-outcomes fails closed. P5-010 remains a stacked implementation candidate until its
-matching final-head CI passes and earlier P5 checkpoints are explicitly merged in
-order.
+P5-010 independently freezes the P5 adversarial index SHA-256 and execution-policy
+SHA-256, rereads all 19 evidence files with bounded canonical JSON checks,
+independently validates all 18 exact adversarial outcomes, recomputes the complete
+matrix byte-for-byte, and scans `yatl/execution` for forbidden execution
+capability. After P5-009 merged, P5-010 was cleanly rebased. Final-head Actions run
+`35449752993` passed both jobs with **524/524** complete tests and **9/9**
+focused P5-010 audit tests. The final audit recorded
+`exact_outcomes=true`, `replay_equal=true`, `source_safe=true`,
+index SHA-256
+`7e90d6d39fde707b1fc1f0504ec96d3d537863c9a1042d757d3437ccc41690fa`
+and policy SHA-256
+`d3a7edcad7027c215093d6cc0e11d90d194fda8f918c1e27fdbdd4bba5b98b72`.
+PR #28 was squash-merged at final P5 checkpoint
+`cd5ff5651e2d1df509dba6de8bc717a3ba7bf34f`. P5 is closed and runtime accepted.
+No TRADE permission, exchange order endpoint, Futures, leverage, withdrawal path or
+AI-direct-execution capability was opened.
 
 ## Intended module boundaries
 
@@ -348,3 +358,26 @@ without explicit user approval.
 The frozen provenance and allowed conceptual lessons are recorded in
 [`OPEN-SOURCE-DESIGN-REFERENCES.md`](OPEN-SOURCE-DESIGN-REFERENCES.md). They are
 references only: no source code is copied and no package is added.
+
+
+## Phase closeout — 2026-09-19
+
+P5-001 through P5-010 are runtime accepted and merged on `main`. The authoritative
+P5 checkpoint is `cd5ff5651e2d1df509dba6de8bc717a3ba7bf34f`.
+
+Final acceptance evidence:
+- complete suite: **524/524 PASS**;
+- P5-006 focused reconciliation: **9/9 PASS**;
+- P5-007 focused recovery: **13/13 PASS**;
+- P5-008 focused operator CLI: **13/13 PASS**;
+- P5-009 focused adversarial matrix: **9/9 PASS**, 18/18 scenario runs;
+- P5-010 focused independent audit: **9/9 PASS**;
+- final-head Actions run `35449752993`: both jobs PASS;
+- P5-009 evidence index SHA-256:
+  `7e90d6d39fde707b1fc1f0504ec96d3d537863c9a1042d757d3437ccc41690fa`;
+- frozen P5 execution-policy SHA-256:
+  `d3a7edcad7027c215093d6cc0e11d90d194fda8f918c1e27fdbdd4bba5b98b72`.
+
+P6 may now open from this accepted baseline. P5 acceptance does **not** imply a
+qualified trading strategy or any Live readiness. Current strategy candidates remain
+`INSUFFICIENT_EVIDENCE`. PAPER ONLY and every execution safety lock remain in force.
