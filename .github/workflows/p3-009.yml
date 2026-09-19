@@ -79,6 +79,8 @@ jobs:
           assert_absent 'api/v3/(order|orderList)|/fapi|/dapi|withdraw\(' yatl/analyst
           assert_absent 'from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|urllib|http\.client|websockets|socket' yatl/analyst
           assert_absent 'os\.getenv|os\.environ|dotenv|API_KEY|API_SECRET' yatl/analyst
+          assert_absent 'requests|httpx|aiohttp|openai|anthropic' yatl/analyst
+          assert_absent 'from yatl\.risk|import yatl\.risk|authorize_paper_request|RiskManagedPaperAdapter' yatl/analyst/evidence.py yatl/analyst/evidence_runtime.py
       - name: P4 risk contract runtime
         run: uv run --locked python -m yatl risk-contract-check
       - name: P4 exact sizing runtime
