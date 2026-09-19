@@ -75,6 +75,12 @@ from .scenarios import (
     write_adversarial_execution_matrix,
 )
 
+from .audit import (
+    P5AuditError,
+    P5AuditResult,
+    audit_p5,
+)
+
 __all__ = [
     "EXECUTION_POLICY_ID",
     "ExecutionContractError",
@@ -132,5 +138,5 @@ __all__ = [
     "ExecutionScenarioResult",
     "ExecutionScenarioMatrixResult",
     "ExecutionScenarioError",
-    "EXECUTION_SCENARIOS",
+    "EXECUTION_SCENARIOS",    "P5AuditError",    "P5AuditResult",    "audit_p5",
 ]
