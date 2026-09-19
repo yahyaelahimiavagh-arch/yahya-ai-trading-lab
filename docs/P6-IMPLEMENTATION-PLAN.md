@@ -1,6 +1,6 @@
 # P6 — AI Analyst implementation plan
 
-Status: **P6-001 RUNTIME ACCEPTED / MERGED — P6-002 CURRENT CANDIDATE**
+Status: **P6-001 / P6-002 RUNTIME ACCEPTED / MERGED — P6-003 CURRENT CANDIDATE**
 
 Entry baseline: P5 runtime accepted and merged at checkpoint
 `cd5ff5651e2d1df509dba6de8bc717a3ba7bf34f`. Final P5 Actions run
@@ -59,16 +59,13 @@ future data, mutable ambient state and raw credentials are forbidden.
 Acceptance: future-isolation, missing/stale evidence, cross-symbol mismatch and
 canonical bundle digest tests.
 
-Current candidate: branch `p6-002-point-in-time-evidence` adds a frozen,
-read-only bundle requiring exactly one canonical provenance-bound artifact from P1
-public market data, P3 strategy evidence, P4 risk status and P5 safety status.
-Payload schemas are deliberately narrow: credentials, private account payloads,
-trade permission, order endpoints, AI execution authority, quantity authority and
-RiskAuthorization mutation cannot enter the bundle. P3 is pinned to
-`INSUFFICIENT_EVIDENCE`; duplicate/ambiguous evidence, future timestamps, stale
-validity, cross-symbol material, noncanonical JSON and source/provenance digest
-mismatches fail closed. Matching final-head GitHub Actions evidence is required
-before P6-002 can be accepted.
+Accepted: PR #31 was squash-merged at
+`75749bb0cf28d366cea1045cceadb8c4841567ca` after matching final-head Actions
+run `35451469100` passed both jobs, the **560/560** complete suite, **18/18**
+focused P6-002 tests, the strengthened safety scan and deterministic evidence
+runtime. P3 remained `INSUFFICIENT_EVIDENCE` for both current strategy
+candidates. P6-002 remains read-only and grants no execution, quantity,
+RiskAuthorization or trade authority.
 
 ### P6-003 — Deterministic analyst baseline
 
@@ -78,6 +75,16 @@ against which later model output is checked.
 
 Acceptance: deterministic replay, conservative uncertainty behavior and
 `INSUFFICIENT_EVIDENCE` preservation.
+
+Current candidate: branch `p6-003-deterministic-analyst-baseline` adds a non-AI
+reference analyst that consumes only an accepted P6-002 bundle. It emits a fixed,
+fully grounded analysis record spanning P1/P3/P4/P5 evidence. Because P3 remains
+`INSUFFICIENT_EVIDENCE`, the reference result includes explicit uncertainty and
+deterministically resolves to `REVIEW`; it cannot upgrade strategy readiness or
+manufacture certainty. The baseline exposes no execution action, quantity,
+RiskAuthorization, order endpoint, credentials, account payload, provider call or
+network transport. Matching final-head GitHub Actions evidence is required before
+P6-003 can be accepted.
 
 ### P6-004 — Model request boundary
 
