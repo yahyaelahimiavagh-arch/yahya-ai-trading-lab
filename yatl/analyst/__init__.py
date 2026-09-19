@@ -15,6 +15,12 @@ from .contracts import (
     StrategyEvidenceState,
     build_analyst_report,
 )
+from .baseline import (
+    BASELINE_ID,
+    DeterministicBaselineAnalysis,
+    DeterministicBaselineError,
+    build_deterministic_baseline,
+)
 from .evidence import (
     EVIDENCE_BUNDLE_SCHEMA_VERSION,
     EvidenceBundleError,
@@ -38,6 +44,10 @@ __all__ = [
     "EvidenceReference",
     "StrategyEvidenceState",
     "build_analyst_report",
+    "BASELINE_ID",
+    "DeterministicBaselineAnalysis",
+    "DeterministicBaselineError",
+    "build_deterministic_baseline",
     "EVIDENCE_BUNDLE_SCHEMA_VERSION",
     "EvidenceBundleError",
     "LayerEvidence",
