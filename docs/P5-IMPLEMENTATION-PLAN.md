@@ -1,6 +1,6 @@
 # P5 — Local Paper execution, reconciliation and recovery plan
 
-Status: **P5-001 TO P5-006 RUNTIME ACCEPTED AND MERGED — P5-007 CURRENT CANDIDATE**
+Status: **P5-001 TO P5-007 RUNTIME ACCEPTED AND MERGED — P5-008 CURRENT CANDIDATE**
 
 Entry baseline: P4 runtime accepted and merged in checkpoint `f3a5575`; the
 authoritative documentation closeout is `c0d94d2`. The complete baseline suite
@@ -11,6 +11,14 @@ Exit condition: a deterministic local Paper executor consumes only a complete P4
 persists and reconstructs its state, reconciles orders/fills/portfolio projections
 before becoming ready after startup, and fails closed on every ambiguous recovery
 condition. P5 acceptance cannot grant exchange TRADE permission.
+
+Public repository transition note (2026-09-19): before changing visibility, the
+tracked tree and branch file names were checked for credential/key material, the
+main commit history was scanned for common secret patterns, and the only flagged
+historical values were empty environment placeholders or synthetic test vectors.
+Real `.env`, PEM/key files and exchange credentials remain untracked/ignored.
+Commit-author email metadata is historical Git metadata and was deliberately not
+rewritten because doing so would invalidate accepted checkpoint SHA references.
 
 ## Fixed boundaries
 
@@ -223,8 +231,15 @@ corrupt/truncated snapshots, policy/spec drift, prefix rewrites, corrupt tails a
 ambiguous `.pending` commits fail closed. An ambiguous pending accelerator may be
 discarded only after an exact deterministic confirmation digest and never resets
 source state. Initial implementation-head evidence on `b3900c98` passed **492/492**
-complete tests and **12/12** focused recovery tests; final-head acceptance remains
-pending after documentation closeout and a fresh matching Actions run.
+complete tests and **12/12** focused recovery tests. Final candidate HEAD
+`aef2ee57b004ac8fae740623ee5f3fe7e4c76261` passed **493/493** complete tests
+and **13/13** focused recovery tests in Actions run `35281092899`; both
+`unit-and-safety` and `accepted-public-data` passed. Snapshot SHA-256 is
+`9cff4584e415395360b33897d814ca8a04e305c9a2eecbdafde833f9647f890a` and
+recovery SHA-256 is
+`8cf3fa3f7a6677df19dce223c06b7ffcd0cf1f051bee08ec093c84891a195adf`.
+PR #25 was squash-merged after explicit approval at checkpoint
+`781dc931b4fd8b531df1c031020569533bdbe5d2`; P5-007 is runtime accepted and merged.
 
 ### P5-008 — Guarded local runner and operator CLI
 
@@ -234,6 +249,21 @@ not accept secrets, endpoint URLs, arbitrary imports or exchange permissions.
 
 Acceptance: ready/not-ready/stale/corrupt states, non-interactive behavior, bounded
 output and command source scans.
+
+Current candidate: branch `p5-008-guarded-operator-cli` is rebased cleanly on the
+accepted P5-007 checkpoint `781dc931b4fd8b531df1c031020569533bdbe5d2`.
+The operator surface is local-only and exposes three bounded commands through
+`python -m yatl.execution.runner`: `status`, `reconcile` and `recover`.
+Inputs are limited to local database/snapshot paths and an exact, size-bounded
+`BacktestSpec` JSON file. Recovery may only create a missing snapshot accelerator
+after authoritative reconciliation or discard an ambiguous `.pending` accelerator
+after an exact confirmation digest. Corrupt or stale snapshots are never rewritten
+automatically and durable journal/order/fill/portfolio state is never reset.
+Output is deterministic bounded JSON/text with stable exit codes and never echoes
+paths or invalid spec payloads. CI additionally scans the runner source against
+interactive input, dynamic imports/eval/exec and endpoint/URL capability.
+P5-008 remains implementation-only until matching post-rebase final-head Actions
+evidence passes and the checkpoint receives explicit merge approval.
 
 ### P5-009 — Deterministic adversarial execution matrix
 
