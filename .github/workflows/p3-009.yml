@@ -37,6 +37,8 @@ jobs:
         run: uv run --locked python -m unittest discover -s tests -p 'test_execution_scenarios.py' -v
       - name: P5 independent final audit focused gate
         run: uv run --locked python -m unittest discover -s tests -p 'test_execution_audit.py' -v
+      - name: P6 analyst contracts focused gate
+        run: uv run --locked python -m unittest discover -s tests -p 'test_analyst_contracts.py' -v
       - name: Compile and whitespace gates
         run: |
           uv run --locked python -m compileall -q yatl
@@ -72,6 +74,9 @@ jobs:
           assert_absent 'os\.getenv|os\.environ|dotenv|API_KEY|API_SECRET' yatl/execution
           assert_absent 'input\(|importlib|eval\(|exec\(|endpoint|url' yatl/execution/runner.py
           assert_absent 'from yatl\.execution|import yatl\.execution' yatl/strategy yatl/risk
+          assert_absent 'api/v3/(order|orderList)|/fapi|/dapi|withdraw\(' yatl/analyst
+          assert_absent 'from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|urllib|http\.client|websockets|socket' yatl/analyst
+          assert_absent 'os\.getenv|os\.environ|dotenv|API_KEY|API_SECRET' yatl/analyst
       - name: P4 risk contract runtime
         run: uv run --locked python -m yatl risk-contract-check
       - name: P4 exact sizing runtime
@@ -116,6 +121,8 @@ jobs:
         run: |
           uv run --locked python -m yatl.execution.audit_runtime \
             --evidence data/p5/p5-009-evidence
+      - name: P6 analyst contract runtime
+        run: uv run --locked python -m yatl.analyst.contract_runtime
       - name: Publish P5-009 adversarial evidence
         uses: actions/upload-artifact@v4
         with:
