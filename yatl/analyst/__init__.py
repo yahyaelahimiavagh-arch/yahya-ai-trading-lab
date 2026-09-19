@@ -21,6 +21,14 @@ from .baseline import (
     DeterministicBaselineError,
     build_deterministic_baseline,
 )
+from .request import (
+    MAX_MODEL_MATERIAL_BYTES,
+    MODEL_REQUEST_BOUNDARY_ID,
+    MODEL_REQUEST_INSTRUCTIONS,
+    ModelRequestBoundaryError,
+    ModelRequestEnvelope,
+    build_model_request,
+)
 from .evidence import (
     EVIDENCE_BUNDLE_SCHEMA_VERSION,
     EvidenceBundleError,
@@ -48,6 +56,12 @@ __all__ = [
     "DeterministicBaselineAnalysis",
     "DeterministicBaselineError",
     "build_deterministic_baseline",
+    "MAX_MODEL_MATERIAL_BYTES",
+    "MODEL_REQUEST_BOUNDARY_ID",
+    "MODEL_REQUEST_INSTRUCTIONS",
+    "ModelRequestBoundaryError",
+    "ModelRequestEnvelope",
+    "build_model_request",
     "EVIDENCE_BUNDLE_SCHEMA_VERSION",
     "EvidenceBundleError",
     "LayerEvidence",
