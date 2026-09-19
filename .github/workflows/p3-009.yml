@@ -29,6 +29,8 @@ jobs:
         run: uv run --locked python -m unittest discover -s tests -v
       - name: P5 startup reconciliation focused gate
         run: uv run --locked python -m unittest discover -s tests -p 'test_execution_reconcile.py' -v
+      - name: P5 snapshot recovery focused gate
+        run: uv run --locked python -m unittest discover -s tests -p 'test_execution_recovery.py' -v
       - name: Compile and whitespace gates
         run: |
           uv run --locked python -m compileall -q yatl
@@ -91,6 +93,8 @@ jobs:
         run: uv run --locked python -m yatl paper-portfolio-check
       - name: P5 startup reconciliation runtime
         run: uv run --locked python -m yatl.execution.reconcile_runtime
+      - name: P5 snapshot recovery runtime
+        run: uv run --locked python -m yatl.execution.recovery_runtime
 
   accepted-public-data:
     runs-on: ubuntu-latest

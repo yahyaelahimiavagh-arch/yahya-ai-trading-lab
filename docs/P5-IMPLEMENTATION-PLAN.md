@@ -1,6 +1,6 @@
 # P5 — Local Paper execution, reconciliation and recovery plan
 
-Status: **P5-001 TO P5-005 RUNTIME ACCEPTED AND MERGED — P5-006 NEXT BUT UNOPENED**
+Status: **P5-001 TO P5-006 RUNTIME ACCEPTED AND MERGED — P5-007 CURRENT CANDIDATE**
 
 Entry baseline: P4 runtime accepted and merged in checkpoint `f3a5575`; the
 authoritative documentation closeout is `c0d94d2`. The complete baseline suite
@@ -171,8 +171,9 @@ Implementation-head GitHub Actions run `35142189459` passed both jobs on commit
 `f5f2392`, including **471/471** tests and all runtime, safety, replay and audit
 gates. Final-HEAD run `35142873676` passed both jobs on commit `919d331`. PR #22
 was squash-merged at checkpoint `39e83aedae4ec3b29345bb23ee121bb77e4bd8f8`;
-P5-005 is runtime accepted and merged. P5-006 remains unopened. No credential,
-external transport, TRADE permission or order endpoint was added.
+P5-005 is runtime accepted and merged. P5-006 subsequently opened and completed as
+recorded below. No credential, external transport, TRADE permission or order
+endpoint was added.
 
 ### P5-006 — Startup reconciliation
 
@@ -183,6 +184,27 @@ comparison passes.
 Acceptance: clean rebuild, empty-store startup, stale materialization, missing or
 extra event, digest mismatch and unsupported schema tests.
 
+Accepted evidence: **PASS, 2026-09-18.** Nine focused P5-006 tests and the complete
+suite passed **480/480** on final candidate HEAD
+`3135d3df41f7ab3738da9907b241c68ff04bed12`. The reconciler is read-only and
+fail-closed: it reconstructs canonical intent journal state, order event chains and
+materialized order state, accepted P2 fills/costs and accepted P2 `PortfolioLedger`
+projection before producing `READY`. Clean startup recorded `MATCH`; an incomplete
+schema recorded `MISSING_SCHEMA`. `paper` authorization remains unavailable until
+the reconciliation-bound `RecoveryReadiness` is present. Runtime reconciliation
+SHA-256 was
+`1c39fa7a3334f322e846c30d5558b2c7c764de19426f242cfc03c9e5f121db75`.
+Final-HEAD GitHub Actions run `35279216298` passed both `unit-and-safety` and
+`accepted-public-data`, including **480/480** complete tests, **9/9** focused tests,
+compile/whitespace, all prior P4/P5 runtimes, accepted P1 rebuild, P3 two-run replay
+plus independent audit and P4 adversarial replay plus independent audit. The safety
+scan was also hardened from an unavailable `rg` invocation to explicit `git grep`
+exit-code validation, eliminating a possible false-green scan. No dependency or
+`uv.lock` change exists. PR #24 was squash-merged at checkpoint
+`e4d2ad46a036646d361f218fde56fb3509f0add5`; P5-006 is runtime accepted and merged.
+P5-007 is the current candidate. No credential, external transport, TRADE permission
+or exchange-order endpoint was added.
+
 ### P5-007 — Snapshot and fail-closed recovery
 
 Introduce versioned snapshots as rebuild accelerators, never as authority. Validate
@@ -192,6 +214,17 @@ automatic reset or guessed repair is permitted.
 
 Acceptance: crash-point matrix, snapshot deletion/rebuild, corrupt tail, policy
 drift, manual-confirmation boundary and repeatable recovery evidence.
+
+Current candidate: PR #25 on branch `p5-007-snapshot-recovery`, based on accepted
+P5-006 checkpoint `e4d2ad46a036646d361f218fde56fb3509f0add5`. Snapshot files are
+canonical, versioned, hash-bound accelerators only; SQLite journal/order/fill state
+remains authoritative. Missing snapshots rebuild from authoritative reconciliation;
+corrupt/truncated snapshots, policy/spec drift, prefix rewrites, corrupt tails and
+ambiguous `.pending` commits fail closed. An ambiguous pending accelerator may be
+discarded only after an exact deterministic confirmation digest and never resets
+source state. Initial implementation-head evidence on `b3900c98` passed **492/492**
+complete tests and **12/12** focused recovery tests; final-head acceptance remains
+pending after documentation closeout and a fresh matching Actions run.
 
 ### P5-008 — Guarded local runner and operator CLI
 
