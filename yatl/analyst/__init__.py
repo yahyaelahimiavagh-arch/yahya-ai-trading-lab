@@ -15,6 +15,14 @@ from .contracts import (
     StrategyEvidenceState,
     build_analyst_report,
 )
+from .evidence import (
+    EVIDENCE_BUNDLE_SCHEMA_VERSION,
+    EvidenceBundleError,
+    LayerEvidence,
+    PointInTimeEvidenceBundle,
+    build_evidence_bundle,
+    build_layer_evidence,
+)
 
 __all__ = [
     "ANALYST_POLICY_ID",
@@ -30,4 +38,10 @@ __all__ = [
     "EvidenceReference",
     "StrategyEvidenceState",
     "build_analyst_report",
+    "EVIDENCE_BUNDLE_SCHEMA_VERSION",
+    "EvidenceBundleError",
+    "LayerEvidence",
+    "PointInTimeEvidenceBundle",
+    "build_evidence_bundle",
+    "build_layer_evidence",
 ]
