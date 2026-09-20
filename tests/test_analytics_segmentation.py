@@ -155,8 +155,12 @@ class SegmentationTests(unittest.TestCase):
     def test_trade_segment_summary_tamper_fails_closed(self):
         report = build_segmentation(SNAPSHOT, self.specs)
         first = report.trade_segments[0]
+        tampered = replace(first, realized_pnl_quote="999")
         with self.assertRaises(SegmentationError):
-            replace(first, realized_pnl_quote="999")
+            replace(
+                report,
+                trade_segments=(tampered, *report.trade_segments[1:]),
+            )
 
     def test_source_metrics_binding_tamper_fails_closed(self):
         report = build_segmentation(SNAPSHOT, self.specs)
