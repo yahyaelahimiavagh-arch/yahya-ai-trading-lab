@@ -2017,3 +2017,52 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
   capability.
 - No dependency or `uv.lock` change.
 - P8-010 remains closed until exact final-head Actions pass and P8-009 is merged.
+
+## P8-009 accepted implementation — 2026-09-20
+
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `503e78d`**.
+
+- PR #60 final candidate HEAD:
+  `dfc7e839e7a7eb0a72354cb35f63152b4b8606be`.
+- Matching GitHub Actions: `35533242415` — both jobs PASS.
+- Complete suite: **1107/1107 PASS**.
+- Focused P8-009: **37/37 PASS**.
+- Matrix: **9 scenarios × 2 symbols = 18 runs**.
+- Published canonical evidence files: **19**.
+- Matrix index SHA-256:
+  `38bc0e1eafedd44b1776ecec1a65fc48352a3155341dfca323641686739a8608`.
+- BTCUSDT accepted P7 export SHA-256:
+  `8e11935814a57389399eea4046beed2f98b7bb448b25465740ef868f7e4dc456`.
+- ETHUSDT accepted P7 export SHA-256:
+  `1ea65455e44f8723709f504f585da965683558608909bd2da75ab561c5e9c092`.
+- Exact outcomes, replay equality, canonical evidence, XSS/remote prevention and
+  unchanged accepted P7 identities PASS.
+- PR #60 squash-merged; accepted checkpoint:
+  `503e78dd6fb741f33dce838b70ff4c2c4fea3452`.
+- No dependency or `uv.lock` change.
+
+## P8-010 current candidate — 2026-09-20
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry checkpoint: accepted P8-009 at
+  `503e78dd6fb741f33dce838b70ff4c2c4fea3452`.
+- Branch: `p8-010-independent-final-audit`.
+- Independent production audit imports no analytics runtime/database.
+- Frozen P8 policy SHA-256:
+  `b4534112975f519714592ad7468c950eb6aa112f49b9aee80b1d15bf51804c2e`.
+- Frozen P8-009 index SHA-256:
+  `38bc0e1eafedd44b1776ecec1a65fc48352a3155341dfca323641686739a8608`.
+- Frozen BTC/ETH accepted export-set SHA-256:
+  `6f884ea930cd929292f000e8ada2da370b4428d7173a1f3d2423deacc6523439`.
+- Recomputes loader, quality, overview, completed trades,
+  performance/segmentation and renderer twice for both symbols.
+- Replays P8-009 twice and compares all 19 published evidence files byte-for-byte.
+- Verifies two published HTML artifacts against independently rendered exact bytes,
+  SHA-256 and self-contained/no-remote/no-script constraints.
+- Confirms accepted export bytes are unchanged before/after audit.
+- Performs independent production P8 source-safety scan.
+- **32 focused tests** plus independent runtime gate.
+- No dependency or `uv.lock` change.
+- P8 is not closed until exact final-head Actions pass and P8-010 is explicitly
+  approved and merged.
