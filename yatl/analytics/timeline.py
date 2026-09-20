@@ -566,7 +566,7 @@ def _validate_fill_material(
             not isinstance(payload, dict)
             or set(payload) != FILL_PAYLOAD_KEYS
             or payload["symbol"] != symbol
-            or payload["action"] != intent["action"]
+            or payload["action"] not in ("ENTER_LONG", "EXIT_LONG")
             or payload["quantity"] != intent["approved_quantity"]
             or type(payload["decision_time_ms"]) is not int
             or type(payload["fill_time_ms"]) is not int
@@ -603,12 +603,37 @@ def _validate_fill_material(
         }
         if _digest(material) != item["fill_event_sha256"]:
             raise TimelineError("P5 fill event digest verification failed")
-        fill_steps.setdefault(item["fill_step_sha256"], []).append(item["fill_index"])
-        fills.append({**item, "payload": payload})
+        accepted = {**item, "payload": payload}
+        fill_steps.setdefault(item["fill_step_sha256"], []).append(accepted)
+        fills.append(accepted)
 
-    for indexes in fill_steps.values():
+    for step in fill_steps.values():
+        indexes = [item["fill_index"] for item in step]
         if indexes != list(range(len(indexes))):
             raise TimelineError("P5 fill-step indexes are incomplete or out of order")
+        first = step[0]
+        intent = intents[first["authorization_sha256"]]
+        if first["payload"]["action"] != intent["action"]:
+            raise TimelineError("P5 fill-step first action differs from accepted intent")
+        if len(step) > 2:
+            raise TimelineError("P5 fill-step contains unsupported extra fills")
+        if len(step) == 2:
+            second = step[1]
+            if (
+                intent["action"] != "ENTER_LONG"
+                or first["payload"]["action"] != "ENTER_LONG"
+                or second["payload"]["action"] != "EXIT_LONG"
+                or second["authorization_sha256"] != first["authorization_sha256"]
+                or second["intent_sha256"] != first["intent_sha256"]
+                or second["order_state_sha256"] != first["order_state_sha256"]
+                or second["payload"]["fill_time_ms"] != first["payload"]["fill_time_ms"]
+                or second["payload"]["quantity"] != first["payload"]["quantity"]
+                or second["payload"]["reason"]
+                not in ("STOP", "TARGET", "AMBIGUOUS_STOP_PRIORITY")
+            ):
+                raise TimelineError(
+                    "P5 multi-fill step is not an accepted protective exit"
+                )
 
     portfolio_rows = _read_rows(
         connection,
