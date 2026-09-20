@@ -37,6 +37,13 @@ from .response import (
     ModelResponseValidation,
     validate_model_response,
 )
+from .grounding import (
+    GROUNDING_SCHEMA_VERSION,
+    GroundingBoundaryError,
+    GroundingCode,
+    GroundingValidation,
+    ground_model_response,
+)
 from .evidence import (
     EVIDENCE_BUNDLE_SCHEMA_VERSION,
     EvidenceBundleError,
@@ -76,6 +83,11 @@ __all__ = [
     "ModelResponseCode",
     "ModelResponseValidation",
     "validate_model_response",
+    "GROUNDING_SCHEMA_VERSION",
+    "GroundingBoundaryError",
+    "GroundingCode",
+    "GroundingValidation",
+    "ground_model_response",
     "EVIDENCE_BUNDLE_SCHEMA_VERSION",
     "EvidenceBundleError",
     "LayerEvidence",
