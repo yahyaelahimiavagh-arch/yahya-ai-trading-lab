@@ -29,6 +29,14 @@ from .request import (
     ModelRequestEnvelope,
     build_model_request,
 )
+from .response import (
+    MAX_MODEL_RESPONSE_BYTES,
+    MODEL_RESPONSE_SCHEMA_VERSION,
+    ModelResponseBoundaryError,
+    ModelResponseCode,
+    ModelResponseValidation,
+    validate_model_response,
+)
 from .evidence import (
     EVIDENCE_BUNDLE_SCHEMA_VERSION,
     EvidenceBundleError,
@@ -62,6 +70,12 @@ __all__ = [
     "ModelRequestBoundaryError",
     "ModelRequestEnvelope",
     "build_model_request",
+    "MAX_MODEL_RESPONSE_BYTES",
+    "MODEL_RESPONSE_SCHEMA_VERSION",
+    "ModelResponseBoundaryError",
+    "ModelResponseCode",
+    "ModelResponseValidation",
+    "validate_model_response",
     "EVIDENCE_BUNDLE_SCHEMA_VERSION",
     "EvidenceBundleError",
     "LayerEvidence",
