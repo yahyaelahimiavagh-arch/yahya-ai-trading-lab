@@ -7,7 +7,6 @@ from decimal import Decimal, InvalidOperation, localcontext
 
 from .contracts import (
     DashboardMetricValue,
-    DashboardSegmentRow,
     DashboardSourceIdentity,
     MetricState,
     MetricUnit,
@@ -69,6 +68,12 @@ _TRADE_SEGMENT_KEYS = frozenset((
     "losing_trades",
     "breakeven_trades",
     "segment_sha256",
+))
+_ANALYST_TRACE_KEYS = frozenset((
+    "trace_sha256",
+    "disposition",
+    "grounding_code",
+    "accepted",
 ))
 _ANALYST_SEGMENT_KEYS = frozenset((
     "segment_id",
@@ -259,6 +264,7 @@ def _verify_loaded_export(loaded):
         analytics = record["analytics"]
         chain = quality["accepted_chain"]
         trade_metrics = analytics["trade_metrics"]
+        analyst_traces = analytics["analyst_traces"]
         trade_segments = analytics["trade_segments"]
         analyst_segments = analytics["analyst_segments"]
     except (KeyError, TypeError, ValueError):
@@ -283,7 +289,9 @@ def _verify_loaded_export(loaded):
         or chain.get("metrics_sha256") != analytics.get("metrics_sha256")
         or chain.get("segmentation_sha256") != loaded.segmentation_sha256
         or chain.get("completed_trade_count") != len(trade_metrics)
+        or chain.get("analyst_trace_count") != len(analyst_traces)
         or type(trade_metrics) is not list
+        or type(analyst_traces) is not list
         or type(trade_segments) is not list
         or type(analyst_segments) is not list
         or len(trade_segments) > MAX_SEGMENT_DISPLAY_ROWS
@@ -324,6 +332,37 @@ def _verify_loaded_export(loaded):
     ):
         raise PerformanceViewProjectionError("Accepted P7 trade metric identity is invalid")
 
+    analyst_trace_ids = []
+    for item in analyst_traces:
+        if (
+            not isinstance(item, dict)
+            or frozenset(item) != _ANALYST_TRACE_KEYS
+            or not _valid_sha(item["trace_sha256"])
+            or item["disposition"] not in ("REVIEW", "INSUFFICIENT_DATA")
+            or not isinstance(item["grounding_code"], str)
+            or not item["grounding_code"]
+            or type(item["accepted"]) is not bool
+        ):
+            raise PerformanceViewProjectionError("Accepted P7 analyst trace is invalid")
+        if item["accepted"]:
+            if item["disposition"] != "REVIEW" or item["grounding_code"] != "GROUNDED":
+                raise PerformanceViewProjectionError(
+                    "Accepted analyst trace semantics are invalid"
+                )
+        elif (
+            item["disposition"] != "INSUFFICIENT_DATA"
+            or item["grounding_code"] == "GROUNDED"
+        ):
+            raise PerformanceViewProjectionError(
+                "Rejected analyst trace semantics are invalid"
+            )
+        analyst_trace_ids.append(item["trace_sha256"])
+    if (
+        analyst_trace_ids != sorted(analyst_trace_ids)
+        or len(analyst_trace_ids) != len(set(analyst_trace_ids))
+    ):
+        raise PerformanceViewProjectionError("Accepted analyst trace identity is invalid")
+
     trade_segment_ids = []
     for item in trade_segments:
         if (
@@ -356,6 +395,22 @@ def _verify_loaded_export(loaded):
         _decimal(item["realized_pnl_quote"])
         if _decimal(item["total_cost_quote"]) < 0:
             raise PerformanceViewProjectionError("Accepted P7 trade segment cost is invalid")
+        expected_segment_id = _digest({
+            "schema_version": 1,
+            "population": item["population"],
+            "dimension": item["dimension"],
+            "value": item["value"],
+        })
+        base = {key: value for key, value in item.items() if key != "segment_sha256"}
+        expected_segment_sha256 = _digest({
+            "schema_version": 1,
+            "segment": base,
+        })
+        if (
+            item["segment_id"] != expected_segment_id
+            or item["segment_sha256"] != expected_segment_sha256
+        ):
+            raise PerformanceViewProjectionError("Accepted P7 trade segment digest is invalid")
         trade_segment_ids.append(item["segment_id"])
     if len(trade_segment_ids) != len(set(trade_segment_ids)):
         raise PerformanceViewProjectionError("Accepted P7 trade segment identity is duplicate")
@@ -379,18 +434,68 @@ def _verify_loaded_export(loaded):
             or item["member_count"] != len(item["member_trace_sha256"])
         ):
             raise PerformanceViewProjectionError("Accepted P7 analyst segment is invalid")
+        expected_segment_id = _digest({
+            "schema_version": 1,
+            "population": item["population"],
+            "dimension": item["dimension"],
+            "value": item["value"],
+        })
+        base = {key: value for key, value in item.items() if key != "segment_sha256"}
+        expected_segment_sha256 = _digest({
+            "schema_version": 1,
+            "segment": base,
+        })
+        if (
+            item["segment_id"] != expected_segment_id
+            or item["segment_sha256"] != expected_segment_sha256
+        ):
+            raise PerformanceViewProjectionError(
+                "Accepted P7 analyst segment digest is invalid"
+            )
         analyst_segment_ids.append(item["segment_id"])
     if len(analyst_segment_ids) != len(set(analyst_segment_ids)):
         raise PerformanceViewProjectionError("Accepted P7 analyst segment identity is duplicate")
 
-    return analytics, tuple(trade_metrics), tuple(trade_segments), tuple(analyst_segments)
+    expected_trade_ids = set(trade_ids)
+    for dimension in ("SYMBOL", "STRATEGY_IDENTITY", "EVIDENCE_LABEL"):
+        seen = [
+            member
+            for item in trade_segments
+            if item["dimension"] == dimension
+            for member in item["member_trade_sha256"]
+        ]
+        if len(seen) != len(set(seen)) or set(seen) != expected_trade_ids:
+            raise PerformanceViewProjectionError(
+                "Trade segment dimension does not conserve members exactly once"
+            )
+
+    expected_trace_ids = set(analyst_trace_ids)
+    for dimension in ("ANALYST_DISPOSITION", "GROUNDING_CODE", "TRACE_ACCEPTANCE"):
+        seen = [
+            member
+            for item in analyst_segments
+            if item["dimension"] == dimension
+            for member in item["member_trace_sha256"]
+        ]
+        if len(seen) != len(set(seen)) or set(seen) != expected_trace_ids:
+            raise PerformanceViewProjectionError(
+                "Analyst segment dimension does not conserve members exactly once"
+            )
+
+    return (
+        analytics,
+        tuple(trade_metrics),
+        tuple(trade_segments),
+        tuple(analyst_segments),
+    )
 
 
 def _reconcile_symbol_segment(symbol, aggregates, trade_segments, trade_ids):
+    expected_value = symbol if trade_ids else "NO_COMPLETED_TRADES"
     symbol_segments = [
         item
         for item in trade_segments
-        if item["dimension"] == "SYMBOL" and item["value"] == symbol
+        if item["dimension"] == "SYMBOL" and item["value"] == expected_value
     ]
     if len(symbol_segments) != 1:
         raise PerformanceViewProjectionError("Exact symbol segment is missing or duplicate")
@@ -558,8 +663,6 @@ class PerformanceSegmentationProjection:
             )
             or not _valid_sha(self.source_metrics_sha256)
             or not _valid_sha(self.source_segmentation_sha256)
-            or self.source_segmentation_sha256 != self.source.export_sha256
-            and False
             or self.strategy_evidence != "INSUFFICIENT_EVIDENCE"
             or self.aggregation_scope != "COMPLETED_PAPER_TRADES_ONLY"
             or self.cross_dimension_aggregation is not False
