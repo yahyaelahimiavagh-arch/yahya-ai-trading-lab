@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P7 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P8-003 SYSTEM / SAFETY / QUALITY OVERVIEW PROJECTION — CANDIDATE**
+قدم جاری: **P8-004 COMPLETED-TRADE TABLE PROJECTION — CANDIDATE**
 
 ## منشأ و حدود سند
 
@@ -541,6 +541,24 @@ system/safety/quality را از همان boundary می‌سازد. source fields
 نبودن source کافی صریحاً `UNKNOWN` می‌مانند. هیچ health/readiness/profitability
 یا live/trade permission جدیدی استنباط نمی‌شود. P8-004 تا پذیرش و merge مستقل
 P8-003 بسته می‌ماند.
+
+
+## P8-003 acceptance / P8-004 candidate — 2026-09-20
+
+P8-003 با PR #54، Actions `35524331648`، **910/910** تست کامل و **24/24**
+تست focused پذیرفته و در checkpoint
+`2a74006dd42ba3755c4f0382847a165d7ef485ce` روی `main` merge شد. overview
+ثابت 15-card فقط source fields پذیرفته‌شده P7 را نمایش می‌دهد و unknownها را
+صریح نگه می‌دارد.
+
+P8-004 روی branch `p8-004-completed-trade-table` فقط completed-trade table را
+از accepted P7 `trade_metrics` می‌سازد. تمام numeric values به شکل exact source
+strings حفظ می‌شوند؛ filter/sort/page bounded و deterministic است؛ open/incomplete
+material وارد completed rows نمی‌شود. چون accepted P7 export فیلدهای execution-level
+لازم برای `DashboardTradeRow` قدیمی (entry/exit time، quantity، price) را ندارد،
+آن قرارداد frozen تغییر نمی‌کند و هیچ داده‌ای جعل نمی‌شود؛ یک metric-row contract
+جدا برای داده‌های واقعاً موجود استفاده می‌شود. P8-005 تا پذیرش و merge مستقل
+P8-004 بسته می‌ماند.
 
 
 ## Economic objective clarification — 2026-09-20
