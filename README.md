@@ -8,14 +8,14 @@ P0 تا P7 با شواهد runtime پذیرفته و روی `main` بسته شد
 P8 — Dashboard مرحله بعدی است. P8 فقط export پذیرفته‌شده و sanitized فاز P7 را
 read-only مصرف می‌کند و نمایش وضعیت، معاملات Paper، عملکرد و diagnostics را بدون
 credential، network/provider، TRADE permission، order endpoint یا مسیر اجرای جدید
-می‌سازد. P8-006 با checkpoint
-`4ac351c384bebf5abd47ea1d6baee84f08a9bfc5` پذیرفته و merge شده است. P8-007
-اکنون renderer محلی deterministic را می‌سازد: PASS فقط projectionهای هم‌هویت
-accepted P7 را به HTML/CSS خودکفا تبدیل می‌کند؛ FAIL/ABSENT هر analytics تزریقی
-را رد می‌کنند. تمام dynamic text escape می‌شود، CSP شبکه/script/font/image را
-می‌بندد و SHA-256 exact view model و rendered bytes ثبت می‌شود. این مرحله هیچ
-file write/CLI/publication ندارد. پذیرش P8-007 هنوز به Final-HEAD CI و merge
-مستقل نیاز دارد و P8-008 باز نشده است.
+می‌سازد. P8-007 با checkpoint
+`ce1d7f5d5a8ea150e2ec92d9011765cdc4d79487` پذیرفته و merge شده است. P8-008
+اکنون CLI محلی `validate/summary/build` و publication اتمیک را اضافه می‌کند:
+expected export SHA اجباری است، overwrite پیش‌فرض ممنوع است، temp در همان
+directory ساخته می‌شود و خروجی نهایی دوباره با byte length/SHA renderer verify
+می‌شود. JSON خروجی path یا exception/rejected value را بازتاب نمی‌دهد و source
+قبل از publish دوباره verify می‌شود. پذیرش P8-008 هنوز به Final-HEAD CI و merge
+مستقل نیاز دارد و P8-009 باز نشده است.
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 

@@ -1920,3 +1920,49 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
   capability.
 - No dependency or `uv.lock` change.
 - P8-008 remains closed until exact final-head Actions pass and P8-007 is merged.
+
+## P8-007 accepted implementation — 2026-09-20
+
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `ce1d7f5`**.
+
+- PR #58 final candidate HEAD:
+  `30dd07254caca6e30e8e6fc463e12b00404817b5`.
+- Matching GitHub Actions: `35529802550` — both jobs PASS.
+- Complete suite: **1026/1026 PASS**.
+- Focused P8-007: **34/34 PASS**.
+- Full dashboard bytes: **10,587**.
+- View-model SHA-256:
+  `f0f4bc42f6abd9d0629a5314c734caa3d0c5264ac4a9136fc3aa7e35b0652abc`.
+- Full dashboard SHA-256:
+  `a5d51099537c39b933c510161b2223b049ba78e38205284736a279199966d6ea`.
+- Static self-contained HTML, strict escaping and CSP remain enforced.
+- FAIL/ABSENT cannot render partial analytics.
+- PR #58 squash-merged; accepted checkpoint:
+  `ce1d7f5d5a8ea150e2ec92d9011765cdc4d79487`.
+- No dependency or `uv.lock` change.
+
+## P8-008 current candidate — 2026-09-20
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry checkpoint: accepted P8-007 at
+  `ce1d7f5d5a8ea150e2ec92d9011765cdc4d79487`.
+- Branch: `p8-008-guarded-dashboard-cli`.
+- Noninteractive `validate / summary / build` module CLI.
+- Exact `--expected-export-sha256` is mandatory; no SHA inference.
+- All commands execute the accepted P8 projection+renderer pipeline before success.
+- Default build refuses overwrite; explicit `--overwrite` is required.
+- Source/output same path, hardlink, output symlink, symlink parent and directory
+  targets fail closed.
+- Same-directory temporary publication with fsync and atomic
+  link/replace semantics.
+- Published bytes are reopened read-only/no-follow and verified against exact
+  renderer length and SHA-256.
+- Source is reloaded before publication and must remain unchanged.
+- Stable compact exit/error records never echo caller path, rejected value,
+  traceback or secret-like material.
+- **44 focused tests** plus deterministic runtime and source-safety CI gate.
+- Production CLI has no analytics runtime/database, network/provider,
+  execution/account/risk, quantity, order or AI execution capability.
+- No dependency or `uv.lock` change.
+- P8-009 remains closed until exact final-head Actions pass and P8-008 is merged.

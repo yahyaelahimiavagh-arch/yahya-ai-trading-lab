@@ -1,6 +1,6 @@
 # P8 — Dashboard implementation plan
 
-Status: **P8-006 RUNTIME ACCEPTED / MERGED — P8-007 CURRENT CANDIDATE**
+Status: **P8-007 RUNTIME ACCEPTED / MERGED — P8-008 CURRENT CANDIDATE**
 
 Entry baseline: P7 runtime accepted and merged at checkpoint
 `93b9d87cf23fe8a52470c4a01b480b0935be87c3`. Final P7 Actions run
@@ -196,45 +196,17 @@ Acceptance: byte-identical rendering, HTML escaping/XSS tests, no remote-resourc
 references, bounded artifact size, stable dashboard SHA-256 and browser-openable
 static output.
 
-Current candidate: branch `p8-007-deterministic-dashboard-renderer` from accepted
-P8-006 checkpoint `4ac351c384bebf5abd47ea1d6baee84f08a9bfc5`.
-
-P8-007 is an **in-memory renderer only**. It introduces no output path, file write,
-overwrite flag, temporary file, CLI command or publication behavior; those remain
-reserved for P8-008.
-
-For PASS quality, the renderer requires the P8-003 overview, P8-004 completed-trade
-table and P8-005 performance/segmentation projections to bind to the same accepted
-P7 source/export identity. It cross-checks export, metrics and segmentation
-identities plus frozen Paper/lock/evidence status before rendering.
-
-For FAIL or ABSENT quality, any supplied overview/trade/performance projection is
-rejected. The output is a quality-only blocked dashboard, so partial analytics
-cannot be smuggled into HTML after P8-006.
-
-The generated artifact is deterministic UTF-8 HTML with embedded deterministic CSS
-and **no JavaScript**. All dynamic display values pass through strict HTML escaping.
-A restrictive CSP fixes `default-src`, `connect-src`, `script-src`,
-`font-src` and `img-src` to `'none'`; only inline local CSS is allowed.
-Generated markup is parsed again with a local structural validator that rejects
-remote-capable tags and `src/href/action/poster/data/srcset` attributes.
-
-The renderer emits a stable view-model SHA-256 and a SHA-256 over the exact rendered
-HTML bytes. Artifact size is bounded to **4 MiB**. PASS output contains the fixed
-safety banner, overview, exact high-precision metrics, the current bounded completed
-trade page, independent trade/analyst segmentation tables and provenance hashes.
-FAIL/ABSENT output carries no accepted export SHA.
-
-Focused suite: **34 tests** covering byte-identical replay, XSS/HTML escaping, CSP,
-remote-resource prevention, exact numeric preservation, source identity mismatch,
-FAIL/ABSENT analytics injection and artifact identity tampering. Runtime gate:
-
-```powershell
-uv run --locked python -m yatl.dashboard.renderer_runtime
-```
-
-No dependency or `uv.lock` change. Exact final-head GitHub Actions evidence is
-required before P8-007 acceptance or merge.
+Accepted: PR #58 was squash-merged at
+`ce1d7f5d5a8ea150e2ec92d9011765cdc4d79487` after matching final-head Actions
+run `35529802550` passed both jobs, the **1026/1026** complete suite and
+**34/34** focused P8-007 tests. Runtime produced a byte-identical self-contained
+static dashboard of **10,587 bytes** with view-model SHA-256
+`f0f4bc42f6abd9d0629a5314c734caa3d0c5264ac4a9136fc3aa7e35b0652abc`
+and dashboard SHA-256
+`a5d51099537c39b933c510161b2223b049ba78e38205284736a279199966d6ea`.
+FAIL/ABSENT remained quality-only, no remote resource or script capability was
+introduced and P8-007 performed no file publication. No dependency or
+`uv.lock` change was made.
 
 ### P8-008 — Guarded dashboard CLI and atomic publication
 
@@ -247,6 +219,52 @@ input.
 Acceptance: stable exit codes, noninteractive behavior, atomic output, no
 overwrite by default, path/error redaction, deterministic output and no source
 mutation.
+
+Current candidate: branch `p8-008-guarded-dashboard-cli` from accepted P8-007
+checkpoint `ce1d7f5d5a8ea150e2ec92d9011765cdc4d79487`.
+
+P8-008 exposes three noninteractive local module commands through
+`python -m yatl.dashboard.cli`:
+
+- `validate --input ... --expected-export-sha256 ...`
+- `summary --input ... --expected-export-sha256 ...`
+- `build --input ... --expected-export-sha256 ... --output ... [--overwrite]`
+
+The exact expected P7 export SHA-256 is mandatory and is never inferred from a
+filename or caller-provided metadata. All commands run the accepted
+P8-002→P8-007 pipeline in memory before returning success. CLI JSON output contains
+only stable bounded fields and hashes; caller paths, rejected values and raw
+exception text are never echoed.
+
+`build` refuses an existing output by default. Explicit `--overwrite` is
+required to replace a regular file. Source/output identity collisions, hardlinks,
+output symlinks, symlink parents, directories and invalid storage states fail
+closed. The source is reloaded before publication and must remain byte/identity
+stable.
+
+Publication uses a temporary file created in the **same output directory**, writes
+and fsyncs the complete deterministic HTML bytes, then atomically publishes with
+`os.link` for no-overwrite creation or `os.replace` for explicit overwrite.
+Temporary files are removed on success and failure. Published bytes are reopened
+read-only without following symlinks and verified against the renderer byte count
+and dashboard SHA-256.
+
+Stable process exit classes are frozen for success, invalid request, source
+rejection/mutation, storage failure, existing output, output mismatch and internal
+failure. Unexpected exceptions are converted to a compact `INTERNAL_ERROR`
+record instead of exposing traceback/path details.
+
+Focused suite: **44 tests** covering validate/summary/build, deterministic output,
+default overwrite refusal, explicit overwrite, same-directory temp publication,
+cleanup after injected failures, source immutability, same-file/hardlink/symlink
+rejection, stable exit codes and path/secret/error redaction. Runtime gate:
+
+```powershell
+uv run --locked python -m yatl.dashboard.cli_runtime
+```
+
+No dependency or `uv.lock` change. Exact final-head GitHub Actions evidence is
+required before P8-008 acceptance or merge.
 
 ### P8-009 — Adversarial dashboard matrix
 

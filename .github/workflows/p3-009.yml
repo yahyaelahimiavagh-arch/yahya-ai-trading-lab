@@ -91,6 +91,8 @@ jobs:
         run: uv run --locked python -m unittest discover -s tests -p 'test_dashboard_quality_view.py' -v
       - name: P8 deterministic renderer focused gate
         run: uv run --locked python -m unittest discover -s tests -p 'test_dashboard_renderer.py' -v
+      - name: P8 guarded dashboard CLI focused gate
+        run: uv run --locked python -m unittest discover -s tests -p 'test_dashboard_cli.py' -v
       - name: Compile and whitespace gates
         run: |
           uv run --locked python -m compileall -q yatl
@@ -143,6 +145,7 @@ jobs:
           assert_absent 'from yatl\.analytics|import yatl\.analytics|sqlite3|database_path|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|urllib|http\.client|websockets|socket' yatl/dashboard/performance_views.py
           assert_absent 'from yatl\.analytics|import yatl\.analytics|sqlite3|database_path|local_paper|analyst_journal|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|urllib|http\.client|websockets|socket' yatl/dashboard/quality_view.py
           assert_absent 'from yatl\.analytics|import yatl\.analytics|sqlite3|database_path|from pathlib|import pathlib|tempfile|open\(|write_text|write_bytes|os\.replace|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|urllib|http\.client|websockets|socket' yatl/dashboard/renderer.py
+          assert_absent 'from yatl\.analytics|import yatl\.analytics|sqlite3|database_path|local_paper|analyst_journal|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|urllib|http\.client|websockets|socket|requests|httpx|aiohttp|openai|anthropic|os\.getenv|os\.environ' yatl/dashboard/cli.py
       - name: P4 risk contract runtime
         run: uv run --locked python -m yatl risk-contract-check
       - name: P4 exact sizing runtime
@@ -257,6 +260,8 @@ jobs:
         run: uv run --locked python -m yatl.dashboard.quality_view_runtime
       - name: P8 deterministic renderer runtime
         run: uv run --locked python -m yatl.dashboard.renderer_runtime
+      - name: P8 guarded dashboard CLI runtime
+        run: uv run --locked python -m yatl.dashboard.cli_runtime
       - name: Publish P5-009 adversarial evidence
         uses: actions/upload-artifact@v4
         with:
