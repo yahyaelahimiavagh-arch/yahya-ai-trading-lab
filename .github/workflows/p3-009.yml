@@ -85,6 +85,8 @@ jobs:
         run: uv run --locked python -m unittest discover -s tests -p 'test_dashboard_overview.py' -v
       - name: P8 completed trade table focused gate
         run: uv run --locked python -m unittest discover -s tests -p 'test_dashboard_trade_table.py' -v
+      - name: P8 performance segmentation focused gate
+        run: uv run --locked python -m unittest discover -s tests -p 'test_dashboard_performance_views.py' -v
       - name: Compile and whitespace gates
         run: |
           uv run --locked python -m compileall -q yatl
@@ -134,6 +136,7 @@ jobs:
           assert_absent 'from yatl\.analytics|import yatl\.analytics|sqlite3|database_path|local_paper|analyst_journal' yatl/dashboard/loader.py
           assert_absent 'from yatl\.analytics|import yatl\.analytics|datetime|time\.time|time\.monotonic|sqlite3|database_path|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|urllib|http\.client|websockets|socket' yatl/dashboard/overview.py
           assert_absent 'from yatl\.analytics|import yatl\.analytics|sqlite3|database_path|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|urllib|http\.client|websockets|socket' yatl/dashboard/trade_table.py
+          assert_absent 'from yatl\.analytics|import yatl\.analytics|sqlite3|database_path|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|urllib|http\.client|websockets|socket' yatl/dashboard/performance_views.py
       - name: P4 risk contract runtime
         run: uv run --locked python -m yatl risk-contract-check
       - name: P4 exact sizing runtime
@@ -242,6 +245,8 @@ jobs:
         run: uv run --locked python -m yatl.dashboard.overview_runtime
       - name: P8 completed trade table runtime
         run: uv run --locked python -m yatl.dashboard.trade_table_runtime
+      - name: P8 performance segmentation runtime
+        run: uv run --locked python -m yatl.dashboard.performance_views_runtime
       - name: Publish P5-009 adversarial evidence
         uses: actions/upload-artifact@v4
         with:
