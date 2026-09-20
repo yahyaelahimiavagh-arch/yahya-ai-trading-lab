@@ -1,6 +1,6 @@
 # P6 — AI Analyst implementation plan
 
-Status: **P6-001 / P6-002 / P6-003 / P6-004 / P6-005 / P6-006 / P6-007 / P6-008 / P6-009 RUNTIME ACCEPTED / MERGED — P6-010 CURRENT CANDIDATE**
+Status: **P6-001 / P6-002 / P6-003 / P6-004 / P6-005 / P6-006 / P6-007 / P6-008 / P6-009 / P6-010 RUNTIME ACCEPTED / MERGED — PHASE CLOSED**
 
 Entry baseline: P5 runtime accepted and merged at checkpoint
 `cd5ff5651e2d1df509dba6de8bc717a3ba7bf34f`. Final P5 Actions run
@@ -203,21 +203,19 @@ Independently recompute P6 policy, evidence bundles, adversarial outcomes, sourc
 safety and accepted artifacts. P6 closes only after matching final-head GitHub
 Actions pass.
 
-Current candidate: branch `p6-010-independent-final-audit` adds a fail-closed
-audit that independently freezes and recomputes the analyst policy digest
-(`355ad5a2ed274878db4c9a56e15b14548ee6ba0c16016c7cc3b04b02120bbe44`),
+Accepted: PR #39 was squash-merged at
+`f07f2209cac5b46be8f9d74da2d162925ed8ab65` after matching final-head Actions
+run `35504753305` passed both jobs, the **703/703** complete suite, **13/13**
+focused P6-010 tests, source safety, exact-outcome checks and replay equality.
+The independent audit froze/recomputed the analyst policy digest
+`355ad5a2ed274878db4c9a56e15b14548ee6ba0c16016c7cc3b04b02120bbe44`,
 the two-symbol evidence manifest digest
-(`93dd09b73d439ed60b781f38783f2fb716689210ad66fb7ed5a395ed7b5b5f0f`)
+`93dd09b73d439ed60b781f38783f2fb716689210ad66fb7ed5a395ed7b5b5f0f`
 and the accepted P6-009 index digest
-(`a5a09bdde1600c706bdc3665b46f334ae04fd5fc4fe364613cc9ed7913018524`).
-It reads the published evidence directory twice, rejects symlinks, missing/extra
-files, size violations, noncanonical JSON, digest changes and forbidden material,
-independently checks all eight exact adversarial outcomes, replays the entire
-matrix and byte-compares every accepted artifact, and scans every analyst source
-file for execution/account/risk/network/environment capability. The CI runs this
-audit against the P6-009 evidence generated earlier in the same workflow.
-Matching final-head GitHub Actions evidence is required before P6-010 can be
-accepted and P6 can close.
+`a5a09bdde1600c706bdc3665b46f334ae04fd5fc4fe364613cc9ed7913018524`.
+It independently verified all 17 accepted evidence files and all eight exact
+adversarial outcomes for both symbols. P6 is closed; P7 may open only with the
+same safety locks preserved.
 
 ## Exit condition
 
