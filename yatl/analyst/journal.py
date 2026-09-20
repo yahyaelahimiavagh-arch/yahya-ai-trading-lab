@@ -204,7 +204,10 @@ class AnalystTraceRecord:
             raise AnalystJournalError("Stored analyst trace failed digest verification")
 
     def as_record(self):
-        return _decode_canonical_json(self.trace_json)
+        return {
+            **_decode_canonical_json(self.trace_json),
+            "trace_sha256": self.trace_sha256,
+        }
 
     @classmethod
     def from_grounding(cls, grounding):
