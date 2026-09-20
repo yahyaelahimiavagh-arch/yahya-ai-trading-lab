@@ -8,13 +8,13 @@ P0 تا P7 با شواهد runtime پذیرفته و روی `main` بسته شد
 P8 — Dashboard مرحله بعدی است. P8 فقط export پذیرفته‌شده و sanitized فاز P7 را
 read-only مصرف می‌کند و نمایش وضعیت، معاملات Paper، عملکرد و diagnostics را بدون
 credential، network/provider، TRADE permission، order endpoint یا مسیر اجرای جدید
-می‌سازد. P8-003 با checkpoint
-`2a74006dd42ba3755c4f0382847a165d7ef485ce` پذیرفته و merge شده است. P8-004
-اکنون completed-trade table را فقط از accepted P7 `trade_metrics` با exact source
-strings و bounded deterministic filter/sort/page می‌سازد. فیلدهای execution-level
-که در P7 export وجود ندارند جعل نمی‌شوند؛ open/incomplete material نیز از completed
-rows جدا می‌ماند. پذیرش P8-004 هنوز به Final-HEAD CI و merge مستقل نیاز دارد و
-P8-005 باز نشده است.
+می‌سازد. P8-004 با checkpoint
+`6388eaab83bd756f26ed09a57ac3cc2015d48782` پذیرفته و merge شده است. P8-005
+اکنون performance و segmentation views را فقط از accepted P7 می‌سازد: aggregate
+با canonical P7 arithmetic بازسازی و با SYMBOL segment reconcile می‌شود، nullهای
+واقعی `UNAVAILABLE` می‌مانند و هیچ segment بین dimensionهای مختلف دوباره جمع
+نمی‌شود. پذیرش P8-005 هنوز به Final-HEAD CI و merge مستقل نیاز دارد و P8-006 باز
+نشده است.
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
