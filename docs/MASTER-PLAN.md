@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P7 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P8-004 COMPLETED-TRADE TABLE PROJECTION — CANDIDATE**
+قدم جاری: **P8-005 PERFORMANCE / SEGMENTATION VIEWS — CANDIDATE**
 
 ## منشأ و حدود سند
 
@@ -559,6 +559,23 @@ material وارد completed rows نمی‌شود. چون accepted P7 export فی
 آن قرارداد frozen تغییر نمی‌کند و هیچ داده‌ای جعل نمی‌شود؛ یک metric-row contract
 جدا برای داده‌های واقعاً موجود استفاده می‌شود. P8-005 تا پذیرش و merge مستقل
 P8-004 بسته می‌ماند.
+
+
+## P8-004 acceptance / P8-005 candidate — 2026-09-20
+
+P8-004 با PR #55، Actions `35525173631`، **936/936** تست کامل و **26/26**
+تست focused پذیرفته و در checkpoint
+`6388eaab83bd756f26ed09a57ac3cc2015d48782` روی `main` merge شد. completed
+trade table فقط exact accepted P7 metrics را با pagination/filter/sort محدود و
+deterministic نمایش می‌دهد و open/incomplete را جدا نگه می‌دارد.
+
+P8-005 روی branch `p8-005-performance-segmentation-views` performance aggregate
+و segmentation views را از accepted P7 می‌سازد. aggregate با فرمول canonical P7
+بازسازی و با SYMBOL segment روی count/PnL/cost/outcomes reconcile می‌شود. هر
+segmentation dimension باید memberهای خودش را دقیقاً یک‌بار partition کند؛ هیچ
+cross-dimension sum، causality، extrapolation یا evidence upgrade مجاز نیست.
+nullهای واقعی `UNAVAILABLE` می‌مانند. P8-006 تا پذیرش و merge مستقل P8-005 بسته
+می‌ماند.
 
 
 ## Economic objective clarification — 2026-09-20
