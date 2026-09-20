@@ -366,7 +366,8 @@ def _read_analyst_dimensions(spec):
         raise SegmentationError("P6 database identity changed before segmentation")
     connection = _connect_readonly(spec.database_path)
     try:
-        encoded, canonical_sha256 = _p6_canonical(connection)
+        encoded, _ = _p6_canonical(connection)
+        canonical_sha256 = _digest(encoded)
     except AnalyticsIngestionError:
         raise SegmentationError("P6 trace segmentation failed closed") from None
     finally:
