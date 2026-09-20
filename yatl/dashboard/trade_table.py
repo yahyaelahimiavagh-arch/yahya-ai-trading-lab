@@ -177,8 +177,27 @@ class DashboardCompletedTradeMetricRow:
             self.slippage_total,
         ):
             _decimal(value)
+        expected_metric = {
+            "trade_index": self.trade_index,
+            "trade_sha256": self.source_trade_sha256,
+            "realized_pnl_quote": self.net_pnl,
+            "entry_gross_quote": self.entry_gross_quote,
+            "exit_gross_quote": self.exit_gross_quote,
+            "entry_cash_out_quote": self.entry_cash_out_quote,
+            "gross_return": self.gross_return,
+            "net_return": self.net_return,
+            "total_fee_quote": self.fee_total,
+            "total_slippage_quote": self.slippage_total,
+            "holding_time_ms": self.holding_time_ms,
+        }
+        expected_metric_sha256 = _digest({
+            "schema_version": TRADE_TABLE_SCHEMA_VERSION,
+            "trade_metric": expected_metric,
+        })
         if (
-            _decimal(self.entry_gross_quote) <= 0
+            self.row_id != f"TRADE_{self.trade_index:08d}"
+            or self.source_metric_sha256 != expected_metric_sha256
+            or _decimal(self.entry_gross_quote) <= 0
             or _decimal(self.exit_gross_quote) <= 0
             or _decimal(self.entry_cash_out_quote) <= 0
             or _decimal(self.fee_total) < 0
