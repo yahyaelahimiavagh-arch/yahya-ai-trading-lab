@@ -1650,3 +1650,46 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
 - No dependency or `uv.lock` change.
 - Acceptance remains blocked until the exact final candidate HEAD has a matching
   successful GitHub Actions run. P8-002 is not opened by this candidate.
+
+## P8-001 accepted implementation — 2026-09-20
+
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `e675fd0`**.
+
+- PR #52 final candidate HEAD:
+  `036c9f64fc0b734e503cc308dd072936a6ae7ae7`.
+- Matching GitHub Actions: `35522537152` — both jobs PASS.
+- Complete suite: **863/863 PASS**.
+- Focused P8-001: **21/21 PASS**.
+- Runtime policy SHA-256:
+  `b4534112975f519714592ad7468c950eb6aa112f49b9aee80b1d15bf51804c2e`.
+- PR #52 squash-merged; accepted checkpoint:
+  `e675fd06461e9bbd168404eda3b42dd53d3ef2b8`.
+- `P8_DASHBOARD_V1` remains local/read-only/display-only and preserves
+  `INSUFFICIENT_EVIDENCE`; no dependency or `uv.lock` change.
+
+## P8-002 current candidate — 2026-09-20
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry checkpoint: accepted P8-001 at
+  `e675fd06461e9bbd168404eda3b42dd53d3ef2b8`.
+- Branch: `p8-002-p7-export-loader`.
+- Adds strict local loader for one expected accepted/sanitized P7 export digest.
+- Read path is no-follow/read-only; symlinks, missing/nonregular files, oversized
+  exports and read races fail closed.
+- Enforces strict UTF-8, duplicate-key rejection and byte-exact canonical JSON.
+- Requires P7 export/quality/segmentation schema v1 and recomputes export,
+  segmentation and per-segment SHA-256 identities.
+- Quality must remain PASS/publication-allowed with no diagnostics and exact
+  frozen P7 safety fields. `INSUFFICIENT_EVIDENCE` cannot be upgraded.
+- Quality accepted-chain symbol, timeline, reconstruction, metrics,
+  segmentation and population counts must match the analytics payload.
+- Secret-bearing keys and private-key material are rejected before publication.
+- Immutable loader result contains provenance identities and canonical sanitized
+  content only; caller paths are never included in errors or output.
+- **23 focused tests** plus deterministic runtime and CI source-safety gate.
+- Loader itself has no analytics runtime/database import, no P5/P6 access,
+  credentials, network/provider, execution/account/risk capability, TRADE
+  permission or order endpoint.
+- No dependency or `uv.lock` change.
+- P8-003 is not opened by this candidate; exact final-head Actions must pass first.
