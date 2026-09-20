@@ -74,6 +74,36 @@ def overview():
     return DashboardOverviewProjection(source, cards)
 
 
+def pass_quality():
+    return QualityDiagnosticProjection(
+        quality_status="PASS",
+        status_severity=DiagnosticSeverity.INFO,
+        status_message="Accepted P7 quality state is PASS.",
+        publication_allowed=True,
+        analytics_presentation_allowed=True,
+        partial_analytics_visible=False,
+        diagnostics=(),
+        passed_checks=(
+            "METRICS_ARITHMETIC",
+            "REPORT_BINDINGS",
+            "SEGMENT_PARTITIONS",
+            "SEGMENT_TOTALS",
+            "SOURCE_COVERAGE",
+            "SOURCE_DIGESTS",
+            "SOURCE_NO_WRITE",
+            "SOURCE_POINT_IN_TIME",
+            "TIMELINE_IDENTITIES",
+            "TIMELINE_RELATIONSHIPS",
+            "TIMELINE_SEQUENCE",
+            "TRADE_RECONCILIATION",
+        ),
+        source_quality_sha256="4" * 64,
+        source_export_sha256="5" * 64,
+        snapshot_time_ms=OBSERVED_AT_MS,
+        source_mode="ACCEPTED_P7_EXPORT",
+    )
+
+
 def failed_quality():
     diagnostic = DashboardDiagnostic(
         "DIAGNOSTIC_000_MISSING_SOURCE_SOURCE",
@@ -154,9 +184,10 @@ class NotificationProjectionFormatterTests(unittest.TestCase):
         )
 
     def test_quality_alert_rejects_absent_or_pass_like_state(self):
-        fail = failed_quality()
         with self.assertRaises(NotificationProjectionError):
-            project_data_quality_alert(replace(fail, quality_status="ABSENT"))
+            project_data_quality_alert(pass_quality())
+        with self.assertRaises(NotificationProjectionError):
+            project_data_quality_alert(object())
 
     def test_quality_alert_rejects_partial_analytics(self):
         fail = failed_quality()
