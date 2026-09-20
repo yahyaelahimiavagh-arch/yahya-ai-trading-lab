@@ -1,6 +1,6 @@
 # P8 — Dashboard implementation plan
 
-Status: **P8-003 RUNTIME ACCEPTED / MERGED — P8-004 CURRENT CANDIDATE**
+Status: **P8-004 RUNTIME ACCEPTED / MERGED — P8-005 CURRENT CANDIDATE**
 
 Entry baseline: P7 runtime accepted and merged at checkpoint
 `93b9d87cf23fe8a52470c4a01b480b0935be87c3`. Final P7 Actions run
@@ -131,35 +131,15 @@ from accepted analytics; display formatting cannot alter stored semantics.
 Acceptance: stable ordering, bounded page size, exact row-to-trade identity,
 filter/sort determinism, open-trade isolation and duplicate/missing-ID rejection.
 
-Current candidate: branch `p8-004-completed-trade-table` from accepted P8-003
-checkpoint `2a74006dd42ba3755c4f0382847a165d7ef485ce`. It projects only accepted P7
-`trade_metrics` into immutable completed LONG/Paper rows, preserving every numeric
-source value as its exact original string. Each row binds the accepted
-`trade_sha256` plus a deterministic SHA-256 of the exact metric record.
-
-The original frozen P8-001 `DashboardTradeRow` requires execution-level
-entry/exit timestamps, quantity and prices that accepted P7 segmentation export
-does **not** publish. P8-004 therefore does not fabricate those values or weaken
-that frozen contract; it adds a separate
-`DashboardCompletedTradeMetricRow` specifically for the fields that actually
-exist in accepted P7 output.
-
-The query contract supports bounded outcome filtering
-(`ALL/WIN/LOSS/BREAKEVEN`), deterministic sorting
-(`TRADE_INDEX/NET_PNL/HOLDING_TIME`, ASC/DESC), bounded offset/page size
-(maximum **100** rows), stable tie-breaking and deterministic pagination.
-Noncompleted/open/incomplete material is explicitly
-`SEPARATE_NOT_PROJECTED_FROM_P7_TRADE_METRICS` and can never become a completed
-row. Missing/duplicate identities and forged provenance fail closed.
-
-Focused suite: **26 tests**. Runtime gate:
-
-```powershell
-uv run --locked python -m yatl.dashboard.trade_table_runtime
-```
-
-No dependency or `uv.lock` change. Exact final-head GitHub Actions evidence is
-required before P8-004 acceptance or merge.
+Accepted: PR #55 was squash-merged at
+`6388eaab83bd756f26ed09a57ac3cc2015d48782` after matching final-head Actions
+run `35525173631` passed both jobs, the **936/936** complete suite and **26/26**
+focused P8-004 tests. The completed-trade table preserved exact accepted P7 numeric
+strings, bounded deterministic filter/sort/page behavior and explicit
+open/incomplete isolation. Runtime table SHA-256:
+`bbe247686fe7289d1cf88bad02dc153b05492f0d8d2fa44d3650ae2d4c7076c1`.
+No execution-level entry/exit time, quantity or price was invented. No dependency
+or `uv.lock` change was made.
 
 ### P8-005 — Performance and segmentation views
 
@@ -171,6 +151,46 @@ added.
 
 Acceptance: metric/segment conservation against P7 source values, exact null/
 insufficient handling, no double counting and no evidence-label upgrade.
+
+Current candidate: branch `p8-005-performance-segmentation-views` from accepted
+P8-004 checkpoint `6388eaab83bd756f26ed09a57ac3cc2015d48782`.
+
+P8-005 reconstructs the canonical completed-trade aggregate from accepted P7
+`trade_metrics` using the exact P7 Decimal precision (**256**) and projects a fixed
+**19-metric** display set: completed/win/loss/breakeven counts, realized and gross
+PnL, fees, slippage, total cost, gross/net return, win rate, maximum realized
+drawdown, total/min/max/average holding duration and best/worst trade PnL. Values
+that are undefined with zero completed trades remain explicit `UNAVAILABLE`; no
+zero or forecast value is invented.
+
+The frozen P8-001 `DashboardMetricValue` keeps its original 96-character decimal
+bound. Exact P7 return strings may exceed that bound at precision 256, so P8-005
+uses a separate `DashboardExactMetricValue` contract (bounded to 512 decimal
+characters) rather than rounding source values or weakening the frozen P8-001
+contract.
+
+To prevent double counting, aggregate values are reconciled against the single
+accepted `SYMBOL` trade segment on member count, realized PnL, total cost and
+win/loss/breakeven counts. Every trade segmentation dimension
+(`SYMBOL/STRATEGY_IDENTITY/EVIDENCE_LABEL`) and every analyst dimension
+(`ANALYST_DISPOSITION/GROUNDING_CODE/TRACE_ACCEPTANCE`) must partition the exact
+accepted member set **once and only once**. Segment IDs and segment SHA-256 values
+are recomputed before display.
+
+Trade segments preserve realized PnL, total cost and outcome counts independently;
+they are never summed across dimensions. Analyst segments use explicit trace-count
+semantics instead of being mislabeled as completed trades. Strategy evidence stays
+`INSUFFICIENT_EVIDENCE`; source interpretation must remain correlation-only with
+no causality or attribution upgrade.
+
+Focused suite: **26 tests**. Runtime gate:
+
+```powershell
+uv run --locked python -m yatl.dashboard.performance_views_runtime
+```
+
+No dependency or `uv.lock` change. Exact final-head GitHub Actions evidence is
+required before P8-005 acceptance or merge.
 
 ### P8-006 — Quality and diagnostic view
 

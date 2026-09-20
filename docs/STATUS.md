@@ -1783,3 +1783,50 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
   quantity authority, TRADE permission or order endpoint.
 - No dependency or `uv.lock` change.
 - P8-005 remains closed until exact final-head Actions pass and P8-004 is merged.
+
+## P8-004 accepted implementation — 2026-09-20
+
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `6388eaa`**.
+
+- PR #55 final candidate HEAD:
+  `cbe0fd565113de28c103f28c1e5e923de4f36fc1`.
+- Matching GitHub Actions: `35525173631` — both jobs PASS.
+- Complete suite: **936/936 PASS**.
+- Focused P8-004: **26/26 PASS**.
+- Table SHA-256:
+  `bbe247686fe7289d1cf88bad02dc153b05492f0d8d2fa44d3650ae2d4c7076c1`.
+- Exact P7 numeric strings, completed-only isolation and bounded deterministic
+  filter/sort/page behavior remain preserved.
+- No missing execution-level time/quantity/price was invented.
+- PR #55 squash-merged; accepted checkpoint:
+  `6388eaab83bd756f26ed09a57ac3cc2015d48782`.
+- No dependency or `uv.lock` change.
+
+## P8-005 current candidate — 2026-09-20
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry checkpoint: accepted P8-004 at
+  `6388eaab83bd756f26ed09a57ac3cc2015d48782`.
+- Branch: `p8-005-performance-segmentation-views`.
+- Projects a fixed **19-metric** completed-Paper performance view from accepted P7
+  trade metrics using canonical P7 Decimal precision **256**.
+- Preserves exact high-precision return strings with a separate
+  `DashboardExactMetricValue` contract; frozen P8-001 `DashboardMetricValue`
+  remains unchanged at its original 96-character bound.
+- Aggregate values are reconciled with the exact accepted SYMBOL segment on count,
+  realized PnL, total cost and win/loss/breakeven conservation.
+- Undefined zero-trade values remain `UNAVAILABLE`; no forecast/extrapolation is
+  substituted.
+- Every trade and analyst segmentation dimension must partition its accepted member
+  set exactly once; segment IDs and SHA-256 values are recomputed.
+- Trade segments remain independent and are never aggregated across dimensions.
+- Analyst segment rows preserve trace-count semantics.
+- `INSUFFICIENT_EVIDENCE`, correlation-only interpretation and no-causality
+  semantics remain frozen.
+- **26 focused tests** plus deterministic runtime and source-safety CI gate.
+- Performance-view module imports no analytics runtime/database, credentials,
+  network/provider, execution/account/risk capability, RiskAuthorization,
+  quantity authority, TRADE permission or order endpoint.
+- No dependency or `uv.lock` change.
+- P8-006 remains closed until exact final-head Actions pass and P8-005 is merged.
