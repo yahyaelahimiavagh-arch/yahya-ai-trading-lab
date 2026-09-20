@@ -1,8 +1,8 @@
 # YATL — نقشه مرجع اجرا و وضعیت پروژه
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
-وضعیت جاری: **P0 تا P7 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P8-010 INDEPENDENT FINAL AUDIT — CANDIDATE**
+وضعیت جاری: **P0 تا P8 RUNTIME ACCEPTED AND MERGED**
+قدم جاری: **P9-001 NOTIFICATION POLICY / IMMUTABLE CONTRACTS — CANDIDATE**
 
 ## منشأ و حدود سند
 
@@ -81,8 +81,8 @@ Dashboard به‌تنهایی معیار موفقیت اقتصادی نیستن�
 | P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | **RUNTIME ACCEPTED — checkpoint `cd5ff565`** |
 | P6 AI Analyst | تحلیل ساختاریافته و NO_TRADE بدون دسترسی مستقیم به اجرا | **RUNTIME ACCEPTED — checkpoint `f07f220`** |
 | P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | **RUNTIME ACCEPTED — checkpoint `93b9d87`** |
-| P8 Dashboard | نمایش وضعیت، معاملات، عملکرد و خطاها | **NEXT — implementation plan opened** |
-| P9 Telegram | هشدار و کنترل محدود طبق قواعد امنیتی | شروع نشده |
+| P8 Dashboard | نمایش وضعیت، معاملات، عملکرد و خطاها | **RUNTIME ACCEPTED — checkpoint `fe973e8`** |
+| P9 Telegram | هشدار و notification محدود طبق قواعد امنیتی | **P9-001 CURRENT CANDIDATE** |
 | P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | شروع نشده |
 | P11 Tiny Live Candidate | فقط پس از پذیرش P10، ممیزی امنیت، الزامات حساب و تأیید صریح | LOCKED |
 
@@ -125,15 +125,14 @@ merge شد. P4-010 ممیزی مستقل نهایی را پیاده‌سازی �
 
 | معیار | انجام‌شده | باقی‌مانده | تفسیر صحیح |
 |---|---:|---:|---|
-| فازهای تحویل نرم‌افزاری P0 تا P9 | 8 از 10 | 2 فاز | **80% بر مبنای شمارش ساده فازها**؛ تخمین زمان یا حجم کار نیست |
-| checkpointهای P7 | 10 از 10 | صفر | P7-001 تا P7-010 پذیرفته و روی `main` بسته شده‌اند |
-| فازهای پیش از Forward Validation | P0 تا P7 | P8 تا P9 | پس از آن P10 باید روی داده جدید اجرا و پذیرفته شود |
+| فازهای تحویل نرم‌افزاری P0 تا P9 | 9 از 10 | 1 فاز | **90% بر مبنای شمارش ساده فازها**؛ تخمین زمان یا حجم کار نیست |
+| checkpointهای P8 | 10 از 10 | صفر | P8-001 تا P8-010 پذیرفته و روی `main` بسته شده‌اند |
+| فازهای پیش از Forward Validation | P0 تا P8 | P9 | پس از آن P10 باید روی داده جدید اجرا و پذیرفته شود |
 | مسیر Live | هیچ | P5 تا P10 و ممیزی‌های P11 | P11 همچنان LOCKED و مشروط به تأیید صریح است |
 
 ### کار باقی‌مانده تا نسخه آزمایشی نرم‌افزار
 
-1. P8: Dashboard local/read-only روی export پذیرفته‌شده P7.
-2. P9: Telegram محدود و ایمن روی status/alertهای پذیرفته‌شده upstream.
+1. P9: Telegram minimum-sufficient و ایمن روی status/alertهای پذیرفته‌شده upstream.
 
 ### کار باقی‌مانده تا ارزیابی عملکرد
 
@@ -155,13 +154,13 @@ merge شد. P4-010 ممیزی مستقل نهایی را پیاده‌سازی �
 - Live بخشی از درصد تحویل نرم‌افزاری نیست. P11 تنها در صورت پذیرش P10، ممیزی امنیتی،
   آماده‌بودن حساب و تأیید صریح جداگانه بررسی می‌شود.
 
-بنابراین گزارش کوتاه این است: **80% فازهای نرم‌افزاری P0 تا P9 بسته شده‌اند؛
-P7-001 تا P7-010 runtime accepted و merge شده‌اند و P8 مرحله بعدی است.** این عدد
+بنابراین گزارش کوتاه این است: **90% فازهای نرم‌افزاری P0 تا P9 بسته شده‌اند؛
+P8-001 تا P8-010 runtime accepted و merge شده‌اند و P9 مرحله جاری است.** این عدد
 پیشرفت مهندسی است، نه درصد آمادگی برای سود یا Live.
 
 در گفت‌وگوی قبلی برای P10 بازه ۳۰–۶۰ روز واقعی بازار مطرح شده است؛ این تخمین است،
 نه تضمین کافی‌بودن نمونه. تاریخ‌های قبلی پایان توسعه و شروع Live، تعهد اجرایی نیستند.
-درصد وزنیِ زمان/حجم کار نداریم؛ درصد 80% بالا فقط شمارش ساده فازهای بسته‌شده است.
+درصد وزنیِ زمان/حجم کار نداریم؛ درصد 90% بالا فقط شمارش ساده فازهای بسته‌شده است.
 پیشرفت authoritative بر اساس تحویل و پذیرش runtime ثبت می‌شود.
 تایم‌فریم‌های 4h/1h/15m و 5m برای اجرای دقیق‌تر، پیشنهاد قبلی‌اند؛ تصمیم نهایی داده/استراتژی در P1/P3 ثبت می‌شود.
 
@@ -659,15 +658,25 @@ P8-009 با PR #60، Actions `35533242415`، **1107/1107** تست کامل و **
 `38bc0e1eafedd44b1776ecec1a65fc48352a3155341dfca323641686739a8608`
 فریز شد.
 
-P8-010 روی branch `p8-010-independent-final-audit` ممیزی مستقل نهایی P8 است.
-این audit policy SHA، exportهای frozen BTC/ETH، تمام projectionها، renderer،
-ماتریس adversarial و 19 evidence file، source safety، no-write و دو HTML منتشرشده
-را مستقل بازحساب می‌کند. policy SHA برابر
-`b4534112975f519714592ad7468c950eb6aa112f49b9aee80b1d15bf51804c2e`
-و combined export-set SHA برابر
+P8-010 روی branch `p8-010-independent-final-audit` ممیزی مستقل نهایی P8 بود.
+Exact final candidate HEAD
+`05038f9955425ddc05f552e84d71b5625663a43d` با GitHub Actions
+`35534981625` هر دو job، **1139/1139** تست کامل و **32/32** تست focused را
+گذراند. PR #61 Ready و سپس با expected-head دقیق squash-merge شد؛ checkpoint نهایی
+P8 روی `main` برابر
+`fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e` است.
+
+ممیزی مستقل 2 symbol، 9 scenario، 18 run، 19 evidence file و 2 HTML artifact را
+با exact outcomes، replay equality، projection/renderer recomputation،
+artifact verification، no-write و source safety پذیرفت. policy SHA برابر
+`b4534112975f519714592ad7468c950eb6aa112f49b9aee80b1d15bf51804c2e`،
+P8-009 index SHA برابر
+`38bc0e1eafedd44b1776ecec1a65fc48352a3155341dfca323641686739a8608`،
+combined accepted P7 export-set SHA برابر
 `6f884ea930cd929292f000e8ada2da370b4428d7173a1f3d2423deacc6523439`
-فریز شده است. **P8 هنوز بسته نشده** و فقط پس از Final-HEAD PASS و merge مستقل
-P8-010 بسته خواهد شد.
+و renderer-set SHA برابر
+`17f8526ba74ea73a7915b8978d098ab567fe1e19a145f03c625246916e22ff0c`
+فریز شده‌اند. **P8 RUNTIME ACCEPTED / CLOSED** است.
 
 
 ## Economic objective clarification — 2026-09-20
@@ -682,3 +691,46 @@ P8/P9 scope باید minimum-sufficient بماند تا P10 سریع‌تر آغ
 اصلی اقتصادی Net PnL پس از fee/slippage روی داده جدید است، همراه با drawdown،
 sample size، stability و سایر gateهای از پیش‌ثبت‌شده. اگر P10 edge قابل‌قبول را
 تأیید نکند، P11 باز نمی‌شود و چرخه research/strategy iteration ادامه می‌یابد.
+
+
+## P9 planning record — 2026-09-20
+
+P8 در checkpoint
+`fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e` بسته شد و P9 طبق
+`P9-IMPLEMENTATION-PLAN.md` باز شد. P9 عمداً minimum-sufficient است تا ورود به
+P10 Forward/Paper Validation بی‌دلیل عقب نیفتد.
+
+P9-001 روی branch `p9-001-notification-policy-contracts` فقط policy ثابت
+`P9_NOTIFICATION_V1` و قراردادهای immutable/read-only برای accepted/sanitized
+status/alert material را می‌سازد. این checkpoint کاملاً offline است:
+`transport_mode=NONE`. هیچ Telegram API call، Bot token، Chat ID، inbound
+command، callback، webhook/polling receiver، execution/live control،
+RiskAuthorization/quantity authority، credential، TRADE permission یا order
+endpoint اضافه نمی‌شود.
+
+دسته‌های future-facing قرارداد شامل system status، data-quality alert، Paper
+trade lifecycle، Paper signal/candidate، risk/drawdown alert، periodic summary و
+P10 validation status هستند. همه notificationها `INFORMATION_ONLY`، Paper و
+`INSUFFICIENT_EVIDENCE` باقی می‌مانند.
+
+ترتیب P9 در شش checkpoint حداقلی ثبت شده است: policy/contracts، projection/
+formatter، outbound-only Telegram transport، delivery guard/dedupe/retry،
+guarded notifier + adversarial matrix و independent final audit.
+
+## AI decision-support direction — 2026-09-20
+
+اتصال آینده YATL به مدل‌های AI/OpenAI می‌تواند برای technical analysis،
+candle/price-action interpretation، volume/order-flow، news/sentiment،
+macro/fundamental context، regime analysis و proposalهایی مانند ENTER / SKIP /
+WAIT / EXIT CANDIDATE بررسی شود؛ اما این قابلیت بخشی از بزرگ‌کردن P9 نیست.
+
+قانون دائمی **NO AI DIRECT EXECUTION** است: AI هیچ order endpoint، trade
+permission، RiskAuthorization mutation یا quantity authority دریافت نمی‌کند.
+ابتدا baseline بدون AI در P10 روی new/forward data سنجیده می‌شود. ورود AI به
+decision pipeline بعدی فقط زمانی توجیه دارد که incremental value آن نسبت به
+baseline با evidence، ترجیحاً OOS/forward، تحت همان fee/slippage/risk controls
+اثبات شود.
+
+اصول اقتصادی حاکم بدون تغییرند: Profitability > Complexity؛ Evidence > Number
+of analyses؛ OOS/Forward evidence > attractive backtest؛ Risk-adjusted
+persistence > raw profit؛ One profitable edge > many unproven signals.
