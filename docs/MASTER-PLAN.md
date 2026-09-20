@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P7 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P8-009 ADVERSARIAL DASHBOARD MATRIX — CANDIDATE**
+قدم جاری: **P8-010 INDEPENDENT FINAL AUDIT — CANDIDATE**
 
 ## منشأ و حدود سند
 
@@ -648,6 +648,26 @@ HTML/script injection، path/private smuggling و artifact mutation. هر scenar
 identity باید byte-for-byte و hash-for-hash ثابت بماند. workflow یک artifact مستقل
 `p8-009-evidence` با 19 فایل منتشر می‌کند. P8-010 تا پذیرش و merge مستقل P8-009
 بسته می‌ماند.
+
+
+## P8-009 acceptance / P8-010 final audit candidate — 2026-09-20
+
+P8-009 با PR #60، Actions `35533242415`، **1107/1107** تست کامل و **37/37**
+تست focused پذیرفته و در checkpoint
+`503e78dd6fb741f33dce838b70ff4c2c4fea3452` روی `main` merge شد. ماتریس
+9×2 با 18 run و 19 evidence file پذیرفته شد و index SHA-256 روی
+`38bc0e1eafedd44b1776ecec1a65fc48352a3155341dfca323641686739a8608`
+فریز شد.
+
+P8-010 روی branch `p8-010-independent-final-audit` ممیزی مستقل نهایی P8 است.
+این audit policy SHA، exportهای frozen BTC/ETH، تمام projectionها، renderer،
+ماتریس adversarial و 19 evidence file، source safety، no-write و دو HTML منتشرشده
+را مستقل بازحساب می‌کند. policy SHA برابر
+`b4534112975f519714592ad7468c950eb6aa112f49b9aee80b1d15bf51804c2e`
+و combined export-set SHA برابر
+`6f884ea930cd929292f000e8ada2da370b4428d7173a1f3d2423deacc6523439`
+فریز شده است. **P8 هنوز بسته نشده** و فقط پس از Final-HEAD PASS و merge مستقل
+P8-010 بسته خواهد شد.
 
 
 ## Economic objective clarification — 2026-09-20
