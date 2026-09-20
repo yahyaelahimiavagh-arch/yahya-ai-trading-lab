@@ -1475,9 +1475,9 @@ Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `7e57ede`**.
   permission/order endpoint or AI execution.
 
 
-## P7-008 current candidate — 2026-09-20
+## P7-008 accepted implementation — 2026-09-20
 
-Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `3aad07f`**.
 
 - Entry checkpoint: P7-007 merged at
   `7e57edee4ec90b63afc6e837536bb3286b03d528`; branch
@@ -1501,4 +1501,38 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
 - No interactive prompt, dependency or `uv.lock` change; no
   execution/backtest/account/risk import, environment credentials,
   network/provider transport, RiskAuthorization/quantity authority, TRADE
+  permission/order endpoint or AI execution.
+
+
+## P7-009 current candidate — 2026-09-20
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
+
+- Entry checkpoint: P7-008 merged at
+  `3aad07f7ad110a66a3d0b494fb9b8e8e81279cc7`; branch
+  `p7-009-adversarial-analytics-matrix`.
+- Fixed matrix: 9 scenarios × BTCUSDT/ETHUSDT = 18 runs, with one canonical
+  per-run artifact and one canonical matrix index.
+- Scenarios: upstream tampering, duplicate/orphan fill, cross-symbol linkage,
+  future timestamp, changed cost/equity totals, fabricated profitability,
+  evidence-label upgrade, journal mutation and schema smuggling.
+- Quality-bound scenarios require exact fail-closed diagnostic codes and
+  `accepted_chain=null` / no analytics payload on failure.
+- Evidence-label upgrade attempts are rejected by segmentation and cannot change
+  `INSUFFICIENT_EVIDENCE`. Journal writes are attempted only against P7's
+  read-only SQLite connection and must fail without changing source bytes; quality
+  must still PASS afterward.
+- Every artifact freezes accepted P3/P4/P5/P6 index/policy/evidence SHA-256
+  identities so upstream acceptance drift is visible and cannot be silently
+  reinterpreted by P7.
+- Each scenario runs twice in-process and must produce identical bytes. CI writes
+  the complete matrix twice to separate directories and requires recursive
+  byte-for-byte equality before publishing the first directory as evidence.
+- Atomic bounded publisher refuses existing outputs; expected evidence footprint
+  is 19 JSON files (18 scenario artifacts + index).
+- Artifacts are sanitized: no source paths, database path field, SQL, traceback,
+  credentials, raw provider/model response, order request, approved quantity or
+  RiskAuthorization material.
+- No dependency or `uv.lock` change; no execution/backtest/account/risk import,
+  environment credentials, network/provider transport, quantity authority, TRADE
   permission/order endpoint or AI execution.
