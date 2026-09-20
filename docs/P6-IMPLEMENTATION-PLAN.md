@@ -1,6 +1,6 @@
 # P6 — AI Analyst implementation plan
 
-Status: **P6-001 / P6-002 / P6-003 / P6-004 / P6-005 / P6-006 / P6-007 RUNTIME ACCEPTED / MERGED — P6-008 CURRENT CANDIDATE**
+Status: **P6-001 / P6-002 / P6-003 / P6-004 / P6-005 / P6-006 / P6-007 / P6-008 RUNTIME ACCEPTED / MERGED — P6-009 CURRENT CANDIDATE**
 
 Entry baseline: P5 runtime accepted and merged at checkpoint
 `cd5ff5651e2d1df509dba6de8bc717a3ba7bf34f`. Final P5 Actions run
@@ -166,17 +166,15 @@ or execution permissions.
 Acceptance: stable exit codes, bounded output, noninteractive behavior and source
 scans.
 
-Current candidate: branch `p6-008-guarded-analyst-cli` adds a separate local-only
-CLI at `python -m yatl.analyst.cli` with exactly three bounded commands:
-`evidence` builds and validates a point-in-time bundle from an exact local JSON
-spec; `validate` applies P6-004/P6-005/P6-006 and can idempotently journal the
-sanitized P6-007 trace; `show` reads one sanitized durable trace by SHA-256.
-Rejected arguments and local paths are never echoed, oversized model text remains
-a P6-005 fail-closed response outcome, output is bounded deterministic JSON and the
-CLI is noninteractive. It has no credential, endpoint, environment, provider,
-network, execution, quantity, RiskAuthorization, order or trade controls.
-Matching final-head GitHub Actions evidence is required before P6-008 can be
-accepted.
+Accepted: PR #37 was squash-merged at
+`41bc429f4c48d582747ed94d9a26e12bf5e27ecd` after matching final-head Actions
+run `35502932218` passed both jobs, the **677/677** complete suite, **22/22**
+focused P6-008 tests, the analyst safety scan and guarded CLI runtime. P6-008
+exposes only three bounded local commands—`evidence`, `validate`, and `show`—
+with deterministic bounded JSON, stable exit codes and noninteractive behavior.
+Rejected arguments and paths are not echoed, oversized response text remains a
+P6-005 fail-closed outcome, and no credential, endpoint, environment, provider,
+network, execution, quantity, RiskAuthorization, order or trade control is added.
 
 ### P6-009 — Adversarial analyst matrix
 
@@ -186,6 +184,20 @@ provider-response corruption for BTCUSDT and ETHUSDT.
 
 Acceptance: two byte-identical runs, exact fail-closed outcomes and published
 canonical evidence.
+
+Current candidate: branch `p6-009-adversarial-analyst-matrix` runs eight fixed
+scenarios for both BTCUSDT and ETHUSDT: prompt injection, unsupported certainty,
+fabricated evidence, stale input, future input, schema smuggling, executable-action
+requests and corrupted provider responses. Prompt injection is required to remain
+inert untrusted data and may only produce the conservative grounded `REVIEW`
+outcome; every other adversarial scenario must reject at the exact evidence,
+response or grounding boundary and resolve to `INSUFFICIENT_DATA`. The matrix
+runs each scenario twice, requires byte-identical artifacts, publishes one
+canonical artifact per symbol/scenario plus `p6-009-index.json`, and preserves
+`INSUFFICIENT_EVIDENCE` and every P6 safety lock. No raw provider text,
+credentials, provider/network integration, execution, quantity, RiskAuthorization,
+order or trade authority is added. Matching final-head GitHub Actions evidence is
+required before P6-009 can be accepted.
 
 ### P6-010 — Independent final audit
 
