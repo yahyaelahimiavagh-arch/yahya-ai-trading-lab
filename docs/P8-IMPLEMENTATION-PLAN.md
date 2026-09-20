@@ -156,12 +156,18 @@ Current candidate: branch `p8-005-performance-segmentation-views` from accepted
 P8-004 checkpoint `6388eaab83bd756f26ed09a57ac3cc2015d48782`.
 
 P8-005 reconstructs the canonical completed-trade aggregate from accepted P7
-`trade_metrics` using the same bounded Decimal semantics as P7 and projects a
-fixed **19-metric** display set: completed/win/loss/breakeven counts, realized and
-gross PnL, fees, slippage, total cost, gross/net return, win rate, maximum realized
+`trade_metrics` using the exact P7 Decimal precision (**256**) and projects a fixed
+**19-metric** display set: completed/win/loss/breakeven counts, realized and gross
+PnL, fees, slippage, total cost, gross/net return, win rate, maximum realized
 drawdown, total/min/max/average holding duration and best/worst trade PnL. Values
 that are undefined with zero completed trades remain explicit `UNAVAILABLE`; no
 zero or forecast value is invented.
+
+The frozen P8-001 `DashboardMetricValue` keeps its original 96-character decimal
+bound. Exact P7 return strings may exceed that bound at precision 256, so P8-005
+uses a separate `DashboardExactMetricValue` contract (bounded to 512 decimal
+characters) rather than rounding source values or weakening the frozen P8-001
+contract.
 
 To prevent double counting, aggregate values are reconciled against the single
 accepted `SYMBOL` trade segment on member count, realized PnL, total cost and
