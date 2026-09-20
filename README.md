@@ -8,14 +8,14 @@ P0 تا P7 با شواهد runtime پذیرفته و روی `main` بسته شد
 P8 — Dashboard مرحله بعدی است. P8 فقط export پذیرفته‌شده و sanitized فاز P7 را
 read-only مصرف می‌کند و نمایش وضعیت، معاملات Paper، عملکرد و diagnostics را بدون
 credential، network/provider، TRADE permission، order endpoint یا مسیر اجرای جدید
-می‌سازد. P8-004 با checkpoint
-`6388eaab83bd756f26ed09a57ac3cc2015d48782` پذیرفته و merge شده است. P8-005
-اکنون performance و segmentation views را فقط از accepted P7 می‌سازد: aggregate
-با canonical P7 arithmetic و Decimal precision دقیق **256** بازسازی و با SYMBOL
-segment reconcile می‌شود؛ returnهای high-precision بدون rounding در contract جدا
-حفظ می‌شوند، nullهای واقعی `UNAVAILABLE` می‌مانند و هیچ segment بین dimensionهای
-مختلف دوباره جمع نمی‌شود. پذیرش P8-005 هنوز به Final-HEAD CI و merge مستقل نیاز
-دارد و P8-006 باز نشده است.
+می‌سازد. P8-005 با checkpoint
+`23307f18588447e82f494d7c8ff461b3055eee05` پذیرفته و merge شده است. P8-006
+اکنون quality/diagnostic view را با سه state صریح `PASS/FAIL/ABSENT` می‌سازد:
+فقط PASS از accepted `LoadedP7Export` اجازه‌ی نمایش analytics دارد؛ FAIL و
+ABSENT analytics را کامل می‌بندند و فقط diagnosticهای bounded و sanitized مجازند.
+unknown code/check، free-text اضافی، path/SQL/traceback و partial publication
+fail-closed هستند. پذیرش P8-006 هنوز به Final-HEAD CI و merge مستقل نیاز دارد و
+P8-007 باز نشده است.
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
