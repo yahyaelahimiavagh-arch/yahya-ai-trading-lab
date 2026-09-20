@@ -160,8 +160,12 @@ def _same_input_output(input_path, output_path):
         if source_abs == target_abs:
             return True
         target = Path(output_path)
-        if target.exists() and os.path.samefile(input_path, output_path):
-            return True
+        if target.exists():
+            try:
+                if os.path.samefile(input_path, output_path):
+                    return True
+            except FileNotFoundError:
+                return False
         return False
     except OSError:
         raise DashboardCliError(DashboardCliCode.STORAGE_ERROR) from None
@@ -183,7 +187,18 @@ def _read_published(path):
             or metadata.st_size > MAX_DASHBOARD_BYTES
         ):
             raise DashboardCliError(DashboardCliCode.OUTPUT_MISMATCH)
-        data = os.read(descriptor, MAX_DASHBOARD_BYTES + 1)
+        chunks = []
+        remaining = metadata.st_size
+        while remaining:
+            chunk = os.read(
+                descriptor,
+                min(remaining, 64 * 1024),
+            )
+            if not chunk:
+                raise DashboardCliError(DashboardCliCode.OUTPUT_MISMATCH)
+            chunks.append(chunk)
+            remaining -= len(chunk)
+        data = b"".join(chunks)
         if len(data) != metadata.st_size or len(data) > MAX_DASHBOARD_BYTES:
             raise DashboardCliError(DashboardCliCode.OUTPUT_MISMATCH)
         return data
