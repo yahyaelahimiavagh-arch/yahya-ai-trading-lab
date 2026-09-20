@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P7 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P8-007 DETERMINISTIC SELF-CONTAINED RENDERER — CANDIDATE**
+قدم جاری: **P8-008 GUARDED DASHBOARD CLI / ATOMIC PUBLICATION — CANDIDATE**
 
 ## منشأ و حدود سند
 
@@ -612,6 +612,23 @@ export معتبر bind کند؛ FAIL/ABSENT هر analytics تزریقی را ر�
 CSP شبکه/script/font/image را می‌بندد، artifact حداکثر 4 MiB است و SHA-256 روی
 view model و exact rendered bytes ثبت می‌شود. هیچ write/CLI/publication در P8-007
 وجود ندارد؛ P8-008 تا پذیرش و merge مستقل P8-007 بسته می‌ماند.
+
+
+## P8-007 acceptance / P8-008 candidate — 2026-09-20
+
+P8-007 با PR #58، Actions `35529802550`، **1026/1026** تست کامل و **34/34**
+تست focused پذیرفته و در checkpoint
+`ce1d7f5d5a8ea150e2ec92d9011765cdc4d79487` روی `main` merge شد. renderer
+کاملاً static/self-contained است، dynamic content را escape می‌کند، remote/script
+capability ندارد و exact rendered bytes را hash می‌کند.
+
+P8-008 روی branch `p8-008-guarded-dashboard-cli` سه command محلی
+`validate/summary/build` را با expected export SHA اجباری می‌سازد. build به‌طور
+پیش‌فرض overwrite را رد می‌کند و فقط با flag صریح می‌تواند فایل regular موجود را
+جایگزین کند. انتشار از temp همان directory و به‌صورت atomic انجام می‌شود؛ خروجی
+دوباره read-back و با length/SHA renderer تطبیق داده می‌شود. source قبل از publish
+دوباره verify می‌شود و هیچ path/rejected input/traceback در JSON خطا بازتاب پیدا
+نمی‌کند. P8-009 تا پذیرش و merge مستقل P8-008 بسته می‌ماند.
 
 
 ## Economic objective clarification — 2026-09-20
