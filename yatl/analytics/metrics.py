@@ -60,6 +60,9 @@ class TradePerformanceMetric:
     trade_index: int
     trade_sha256: str
     realized_pnl_quote: str
+    entry_gross_quote: str
+    exit_gross_quote: str
+    entry_cash_out_quote: str
     gross_return: str
     net_return: str
     total_fee_quote: str
@@ -79,6 +82,9 @@ class TradePerformanceMetric:
             raise PerformanceMetricsError("Trade metric identity is invalid")
         for value, label in (
             (self.realized_pnl_quote, "Trade realized PnL"),
+            (self.entry_gross_quote, "Trade entry gross quote"),
+            (self.exit_gross_quote, "Trade exit gross quote"),
+            (self.entry_cash_out_quote, "Trade entry cash out"),
             (self.gross_return, "Trade gross return"),
             (self.net_return, "Trade net return"),
             (self.total_fee_quote, "Trade fee"),
@@ -86,7 +92,10 @@ class TradePerformanceMetric:
         ):
             _decimal(value, label)
         if (
-            _decimal(self.total_fee_quote, "Trade fee") < 0
+            _decimal(self.entry_gross_quote, "Trade entry gross quote") <= 0
+            or _decimal(self.exit_gross_quote, "Trade exit gross quote") <= 0
+            or _decimal(self.entry_cash_out_quote, "Trade entry cash out") <= 0
+            or _decimal(self.total_fee_quote, "Trade fee") < 0
             or _decimal(self.total_slippage_quote, "Trade slippage") < 0
         ):
             raise PerformanceMetricsError("Trade metric costs are negative")
@@ -96,6 +105,9 @@ class TradePerformanceMetric:
             "trade_index": self.trade_index,
             "trade_sha256": self.trade_sha256,
             "realized_pnl_quote": self.realized_pnl_quote,
+            "entry_gross_quote": self.entry_gross_quote,
+            "exit_gross_quote": self.exit_gross_quote,
+            "entry_cash_out_quote": self.entry_cash_out_quote,
             "gross_return": self.gross_return,
             "net_return": self.net_return,
             "total_fee_quote": self.total_fee_quote,
@@ -311,6 +323,9 @@ def _trade_metric(trade):
         trade.trade_index,
         trade.trade_sha256,
         trade.realized_pnl_quote,
+        trade.entry.gross_quote,
+        trade.exit.gross_quote,
+        _format(entry_cash_out),
         _format(gross_return),
         _format(net_return),
         trade.total_fee_quote,
@@ -358,18 +373,34 @@ def _aggregate(trades):
         gross_pnl = Decimal(0)
 
         if trades:
-            gross_returns = [
-                _decimal(item.gross_return, "Trade gross return")
-                for item in trades
-            ]
-            net_returns = [
-                _decimal(item.net_return, "Trade net return")
-                for item in trades
-            ]
-            # Aggregate return is capital-weighted in calculate_performance_metrics.
-            # Here these placeholders are replaced there before report construction.
-            if any(not value.is_finite() for value in gross_returns + net_returns):
-                raise PerformanceMetricsError("Trade return is not finite")
+            gross_entry = sum(
+                (
+                    _decimal(item.entry_gross_quote, "Trade entry gross quote")
+                    for item in trades
+                ),
+                Decimal(0),
+            )
+            gross_exit = sum(
+                (
+                    _decimal(item.exit_gross_quote, "Trade exit gross quote")
+                    for item in trades
+                ),
+                Decimal(0),
+            )
+            net_entry_cash = sum(
+                (
+                    _decimal(item.entry_cash_out_quote, "Trade entry cash out")
+                    for item in trades
+                ),
+                Decimal(0),
+            )
+            if gross_entry <= 0 or net_entry_cash <= 0:
+                raise PerformanceMetricsError(
+                    "Aggregate return denominator is invalid"
+                )
+            gross_pnl = gross_exit - gross_entry
+            gross_return = _format(gross_pnl / gross_entry)
+            net_return = _format(realized / net_entry_cash)
             win_rate = _format(Decimal(wins) / Decimal(count))
             total_holding = sum(item.holding_time_ms for item in trades)
             average_holding = _format(Decimal(total_holding) / Decimal(count))
@@ -425,58 +456,7 @@ def calculate_performance_metrics(reconstruction):
         raise PerformanceMetricsError("Completed trade count exceeds analytics bound")
 
     trade_metrics = tuple(_trade_metric(item) for item in reconstruction.completed)
-    base = _aggregate(trade_metrics)
-
-    gross_pnl = Decimal(0)
-    gross_entry = Decimal(0)
-    net_entry_cash = Decimal(0)
-    with localcontext() as context:
-        context.prec = DECIMAL_PRECISION
-        for trade in reconstruction.completed:
-            entry_gross = _decimal(trade.entry.gross_quote, "Entry gross quote")
-            exit_gross = _decimal(trade.exit.gross_quote, "Exit gross quote")
-            entry_cash = -_decimal(trade.entry.cash_delta, "Entry cash delta")
-            if entry_gross <= 0 or entry_cash <= 0:
-                raise PerformanceMetricsError(
-                    "Completed trade return denominator is invalid"
-                )
-            gross_entry += entry_gross
-            gross_pnl += exit_gross - entry_gross
-            net_entry_cash += entry_cash
-
-        gross_return = (
-            None if not reconstruction.completed
-            else _format(gross_pnl / gross_entry)
-        )
-        net_return = (
-            None if not reconstruction.completed
-            else _format(
-                _decimal(base.realized_pnl_quote, "Aggregate realized PnL")
-                / net_entry_cash
-            )
-        )
-
-    values = _AggregateValues(
-        completed_trade_count=base.completed_trade_count,
-        winning_trades=base.winning_trades,
-        losing_trades=base.losing_trades,
-        breakeven_trades=base.breakeven_trades,
-        realized_pnl_quote=base.realized_pnl_quote,
-        gross_pnl_quote=_format(gross_pnl),
-        total_fee_quote=base.total_fee_quote,
-        total_slippage_quote=base.total_slippage_quote,
-        total_cost_quote=base.total_cost_quote,
-        gross_return=gross_return,
-        net_return=net_return,
-        win_rate=base.win_rate,
-        maximum_realized_drawdown_quote=base.maximum_realized_drawdown_quote,
-        total_holding_time_ms=base.total_holding_time_ms,
-        minimum_holding_time_ms=base.minimum_holding_time_ms,
-        maximum_holding_time_ms=base.maximum_holding_time_ms,
-        average_holding_time_ms=base.average_holding_time_ms,
-        best_trade_pnl_quote=base.best_trade_pnl_quote,
-        worst_trade_pnl_quote=base.worst_trade_pnl_quote,
-    )
+    values = _aggregate(trade_metrics)
 
     status = (
         PerformanceMetricsStatus.DESCRIPTIVE
