@@ -213,3 +213,21 @@ __all__ += [
     "dashboard_scenario_artifact_json",
     "write_adversarial_dashboard_matrix",
 ]
+
+from .audit import (
+    EXPECTED_EXPORT_SET_SHA256 as P8_EXPECTED_EXPORT_SET_SHA256,
+    EXPECTED_INDEX_SHA256 as P8_EXPECTED_INDEX_SHA256,
+    EXPECTED_POLICY_SHA256 as P8_EXPECTED_POLICY_SHA256,
+    P8AuditError,
+    P8AuditResult,
+    audit_p8,
+)
+
+__all__ += [
+    "P8_EXPECTED_EXPORT_SET_SHA256",
+    "P8_EXPECTED_INDEX_SHA256",
+    "P8_EXPECTED_POLICY_SHA256",
+    "P8AuditError",
+    "P8AuditResult",
+    "audit_p8",
+]
