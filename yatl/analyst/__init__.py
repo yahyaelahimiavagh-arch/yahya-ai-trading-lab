@@ -44,6 +44,14 @@ from .grounding import (
     GroundingValidation,
     ground_model_response,
 )
+from .journal import (
+    ANALYST_JOURNAL_SCHEMA_VERSION,
+    ANALYST_TRACE_SCHEMA_VERSION,
+    AnalystJournalError,
+    AnalystTraceConflict,
+    AnalystTraceJournal,
+    AnalystTraceRecord,
+)
 from .evidence import (
     EVIDENCE_BUNDLE_SCHEMA_VERSION,
     EvidenceBundleError,
@@ -88,6 +96,12 @@ __all__ = [
     "GroundingCode",
     "GroundingValidation",
     "ground_model_response",
+    "ANALYST_JOURNAL_SCHEMA_VERSION",
+    "ANALYST_TRACE_SCHEMA_VERSION",
+    "AnalystJournalError",
+    "AnalystTraceConflict",
+    "AnalystTraceJournal",
+    "AnalystTraceRecord",
     "EVIDENCE_BUNDLE_SCHEMA_VERSION",
     "EvidenceBundleError",
     "LayerEvidence",
