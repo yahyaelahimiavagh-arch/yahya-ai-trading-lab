@@ -3,6 +3,7 @@ import inspect
 import json
 import tempfile
 import unittest
+from decimal import Decimal
 from dataclasses import FrozenInstanceError, replace
 from pathlib import Path
 
@@ -47,7 +48,8 @@ def synthetic_row(index, pnl, holding, sha_char):
         "total_slippage_quote": "0.2",
         "holding_time_ms": holding,
     }
-    outcome = "WIN" if pnl.startswith("1") else "LOSS" if pnl.startswith("-") else "BREAKEVEN"
+    value = Decimal(pnl)
+    outcome = "WIN" if value > 0 else "LOSS" if value < 0 else "BREAKEVEN"
     return DashboardCompletedTradeMetricRow(
         row_id=f"TRADE_{index:08d}",
         trade_index=index,
@@ -273,9 +275,24 @@ class CompletedTradeTableProjectionTests(unittest.TestCase):
 
     def test_duplicate_trade_identity_is_rejected(self):
         first = synthetic_row(0, "1", 10, "a")
+        original = synthetic_row(1, "1", 20, "b")
+        duplicate_metric = {
+            "trade_index": original.trade_index,
+            "trade_sha256": first.source_trade_sha256,
+            "realized_pnl_quote": original.net_pnl,
+            "entry_gross_quote": original.entry_gross_quote,
+            "exit_gross_quote": original.exit_gross_quote,
+            "entry_cash_out_quote": original.entry_cash_out_quote,
+            "gross_return": original.gross_return,
+            "net_return": original.net_return,
+            "total_fee_quote": original.fee_total,
+            "total_slippage_quote": original.slippage_total,
+            "holding_time_ms": original.holding_time_ms,
+        }
         second = replace(
-            synthetic_row(1, "1", 20, "b"),
+            original,
             source_trade_sha256=first.source_trade_sha256,
+            source_metric_sha256=metric_sha(duplicate_metric),
         )
         with self.assertRaises(TradeTableProjectionError):
             apply_trade_table_query((first, second), TradeTableQuery())
