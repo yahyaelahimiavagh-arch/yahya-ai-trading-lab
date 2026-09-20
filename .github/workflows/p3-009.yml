@@ -81,6 +81,8 @@ jobs:
         run: uv run --locked python -m unittest discover -s tests -p 'test_dashboard_contracts.py' -v
       - name: P8 accepted P7 export loader focused gate
         run: uv run --locked python -m unittest discover -s tests -p 'test_dashboard_loader.py' -v
+      - name: P8 system safety quality overview focused gate
+        run: uv run --locked python -m unittest discover -s tests -p 'test_dashboard_overview.py' -v
       - name: Compile and whitespace gates
         run: |
           uv run --locked python -m compileall -q yatl
@@ -128,6 +130,7 @@ jobs:
           assert_absent 'from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|urllib|http\.client|websockets|socket' yatl/dashboard
           assert_absent 'os\.getenv|os\.environ|dotenv|API_KEY|API_SECRET|requests|httpx|aiohttp|openai|anthropic' yatl/dashboard
           assert_absent 'from yatl\.analytics|import yatl\.analytics|sqlite3|database_path|local_paper|analyst_journal' yatl/dashboard/loader.py
+          assert_absent 'from yatl\.analytics|import yatl\.analytics|datetime|time\.time|time\.monotonic|sqlite3|database_path|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|urllib|http\.client|websockets|socket' yatl/dashboard/overview.py
       - name: P4 risk contract runtime
         run: uv run --locked python -m yatl risk-contract-check
       - name: P4 exact sizing runtime
@@ -232,6 +235,8 @@ jobs:
         run: uv run --locked python -m yatl.dashboard.contract_runtime
       - name: P8 accepted P7 export loader runtime
         run: uv run --locked python -m yatl.dashboard.loader_runtime
+      - name: P8 system safety quality overview runtime
+        run: uv run --locked python -m yatl.dashboard.overview_runtime
       - name: Publish P5-009 adversarial evidence
         uses: actions/upload-artifact@v4
         with:
