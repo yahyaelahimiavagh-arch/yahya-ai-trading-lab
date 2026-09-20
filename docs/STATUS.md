@@ -2066,3 +2066,76 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
 - No dependency or `uv.lock` change.
 - P8 is not closed until exact final-head Actions pass and P8-010 is explicitly
   approved and merged.
+
+
+## P8-010 accepted implementation / P8 final closeout — 2026-09-20
+
+Status: **P8 RUNTIME ACCEPTED / CLOSED — CHECKPOINT `fe973e8`**.
+
+- PR #61 exact final candidate HEAD:
+  `05038f9955425ddc05f552e84d71b5625663a43d`.
+- Matching GitHub Actions: `35534981625` — both jobs PASS.
+- Complete suite: **1139/1139 PASS**.
+- Focused P8-010: **32/32 PASS**.
+- Independent final audit: symbols=2, scenarios=9, runs=18, evidence files=19,
+  published HTML artifacts=2.
+- `exact_outcomes=true`, `replay_equal=true`,
+  `projections_recomputed=true`, `renderer_recomputed=true`,
+  `artifacts_verified=true`, `no_write=true`, `source_safe=true`.
+- Frozen P8 policy SHA-256:
+  `b4534112975f519714592ad7468c950eb6aa112f49b9aee80b1d15bf51804c2e`.
+- Frozen P8-009 matrix index SHA-256:
+  `38bc0e1eafedd44b1776ecec1a65fc48352a3155341dfca323641686739a8608`.
+- Accepted BTCUSDT+ETHUSDT P7 export-set SHA-256:
+  `6f884ea930cd929292f000e8ada2da370b4428d7173a1f3d2423deacc6523439`.
+- Final renderer-set SHA-256:
+  `17f8526ba74ea73a7915b8978d098ab567fe1e19a145f03c625246916e22ff0c`.
+- PR #61 was marked Ready and squash-merged with the exact expected head.
+- Final P8 checkpoint on `main`:
+  `fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e`.
+- P8 closure is engineering acceptance only. P3 remains
+  `INSUFFICIENT_EVIDENCE`; no profitability/Live claim or trade authority is
+  created.
+- No dependency or `uv.lock` change.
+
+## P9 planning opened — 2026-09-20
+
+Status: **P9-001 NEXT/CURRENT — MINIMUM-SUFFICIENT READ-ONLY NOTIFICATIONS**.
+
+- Plan file: `docs/P9-IMPLEMENTATION-PLAN.md`.
+- P9 is a read-only notification/alert surface, not an execution console.
+- Planned minimum sequence is P9-001 through P9-006.
+- Real Telegram transport is deferred to P9-003; inbound commands/webhooks/polling
+  are outside the current minimum plan.
+- P10 remains the economic validation gate immediately after P9 closure.
+
+## P9-001 current candidate — 2026-09-20
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry checkpoint: closed P8 at
+  `fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e`.
+- Branch: `p9-001-notification-policy-contracts`.
+- Frozen policy ID: `P9_NOTIFICATION_V1`.
+- Mode: `READ_ONLY_NOTIFICATION_CONTRACTS`.
+- Source scope: `ACCEPTED_SANITIZED_UPSTREAM_STATUS_ALERTS_ONLY`.
+- `transport_mode=NONE`; checkpoint is fully offline.
+- Immutable contracts cover accepted source provenance, fixed notification
+  categories/severity, information-only messages and bounded deterministic
+  batches.
+- Categories reserve system status, data-quality alert, Paper trade lifecycle,
+  Paper signal/candidate, risk/drawdown alert, periodic summary and P10 validation
+  status.
+- PAPER ONLY, `LIVE_MASTER_LOCK=OFF` and `INSUFFICIENT_EVIDENCE` are fixed
+  non-upgradable labels.
+- Message text rejects URL/transport-secret/authority-bearing material; canonical
+  reconstruction rejects unknown top-level and nested fields.
+- Adds focused P9-001 contract tests, deterministic offline runtime and source
+  safety CI gates.
+- No Telegram API call, Bot token, Chat ID, credential/environment access,
+  network/provider transport, inbound command/callback/webhook/polling,
+  execution/account/risk import, RiskAuthorization/quantity authority, strategy
+  optimizer, TRADE permission, order endpoint or AI direct execution is added.
+- No dependency or `uv.lock` change.
+- P9-002 remains closed until this exact candidate receives matching final-head
+  GitHub Actions evidence and explicit merge approval.
