@@ -12,6 +12,7 @@ from .contracts import (
     AnalystContractError,
     AnalystDisposition,
     AnalystReason,
+    AnalystReport,
     ClaimKind,
     build_analyst_report,
 )
@@ -161,6 +162,7 @@ class ModelResponseValidation:
             not isinstance(self.request, ModelRequestEnvelope)
             or type(self.accepted) is not bool
             or not isinstance(self.code, ModelResponseCode)
+            or not isinstance(self.report, AnalystReport)
             or not isinstance(self.raw_response_sha256, str)
             or len(self.raw_response_sha256) != 64
             or not isinstance(self.canonical_response_json, (str, type(None)))
@@ -195,6 +197,20 @@ class ModelResponseValidation:
             if _canonical_json(decoded) != self.canonical_response_json:
                 raise ModelResponseBoundaryError(
                     "Validated model response is not canonical"
+                )
+            try:
+                expected_claims = _parse_claims(decoded)
+                expected_report = build_analyst_report(
+                    self.request.bundle.analyst_input,
+                    expected_claims,
+                )
+            except (ModelResponseBoundaryError, AnalystContractError, TypeError):
+                raise ModelResponseBoundaryError(
+                    "Validated model response cannot reconstruct its report"
+                ) from None
+            if expected_report != self.report:
+                raise ModelResponseBoundaryError(
+                    "Validated model response report binding changed"
                 )
         else:
             if (
