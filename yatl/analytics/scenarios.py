@@ -473,11 +473,11 @@ def _cross_symbol_linkage(symbol):
 
     observed, passed = _expect_quality_failure(
         symbol,
-        QualityCode.ANALYTICS_CHAIN_INVALID,
+        QualityCode.SOURCE_IDENTITY_INVALID,
         mutate,
     )
     return {
-        "quality_code": "ANALYTICS_CHAIN_INVALID",
+        "quality_code": "SOURCE_IDENTITY_INVALID",
         "publication_allowed": False,
     }, observed, passed
 
