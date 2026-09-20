@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P7 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P8-008 GUARDED DASHBOARD CLI / ATOMIC PUBLICATION — CANDIDATE**
+قدم جاری: **P8-009 ADVERSARIAL DASHBOARD MATRIX — CANDIDATE**
 
 ## منشأ و حدود سند
 
@@ -629,6 +629,25 @@ P8-008 روی branch `p8-008-guarded-dashboard-cli` سه command محلی
 دوباره read-back و با length/SHA renderer تطبیق داده می‌شود. source قبل از publish
 دوباره verify می‌شود و هیچ path/rejected input/traceback در JSON خطا بازتاب پیدا
 نمی‌کند. P8-009 تا پذیرش و merge مستقل P8-008 بسته می‌ماند.
+
+
+## P8-008 acceptance / P8-009 candidate — 2026-09-20
+
+P8-008 با PR #59، Actions `35532396801`، **1070/1070** تست کامل و **44/44**
+تست focused پذیرفته و در checkpoint
+`20df93ead290d918ce55c93c5f3beab090a14f62` روی `main` merge شد. CLI محلی
+validate/summary/build با expected export SHA اجباری، overwrite guard، atomic
+same-directory publication، read-back verification، source immutability و خطاهای
+redacted بسته شد.
+
+P8-009 روی branch `p8-009-adversarial-dashboard-matrix` ماتریس ثابت **9×2**
+را برای BTCUSDT و ETHUSDT اجرا می‌کند: export tampering، fabricated quality PASS،
+evidence upgrade، cross-symbol row، duplicate trade، oversized input/output،
+HTML/script injection، path/private smuggling و artifact mutation. هر scenario دو
+بار replay می‌شود، evidence canonical/redacted تولید می‌کند و accepted P7 source
+identity باید byte-for-byte و hash-for-hash ثابت بماند. workflow یک artifact مستقل
+`p8-009-evidence` با 19 فایل منتشر می‌کند. P8-010 تا پذیرش و merge مستقل P8-009
+بسته می‌ماند.
 
 
 ## Economic objective clarification — 2026-09-20
