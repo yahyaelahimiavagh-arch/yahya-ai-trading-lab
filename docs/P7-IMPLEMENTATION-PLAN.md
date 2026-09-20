@@ -1,6 +1,6 @@
 # P7 — Journal / Analytics implementation plan
 
-Status: **P7-001 CURRENT CANDIDATE — FINAL-HEAD CI REQUIRED**
+Status: **P7-001 RUNTIME ACCEPTED / MERGED — P7-002 CURRENT CANDIDATE**
 
 Entry baseline: P6 runtime accepted and merged at checkpoint
 `f07f2209cac5b46be8f9d74da2d162925ed8ab65`. Final P6 Actions run
@@ -54,18 +54,18 @@ Acceptance: deterministic construction/reconstruction, canonical SHA-256,
 invalid-field rejection, P3 `INSUFFICIENT_EVIDENCE` preservation and source
 scan proving no execution/account/network/provider capability.
 
-Current candidate: branch `p7-001-analytics-contracts` defines frozen
-`P7_ANALYTICS_V1` contracts for read-only upstream source identities, upstream
-journal/trace event references, point-in-time analytics scopes, explicitly
-P7-derived field identities and conservative report dispositions. The P7-local
-strategy-evidence enum exposes only `INSUFFICIENT_EVIDENCE`; no upgrade state
-exists. Reports containing accepted events can only be `DESCRIPTIVE_ONLY`;
-empty reports become `INSUFFICIENT_DATA`. The policy hard-disables upstream
-mutation, external transport, credentials, execution import, RiskAuthorization
-mutation, quantity authority, trade permission, order endpoints, leverage,
-futures/margin/short and AI direct execution. No upstream journal reader,
-SQLite persistence, metric engine or CLI is added in P7-001. Matching final-head
-GitHub Actions evidence is required before acceptance.
+Accepted: PR #41 was squash-merged at
+`53e3cde1956b130c940aebc12adaaa4d905e132f` after matching final-head Actions
+run `35506503002` passed both jobs, the **721/721** complete suite and **18/18**
+focused P7-001 tests. Runtime froze policy SHA-256
+`534fb28e630a8bca4ccffd4c8ef572f4aac440d4a3d05de190cf70264ac9f4d9`,
+scope SHA-256
+`11d3aaf68daf8299599cd7651e558ab5bb396a24167417e94205da98a574f4a2`
+and report SHA-256
+`b59f847dd18e63f4d7f2022770ca27b66e79794cd354180de3a5988c4516e2ba`.
+The P7-local strategy-evidence enum exposes only `INSUFFICIENT_EVIDENCE`, and
+the policy keeps upstream mutation, transport, credentials, execution/risk/
+quantity/trade authority disabled.
 
 ### P7-002 — Read-only upstream ingestion manifest
 
@@ -76,6 +76,22 @@ secret-bearing or ambiguous inputs fail closed.
 
 Acceptance: reopen equality, upstream tamper detection, no-write tests and
 deterministic ingestion manifest digest.
+
+Current candidate: branch `p7-002-readonly-ingestion` adds bounded SQLite
+readers for the accepted P5 intent journal and sanitized P6 analyst trace journal.
+Each source requires an explicit expected raw database SHA-256, is opened with
+SQLite `mode=ro` plus `PRAGMA query_only=ON`, and is re-hashed/statted after
+reading to reject mid-ingestion mutation. Relevant migration versions and exact
+table-column contracts are checked; P5 intent digests and P6 trace/grounding
+bindings are independently recomputed/verified. Canonical source digests are
+separate from raw database identity and are bound into the P7 source identity.
+The two-source manifest requires one P5 source and one P6 source for the same
+symbol, sorted unique IDs and point-in-time observation not later than the
+snapshot. Symlinks, missing/empty/oversize files, changed database SHA, newer
+schemas, ambiguous duplicate paths and secret/provider material fail closed.
+No upstream path is exported, no write is performed and no execution/account/risk
+or network/provider import is added. Matching final-head GitHub Actions evidence
+is required before P7-002 acceptance.
 
 ### P7-003 — Unified point-in-time timeline
 
