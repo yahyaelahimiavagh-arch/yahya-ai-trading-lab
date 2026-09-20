@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 from yatl.analytics.audit import (
     EXPECTED_BTC_CHAIN,
+    EXPECTED_CHAIN_SET_SHA256,
     EXPECTED_INDEX_SHA256,
     EXPECTED_POLICY_SHA256,
     EXPECTED_UPSTREAM_IDENTITIES,
@@ -52,7 +53,10 @@ class P7FinalAuditTests(unittest.TestCase):
         )
         self.assertEqual(result.index_sha256, EXPECTED_INDEX_SHA256)
         self.assertEqual(result.policy_sha256, EXPECTED_POLICY_SHA256)
-        self.assertEqual(len(result.chain_set_sha256), 64)
+        self.assertEqual(
+            result.chain_set_sha256,
+            EXPECTED_CHAIN_SET_SHA256,
+        )
         self.assertTrue(result.exact_outcomes)
         self.assertTrue(result.replay_equal)
         self.assertTrue(result.chain_recomputed)
@@ -79,6 +83,7 @@ class P7FinalAuditTests(unittest.TestCase):
         first, chains_one = _chain_set_sha256()
         second, chains_two = _chain_set_sha256()
         self.assertEqual(first, second)
+        self.assertEqual(first, EXPECTED_CHAIN_SET_SHA256)
         self.assertEqual(chains_one, chains_two)
         self.assertEqual(
             tuple(item["symbol"] for item in chains_one),
@@ -167,13 +172,19 @@ class P7FinalAuditTests(unittest.TestCase):
                 with self.assertRaises(P7AuditError):
                     audit_p7(evidence)
 
-    def test_changed_frozen_policy_or_btc_chain_fails_closed(self):
+    def test_changed_frozen_policy_chain_set_or_btc_chain_fails_closed(self):
         with patch(
             "yatl.analytics.audit.EXPECTED_POLICY_SHA256",
             "0" * 64,
         ):
             with self.assertRaises(P7AuditError):
                 _policy_sha256()
+        with patch(
+            "yatl.analytics.audit.EXPECTED_CHAIN_SET_SHA256",
+            "0" * 64,
+        ):
+            with self.assertRaises(P7AuditError):
+                _chain_set_sha256()
         with patch.dict(
             "yatl.analytics.audit.EXPECTED_BTC_CHAIN",
             {"metrics_sha256": "0" * 64},
