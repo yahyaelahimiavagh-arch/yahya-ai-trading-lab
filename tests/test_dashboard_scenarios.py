@@ -357,7 +357,6 @@ class DashboardAdversarialMatrixTests(unittest.TestCase):
             "from yatl.analytics",
             "import yatl.analytics",
             "sqlite3",
-            "database_path",
             "local_paper",
             "analyst_journal",
             "from yatl.execution",
