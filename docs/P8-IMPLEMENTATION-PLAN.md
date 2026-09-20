@@ -1,6 +1,6 @@
 # P8 — Dashboard implementation plan
 
-Status: **P8-002 RUNTIME ACCEPTED / MERGED — P8-003 CURRENT CANDIDATE**
+Status: **P8-003 RUNTIME ACCEPTED / MERGED — P8-004 CURRENT CANDIDATE**
 
 Entry baseline: P7 runtime accepted and merged at checkpoint
 `93b9d87cf23fe8a52470c4a01b480b0935be87c3`. Final P7 Actions run
@@ -111,29 +111,15 @@ Acceptance: exact source-field conservation, explicit stale/unknown handling,
 stable overview SHA-256 and no conversion of descriptive status into trade/live
 permission.
 
-Current candidate: branch `p8-003-overview-projection` from accepted P8-002
-checkpoint `a9112a525e07de0e4b5cc8a02433f636246b683f`. The projection consumes only
-the immutable `LoadedP7Export` boundary and emits a fixed **15-card** overview:
-symbol, accepted export identity, snapshot time, Paper state,
-`LIVE_MASTER_LOCK=OFF`, strategy evidence, P7 quality status, completed trade
-count and the five accepted-chain identities. Each visible source-derived field is
-bound to a deterministic source-path/value SHA-256.
-
-Because accepted P7 segmentation export does not carry an exact open-trade count,
-`open_trade_count` is explicitly `UNKNOWN`. Because P8-003 has no clock or
-staleness threshold, `snapshot_freshness` is also explicitly `UNKNOWN`. No
-freshness, health, profitability, readiness or live/trade-permission inference is
-invented. The projection SHA-256 is deterministic and the source export/provenance
-binding is rechecked before projection.
-
-Focused suite: **24 tests**. Runtime gate:
-
-```powershell
-uv run --locked python -m yatl.dashboard.overview_runtime
-```
-
-No dependency or `uv.lock` change. Exact final-head GitHub Actions evidence is
-required before P8-003 acceptance or merge.
+Accepted: PR #54 was squash-merged at
+`2a74006dd42ba3755c4f0382847a165d7ef485ce` after matching final-head Actions
+run `35524331648` passed both jobs, the **910/910** complete suite and **24/24**
+focused P8-003 tests. The deterministic 15-card overview preserved accepted P7
+source fields, kept `open_trade_count=UNKNOWN` and
+`snapshot_freshness=UNKNOWN`, and froze overview SHA-256
+`00230798934c6d967833a7f3fbc53cffa6f0cf428db4f1369653fb55fc37ed2d`.
+No health, profitability, readiness or live/trade-permission inference was added.
+No dependency or `uv.lock` change was made.
 
 ### P8-004 — Completed-trade table projection
 
@@ -144,6 +130,36 @@ from accepted analytics; display formatting cannot alter stored semantics.
 
 Acceptance: stable ordering, bounded page size, exact row-to-trade identity,
 filter/sort determinism, open-trade isolation and duplicate/missing-ID rejection.
+
+Current candidate: branch `p8-004-completed-trade-table` from accepted P8-003
+checkpoint `2a74006dd42ba3755c4f0382847a165d7ef485ce`. It projects only accepted P7
+`trade_metrics` into immutable completed LONG/Paper rows, preserving every numeric
+source value as its exact original string. Each row binds the accepted
+`trade_sha256` plus a deterministic SHA-256 of the exact metric record.
+
+The original frozen P8-001 `DashboardTradeRow` requires execution-level
+entry/exit timestamps, quantity and prices that accepted P7 segmentation export
+does **not** publish. P8-004 therefore does not fabricate those values or weaken
+that frozen contract; it adds a separate
+`DashboardCompletedTradeMetricRow` specifically for the fields that actually
+exist in accepted P7 output.
+
+The query contract supports bounded outcome filtering
+(`ALL/WIN/LOSS/BREAKEVEN`), deterministic sorting
+(`TRADE_INDEX/NET_PNL/HOLDING_TIME`, ASC/DESC), bounded offset/page size
+(maximum **100** rows), stable tie-breaking and deterministic pagination.
+Noncompleted/open/incomplete material is explicitly
+`SEPARATE_NOT_PROJECTED_FROM_P7_TRADE_METRICS` and can never become a completed
+row. Missing/duplicate identities and forged provenance fail closed.
+
+Focused suite: **26 tests**. Runtime gate:
+
+```powershell
+uv run --locked python -m yatl.dashboard.trade_table_runtime
+```
+
+No dependency or `uv.lock` change. Exact final-head GitHub Actions evidence is
+required before P8-004 acceptance or merge.
 
 ### P8-005 — Performance and segmentation views
 
