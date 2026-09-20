@@ -1830,3 +1830,47 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
   quantity authority, TRADE permission or order endpoint.
 - No dependency or `uv.lock` change.
 - P8-006 remains closed until exact final-head Actions pass and P8-005 is merged.
+
+## P8-005 accepted implementation — 2026-09-20
+
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `23307f1`**.
+
+- PR #56 final candidate HEAD:
+  `ffc9d3f679ff580c4e6a9a52618efffd4ef7e1ee`.
+- Matching GitHub Actions: `35527548960` — both jobs PASS.
+- Complete suite: **962/962 PASS**.
+- Focused P8-005: **26/26 PASS**.
+- Performance/segmentation projection SHA-256:
+  `aef1b53a1762f134fad7bd37ee48d7bc5a722b98246021622f9e92531790f3b6`.
+- Exact P7 Decimal precision **256** preserved without rounding.
+- Aggregate SYMBOL reconciliation and exact once-only segmentation partitions pass.
+- No cross-dimension sum, extrapolation, causality or evidence upgrade.
+- PR #56 squash-merged; accepted checkpoint:
+  `23307f18588447e82f494d7c8ff461b3055eee05`.
+- No dependency or `uv.lock` change.
+
+## P8-006 current candidate — 2026-09-20
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry checkpoint: accepted P8-005 at
+  `23307f18588447e82f494d7c8ff461b3055eee05`.
+- Branch: `p8-006-quality-diagnostic-view`.
+- Explicit PASS / FAIL / ABSENT quality presentation contract.
+- PASS requires validated `LoadedP7Export` and the complete canonical P7
+  passed-check set before analytics presentation is allowed.
+- FAIL accepts only exact sanitized P7 quality schema, requires null
+  `accepted_chain`, blocks analytics and maps bounded code/component identities
+  to stable local display messages.
+- ABSENT blocks analytics and invents no P7 diagnostic.
+- Unknown code/component/check, duplicate/unordered diagnostics, extra free text,
+  safety weakening, evidence upgrade and partial publication fail closed.
+- Diagnostic SHA-256 binds exact source `{code, component}`.
+- FAIL/ABSENT output contains no analytics, trade or segment payload and no export
+  SHA.
+- **30 focused tests** plus deterministic runtime and source-safety CI gate.
+- Production quality-view module imports no analytics runtime/database,
+  credentials, network/provider, execution/account/risk capability,
+  RiskAuthorization, quantity authority, trade permission or order endpoint.
+- No dependency or `uv.lock` change.
+- P8-007 remains closed until exact final-head Actions pass and P8-006 is merged.

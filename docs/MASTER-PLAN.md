@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P7 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P8-005 PERFORMANCE / SEGMENTATION VIEWS — CANDIDATE**
+قدم جاری: **P8-006 QUALITY / DIAGNOSTIC VIEW — CANDIDATE**
 
 ## منشأ و حدود سند
 
@@ -578,6 +578,23 @@ count/PnL/cost/outcomes reconcile می‌شود. returnهای high-precision ب�
 partition کند؛ هیچ cross-dimension sum، causality، extrapolation یا evidence
 upgrade مجاز نیست. nullهای واقعی `UNAVAILABLE` می‌مانند. P8-006 تا پذیرش و
 merge مستقل P8-005 بسته می‌ماند.
+
+
+## P8-005 acceptance / P8-006 candidate — 2026-09-20
+
+P8-005 با PR #56، Actions `35527548960`، **962/962** تست کامل و **26/26**
+تست focused پذیرفته و در checkpoint
+`23307f18588447e82f494d7c8ff461b3055eee05` روی `main` merge شد. performance
+و segmentation view مقادیر exact P7 با precision 256 را حفظ می‌کند و بدون
+cross-dimension double counting با SYMBOL segment reconcile می‌شود.
+
+P8-006 روی branch `p8-006-quality-diagnostic-view` سه state صریح
+`PASS/FAIL/ABSENT` دارد. فقط PASS از `LoadedP7Export` معتبر اجازه‌ی نمایش
+analytics می‌دهد. FAIL فقط sanitized P7 quality report با `accepted_chain=null`
+را می‌پذیرد و ABSENT نیز analytics را مسدود می‌کند. unknown diagnostic/check،
+free-text اضافی، مسیر محلی، SQL/traceback، partial publication، safety weakening
+یا evidence upgrade fail-closed است. P8-007 تا پذیرش و merge مستقل P8-006 بسته
+می‌ماند.
 
 
 ## Economic objective clarification — 2026-09-20
