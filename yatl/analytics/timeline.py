@@ -823,7 +823,12 @@ def build_unified_timeline(snapshot_time_ms, specs):
     if any(not isinstance(item, UpstreamSourceSpec) for item in specs):
         raise TimelineError("Timeline source specification is invalid")
 
-    manifest = ingest_readonly_sources(snapshot_time_ms, specs)
+    try:
+        manifest = ingest_readonly_sources(snapshot_time_ms, specs)
+    except AnalyticsIngestionError:
+        raise TimelineError(
+            "Timeline upstream ingestion failed closed"
+        ) from None
     by_kind = {item.source_kind: item for item in specs}
     if set(by_kind) != {
         AnalyticsSourceKind.P5_EXECUTION_EVIDENCE,
