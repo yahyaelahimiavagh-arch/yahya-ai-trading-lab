@@ -18,6 +18,7 @@ from .ingestion import (
 from .metrics import (
     DECIMAL_PRECISION,
     PerformanceMetricsError,
+    PerformanceMetricsReport,
     TradePerformanceMetric,
     calculate_performance_metrics,
 )
@@ -365,7 +366,7 @@ def _read_analyst_dimensions(spec):
         raise SegmentationError("P6 database identity changed before segmentation")
     connection = _connect_readonly(spec.database_path)
     try:
-        encoded, _ = _p6_canonical(connection)
+        encoded, canonical_sha256 = _p6_canonical(connection)
     except AnalyticsIngestionError:
         raise SegmentationError("P6 trace segmentation failed closed") from None
     finally:
@@ -388,7 +389,10 @@ def _read_analyst_dimensions(spec):
     identities = tuple(item.trace_sha256 for item in traces)
     if len(set(identities)) != len(identities):
         raise SegmentationError("P6 trace identities are duplicate")
-    return tuple(sorted(traces, key=lambda item: item.trace_sha256))
+    return (
+        tuple(sorted(traces, key=lambda item: item.trace_sha256)),
+        canonical_sha256,
+    )
 
 
 def _trade_members_for_segment(segment, metric_by_sha):
@@ -407,9 +411,11 @@ def _analyst_members_for_segment(segment, trace_by_sha):
 
 @dataclass(frozen=True, slots=True)
 class SegmentationReport:
+    source_metrics: PerformanceMetricsReport
     metrics_sha256: str
     reconstruction_sha256: str
     timeline_sha256: str
+    analyst_source_sha256: str
     symbol: str
     trade_metrics: tuple[TradePerformanceMetric, ...]
     analyst_traces: tuple[AnalystTraceDimensionRecord, ...]
@@ -424,6 +430,7 @@ class SegmentationReport:
     def __post_init__(self):
         if (
             self.schema_version != SEGMENTATION_SCHEMA_VERSION
+            or not isinstance(self.source_metrics, PerformanceMetricsReport)
             or self.symbol not in ("BTCUSDT", "ETHUSDT")
             or self.strategy_attribution_status != STRATEGY_ATTRIBUTION_STATUS
             or self.strategy_evidence
@@ -445,8 +452,20 @@ class SegmentationReport:
             (self.metrics_sha256, "Metrics"),
             (self.reconstruction_sha256, "Reconstruction"),
             (self.timeline_sha256, "Timeline"),
+            (self.analyst_source_sha256, "Analyst source"),
         ):
             _sha(value, label)
+
+        if (
+            self.source_metrics.metrics_sha256 != self.metrics_sha256
+            or self.source_metrics.reconstruction_sha256 != self.reconstruction_sha256
+            or self.source_metrics.timeline_sha256 != self.timeline_sha256
+            or self.source_metrics.symbol != self.symbol
+            or tuple(self.source_metrics.trades) != self.trade_metrics
+            or self.source_metrics.strategy_evidence
+            is not StrategyEvidenceState.INSUFFICIENT_EVIDENCE
+        ):
+            raise SegmentationError("Segmentation source metrics binding is invalid")
 
         metric_by_sha = {item.trade_sha256: item for item in self.trade_metrics}
         trace_by_sha = {item.trace_sha256: item for item in self.analyst_traces}
@@ -547,6 +566,7 @@ class SegmentationReport:
             "metrics_sha256": self.metrics_sha256,
             "reconstruction_sha256": self.reconstruction_sha256,
             "timeline_sha256": self.timeline_sha256,
+            "analyst_source_sha256": self.analyst_source_sha256,
             "symbol": self.symbol,
             "strategy_evidence": self.strategy_evidence.value,
             "strategy_attribution_status": self.strategy_attribution_status,
@@ -617,7 +637,7 @@ def build_segmentation(snapshot_time_ms, specs):
         raise SegmentationError("Segmentation requires exactly one P6 trace source")
     if p6[0].symbol != metrics.symbol:
         raise SegmentationError("Segmentation P5/P6 symbols differ")
-    analyst_traces = _read_analyst_dimensions(p6[0])
+    analyst_traces, analyst_source_sha256 = _read_analyst_dimensions(p6[0])
 
     trade_metrics = tuple(metrics.trades)
     trade_segments = (
@@ -662,9 +682,11 @@ def build_segmentation(snapshot_time_ms, specs):
     )
 
     return SegmentationReport(
+        metrics,
         metrics.metrics_sha256,
         reconstruction.reconstruction_sha256,
         reconstruction.timeline_sha256,
+        analyst_source_sha256,
         metrics.symbol,
         trade_metrics,
         analyst_traces,
