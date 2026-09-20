@@ -1444,9 +1444,9 @@ Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `ec7a73c`**.
   permission/order endpoint or AI execution.
 
 
-## P7-007 current candidate — 2026-09-20
+## P7-007 accepted implementation — 2026-09-20
 
-Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `7e57ede`**.
 
 - Entry checkpoint: P7-006 merged at
   `ec7a73cc27ba6d6075c2f291f10254a358b4bf29`; branch
@@ -1472,4 +1472,33 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
   per-dimension total reconciliation PASS.
 - No dependency or `uv.lock` change; no execution/backtest/account/risk import,
   credentials/network/provider, RiskAuthorization/quantity authority, TRADE
+  permission/order endpoint or AI execution.
+
+
+## P7-008 current candidate — 2026-09-20
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
+
+- Entry checkpoint: P7-007 merged at
+  `7e57edee4ec90b63afc6e837536bb3286b03d528`; branch
+  `p7-008-analytics-cli-export`.
+- Adds four bounded noninteractive commands: `validate`, `summary`, `trades`
+  and `export`; every command passes through the P7-007 quality gate.
+- Bounded canonical spec binds exactly one P5 and one P6 source with expected raw
+  SHA-256; duplicate JSON keys, oversize specs, malformed source records and
+  secret-like material are rejected with compact stable errors that do not echo
+  caller paths or rejected values.
+- Summary exposes only descriptive accepted analytics. Trade view is capped at
+  100 completed trades per invocation and reports total/returned counts.
+- Canonical export contains accepted quality + sanitized segmentation only,
+  excludes source paths/private input and carries a deterministic export SHA-256.
+- Export is written through a flushed same-directory temporary file and published
+  atomically. Existing targets are refused by default; replacement requires
+  explicit `--overwrite`. Quality failure never creates an export.
+- Stable CLI exit codes distinguish success, quality failure, invalid input,
+  storage failure, existing output and oversized output. CLI stdout is bounded to
+  64 KiB; canonical export is bounded to 8 MiB.
+- No interactive prompt, dependency or `uv.lock` change; no
+  execution/backtest/account/risk import, environment credentials,
+  network/provider transport, RiskAuthorization/quantity authority, TRADE
   permission/order endpoint or AI execution.
