@@ -260,6 +260,19 @@ class DashboardCliTests(unittest.TestCase):
             dashboard_validate(self.root / "missing.json", self.expected)
         self.assertIs(caught.exception.code, DashboardCliCode.SOURCE_REJECTED)
 
+    def test_missing_source_with_existing_output_still_rejects_source(self):
+        output = self.root / "dashboard.html"
+        output.write_bytes(b"existing")
+        with self.assertRaises(DashboardCliError) as caught:
+            dashboard_build(
+                self.root / "missing.json",
+                self.expected,
+                output,
+                overwrite=True,
+            )
+        self.assertIs(caught.exception.code, DashboardCliCode.SOURCE_REJECTED)
+        self.assertEqual(output.read_bytes(), b"existing")
+
     def test_source_symlink_rejects_source(self):
         link = self.root / "source-link.json"
         link.symlink_to(self.source)
