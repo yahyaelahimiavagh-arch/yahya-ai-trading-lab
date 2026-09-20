@@ -111,3 +111,21 @@ __all__ += [
     "apply_trade_table_query",
     "project_completed_trade_table",
 ]
+
+from .performance_views import (
+    PERFORMANCE_VIEW_SCHEMA_VERSION,
+    DashboardAnalystSegmentSummary,
+    DashboardTradeSegmentSummary,
+    PerformanceSegmentationProjection,
+    PerformanceViewProjectionError,
+    project_performance_segmentation,
+)
+
+__all__ += [
+    "PERFORMANCE_VIEW_SCHEMA_VERSION",
+    "DashboardAnalystSegmentSummary",
+    "DashboardTradeSegmentSummary",
+    "PerformanceSegmentationProjection",
+    "PerformanceViewProjectionError",
+    "project_performance_segmentation",
+]
