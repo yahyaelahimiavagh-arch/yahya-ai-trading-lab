@@ -261,9 +261,12 @@ frozen runtime digests; both-symbol chain identities are then aggregated into on
 canonical chain-set SHA-256. Source safety is scanned across the full
 `yatl/analytics` package for execution/backtest/account/risk imports,
 order/withdrawal endpoints, environment credentials and network/provider clients.
-The first candidate CI run is used only to obtain the independently recomputed
-two-symbol chain-set digest; that digest is then frozen in code and a new exact
-Final-HEAD run is required before P7-010 acceptance.
+The discovery candidate run `35516730233` independently recomputed the
+two-symbol chain-set SHA-256 as
+`76face2aa41fbea1dc0ae718964eb77b5990d258beb41312c74132c8bb5c1209`. That digest is now frozen in code and is required by both the
+audit result contract and focused regression tests. The discovery run is not
+acceptance evidence; a replacement exact Final-HEAD run is required before
+P7-010 acceptance.
 
 ## Exit condition
 
