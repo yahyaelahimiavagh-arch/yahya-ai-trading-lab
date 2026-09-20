@@ -8,14 +8,14 @@ P0 تا P7 با شواهد runtime پذیرفته و روی `main` بسته شد
 P8 — Dashboard مرحله بعدی است. P8 فقط export پذیرفته‌شده و sanitized فاز P7 را
 read-only مصرف می‌کند و نمایش وضعیت، معاملات Paper، عملکرد و diagnostics را بدون
 credential، network/provider، TRADE permission، order endpoint یا مسیر اجرای جدید
-می‌سازد. P8-007 با checkpoint
-`ce1d7f5d5a8ea150e2ec92d9011765cdc4d79487` پذیرفته و merge شده است. P8-008
-اکنون CLI محلی `validate/summary/build` و publication اتمیک را اضافه می‌کند:
-expected export SHA اجباری است، overwrite پیش‌فرض ممنوع است، temp در همان
-directory ساخته می‌شود و خروجی نهایی دوباره با byte length/SHA renderer verify
-می‌شود. JSON خروجی path یا exception/rejected value را بازتاب نمی‌دهد و source
-قبل از publish دوباره verify می‌شود. پذیرش P8-008 هنوز به Final-HEAD CI و merge
-مستقل نیاز دارد و P8-009 باز نشده است.
+می‌سازد. P8-008 با checkpoint
+`20df93ead290d918ce55c93c5f3beab090a14f62` پذیرفته و merge شده است. P8-009
+اکنون ماتریس adversarial ثابت **9×2** را روی exportهای معتبر BTCUSDT/ETHUSDT اجرا
+می‌کند: tampering، fabricated PASS/evidence upgrade، cross-symbol/duplicate trade،
+oversize، HTML/script، private-material smuggling و artifact mutation. هر run دو
+بار replay می‌شود، evidence canonical/redacted می‌سازد و accepted P7 identity
+نباید تغییر کند. workflow نیز artifact مستقل `p8-009-evidence` را منتشر می‌کند.
+پذیرش P8-009 هنوز به Final-HEAD CI و merge مستقل نیاز دارد و P8-010 باز نشده است.
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
