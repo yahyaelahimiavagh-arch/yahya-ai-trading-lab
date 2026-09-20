@@ -1,6 +1,6 @@
 # P6 — AI Analyst implementation plan
 
-Status: **P6-001 / P6-002 / P6-003 / P6-004 RUNTIME ACCEPTED / MERGED — P6-005 CURRENT CANDIDATE**
+Status: **P6-001 / P6-002 / P6-003 / P6-004 / P6-005 RUNTIME ACCEPTED / MERGED — P6-006 CURRENT CANDIDATE**
 
 Entry baseline: P5 runtime accepted and merged at checkpoint
 `cd5ff5651e2d1df509dba6de8bc717a3ba7bf34f`. Final P5 Actions run
@@ -110,17 +110,15 @@ quantities, credentials, URLs/actions and malformed or over-sized responses.
 Acceptance: adversarial response matrix, canonical validated output and
 fail-closed fallback to `INSUFFICIENT_DATA`.
 
-Current candidate: branch `p6-005-strict-model-response-schema` adds a strict
-offline parser for untrusted model text. Only an exact JSON schema containing
-typed claims is accepted; unknown fields, duplicate keys, malformed or over-sized
-payloads, unsupported claim kinds, executable-action material, quantities,
-credentials and URL-like content fail closed. Rejected raw text is not retained;
-only a SHA-256 identity and deterministic rejection code remain. Accepted output is
-canonicalized and bound to the reconstructed `AnalystReport`. Because current P3
-evidence remains `INSUFFICIENT_EVIDENCE`, accepted responses must preserve an
-explicit uncertainty claim and resolve to `REVIEW`; every rejected response falls
-back to an empty `INSUFFICIENT_DATA` report. Matching final-head GitHub Actions
-evidence is required before P6-005 can be accepted.
+Accepted: PR #34 was squash-merged at
+`760ceaa38d2f6be94994ac5e69fd97e738000903` after matching final-head Actions
+run `35495765457` passed both jobs, the **615/615** complete suite, **23/23**
+focused P6-005 tests, the analyst safety scan and adversarial response runtime.
+P6-005 accepts only the exact bounded response schema, binds canonical accepted
+output to the reconstructed `AnalystReport`, preserves explicit uncertainty, and
+fails every rejected model response closed to `INSUFFICIENT_DATA`. It grants no
+execution, quantity, RiskAuthorization, order, credential, network or trade
+authority.
 
 ### P6-006 — Claim/evidence grounding gate
 
@@ -129,6 +127,20 @@ Unsupported claims, contradictions, stale evidence or invented identifiers fail
 closed and cannot be promoted to operator guidance.
 
 Acceptance: exact grounding tests and deterministic rejection reasons.
+
+Current candidate: branch `p6-006-claim-evidence-grounding` adds an exact,
+deterministic semantic grounding gate after P6-005 schema validation. Groundable
+claims use a fixed analysis-only vocabulary with an exact claim kind, text, one
+evidence reference and required P1/P3/P4/P5 layer. The gate rebinds the request to
+the current evidence bundle, checks point-in-time validity and accepted safety
+state, rejects unsupported claims and fixed contradictions, and rejects wrong-layer
+or altered evidence references. Upstream schema failures and invented identifiers
+remain fail-closed. Any grounding failure returns an empty `INSUFFICIENT_DATA`
+report with a deterministic rejection code; grounded output remains `REVIEW`
+because P3 is still `INSUFFICIENT_EVIDENCE`. No provider/network, credential,
+execution, quantity, RiskAuthorization, order or trade capability is added.
+Matching final-head GitHub Actions evidence is required before P6-006 can be
+accepted.
 
 ### P6-007 — Analyst journal and reproducible trace
 
