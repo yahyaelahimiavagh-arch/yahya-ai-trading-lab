@@ -1810,7 +1810,10 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
   `6388eaab83bd756f26ed09a57ac3cc2015d48782`.
 - Branch: `p8-005-performance-segmentation-views`.
 - Projects a fixed **19-metric** completed-Paper performance view from accepted P7
-  trade metrics using canonical Decimal aggregation semantics.
+  trade metrics using canonical P7 Decimal precision **256**.
+- Preserves exact high-precision return strings with a separate
+  `DashboardExactMetricValue` contract; frozen P8-001 `DashboardMetricValue`
+  remains unchanged at its original 96-character bound.
 - Aggregate values are reconciled with the exact accepted SYMBOL segment on count,
   realized PnL, total cost and win/loss/breakeven conservation.
 - Undefined zero-trade values remain `UNAVAILABLE`; no forecast/extrapolation is
