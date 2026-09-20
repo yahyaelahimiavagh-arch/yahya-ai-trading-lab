@@ -1,19 +1,19 @@
 # Yahya AI Trading Lab
 
-P0 تا P7 با شواهد runtime پذیرفته و روی `main` بسته شده‌اند. P7-010 ممیزی مستقل
-نهایی Journal / Analytics را با **842/842** تست روی final-head و GitHub Actions run
-`35516951238` تکمیل کرد. PR #50 squash-merge شد و checkpoint نهایی P7 روی
-`main` برابر است با
-`93b9d87cf23fe8a52470c4a01b480b0935be87c3`.
-P8 — Dashboard مرحله بعدی است. P8 فقط export پذیرفته‌شده و sanitized فاز P7 را
-read-only مصرف می‌کند و نمایش وضعیت، معاملات Paper، عملکرد و diagnostics را بدون
-credential، network/provider، TRADE permission، order endpoint یا مسیر اجرای جدید
-می‌سازد. P8-009 با checkpoint
-`503e78dd6fb741f33dce838b70ff4c2c4fea3452` پذیرفته و merge شده است. P8-010
-اکنون ممیزی مستقل نهایی Dashboard است: policy frozen، exportهای accepted BTC/ETH،
-تمام projectionها، renderer، ماتریس adversarial و 19 evidence file، source safety،
-no-write و HTMLهای منتشرشده را مستقل دوباره محاسبه و تطبیق می‌دهد. P8 تا زمانی
-که Final-HEAD این audit PASS و PR مستقل آن merge نشود **بسته محسوب نمی‌شود**.
+P0 تا P8 با شواهد runtime پذیرفته و روی `main` بسته شده‌اند. P8-010 ممیزی مستقل
+نهایی Dashboard را روی exact final candidate HEAD
+`05038f9955425ddc05f552e84d71b5625663a43d` با GitHub Actions run
+`35534981625`، **1139/1139** تست کامل و **32/32** تست focused پذیرفت. PR #61
+squash-merge شد و checkpoint نهایی P8 روی `main` برابر است با
+`fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e`.
+
+P9 — Telegram اکنون باز شده است، اما minimum-sufficient باقی می‌ماند. P9-001 فقط
+policy و قراردادهای immutable/read-only notification را با
+`transport_mode=NONE` تعریف می‌کند. در این checkpoint هیچ Telegram API call،
+Bot token، Chat ID، inbound command، webhook/polling، execution control، TRADE
+permission یا order endpoint وجود ندارد. برنامه ترتیبی P9 در
+`docs/P9-IMPLEMENTATION-PLAN.md` ثبت شده است.
+
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
@@ -50,20 +50,17 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 ## مسیر بعدی
 
 مرجع ترتیب اجرا: [نقشه پروژه](docs/MASTER-PLAN.md).
-وضعیت جاری **P0 تا P7 پذیرفته‌شده در runtime و merge‌شده روی main** است. P1 در `4e77e34` بسته شد.
-P2 بارگذاری point-in-time، ساعت رویداد، fill محافظه‌کارانه، هزینه، دفتر پرتفوی،
-معیارها، artifact تکرارپذیر و شش سناریوی واقعی BTC/ETH را تکمیل کرده است. ممیزی
-نهایی P2 همه این gateها را بازسازی و تأیید می‌کند. P3 در `90d5847` بسته شد؛
-P4-001 تا P4-010 نیز به‌ترتیب پذیرفته و روی `main` merge شده‌اند. P4 در
-checkpoint `f3a5575` بسته شد. P5-001 تا P5-010 نیز runtime accepted و merge
-شده‌اند؛ P5 در checkpoint
-`cd5ff5651e2d1df509dba6de8bc717a3ba7bf34f` بسته شد. P6-001 تا P6-010 نیز
-runtime accepted و merge شده‌اند؛ P6 در checkpoint
-`f07f2209cac5b46be8f9d74da2d162925ed8ab65` بسته شد. P7-001 تا P7-010 نیز
-runtime accepted و merge شده‌اند؛ P7 در checkpoint
-`93b9d87cf23fe8a52470c4a01b480b0935be87c3` بسته شد. مرحله بعدی P8 —
-Dashboard است. برنامه P7 در `docs/P7-IMPLEMENTATION-PLAN.md` و برنامه P8 در
-`docs/P8-IMPLEMENTATION-PLAN.md` ثبت می‌شوند.
+وضعیت جاری **P0 تا P8 runtime accepted و merge‌شده روی main** است. checkpoint
+نهایی P8 برابر
+`fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e` است و مرحله جاری
+**P9-001 — Notification policy and immutable contracts** روی branch
+`p9-001-notification-policy-contracts` است.
+
+P9 برای رسیدن سریع‌تر به P10 عمداً محدود است: status/alertهای accepted و sanitized
+را به notificationهای information-only تبدیل می‌کند. transport واقعی Telegram
+قبل از P9-003 وارد نمی‌شود و inbound command/control جزو plan فعلی نیست.
+برنامه‌های فازها در `docs/P7-IMPLEMENTATION-PLAN.md`,
+`docs/P8-IMPLEMENTATION-PLAN.md` و `docs/P9-IMPLEMENTATION-PLAN.md` ثبت شده‌اند.
 
 P3-001 قرارداد research-only سیگنال را اضافه می‌کند. تصمیم فقط یکی از `NO_TRADE`،
 `ENTER_LONG` یا `EXIT_LONG` است و به context نقطه‌زمانی و digest آن متصل می‌شود.
