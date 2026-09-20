@@ -57,3 +57,27 @@ __all__ += [
     "ingest_readonly_sources",
     "ingest_source",
 ]
+
+from .timeline import (
+    TIMELINE_SCHEMA_VERSION,
+    RelationshipKind,
+    TimelineEntry,
+    TimelineError,
+    TimelineKind,
+    TimelineRelationship,
+    TimelineTimeBasis,
+    UnifiedTimeline,
+    build_unified_timeline,
+)
+
+__all__ += [
+    "TIMELINE_SCHEMA_VERSION",
+    "RelationshipKind",
+    "TimelineEntry",
+    "TimelineError",
+    "TimelineKind",
+    "TimelineRelationship",
+    "TimelineTimeBasis",
+    "UnifiedTimeline",
+    "build_unified_timeline",
+]

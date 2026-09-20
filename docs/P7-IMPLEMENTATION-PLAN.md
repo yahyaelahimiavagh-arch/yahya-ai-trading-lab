@@ -1,6 +1,6 @@
 # P7 — Journal / Analytics implementation plan
 
-Status: **P7-001 RUNTIME ACCEPTED / MERGED — P7-002 CURRENT CANDIDATE**
+Status: **P7-001 / P7-002 RUNTIME ACCEPTED / MERGED — P7-003 CURRENT CANDIDATE**
 
 Entry baseline: P6 runtime accepted and merged at checkpoint
 `f07f2209cac5b46be8f9d74da2d162925ed8ab65`. Final P6 Actions run
@@ -77,21 +77,19 @@ secret-bearing or ambiguous inputs fail closed.
 Acceptance: reopen equality, upstream tamper detection, no-write tests and
 deterministic ingestion manifest digest.
 
-Current candidate: branch `p7-002-readonly-ingestion` adds bounded SQLite
-readers for the accepted P5 intent journal and sanitized P6 analyst trace journal.
-Each source requires an explicit expected raw database SHA-256, is opened with
-SQLite `mode=ro` plus `PRAGMA query_only=ON`, and is re-hashed/statted after
-reading to reject mid-ingestion mutation. Relevant migration versions and exact
-table-column contracts are checked; P5 intent digests and P6 trace/grounding
-bindings are independently recomputed/verified. Canonical source digests are
-separate from raw database identity and are bound into the P7 source identity.
-The two-source manifest requires one P5 source and one P6 source for the same
-symbol, sorted unique IDs and point-in-time observation not later than the
-snapshot. Symlinks, missing/empty/oversize files, changed database SHA, newer
-schemas, ambiguous duplicate paths and secret/provider material fail closed.
-No upstream path is exported, no write is performed and no execution/account/risk
-or network/provider import is added. Matching final-head GitHub Actions evidence
-is required before P7-002 acceptance.
+Accepted: PR #42 was squash-merged at
+`40593552a056bc0280fc9ce32ccb60efa817760b` after matching final-head Actions
+run `35507684476` passed both jobs, the **735/735** complete suite and **14/14**
+focused P7-002 tests. The accepted runtime proved `reopen_equal=true` and
+`no_write=true` with P5 canonical SHA-256
+`67625cb2784a8cd09dc877b3bda1dd49a24b555305bacc957930975354dfcd05`,
+P6 canonical SHA-256
+`a47c628dcce75500ffdd0c7a92835e1872e31eebaf3f9aee3802ab8f7a3d81c0`
+and ingestion-manifest SHA-256
+`56211a6cebd0af00ca28deda1ac06f24346f4267d9e377f3a2f2604f7de49550`.
+SQLite remained `mode=ro/query_only`; raw file identity, schema, P5 intent
+digests and P6 nested grounding bindings were verified without exporting paths or
+adding execution/account/risk/network/provider capability.
 
 ### P7-003 — Unified point-in-time timeline
 
@@ -102,6 +100,24 @@ out-of-order or future-linked records fail closed.
 
 Acceptance: stable ordering, exact relationship checks, cross-symbol/time
 isolation and byte-identical replay.
+
+Current candidate: branch `p7-003-unified-timeline` builds a canonical timeline
+from the P7-002 manifest plus the same read-only P5/P6 databases. It independently
+replays P5 intent-to-order chains, current order projections, fill-to-active-order
+relationships and the final portfolio projection, while reusing P7-002 canonical
+P6 trace validation. Risk/execution identities are retained only as SHA-256
+relationships; no upstream payload is rewritten. Because accepted P5 intent rows
+do not contain their own timestamp, intent placement explicitly uses
+`RELATED_ORDER_TIME` tied to the first durable order event rather than inventing
+an intent timestamp. Order events use `UPSTREAM_EVENT_TIME`, fills use
+`UPSTREAM_FILL_TIME`, the portfolio projection uses `LAST_FILL_TIME`, and P6
+traces use the trusted source `SOURCE_OBSERVED_AT`. Orphan intents, broken or
+skipped order chains, cross-symbol fills, future-linked material, invalid current
+order projections, fill/order-state mismatches, portfolio/fill mismatches,
+duplicate timeline identities and noncanonical relationship ordering fail closed.
+The output preserves `INSUFFICIENT_EVIDENCE`, is read-only, path-free and
+deterministic. Matching final-head GitHub Actions evidence is required before
+P7-003 acceptance.
 
 ### P7-004 — Completed Paper trade reconstruction
 
