@@ -110,7 +110,8 @@ def main():
         with connection:
             connection.execute(
                 "UPDATE local_paper_order_events SET intent_sha256=? "
-                "WHERE sequence=0 LIMIT 1",
+                "WHERE rowid=(SELECT rowid FROM local_paper_order_events "
+                "WHERE sequence=0 ORDER BY event_time_ms LIMIT 1)",
                 ("0" * 64,),
             )
         connection.close()
