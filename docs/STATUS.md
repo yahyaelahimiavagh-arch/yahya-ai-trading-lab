@@ -1620,3 +1620,33 @@ Status: **P8-001 NEXT — DASHBOARD POLICY / IMMUTABLE VIEW CONTRACTS**.
   permission or order endpoints.
 - P8 sequence is fixed as P8-001 through P8-010; P8-009 is adversarial Dashboard
   matrix and P8-010 is independent final audit.
+
+## P8-001 current candidate — 2026-09-20
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry baseline after P7 closeout documentation merge:
+  `9344d0d6a45ac77b5ea676a119b8cd7e782f00da`.
+- Branch: `p8-001-dashboard-policy-contracts`.
+- Added `yatl/dashboard/contracts.py`, `yatl/dashboard/__init__.py` and
+  `yatl/dashboard/contract_runtime.py`.
+- Added **21 focused tests** in `tests/test_dashboard_contracts.py`.
+- Frozen policy ID: `P8_DASHBOARD_V1`; mode:
+  `LOCAL_READ_ONLY_DASHBOARD`; source scope:
+  `ACCEPTED_SANITIZED_P7_EXPORT_ONLY`.
+- Immutable display contracts cover accepted/sanitized P7 export identity, fixed
+  Paper/safety/evidence banner, overview cards, completed Paper trade rows,
+  descriptive metric values, segment rows and sanitized diagnostics.
+- Canonical reconstruction rejects unknown top-level/nested fields and preserves
+  `INSUFFICIENT_EVIDENCE` as the only strategy-evidence state.
+- Generic display keys reject authority-bearing material such as
+  RiskAuthorization, approved quantity authority, trade permission, order
+  endpoints, credentials or execution commands.
+- CI adds a focused P8 contract test gate, deterministic offline runtime gate and
+  `yatl/dashboard` source-safety scans.
+- No direct P5/P6 access, execution/account/risk imports, credential loading,
+  remote assets, network/provider transport, TRADE permission, order endpoint or
+  AI direct execution is introduced.
+- No dependency or `uv.lock` change.
+- Acceptance remains blocked until the exact final candidate HEAD has a matching
+  successful GitHub Actions run. P8-002 is not opened by this candidate.

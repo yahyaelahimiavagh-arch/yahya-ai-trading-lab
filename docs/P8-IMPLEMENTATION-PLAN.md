@@ -1,6 +1,6 @@
 # P8 — Dashboard implementation plan
 
-Status: **PLAN OPENED — P8-001 NEXT**
+Status: **P8-001 IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**
 
 Entry baseline: P7 runtime accepted and merged at checkpoint
 `93b9d87cf23fe8a52470c4a01b480b0935be87c3`. Final P7 Actions run
@@ -66,6 +66,25 @@ authority-bearing fields and forbid execution/account/risk/network capability.
 Acceptance: deterministic canonical serialization/SHA-256, invalid-field and
 schema-smuggling rejection, fixed Paper/insufficient-evidence labels and source
 scan proving no direct execution/account/risk/network/provider capability.
+
+Current candidate: branch `p8-001-dashboard-policy-contracts` from post-P7-closeout
+baseline `9344d0d6a45ac77b5ea676a119b8cd7e782f00da`. It adds the frozen
+`P8_DASHBOARD_V1` local/read-only/display-only policy and immutable contracts for
+accepted/sanitized P7 export identity, the fixed safety banner, overview cards,
+completed Paper trade rows, metric values, segment rows and bounded diagnostics.
+Canonical records use deterministic JSON/SHA-256 identities and exact reconstruction
+rejects unexpected top-level or nested fields. The strategy evidence enum contains
+only `INSUFFICIENT_EVIDENCE`; authority-bearing field names are rejected from
+generic display dimensions. The focused suite contains **21 tests** and the offline
+runtime gate is:
+
+```powershell
+uv run --locked python -m yatl.dashboard.contract_runtime
+```
+
+The workflow adds a focused P8 contract gate, runtime gate and source-safety scan for
+the new `yatl/dashboard` package. No dependency or `uv.lock` change is made.
+Final-head GitHub Actions evidence is required before P8-001 acceptance or merge.
 
 ### P8-002 — Accepted P7 export loader and provenance binding
 
