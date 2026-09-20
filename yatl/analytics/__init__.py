@@ -37,3 +37,23 @@ __all__ = [
     "StrategyEvidenceState",
     "build_analytics_report",
 ]
+
+from .ingestion import (
+    INGESTION_SCHEMA_VERSION,
+    AnalyticsIngestionError,
+    IngestedSource,
+    ReadOnlyIngestionManifest,
+    UpstreamSourceSpec,
+    ingest_readonly_sources,
+    ingest_source,
+)
+
+__all__ += [
+    "INGESTION_SCHEMA_VERSION",
+    "AnalyticsIngestionError",
+    "IngestedSource",
+    "ReadOnlyIngestionManifest",
+    "UpstreamSourceSpec",
+    "ingest_readonly_sources",
+    "ingest_source",
+]
