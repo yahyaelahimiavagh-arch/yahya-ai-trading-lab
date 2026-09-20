@@ -6,7 +6,6 @@ from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation, localcontext
 
 from .contracts import (
-    DashboardMetricValue,
     DashboardSourceIdentity,
     MetricState,
     MetricUnit,
@@ -89,6 +88,59 @@ _ANALYST_SEGMENT_KEYS = frozenset((
 
 class PerformanceViewProjectionError(ValueError):
     """Accepted P7 performance/segment material cannot be projected safely."""
+
+
+def _valid_exact_decimal_text(value):
+    if not isinstance(value, str) or not value or len(value) > 512:
+        return False
+    if value != value.strip() or "e" in value.lower():
+        return False
+    try:
+        number = Decimal(value)
+    except InvalidOperation:
+        return False
+    return number.is_finite()
+
+
+@dataclass(frozen=True, slots=True)
+class DashboardExactMetricValue:
+    """Exact P7 metric string; separate from the frozen 96-char P8-001 metric contract."""
+
+    metric_id: str
+    value: str | None
+    unit: MetricUnit
+    state: MetricState
+    source_metric_sha256: str
+    display_only: bool = True
+
+    def __post_init__(self):
+        expected_ids = tuple(item[0] for item in _METRIC_SPECS)
+        valid_value = (
+            self.state is MetricState.VALUE
+            and _valid_exact_decimal_text(self.value)
+        ) or (
+            self.state is MetricState.UNAVAILABLE
+            and self.value is None
+        )
+        if (
+            self.metric_id not in expected_ids
+            or not isinstance(self.unit, MetricUnit)
+            or not isinstance(self.state, MetricState)
+            or not valid_value
+            or not _valid_sha(self.source_metric_sha256)
+            or self.display_only is not True
+        ):
+            raise PerformanceViewProjectionError("Exact performance metric is invalid")
+
+    def as_record(self):
+        return {
+            "metric_id": self.metric_id,
+            "value": self.value,
+            "unit": self.unit.value,
+            "state": self.state.value,
+            "source_metric_sha256": self.source_metric_sha256,
+            "display_only": self.display_only,
+        }
 
 
 def _json(value):
@@ -565,7 +617,7 @@ def _metric_values(metrics_sha256, aggregates, trade_metrics):
         value = aggregates[key]
         state = MetricState.VALUE if value is not None else MetricState.UNAVAILABLE
         values.append(
-            DashboardMetricValue(
+            DashboardExactMetricValue(
                 metric_id,
                 value,
                 unit,
@@ -665,7 +717,7 @@ class PerformanceSegmentationProjection:
     """Bounded display-only P8-005 projection over accepted P7 analytics."""
 
     source: DashboardSourceIdentity
-    metrics: tuple[DashboardMetricValue, ...]
+    metrics: tuple[DashboardExactMetricValue, ...]
     trade_segments: tuple[DashboardTradeSegmentSummary, ...]
     analyst_segments: tuple[DashboardAnalystSegmentSummary, ...]
     source_metrics_sha256: str
@@ -681,7 +733,7 @@ class PerformanceSegmentationProjection:
             not isinstance(self.source, DashboardSourceIdentity)
             or type(self.metrics) is not tuple
             or len(self.metrics) != len(_METRIC_SPECS)
-            or any(not isinstance(item, DashboardMetricValue) for item in self.metrics)
+            or any(not isinstance(item, DashboardExactMetricValue) for item in self.metrics)
             or tuple(item.metric_id for item in self.metrics)
             != tuple(item[0] for item in _METRIC_SPECS)
             or type(self.trade_segments) is not tuple
