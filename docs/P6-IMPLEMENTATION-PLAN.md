@@ -1,6 +1,6 @@
 # P6 — AI Analyst implementation plan
 
-Status: **P6-001 / P6-002 / P6-003 / P6-004 / P6-005 / P6-006 RUNTIME ACCEPTED / MERGED — P6-007 CURRENT CANDIDATE**
+Status: **P6-001 / P6-002 / P6-003 / P6-004 / P6-005 / P6-006 / P6-007 RUNTIME ACCEPTED / MERGED — P6-008 CURRENT CANDIDATE**
 
 Entry baseline: P5 runtime accepted and merged at checkpoint
 `cd5ff5651e2d1df509dba6de8bc717a3ba7bf34f`. Final P5 Actions run
@@ -146,19 +146,16 @@ secrets or mutable provider internals. Duplicate replay is idempotent.
 
 Acceptance: transaction rollback, duplicate replay, reopen and tamper tests.
 
-Current candidate: branch `p6-007-analyst-journal-trace` adds a local SQLite
-journal for sanitized, canonical P6 traces. Each durable row is hash-bound to the
-request, response-validation, evidence bundle, grounding result, analyst input and
-report identities, plus the exact grounded claim IDs and fail-closed disposition.
-The stored canonical grounding record contains no raw model response,
-`canonical_response_json`, credentials, endpoint data or mutable provider
-internals. Recording is transactional and idempotent by response-validation
-identity; conflicting durable state fails closed. Canonical export is order
-independent, reopen-stable and tamper checked. Accepted grounded traces remain
-`REVIEW`; rejected traces remain empty `INSUFFICIENT_DATA`. No provider/network,
-execution, quantity, RiskAuthorization, order or trade capability is added.
-Matching final-head GitHub Actions evidence is required before P6-007 can be
-accepted.
+Accepted: PR #36 was squash-merged at
+`a40f9907c9a4dbf63cb4054ced62ec44ee2bc5af` after matching final-head Actions
+run `35502217491` passed both jobs, the **655/655** complete suite, **19/19**
+focused P6-007 tests, the analyst safety scan and deterministic journal runtime.
+P6-007 stores only sanitized, canonical, hash-bound analysis traces in local
+SQLite; duplicate replay is idempotent, transaction failure rolls back, reopen is
+stable and durable row/JSON tampering fails closed. Raw model response text,
+`canonical_response_json`, credentials and mutable provider internals are not
+journaled. It grants no execution, quantity, RiskAuthorization, order, network or
+trade authority.
 
 ### P6-008 — Guarded analyst CLI
 
@@ -168,6 +165,18 @@ or execution permissions.
 
 Acceptance: stable exit codes, bounded output, noninteractive behavior and source
 scans.
+
+Current candidate: branch `p6-008-guarded-analyst-cli` adds a separate local-only
+CLI at `python -m yatl.analyst.cli` with exactly three bounded commands:
+`evidence` builds and validates a point-in-time bundle from an exact local JSON
+spec; `validate` applies P6-004/P6-005/P6-006 and can idempotently journal the
+sanitized P6-007 trace; `show` reads one sanitized durable trace by SHA-256.
+Rejected arguments and local paths are never echoed, oversized model text remains
+a P6-005 fail-closed response outcome, output is bounded deterministic JSON and the
+CLI is noninteractive. It has no credential, endpoint, environment, provider,
+network, execution, quantity, RiskAuthorization, order or trade controls.
+Matching final-head GitHub Actions evidence is required before P6-008 can be
+accepted.
 
 ### P6-009 — Adversarial analyst matrix
 
