@@ -1,6 +1,6 @@
 # P7 — Journal / Analytics implementation plan
 
-Status: **P7-001 / P7-002 / P7-003 / P7-004 / P7-005 RUNTIME ACCEPTED / MERGED — P7-006 CURRENT CANDIDATE**
+Status: **P7-001 / P7-002 / P7-003 / P7-004 / P7-005 / P7-006 RUNTIME ACCEPTED / MERGED — P7-007 CURRENT CANDIDATE**
 
 Entry baseline: P6 runtime accepted and merged at checkpoint
 `f07f2209cac5b46be8f9d74da2d162925ed8ab65`. Final P6 Actions run
@@ -170,25 +170,15 @@ describe correlations but cannot assert causality or upgrade
 Acceptance: exact partition conservation, no double counting, stable segment IDs
 and conservative insufficient-evidence labeling.
 
-Current candidate: branch `p7-006-evidence-segmentation` partitions two distinct
-accepted populations without inventing a cross-population causal link. Completed
-Paper trades are independently partitioned by symbol, strategy identity and
-evidence label. Because accepted durable P5 execution evidence stores
-authorization/intent/decision hashes but does not persist a strategy identifier,
-the strategy dimension is explicitly
-`UNATTRIBUTED_DURABLE_P5`; no strategy name is inferred from P3 candidates or
-opaque hashes. The evidence-label partition remains
-`INSUFFICIENT_EVIDENCE`. Sanitized P6 traces form a separate population and are
-partitioned by accepted disposition, grounding code and trace acceptance. There
-is no trade-to-P6-disposition attribution because the accepted durable evidence
-does not contain a cryptographic trade-to-trace link. Each partition family must
-cover its source population exactly once with no duplicate membership. Segment
-IDs depend only on population/dimension/value and therefore remain stable across
-membership changes; segment SHA-256 includes the exact members and summary.
-Trade-segment summaries conserve realized PnL, accepted costs and outcome counts.
-The report is bound to the immutable P7-005 source metrics contract and canonical
-P6 source SHA-256. Matching final-head GitHub Actions evidence is required before
-P7-006 acceptance.
+Accepted: PR #46 was squash-merged at
+`ec7a73cc27ba6d6075c2f291f10254a358b4bf29` after matching final-head Actions
+run `35511737947` passed both jobs, the **784/784** complete suite and **12/12**
+focused P7-006 tests. The runtime conserved one completed trade and one sanitized
+analyst trace across three independent partition families each, preserved
+`UNATTRIBUTED_DURABLE_P5` strategy attribution and
+`INSUFFICIENT_EVIDENCE`, and produced segmentation SHA-256
+`be0a03a702b4b672e912c54435a37ce6c2b910f0cf0cd40e147ccfed4eefcba0`
+with `replay_equal=true` and `no_write=true`.
 
 ### P7-007 — Reconciliation and analytics-quality gate
 
@@ -198,6 +188,25 @@ digests, future timestamps and report-level arithmetic reconciliation.
 
 Acceptance: healthy fixture PASS, fixed failure matrix, bounded diagnostics and
 no partial analytics publication on quality failure.
+
+Current candidate: branch `p7-007-analytics-quality-gate` adds a single
+fail-closed publication gate over the full P7 chain. It performs source preflight
+for exact P5/P6 coverage, unique identities/paths, expected raw database SHA-256
+and point-in-time observation before building ingestion, timeline, trade
+reconstruction, metrics and segmentation. It then independently checks contiguous
+timeline sequence, duplicate identities, durable relationship reachability,
+trade-to-fill/portfolio linkage, exact metric replay, segmentation/source
+bindings and per-dimension conservation of realized PnL, accepted costs and
+member/outcome counts. Upstream files are stat/hash checked again after the full
+chain to prove no write occurred. PASS reports publish only the accepted chain
+digests and counts; FAIL reports carry at most eight sanitized diagnostic
+code/component pairs and force both `accepted_chain=null` and
+`accepted_segmentation=None`. The fixed failure matrix covers missing source,
+changed digest, future observation, duplicate source identity, orphan relationship
+and timeline gap; report-level arithmetic/reconciliation and partition checks are
+explicit PASS gates on the healthy fixture. No local path, SQL, traceback or
+partial analytics payload is included in failure output. Matching final-head
+GitHub Actions evidence is required before P7-007 acceptance.
 
 ### P7-008 — Guarded analytics export and CLI
 
