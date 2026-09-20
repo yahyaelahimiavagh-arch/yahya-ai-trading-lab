@@ -27,7 +27,6 @@ _FORBIDDEN_TEXT_FRAGMENTS = (
     "http://",
     "https://",
     "tg://",
-    "/api/v3/order",
     "riskauthorization",
     "risk authorization",
     "approved_quantity",
