@@ -1,6 +1,6 @@
 # P9 — Telegram notification implementation plan
 
-Status: **P8 RUNTIME ACCEPTED / CLOSED — P9-001 CURRENT CANDIDATE**
+Status: **P9-001 RUNTIME ACCEPTED / MERGED — P9-002 CURRENT CANDIDATE**
 
 Entry baseline: P8 runtime accepted and squash-merged at checkpoint
 `fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e`. Matching final-head GitHub Actions
@@ -78,6 +78,16 @@ fixed PAPER/Live-lock/evidence labels, schema-smuggling rejection, secret/URL/
 authority-text rejection and source scan proving no transport, execution,
 account, risk-authority or provider capability.
 
+Accepted: PR #62 was squash-merged at
+`fa77126d22b8091eff5d355c8bd7cbd816901874` after matching exact final-head
+Actions run `35536327437` passed both jobs, the **1160/1160** complete suite
+and **21/21** focused P9-001 tests. Frozen P9 policy SHA-256:
+`e5274de931300114fccffc772c971c99b5ba140a2632d98f897687e591be0a35`.
+The runtime batch SHA-256 was
+`a99852b6eff7c25b2ddd94219cdc16f2406688e8019ec54b86074b613476be50`.
+No Telegram transport, credential, inbound command or execution authority was
+introduced.
+
 ### P9-002 — Accepted upstream projection and deterministic formatter
 
 Project only accepted/sanitized upstream records into P9-001 contracts. Define
@@ -91,6 +101,28 @@ notification contract. Formatting is presentation only and remains offline.
 Acceptance: exact provenance conservation, point-in-time/event-time checks,
 deterministic formatting, bounded output, escaping and no authority/evidence
 upgrade.
+
+Current candidate: branch `p9-002-upstream-projection-formatter` from accepted
+P9-001 checkpoint `fa77126d22b8091eff5d355c8bd7cbd816901874`.
+
+Minimum implemented adapters are intentionally limited to upstream material that
+actually exists with sufficient provenance:
+
+- accepted P8 system/safety/quality overview → `SYSTEM_STATUS`;
+- sanitized fail-closed P8/P7 quality projection → `DATA_QUALITY_ALERT`.
+
+The system-status adapter conserves the P8 overview SHA-256 and snapshot event
+time. `open_trade_count` and `snapshot_freshness` remain exactly `UNKNOWN`;
+no freshness/readiness or missing trade state is invented.
+
+The data-quality adapter accepts only validated sanitized `FAIL` projection,
+keeps analytics presentation blocked and binds the P8 quality-projection SHA-256.
+`PASS` is not relabeled as an alert and `ABSENT` is not fabricated into a
+source record.
+
+Formatting remains offline and deterministic with
+`PLAIN_TEXT_NO_PARSE_MODE`, fixed bounds, source/event/hash labels and no
+Telegram/network call. P9-003 remains the first transport checkpoint.
 
 ### P9-003 — Outbound-only Telegram transport
 
