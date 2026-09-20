@@ -104,8 +104,7 @@ class AnalyticsCliTests(unittest.TestCase):
         self.assertEqual(trades_first["returned_trades"], 1)
         self.assertEqual(
             trades_first["trades"][0]["trade_sha256"],
-            summary_first["segmentation_sha256"]
-            and trades_second["trades"][0]["trade_sha256"],
+            trades_second["trades"][0]["trade_sha256"],
         )
 
     def test_quality_failure_has_no_partial_analytics_payload(self):
