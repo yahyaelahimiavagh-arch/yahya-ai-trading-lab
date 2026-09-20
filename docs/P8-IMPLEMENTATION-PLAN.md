@@ -1,6 +1,6 @@
 # P8 — Dashboard implementation plan
 
-Status: **P8-004 RUNTIME ACCEPTED / MERGED — P8-005 CURRENT CANDIDATE**
+Status: **P8-005 RUNTIME ACCEPTED / MERGED — P8-006 CURRENT CANDIDATE**
 
 Entry baseline: P7 runtime accepted and merged at checkpoint
 `93b9d87cf23fe8a52470c4a01b480b0935be87c3`. Final P7 Actions run
@@ -152,45 +152,16 @@ added.
 Acceptance: metric/segment conservation against P7 source values, exact null/
 insufficient handling, no double counting and no evidence-label upgrade.
 
-Current candidate: branch `p8-005-performance-segmentation-views` from accepted
-P8-004 checkpoint `6388eaab83bd756f26ed09a57ac3cc2015d48782`.
-
-P8-005 reconstructs the canonical completed-trade aggregate from accepted P7
-`trade_metrics` using the exact P7 Decimal precision (**256**) and projects a fixed
-**19-metric** display set: completed/win/loss/breakeven counts, realized and gross
-PnL, fees, slippage, total cost, gross/net return, win rate, maximum realized
-drawdown, total/min/max/average holding duration and best/worst trade PnL. Values
-that are undefined with zero completed trades remain explicit `UNAVAILABLE`; no
-zero or forecast value is invented.
-
-The frozen P8-001 `DashboardMetricValue` keeps its original 96-character decimal
-bound. Exact P7 return strings may exceed that bound at precision 256, so P8-005
-uses a separate `DashboardExactMetricValue` contract (bounded to 512 decimal
-characters) rather than rounding source values or weakening the frozen P8-001
-contract.
-
-To prevent double counting, aggregate values are reconciled against the single
-accepted `SYMBOL` trade segment on member count, realized PnL, total cost and
-win/loss/breakeven counts. Every trade segmentation dimension
-(`SYMBOL/STRATEGY_IDENTITY/EVIDENCE_LABEL`) and every analyst dimension
-(`ANALYST_DISPOSITION/GROUNDING_CODE/TRACE_ACCEPTANCE`) must partition the exact
-accepted member set **once and only once**. Segment IDs and segment SHA-256 values
-are recomputed before display.
-
-Trade segments preserve realized PnL, total cost and outcome counts independently;
-they are never summed across dimensions. Analyst segments use explicit trace-count
-semantics instead of being mislabeled as completed trades. Strategy evidence stays
-`INSUFFICIENT_EVIDENCE`; source interpretation must remain correlation-only with
-no causality or attribution upgrade.
-
-Focused suite: **26 tests**. Runtime gate:
-
-```powershell
-uv run --locked python -m yatl.dashboard.performance_views_runtime
-```
-
-No dependency or `uv.lock` change. Exact final-head GitHub Actions evidence is
-required before P8-005 acceptance or merge.
+Accepted: PR #56 was squash-merged at
+`23307f18588447e82f494d7c8ff461b3055eee05` after matching final-head Actions
+run `35527548960` passed both jobs, the **962/962** complete suite and **26/26**
+focused P8-005 tests. The accepted 19-metric projection preserved exact P7 Decimal
+precision 256 values through `DashboardExactMetricValue`, reconciled aggregate
+counts/PnL/cost/outcomes against the accepted SYMBOL segment, and enforced exact
+once-only trade/analyst partitions without cross-dimension aggregation.
+Runtime projection SHA-256:
+`aef1b53a1762f134fad7bd37ee48d7bc5a722b98246021622f9e92531790f3b6`.
+No dependency or `uv.lock` change was made.
 
 ### P8-006 — Quality and diagnostic view
 
@@ -201,6 +172,39 @@ private material must never be surfaced.
 
 Acceptance: exact PASS/FAIL gating, bounded diagnostics, fail-closed unknown code
 handling and no partial analytics display when source quality is not accepted.
+
+Current candidate: branch `p8-006-quality-diagnostic-view` from accepted P8-005
+checkpoint `23307f18588447e82f494d7c8ff461b3055eee05`.
+
+P8-006 defines three explicit quality presentation states:
+
+- `PASS`: only from an already validated `LoadedP7Export`; normal analytics
+  presentation is allowed, diagnostics are empty, the complete canonical P7
+  passed-check set is required and quality/export provenance is retained.
+- `FAIL`: only from an exact sanitized P7 quality-report schema; publication and
+  analytics presentation are blocked, `accepted_chain` must be null and at least
+  one bounded diagnostic must be present.
+- `ABSENT`: analytics presentation is blocked with no invented P7 diagnostic.
+
+Known P7 diagnostic codes/components/checks are frozen allowlists. Unknown values,
+duplicate/unordered diagnostics, extra free-text fields, weakened safety flags,
+evidence upgrade or partial publication all fail closed. P7 diagnostics contain
+only `code/component`; P8 maps those identities to stable local display messages
+and `ERROR` severity. Diagnostic SHA-256 binds the original P7
+`{code, component}` pair, not the display message.
+
+FAIL/ABSENT projections carry no analytics/trade/segment payload, no export SHA and
+no partial analytics visibility. Local paths, SQL, traceback text, private
+material and source free-text cannot enter the output schema.
+
+Focused suite: **30 tests**. Runtime gate:
+
+```powershell
+uv run --locked python -m yatl.dashboard.quality_view_runtime
+```
+
+No dependency or `uv.lock` change. Exact final-head GitHub Actions evidence is
+required before P8-006 acceptance or merge.
 
 ### P8-007 — Deterministic self-contained local dashboard renderer
 
