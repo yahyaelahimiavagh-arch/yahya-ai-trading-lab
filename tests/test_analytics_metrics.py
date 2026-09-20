@@ -3,7 +3,7 @@ import inspect
 import tempfile
 import unittest
 from dataclasses import replace
-from decimal import Decimal
+from decimal import Decimal, localcontext
 from pathlib import Path
 
 from yatl.analytics import (
@@ -125,12 +125,14 @@ class PerformanceMetricsTests(unittest.TestCase):
         book = reconstruct_paper_trades(SNAPSHOT, self.specs)
         report = calculate_performance_metrics(book)
         item = book.completed[0]
-        gross_expected = (
-            Decimal(item.exit.gross_quote) - Decimal(item.entry.gross_quote)
-        ) / Decimal(item.entry.gross_quote)
-        net_expected = (
-            Decimal(item.realized_pnl_quote) / -Decimal(item.entry.cash_delta)
-        )
+        with localcontext() as context:
+            context.prec = 256
+            gross_expected = (
+                Decimal(item.exit.gross_quote) - Decimal(item.entry.gross_quote)
+            ) / Decimal(item.entry.gross_quote)
+            net_expected = (
+                Decimal(item.realized_pnl_quote) / -Decimal(item.entry.cash_delta)
+            )
         self.assertEqual(Decimal(report.gross_return), gross_expected)
         self.assertEqual(Decimal(report.net_return), net_expected)
 
