@@ -179,3 +179,29 @@ __all__ += [
     "QualityStatus",
     "run_quality_gate",
 ]
+
+from .cli import (
+    ANALYTICS_CLI_SCHEMA_VERSION,
+    ANALYTICS_EXPORT_SCHEMA_VERSION,
+    MAX_CLI_OUTPUT_BYTES,
+    AnalyticsCliCode,
+    AnalyticsCliError,
+    analytics_export,
+    analytics_summary,
+    analytics_trades,
+    analytics_validate,
+    load_analytics_spec,
+)
+
+__all__ += [
+    "ANALYTICS_CLI_SCHEMA_VERSION",
+    "ANALYTICS_EXPORT_SCHEMA_VERSION",
+    "MAX_CLI_OUTPUT_BYTES",
+    "AnalyticsCliCode",
+    "AnalyticsCliError",
+    "analytics_export",
+    "analytics_summary",
+    "analytics_trades",
+    "analytics_validate",
+    "load_analytics_spec",
+]
