@@ -1417,9 +1417,9 @@ Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `7c623e8`**.
   execution.
 
 
-## P7-006 current candidate — 2026-09-20
+## P7-006 accepted implementation — 2026-09-20
 
-Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `ec7a73c`**.
 
 - Entry checkpoint: P7-005 merged at
   `7c623e8056e2f7bc0ea319816ebb95d9cabf06e1`; branch
@@ -1439,6 +1439,37 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
   cost and win/loss/breakeven counts.
 - Report is bound to immutable P7-005 source metrics and canonical sanitized P6
   source SHA-256; replay and source files remain read-only.
+- No dependency or `uv.lock` change; no execution/backtest/account/risk import,
+  credentials/network/provider, RiskAuthorization/quantity authority, TRADE
+  permission/order endpoint or AI execution.
+
+
+## P7-007 current candidate — 2026-09-20
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
+
+- Entry checkpoint: P7-006 merged at
+  `ec7a73cc27ba6d6075c2f291f10254a358b4bf29`; branch
+  `p7-007-analytics-quality-gate`.
+- Adds one fail-closed publication gate across ingestion, unified timeline,
+  completed-trade reconstruction, deterministic metrics and segmentation.
+- Preflight rejects missing/ambiguous sources, duplicate identities/paths,
+  changed expected raw database digests, cross-symbol source coverage and future
+  observation timestamps before analytics publication.
+- Independent reconciliation checks contiguous timeline sequence, duplicate event
+  identities, intent/order/fill/portfolio reachability, trade-to-fill and final
+  portfolio links, exact metric replay, P6 canonical source binding and
+  segmentation partition/totals conservation.
+- Source file stat + SHA identities are rechecked after the full chain; any
+  upstream mutation makes publication fail closed.
+- PASS publishes bounded chain SHA-256 identities/counts plus the accepted
+  segmentation object in memory. FAIL forces `accepted_chain=null` and
+  `accepted_segmentation=None`; diagnostics are bounded to eight sanitized
+  code/component pairs and contain no paths, SQL or traceback material.
+- Fixed runtime/test failure matrix: missing source, changed digest, future
+  timestamp, duplicate source identity, orphan relationship and timeline gap.
+  Healthy fixture additionally requires metrics arithmetic, report bindings and
+  per-dimension total reconciliation PASS.
 - No dependency or `uv.lock` change; no execution/backtest/account/risk import,
   credentials/network/provider, RiskAuthorization/quantity authority, TRADE
   permission/order endpoint or AI execution.
