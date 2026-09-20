@@ -17,6 +17,7 @@ from .loader import LoadedP7Export
 PERFORMANCE_VIEW_SCHEMA_VERSION = 1
 DECIMAL_PRECISION = 50
 MAX_SEGMENT_DISPLAY_ROWS = 1024
+MAX_TRADE_METRICS = 4096
 MAX_LABEL_CHARS = 256
 _HEX = frozenset("0123456789abcdef")
 
@@ -271,6 +272,20 @@ def _verify_loaded_export(loaded):
         raise PerformanceViewProjectionError("Loaded P7 export binding is invalid") from None
 
     if (
+        type(trade_metrics) is not list
+        or type(analyst_traces) is not list
+        or type(trade_segments) is not list
+        or type(analyst_segments) is not list
+        or len(trade_metrics) > MAX_TRADE_METRICS
+        or len(trade_segments) > MAX_SEGMENT_DISPLAY_ROWS
+        or len(analyst_segments) > MAX_SEGMENT_DISPLAY_ROWS
+    ):
+        raise PerformanceViewProjectionError("Loaded P7 performance collections are invalid")
+
+    quality_safety = quality.get("safety")
+    analytics_safety = analytics.get("safety")
+    interpretation = analytics.get("interpretation")
+    if (
         record.get("export_sha256") != loaded.export_sha256
         or _digest(material) != loaded.export_sha256
         or _digest(quality) != loaded.quality_sha256
@@ -284,18 +299,38 @@ def _verify_loaded_export(loaded):
         or analytics.get("strategy_evidence") != "INSUFFICIENT_EVIDENCE"
         or analytics.get("strategy_attribution_status")
         != "UNAVAILABLE_IN_ACCEPTED_DURABLE_P5"
+        or not _valid_sha(analytics.get("metrics_sha256"))
         or not isinstance(chain, dict)
         or chain.get("symbol") != loaded.source.symbol
         or chain.get("metrics_sha256") != analytics.get("metrics_sha256")
         or chain.get("segmentation_sha256") != loaded.segmentation_sha256
         or chain.get("completed_trade_count") != len(trade_metrics)
         or chain.get("analyst_trace_count") != len(analyst_traces)
-        or type(trade_metrics) is not list
-        or type(analyst_traces) is not list
-        or type(trade_segments) is not list
-        or type(analyst_segments) is not list
-        or len(trade_segments) > MAX_SEGMENT_DISPLAY_ROWS
-        or len(analyst_segments) > MAX_SEGMENT_DISPLAY_ROWS
+        or not isinstance(quality_safety, dict)
+        or quality_safety.get("paper_only") is not True
+        or quality_safety.get("read_only") is not True
+        or quality_safety.get("live_master_lock") != "OFF"
+        or quality_safety.get("strategy_evidence_upgrade") is not False
+        or quality_safety.get("trade_permission") is not False
+        or quality_safety.get("order_endpoints") is not False
+        or quality_safety.get("quantity_authority") is not False
+        or quality_safety.get("risk_authorization_mutation") is not False
+        or quality_safety.get("ai_direct_execution") is not False
+        or not isinstance(analytics_safety, dict)
+        or analytics_safety.get("paper_only") is not True
+        or analytics_safety.get("read_only") is not True
+        or analytics_safety.get("live_master_lock") != "OFF"
+        or analytics_safety.get("strategy_evidence_upgrade") is not False
+        or analytics_safety.get("trade_permission") is not False
+        or analytics_safety.get("order_endpoints") is not False
+        or analytics_safety.get("quantity_authority") is not False
+        or analytics_safety.get("risk_authorization_mutation") is not False
+        or analytics_safety.get("ai_direct_execution") is not False
+        or not isinstance(interpretation, dict)
+        or interpretation.get("trade_to_strategy_attribution") is not False
+        or interpretation.get("trade_to_analyst_disposition_attribution") is not False
+        or interpretation.get("causality_claim") is not False
+        or interpretation.get("correlation_only") is not True
     ):
         raise PerformanceViewProjectionError("Loaded P7 performance provenance changed")
 
