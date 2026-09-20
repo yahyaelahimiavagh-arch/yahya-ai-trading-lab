@@ -8,7 +8,9 @@ P0 تا P7 با شواهد runtime پذیرفته و روی `main` بسته شد
 P8 — Dashboard مرحله بعدی است. P8 فقط export پذیرفته‌شده و sanitized فاز P7 را
 read-only مصرف می‌کند و نمایش وضعیت، معاملات Paper، عملکرد و diagnostics را بدون
 credential، network/provider، TRADE permission، order endpoint یا مسیر اجرای جدید
-می‌سازد.
+می‌سازد. P8-001 اکنون روی branch جداگانه قراردادهای frozen و immutable نمایش
+Dashboard را پیاده‌سازی کرده است؛ پذیرش آن همچنان به Final-HEAD CI و merge مستقل
+نیاز دارد و P8-002 هنوز باز نشده است.
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
