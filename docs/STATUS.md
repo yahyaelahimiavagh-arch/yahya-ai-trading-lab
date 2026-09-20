@@ -1311,9 +1311,9 @@ Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `53e3cde`**.
   `53e3cde1956b130c940aebc12adaaa4d905e132f`. P7-002 opened next.
 
 
-## P7-002 current candidate — 2026-09-20
+## P7-002 accepted implementation — 2026-09-20
 
-Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `4059355`**.
 
 - Entry checkpoint: P7-001 merged at
   `53e3cde1956b130c940aebc12adaaa4d905e132f`; implementation branch
@@ -1335,3 +1335,29 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
 - No dependency or `uv.lock` change; no upstream mutation, credential, network,
   provider, execution, RiskAuthorization, quantity, trade or order capability is
   added.
+
+
+## P7-003 current candidate — 2026-09-20
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
+
+- Entry checkpoint: P7-002 merged at
+  `40593552a056bc0280fc9ce32ccb60efa817760b`; branch
+  `p7-003-unified-timeline`.
+- Builds a canonical read-only point-in-time timeline spanning P5 accepted intent
+  identity, local order events, durable fill events, the portfolio projection and
+  sanitized P6 analyst traces.
+- P5 intent rows have no native timestamp; P7 does not invent one. Their timeline
+  placement is explicitly `RELATED_ORDER_TIME` at the first durable order event.
+  Other time bases are explicit: upstream order-event time, upstream fill time,
+  last-fill time for the projection, and P6 source-observed time.
+- P4/P5 risk/execution identities, intent/order/fill links and P6 request/bundle/
+  input/report identities are retained as immutable SHA-256 relationships only.
+- Order chains and derived order-state hashes are independently replayed. Fill
+  identities must bind an accepted intent and historical ACTIVE_LOCAL state.
+  Portfolio projection must bind the complete fill history and final fill.
+- Orphan, duplicate, broken-chain, out-of-order, cross-symbol, future-linked and
+  relationship-tampered material fails closed.
+- No dependency or `uv.lock` change; no credentials, provider/network,
+  upstream mutation, RiskAuthorization mutation, quantity, trade, order or AI
+  execution authority is added.
