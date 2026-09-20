@@ -190,6 +190,13 @@ class AnalystCliTests(unittest.TestCase):
         self.assertEqual(result["report"]["disposition"], "INSUFFICIENT_DATA")
         self.assertEqual(result["report"]["claims"], [])
 
+    def test_oversized_response_is_fail_closed_by_response_boundary(self):
+        self.response.write_bytes(b"x" * (cli.MAX_MODEL_RESPONSE_BYTES + 1))
+        result = analyst_validate(self.bundle, self.response)
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["code"], AnalystCliCode.NOT_GROUNDED.value)
+        self.assertEqual(result["response_code"], "RESPONSE_TOO_LARGE")
+
     def test_semantic_rejection_is_fail_closed(self):
         raw = json.loads(accepted_response())
         raw["claims"][0]["text"] = "Public market evidence appears available."
@@ -246,6 +253,11 @@ class AnalystCliTests(unittest.TestCase):
         missing = analyst_show(self.journal, "f" * 64)
         self.assertFalse(missing["ok"])
         self.assertEqual(missing["code"], AnalystCliCode.TRACE_NOT_FOUND.value)
+
+    def test_show_invalid_digest_is_invalid_input(self):
+        with self.assertRaises(AnalystCliError) as caught:
+            analyst_show(self.journal, "bad")
+        self.assertEqual(caught.exception.code, AnalystCliCode.INVALID_INPUT)
 
     def test_cli_exit_codes_and_output_are_stable(self):
         argv = ["evidence", "--bundle", str(self.bundle)]
