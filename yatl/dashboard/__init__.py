@@ -131,3 +131,23 @@ __all__ += [
     "PerformanceViewProjectionError",
     "project_performance_segmentation",
 ]
+
+from .quality_view import (
+    QUALITY_CHECKS,
+    QUALITY_CODES,
+    QUALITY_COMPONENTS,
+    QUALITY_VIEW_SCHEMA_VERSION,
+    QualityDiagnosticProjection,
+    QualityDiagnosticProjectionError,
+    project_quality_diagnostics,
+)
+
+__all__ += [
+    "QUALITY_CHECKS",
+    "QUALITY_CODES",
+    "QUALITY_COMPONENTS",
+    "QUALITY_VIEW_SCHEMA_VERSION",
+    "QualityDiagnosticProjection",
+    "QualityDiagnosticProjectionError",
+    "project_quality_diagnostics",
+]
