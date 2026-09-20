@@ -1,6 +1,6 @@
 # P8 — Dashboard implementation plan
 
-Status: **P8-007 RUNTIME ACCEPTED / MERGED — P8-008 CURRENT CANDIDATE**
+Status: **P8-008 RUNTIME ACCEPTED / MERGED — P8-009 CURRENT CANDIDATE**
 
 Entry baseline: P7 runtime accepted and merged at checkpoint
 `93b9d87cf23fe8a52470c4a01b480b0935be87c3`. Final P7 Actions run
@@ -220,51 +220,16 @@ Acceptance: stable exit codes, noninteractive behavior, atomic output, no
 overwrite by default, path/error redaction, deterministic output and no source
 mutation.
 
-Current candidate: branch `p8-008-guarded-dashboard-cli` from accepted P8-007
-checkpoint `ce1d7f5d5a8ea150e2ec92d9011765cdc4d79487`.
-
-P8-008 exposes three noninteractive local module commands through
-`python -m yatl.dashboard.cli`:
-
-- `validate --input ... --expected-export-sha256 ...`
-- `summary --input ... --expected-export-sha256 ...`
-- `build --input ... --expected-export-sha256 ... --output ... [--overwrite]`
-
-The exact expected P7 export SHA-256 is mandatory and is never inferred from a
-filename or caller-provided metadata. All commands run the accepted
-P8-002→P8-007 pipeline in memory before returning success. CLI JSON output contains
-only stable bounded fields and hashes; caller paths, rejected values and raw
-exception text are never echoed.
-
-`build` refuses an existing output by default. Explicit `--overwrite` is
-required to replace a regular file. Source/output identity collisions, hardlinks,
-output symlinks, symlink parents, directories and invalid storage states fail
-closed. The source is reloaded before publication and must remain byte/identity
-stable.
-
-Publication uses a temporary file created in the **same output directory**, writes
-and fsyncs the complete deterministic HTML bytes, then atomically publishes with
-`os.link` for no-overwrite creation or `os.replace` for explicit overwrite.
-Temporary files are removed on success and failure. Published bytes are reopened
-read-only without following symlinks and verified against the renderer byte count
-and dashboard SHA-256.
-
-Stable process exit classes are frozen for success, invalid request, source
-rejection/mutation, storage failure, existing output, output mismatch and internal
-failure. Unexpected exceptions are converted to a compact `INTERNAL_ERROR`
-record instead of exposing traceback/path details.
-
-Focused suite: **44 tests** covering validate/summary/build, deterministic output,
-default overwrite refusal, explicit overwrite, same-directory temp publication,
-cleanup after injected failures, source immutability, same-file/hardlink/symlink
-rejection, stable exit codes and path/secret/error redaction. Runtime gate:
-
-```powershell
-uv run --locked python -m yatl.dashboard.cli_runtime
-```
-
-No dependency or `uv.lock` change. Exact final-head GitHub Actions evidence is
-required before P8-008 acceptance or merge.
+Accepted: PR #59 was squash-merged at
+`20df93ead290d918ce55c93c5f3beab090a14f62` after matching final-head Actions
+run `35532396801` passed both jobs, the **1070/1070** complete suite and
+**44/44** focused P8-008 tests. The guarded noninteractive CLI preserved the exact
+accepted P8 rendered artifact (**10,587 bytes**) with dashboard SHA-256
+`a5d51099537c39b933c510161b2223b049ba78e38205284736a279199966d6ea`,
+refused overwrite by default, required explicit overwrite, published through a
+same-directory temporary file with atomic link/replace semantics, re-read the
+published bytes, redacted paths/errors and preserved the accepted P7 source bytes.
+No dependency or `uv.lock` change was made.
 
 ### P8-009 — Adversarial dashboard matrix
 
@@ -275,6 +240,52 @@ smuggling and dashboard artifact mutation.
 
 Acceptance: exact fail-closed outcomes, byte-identical replay, canonical evidence,
 XSS/remote-resource prevention and unchanged accepted P7 identities.
+
+Current candidate: branch `p8-009-adversarial-dashboard-matrix` from accepted
+P8-008 checkpoint `20df93ead290d918ce55c93c5f3beab090a14f62`.
+
+P8-009 runs a fixed **9-scenario × 2-symbol = 18-run** deterministic matrix over
+real accepted P7 exports for both `BTCUSDT` and `ETHUSDT`. The accepted fixtures
+are produced by the P7 quality/export pipeline in runtime/test-only code; the
+production scenario engine itself imports no P7 analytics runtime/database.
+
+Frozen scenarios:
+
+1. `P7_EXPORT_TAMPERING`
+2. `FABRICATED_QUALITY_PASS`
+3. `EVIDENCE_LABEL_UPGRADE`
+4. `CROSS_SYMBOL_ROW_INJECTION`
+5. `DUPLICATE_TRADE_IDENTITY`
+6. `OVERSIZED_INPUT_OUTPUT`
+7. `HTML_SCRIPT_INJECTION`
+8. `PATH_PRIVATE_MATERIAL_SMUGGLING`
+9. `DASHBOARD_ARTIFACT_MUTATION`
+
+Each scenario operates on a disposable attack copy while the accepted source file
+is retained and compared byte-for-byte before/after. Every scenario is executed
+twice; the canonical artifact bytes must match exactly. Cross-symbol and duplicate
+trade attempts target the frozen P8 trade-table contracts directly. HTML/script
+payloads are allowed through the display contract but must appear only escaped in
+the rendered HTML with no executable/remote tag. Oversized input and output test
+both the 8 MiB P7-loader bound and 4 MiB renderer bound. Private/path smuggling
+must fail source validation and CLI errors must remain redacted.
+
+Every run emits one canonical redacted JSON artifact containing the exact expected
+and observed safe outcome plus the unchanged accepted source identity
+(export/quality/metrics/segmentation SHA-256). The matrix index binds all **18**
+scenario files and both accepted P7 identities. Evidence publication contains
+exactly **19 files** and refuses overwrite.
+
+Focused suite: **37 tests**. Runtime/evidence gate:
+
+```powershell
+mkdir -p data/p8
+uv run --locked python -m yatl.dashboard.scenarios_runtime --output data/p8/p8-009-evidence
+```
+
+The workflow uploads `data/p8/p8-009-evidence/` as the
+`p8-009-evidence` artifact. No dependency or `uv.lock` change. Exact final-head
+GitHub Actions evidence is required before P8-009 acceptance or merge.
 
 ### P8-010 — Independent final audit
 
