@@ -1,6 +1,6 @@
 # P8 — Dashboard implementation plan
 
-Status: **P8-009 RUNTIME ACCEPTED / MERGED — P8-010 CURRENT CANDIDATE**
+Status: **P8-001 THROUGH P8-010 RUNTIME ACCEPTED / MERGED — PHASE CLOSED**
 
 Entry baseline: P7 runtime accepted and merged at checkpoint
 `93b9d87cf23fe8a52470c4a01b480b0935be87c3`. Final P7 Actions run
@@ -291,8 +291,19 @@ result integrity. Runtime gate:
 uv run --locked python -m yatl.dashboard.audit_runtime --evidence data/p8/p8-009-evidence
 ```
 
-No dependency or `uv.lock` change. P8 remains **open** until exact final-head
-GitHub Actions pass and this checkpoint receives explicit merge approval.
+No dependency or `uv.lock` change.
+
+Accepted: PR #61 was marked Ready and squash-merged at
+`fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e` after matching exact final-head
+GitHub Actions run `35534981625` passed both jobs, the **1139/1139** complete
+suite and **32/32** focused P8-010 tests. Final candidate HEAD was
+`05038f9955425ddc05f552e84d71b5625663a43d`.
+
+The independent audit accepted **2 symbols**, **9 scenarios**, **18 runs**,
+**19 evidence files** and **2 published HTML artifacts** with exact outcomes,
+replay equality, projection/renderer recomputation, artifact verification,
+no-write and source-safety all true. Frozen renderer-set SHA-256:
+`17f8526ba74ea73a7915b8978d098ab567fe1e19a145f03c625246916e22ff0c`.
 
 ## Exit condition
 
@@ -305,3 +316,29 @@ P8 completion does not grant TRADE permission, does not open Live, does not
 change P3 evidence labels and does not prove strategy profitability. P9 Telegram
 may consume only explicitly accepted/sanitized status and alert material from
 closed upstream phases.
+
+
+## Closure
+
+P8 is **RUNTIME ACCEPTED / CLOSED** at checkpoint
+`fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e`.
+
+Matching final-head Actions: `35534981625`.
+Complete suite: **1139/1139 PASS**.
+Focused P8-010: **32/32 PASS**.
+
+Frozen identities remain:
+
+- P8 policy SHA-256:
+  `b4534112975f519714592ad7468c950eb6aa112f49b9aee80b1d15bf51804c2e`;
+- P8-009 matrix index SHA-256:
+  `38bc0e1eafedd44b1776ecec1a65fc48352a3155341dfca323641686739a8608`;
+- accepted BTCUSDT+ETHUSDT P7 export-set SHA-256:
+  `6f884ea930cd929292f000e8ada2da370b4428d7173a1f3d2423deacc6523439`;
+- final renderer-set SHA-256:
+  `17f8526ba74ea73a7915b8978d098ab567fe1e19a145f03c625246916e22ff0c`.
+
+P8 closure grants no TRADE permission, no Live capability and no profitability
+claim. P3 remains `INSUFFICIENT_EVIDENCE`. P9 may open only as the
+minimum-sufficient read-only notification/alert surface defined in
+`P9-IMPLEMENTATION-PLAN.md`.
