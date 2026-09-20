@@ -1282,3 +1282,22 @@ Status: **PLANNED BEFORE IMPLEMENTATION**.
   `INSUFFICIENT_EVIDENCE`, create RiskAuthorization, quantity, order, permission
   changes or Live readiness.
 - No code, dependency or lockfile change is part of this planning closeout.
+
+
+## P7-001 current candidate — 2026-09-20
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
+
+- Entry baseline: P6 closeout plan merge checkpoint
+  `99198e33713517f7257b3c1e5e1eb1d8275459bf`.
+- Branch `p7-001-analytics-contracts` adds only immutable P7 policy/contracts,
+  focused tests, an offline deterministic runtime gate and CI/safety coverage.
+- Frozen policy ID: `P7_ANALYTICS_V1`; mode: `READ_ONLY_ANALYTICS`.
+- Source identities are read-only, provenance-bound and restricted to BTCUSDT /
+  ETHUSDT with strategy evidence fixed to `INSUFFICIENT_EVIDENCE`.
+- Upstream journal-event references and P7-derived fields have explicit, distinct
+  origins. Reports cannot create execution, risk, quantity or permission authority.
+- No P5/P6 journal ingestion, persistence, metrics, CLI, dependency or lockfile
+  change is included in this checkpoint.
+- Acceptance remains pending matching final-head GitHub Actions and explicit merge
+  approval.
