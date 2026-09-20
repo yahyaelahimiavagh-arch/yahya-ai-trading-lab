@@ -220,7 +220,7 @@ def _p5_canonical(connection):
         }
         if _sha256_text(_json(material)) != values["intent_sha256"]:
             raise AnalyticsIngestionError("P5 intent digest verification failed")
-        records.append(values)
+        records.append({"schema_version": 1, **values})
 
     canonical = _json({
         "schema_version": P5_JOURNAL_SCHEMA_VERSION,
