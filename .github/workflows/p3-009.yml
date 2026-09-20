@@ -63,6 +63,8 @@ jobs:
         run: uv run --locked python -m unittest discover -s tests -p 'test_analytics_ingestion.py' -v
       - name: P7 unified timeline focused gate
         run: uv run --locked python -m unittest discover -s tests -p 'test_analytics_timeline.py' -v
+      - name: P7 completed Paper trades focused gate
+        run: uv run --locked python -m unittest discover -s tests -p 'test_analytics_trades.py' -v
       - name: Compile and whitespace gates
         run: |
           uv run --locked python -m compileall -q yatl
@@ -184,6 +186,8 @@ jobs:
         run: uv run --locked python -m yatl.analytics.ingestion_runtime
       - name: P7 unified point-in-time timeline runtime
         run: uv run --locked python -m yatl.analytics.timeline_runtime
+      - name: P7 completed Paper trade reconstruction runtime
+        run: uv run --locked python -m yatl.analytics.trade_runtime
       - name: Publish P5-009 adversarial evidence
         uses: actions/upload-artifact@v4
         with:

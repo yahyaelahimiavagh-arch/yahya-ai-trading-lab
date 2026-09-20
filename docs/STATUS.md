@@ -1337,9 +1337,9 @@ Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `4059355`**.
   added.
 
 
-## P7-003 current candidate — 2026-09-20
+## P7-003 accepted implementation — 2026-09-20
 
-Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `9d22817`**.
 
 - Entry checkpoint: P7-002 merged at
   `40593552a056bc0280fc9ce32ccb60efa817760b`; branch
@@ -1361,3 +1361,30 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
 - No dependency or `uv.lock` change; no credentials, provider/network,
   upstream mutation, RiskAuthorization mutation, quantity, trade, order or AI
   execution authority is added.
+
+
+## P7-004 current candidate — 2026-09-20
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
+
+- Entry checkpoint: P7-003 merged at
+  `9d22817d0ac76c4e724120d9189de3100ef03b58`; branch
+  `p7-004-completed-trades`.
+- Reconstructs completed/open long-only local-Paper episodes from validated durable
+  P5 fill and final portfolio evidence; no new fill, price or cost model is used.
+- Every entry/exit record copies accepted P5 fill economics. Completed-trade
+  realized PnL is only the exact sum of accepted entry/exit cash deltas and must
+  reconcile to final P5 portfolio realized PnL. Fee/slippage totals and closed
+  trade count must also reconcile exactly.
+- Open accepted entries remain explicitly `OPEN` with no invented exit or
+  realized PnL; LONG asset quantity and cost basis must match that entry.
+- Includes a narrow P7-003 compatibility correction for the already-valid P5
+  same-bar protective two-fill pattern; all existing digest/order/symbol/time
+  fail-closed checks remain.
+- Real accepted P5 test fixtures cover normal closed trade, still-open trade and
+  same-bar protective exit.
+- Fabricated final PnL, missing exits, orphan fills, overlapping episodes,
+  cross-symbol sources and upstream mutation fail closed.
+- No dependency or `uv.lock` change; no execution/backtest import in P7 trade
+  production code, no credentials/network/provider, no RiskAuthorization or
+  quantity authority, no TRADE permission/order endpoint and no AI execution.
