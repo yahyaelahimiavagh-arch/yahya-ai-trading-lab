@@ -1739,3 +1739,47 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
   endpoint.
 - No dependency or `uv.lock` change.
 - P8-004 remains closed until exact final-head Actions pass and P8-003 is merged.
+
+## P8-003 accepted implementation — 2026-09-20
+
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `2a74006`**.
+
+- PR #54 final candidate HEAD:
+  `9b45c2caa182c7a8949fc308e22579b7522e4e04`.
+- Matching GitHub Actions: `35524331648` — both jobs PASS.
+- Complete suite: **910/910 PASS**.
+- Focused P8-003: **24/24 PASS**.
+- Overview cards: **15**.
+- Overview SHA-256:
+  `00230798934c6d967833a7f3fbc53cffa6f0cf428db4f1369653fb55fc37ed2d`.
+- `open_trade_count=UNKNOWN` and `snapshot_freshness=UNKNOWN` remain explicit.
+- PR #54 squash-merged; accepted checkpoint:
+  `2a74006dd42ba3755c4f0382847a165d7ef485ce`.
+- No health/profitability/readiness/live-permission inference was added.
+- No dependency or `uv.lock` change.
+
+## P8-004 current candidate — 2026-09-20
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry checkpoint: accepted P8-003 at
+  `2a74006dd42ba3755c4f0382847a165d7ef485ce`.
+- Branch: `p8-004-completed-trade-table`.
+- Projects accepted P7 `trade_metrics` only into completed LONG/Paper display
+  rows with exact numeric strings and exact accepted trade identities.
+- Adds deterministic per-row source metric SHA-256 binding.
+- Preserves frozen P8-001 `DashboardTradeRow`; it is not populated because P7
+  export does not expose its required execution-level entry/exit time, quantity
+  or price fields.
+- Adds `DashboardCompletedTradeMetricRow` rather than inventing missing data.
+- Query contract: outcome filter, stable numeric sort, ASC/DESC, bounded offset and
+  maximum page size 100.
+- Open/incomplete material is explicitly separate and never appears in completed
+  rows.
+- Duplicate/missing identity and forged provenance fail closed.
+- **26 focused tests** plus deterministic runtime and source-safety CI gate.
+- Trade-table module imports no analytics runtime/database, credentials,
+  network/provider, execution/account/risk capability, RiskAuthorization,
+  quantity authority, TRADE permission or order endpoint.
+- No dependency or `uv.lock` change.
+- P8-005 remains closed until exact final-head Actions pass and P8-004 is merged.
