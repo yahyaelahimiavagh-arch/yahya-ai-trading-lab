@@ -1,8 +1,8 @@
 # YATL — نقشه مرجع اجرا و وضعیت پروژه
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
-وضعیت جاری: **P0 تا P5 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P6 AI ANALYST — PLAN OPENING / IMPLEMENTATION NEXT**
+وضعیت جاری: **P0 تا P6 RUNTIME ACCEPTED AND MERGED**
+قدم جاری: **P7 JOURNAL / ANALYTICS — PLAN OPENING / IMPLEMENTATION NEXT**
 
 ## منشأ و حدود سند
 
@@ -38,17 +38,21 @@ NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only ب�
 | P3 Strategy Framework | چارچوب مشترک استراتژی و قواعد روشن سیگنال/عدم معامله | **RUNTIME ACCEPTED — final audit run `34699232936`** |
 | P4 Risk Manager | اندازه موقعیت، محدودیت ریسک و Kill Switch مستقل | **RUNTIME ACCEPTED — checkpoint `f3a5575`** |
 | P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | **RUNTIME ACCEPTED — checkpoint `cd5ff565`** |
-| P6 AI Analyst | تحلیل ساختاریافته و NO_TRADE بدون دسترسی مستقیم به اجرا | **NEXT — implementation plan opened** |
-| P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | شروع نشده |
+| P6 AI Analyst | تحلیل ساختاریافته و NO_TRADE بدون دسترسی مستقیم به اجرا | **RUNTIME ACCEPTED — checkpoint `f07f220`** |
+| P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | **NEXT — implementation plan opened** |
 | P8 Dashboard | نمایش وضعیت، معاملات، عملکرد و خطاها | شروع نشده |
 | P9 Telegram | هشدار و کنترل محدود طبق قواعد امنیتی | شروع نشده |
 | P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | شروع نشده |
 | P11 Tiny Live Candidate | فقط پس از پذیرش P10، ممیزی امنیت، الزامات حساب و تأیید صریح | LOCKED |
 
-## نمای پیشرفت فعلی — 2026-09-19
+## نمای پیشرفت فعلی — 2026-09-20
 
-جای فعلی پروژه: شش فاز اول توسعه، یعنی P0 تا P5، در runtime پذیرفته و روی
-`main` بسته شده‌اند. P5-001 تا P5-010 Local Paper execution، journal،
+جای فعلی پروژه: هفت فاز اول توسعه، یعنی P0 تا P6، در runtime پذیرفته و روی
+`main` بسته شده‌اند. P6-001 تا P6-010 قراردادهای analysis-only، evidence
+point-in-time، baseline قطعی، request boundary، response schema، grounding،
+journal trace، CLI محافظت‌شده، adversarial matrix و independent final audit را
+تکمیل کردند. checkpoint نهایی P6
+`f07f2209cac5b46be8f9d74da2d162925ed8ab65` است. P5-001 تا P5-010 Local Paper execution، journal،
 state machine، fill/cost integration، atomic portfolio projection، startup
 reconciliation، snapshot recovery، guarded operator CLI، adversarial matrix و
 independent final audit را تکمیل کردند. checkpoint نهایی P5
@@ -73,15 +77,15 @@ merge شد. P4-010 ممیزی مستقل نهایی را پیاده‌سازی �
 
 | معیار | انجام‌شده | باقی‌مانده | تفسیر صحیح |
 |---|---:|---:|---|
-| فازهای تحویل نرم‌افزاری P0 تا P9 | 6 از 10 | 4 فاز | **60% بر مبنای شمارش ساده فازها**؛ تخمین زمان یا حجم کار نیست |
-| checkpointهای P4 | 10 از 10 | صفر | P4-001 تا P4-010 پذیرفته و روی `main` بسته شده‌اند |
-| فازهای پیش از Forward Validation | P0 تا P5 | P6 تا P9 | پس از آن P10 باید روی داده جدید اجرا و پذیرفته شود |
+| فازهای تحویل نرم‌افزاری P0 تا P9 | 7 از 10 | 3 فاز | **70% بر مبنای شمارش ساده فازها**؛ تخمین زمان یا حجم کار نیست |
+| checkpointهای P6 | 10 از 10 | صفر | P6-001 تا P6-010 پذیرفته و روی `main` بسته شده‌اند |
+| فازهای پیش از Forward Validation | P0 تا P6 | P7 تا P9 | پس از آن P10 باید روی داده جدید اجرا و پذیرفته شود |
 | مسیر Live | هیچ | P5 تا P10 و ممیزی‌های P11 | P11 همچنان LOCKED و مشروط به تأیید صریح است |
 
 ### کار باقی‌مانده تا نسخه آزمایشی نرم‌افزار
 
-1. P6: AI Analyst ساختاریافته، analysis-only و بدون اجرای مستقیم.
-2. P7 تا P9: Journal/Analytics، Dashboard و Telegram محدود و ایمن.
+1. P7: Journal/Analytics read-only و قابل ممیزی روی شواهد پذیرفته‌شده P5/P6.
+2. P8 تا P9: Dashboard و Telegram محدود و ایمن.
 
 ### کار باقی‌مانده تا ارزیابی عملکرد
 
@@ -92,8 +96,8 @@ merge شد. P4-010 ممیزی مستقل نهایی را پیاده‌سازی �
 - Live بخشی از درصد تحویل نرم‌افزاری نیست. P11 تنها در صورت پذیرش P10، ممیزی امنیتی،
   آماده‌بودن حساب و تأیید صریح جداگانه بررسی می‌شود.
 
-بنابراین گزارش کوتاه این است: **60% فازهای نرم‌افزاری P0 تا P9 بسته شده‌اند؛
-P5-001 تا P5-010 runtime accepted و merge شده‌اند و P6 مرحله بعدی است.** این عدد پیشرفت مهندسی است، نه درصد آمادگی برای سود یا Live.
+بنابراین گزارش کوتاه این است: **70% فازهای نرم‌افزاری P0 تا P9 بسته شده‌اند؛
+P6-001 تا P6-010 runtime accepted و merge شده‌اند و P7 مرحله بعدی است.** این عدد پیشرفت مهندسی است، نه درصد آمادگی برای سود یا Live.
 
 در گفت‌وگوی قبلی برای P10 بازه ۳۰–۶۰ روز واقعی بازار مطرح شده است؛ این تخمین است،
 نه تضمین کافی‌بودن نمونه. تاریخ‌های قبلی پایان توسعه و شروع Live، تعهد اجرایی نیستند.
@@ -337,3 +341,39 @@ checkpoint `39e83aedae4ec3b29345bb23ee121bb77e4bd8f8` squash-merge شد؛ بنا
 P5-005 runtime accepted and merged است و P5-006 unopened باقی می‌ماند. درصد کل
 همچنان 50% است. هیچ endpoint، credential، external transport یا TRADE permission
 اضافه نشده است.
+
+
+## P6 closure record — 2026-09-20
+
+- P6-001 تا P6-010 به‌ترتیب روی شاخه/PR مستقل پیاده‌سازی، با matching final-head
+  GitHub Actions پذیرفته و روی `main` squash-merge شدند.
+- P6 analysis-only باقی ماند و هیچ executor import، RiskAuthorization mutation،
+  quantity authority، credential، provider/network transport، trade permission یا
+  order endpoint اضافه نکرد.
+- P6-009 هشت سناریوی adversarial را برای BTCUSDT و ETHUSDT اجرا کرد؛ 16 run و
+  17 فایل canonical evidence دو بار byte-identical بازتولید شدند. index SHA-256:
+  `a5a09bdde1600c706bdc3665b46f334ae04fd5fc4fe364613cc9ed7913018524`.
+- P6-010 ممیزی مستقل نهایی را روی همان evidence اجرا کرد و policy SHA-256
+  `355ad5a2ed274878db4c9a56e15b14548ee6ba0c16016c7cc3b04b02120bbe44`
+  و evidence manifest SHA-256
+  `93dd09b73d439ed60b781f38783f2fb716689210ad66fb7ed5a395ed7b5b5f0f`
+  را بازسازی و تأیید کرد.
+- Final-head GitHub Actions run `35504753305` هر دو job را با **703/703** تست
+  کامل و **13/13** تست متمرکز P6-010، source safety، exact outcomes و replay
+  equality پذیرفت.
+- PR #39 در checkpoint نهایی
+  `f07f2209cac5b46be8f9d74da2d162925ed8ab65` squash-merge شد؛ P6 بسته است.
+- هر دو candidate فعلی P3 همچنان `INSUFFICIENT_EVIDENCE` هستند. پذیرش P6
+  ادعای سوددهی یا اجازه Live نیست.
+- PAPER ONLY; ANALYSIS ONLY برای خروجی AI؛ LIVE_MASTER_LOCK=OFF; NO FUTURES;
+  NO LEVERAGE; NO WITHDRAWAL API; NO TRADE PERMISSION; NO ORDER ENDPOINTS;
+  NO AI DIRECT EXECUTION.
+
+## P7 planning record — 2026-09-20
+
+برنامه ترتیبی P7 در `P7-IMPLEMENTATION-PLAN.md` ثبت شد. P7 یک لایه
+Journal / Analytics read-only و قابل ممیزی روی شواهد پذیرفته‌شده P5 و P6
+می‌سازد. این فاز upstream journalها را تغییر نمی‌دهد، اجرای جدیدی ایجاد نمی‌کند و
+نتیجه analytics را به‌عنوان مجوز معامله یا اثبات edge تفسیر نمی‌کند. P7-001
+قراردادهای immutable analytics و policy مرزی را بدون network، credential،
+provider یا execution capability تعریف می‌کند.
