@@ -97,6 +97,28 @@ def _read_bounded_text(path, max_bytes):
         raise AnalystCliError(AnalystCliCode.INVALID_INPUT) from None
 
 
+def _read_response_text(path):
+    if not isinstance(path, (str, Path)) or not str(path):
+        raise AnalystCliError(AnalystCliCode.INVALID_INPUT)
+    try:
+        with Path(path).open("rb") as handle:
+            payload = handle.read(MAX_MODEL_RESPONSE_BYTES + 1)
+    except OSError:
+        raise AnalystCliError(AnalystCliCode.INVALID_INPUT) from None
+    try:
+        return payload.decode("utf-8")
+    except UnicodeDecodeError:
+        raise AnalystCliError(AnalystCliCode.INVALID_INPUT) from None
+
+
+def _valid_digest(value):
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and all(character in "0123456789abcdef" for character in value)
+    )
+
+
 def _load_json(path, max_bytes):
     raw = _read_bounded_text(path, max_bytes)
     if not raw:
@@ -209,7 +231,7 @@ def analyst_evidence(path):
 
 def analyst_validate(bundle_path, response_path, journal_path=None):
     bundle = load_bundle_spec(bundle_path)
-    response_text = _read_bounded_text(response_path, MAX_MODEL_RESPONSE_BYTES)
+    response_text = _read_response_text(response_path)
     try:
         request = build_model_request(bundle)
         response_validation = validate_model_response(request, response_text)
@@ -257,6 +279,8 @@ def analyst_validate(bundle_path, response_path, journal_path=None):
 
 
 def analyst_show(journal_path, trace_sha256):
+    if not _valid_digest(trace_sha256):
+        raise AnalystCliError(AnalystCliCode.INVALID_INPUT)
     try:
         with AnalystTraceJournal(journal_path) as journal:
             record = journal.get(trace_sha256)
