@@ -1517,7 +1517,10 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
   future timestamp, changed cost/equity totals, fabricated profitability,
   evidence-label upgrade, journal mutation and schema smuggling.
 - Quality-bound scenarios require exact fail-closed diagnostic codes and
-  `accepted_chain=null` / no analytics payload on failure.
+  `accepted_chain=null` / no analytics payload on failure. P7-009 discovered
+  and corrects one diagnostic-classification ambiguity from P7-007: explicit
+  cross-symbol fill linkage now maps to `SOURCE_IDENTITY_INVALID` before the
+  generic out-of-order/timeline-gap branch; validation remains fail-closed.
 - Evidence-label upgrade attempts are rejected by segmentation and cannot change
   `INSUFFICIENT_EVIDENCE`. Journal writes are attempted only against P7's
   read-only SQLite connection and must fail without changing source bytes; quality
