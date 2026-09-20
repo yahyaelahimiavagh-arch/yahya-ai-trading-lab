@@ -454,7 +454,7 @@ def _audit_published_artifacts(published_artifacts, renderer_identity, loaded_by
             b" src=",
             b" href=",
             b"fetch(",
-            b"websocket",
+            (b"web" + b"sock" + b"et"),
             b"localstorage",
             b"document.cookie",
         )
@@ -498,7 +498,7 @@ def _audit_source_safety():
         ("req" + "uests"),
         ("http" + "x"),
         ("aio" + "http"),
-        ("web" + "sockets"),
+        ("web" + "sock" + "ets"),
         ("open" + "ai"),
         ("anth" + "ropic"),
         ("os." + "getenv"),
