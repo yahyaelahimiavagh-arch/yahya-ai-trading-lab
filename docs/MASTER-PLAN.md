@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P7 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P8-006 QUALITY / DIAGNOSTIC VIEW — CANDIDATE**
+قدم جاری: **P8-007 DETERMINISTIC SELF-CONTAINED RENDERER — CANDIDATE**
 
 ## منشأ و حدود سند
 
@@ -595,6 +595,23 @@ analytics می‌دهد. FAIL فقط sanitized P7 quality report با `accepted_
 free-text اضافی، مسیر محلی، SQL/traceback، partial publication، safety weakening
 یا evidence upgrade fail-closed است. P8-007 تا پذیرش و merge مستقل P8-006 بسته
 می‌ماند.
+
+
+## P8-006 acceptance / P8-007 candidate — 2026-09-20
+
+P8-006 با PR #57، Actions `35529109856`، **992/992** تست کامل و **30/30**
+تست focused پذیرفته و در checkpoint
+`4ac351c384bebf5abd47ea1d6baee84f08a9bfc5` روی `main` merge شد. سه حالت
+PASS/FAIL/ABSENT quality به‌صورت fail-closed بسته شدند و FAIL/ABSENT هیچ analytics
+جزئی منتشر نمی‌کنند.
+
+P8-007 روی branch `p8-007-deterministic-dashboard-renderer` فقط renderer محلی
+in-memory را می‌سازد. PASS باید تمام projectionهای P8-003 تا P8-005 را به همان
+export معتبر bind کند؛ FAIL/ABSENT هر analytics تزریقی را رد می‌کنند. HTML/CSS
+کاملاً self-contained و deterministic است، dynamic text همیشه escape می‌شود،
+CSP شبکه/script/font/image را می‌بندد، artifact حداکثر 4 MiB است و SHA-256 روی
+view model و exact rendered bytes ثبت می‌شود. هیچ write/CLI/publication در P8-007
+وجود ندارد؛ P8-008 تا پذیرش و merge مستقل P8-007 بسته می‌ماند.
 
 
 ## Economic objective clarification — 2026-09-20
