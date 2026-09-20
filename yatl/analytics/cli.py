@@ -121,6 +121,8 @@ def load_analytics_spec(path):
         record = json.loads(raw, object_pairs_hook=_no_duplicate_object)
     except (json.JSONDecodeError, _DuplicateJsonKey):
         raise AnalyticsCliError(AnalyticsCliCode.INVALID_INPUT) from None
+    if _json(record) != raw:
+        raise AnalyticsCliError(AnalyticsCliCode.INVALID_INPUT)
     if not _exact_keys(
         record,
         ("schema_version", "snapshot_time_ms", "sources"),
