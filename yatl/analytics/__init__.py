@@ -81,3 +81,27 @@ __all__ += [
     "UnifiedTimeline",
     "build_unified_timeline",
 ]
+
+from .trades import (
+    TRADE_SCHEMA_VERSION,
+    AcceptedTradeFill,
+    CompletedPaperTrade,
+    FinalPortfolioEvidence,
+    OpenPaperTrade,
+    PaperTradeReconstruction,
+    TradeBookStatus,
+    TradeReconstructionError,
+    reconstruct_paper_trades,
+)
+
+__all__ += [
+    "TRADE_SCHEMA_VERSION",
+    "AcceptedTradeFill",
+    "CompletedPaperTrade",
+    "FinalPortfolioEvidence",
+    "OpenPaperTrade",
+    "PaperTradeReconstruction",
+    "TradeBookStatus",
+    "TradeReconstructionError",
+    "reconstruct_paper_trades",
+]
