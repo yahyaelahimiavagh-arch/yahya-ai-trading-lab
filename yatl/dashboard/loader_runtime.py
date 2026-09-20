@@ -53,7 +53,7 @@ def main():
             or first.segmentation_sha256
             != record["quality"]["accepted_chain"]["segmentation_sha256"]
             or first.source.strategy_evidence.value != "INSUFFICIENT_EVIDENCE"
-            or tampered_code is not P7ExportLoadCode.NONCANONICAL
+            or tampered_code is not P7ExportLoadCode.DIGEST_MISMATCH
         ):
             raise RuntimeError("P8-002 accepted P7 export loader runtime gate failed")
 
