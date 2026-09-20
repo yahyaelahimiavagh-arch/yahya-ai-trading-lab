@@ -1693,3 +1693,49 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
   permission or order endpoint.
 - No dependency or `uv.lock` change.
 - P8-003 is not opened by this candidate; exact final-head Actions must pass first.
+
+## P8-002 accepted implementation — 2026-09-20
+
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `a9112a5`**.
+
+- PR #53 final candidate HEAD:
+  `59703a66b4010647226ab92f6c03588c33f93e6f`.
+- Matching GitHub Actions: `35523493929` — both jobs PASS.
+- Complete suite: **886/886 PASS**.
+- Focused P8-002: **23/23 PASS**.
+- Accepted P7 export SHA-256:
+  `8e11935814a57389399eea4046beed2f98b7bb448b25465740ef868f7e4dc456`.
+- Quality SHA-256:
+  `2c62a387c8ad24535eb9c4a2bd828d05ef6a8269cdd4529d261544c991e39a07`.
+- Segmentation SHA-256:
+  `be0a03a702b4b672e912c54435a37ce6c2b910f0cf0cd40e147ccfed4eefcba0`.
+- PR #53 squash-merged; accepted checkpoint:
+  `a9112a525e07de0e4b5cc8a02433f636246b683f`.
+- Read-only/no-write, exact expected-digest binding and
+  `INSUFFICIENT_EVIDENCE` remain preserved.
+- No dependency or `uv.lock` change.
+
+## P8-003 current candidate — 2026-09-20
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry checkpoint: accepted P8-002 at
+  `a9112a525e07de0e4b5cc8a02433f636246b683f`.
+- Branch: `p8-003-overview-projection`.
+- Adds fixed 15-card system/safety/quality overview projection from the immutable
+  accepted P7 export boundary only.
+- Conserves symbol, export SHA-256, snapshot time, Paper state,
+  `LIVE_MASTER_LOCK=OFF`, strategy evidence, quality PASS, completed trade count
+  and accepted-chain ingestion/timeline/reconstruction/metrics/segmentation hashes.
+- Each source-derived field carries a deterministic source-path/value SHA-256.
+- `open_trade_count=UNKNOWN` because accepted P7 segmentation export does not
+  expose an exact open-trade count.
+- `snapshot_freshness=UNKNOWN` because P8-003 introduces no clock or staleness
+  threshold.
+- No freshness/health/profitability/readiness/live permission is inferred.
+- **24 focused tests** plus deterministic runtime and source-safety CI gate.
+- Overview module imports no analytics runtime/database, clock, credentials,
+  network/provider, execution/account/risk capability, TRADE permission or order
+  endpoint.
+- No dependency or `uv.lock` change.
+- P8-004 remains closed until exact final-head Actions pass and P8-003 is merged.

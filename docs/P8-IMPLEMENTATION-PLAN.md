@@ -1,6 +1,6 @@
 # P8 — Dashboard implementation plan
 
-Status: **P8-001 RUNTIME ACCEPTED / MERGED — P8-002 CURRENT CANDIDATE**
+Status: **P8-002 RUNTIME ACCEPTED / MERGED — P8-003 CURRENT CANDIDATE**
 
 Entry baseline: P7 runtime accepted and merged at checkpoint
 `93b9d87cf23fe8a52470c4a01b480b0935be87c3`. Final P7 Actions run
@@ -86,28 +86,19 @@ oversized, noncanonical, secret-bearing, symlinked or unsupported-version input.
 Acceptance: byte-identical reopen, exact P7 export digest binding, no-write proof,
 bounded read and fail-closed invalid/tampered fixtures.
 
-Current candidate: branch `p8-002-p7-export-loader` from accepted P8-001
-checkpoint `e675fd06461e9bbd168404eda3b42dd53d3ef2b8`. The loader accepts one
-expected P7 export SHA-256 and opens the export read-only with no-follow semantics,
-enforces the **8 MiB** bound, strict UTF-8, duplicate-key rejection and byte-exact
-canonical JSON, then recomputes the P7 export digest. It requires P7 export,
-quality and segmentation schema version 1; quality must be PASS with publication
-allowed, no diagnostics and the frozen P7 safety/evidence fields. The accepted
-quality chain is bound to symbol/timeline/reconstruction/metrics/segmentation
-identities and population counts; P7 segmentation SHA-256 and per-segment digests
-are recomputed. Secret-bearing keys, symlinks, oversized/noncanonical data,
-unknown fields, unsupported versions, digest mismatch, evidence upgrade and safety
-weakening fail closed. The immutable result binds Dashboard source identity to the
-exact expected export digest without exposing a path or writing source material.
-
-Focused suite: **23 tests**. Runtime gate:
-
-```powershell
-uv run --locked python -m yatl.dashboard.loader_runtime
-```
-
-No dependency or `uv.lock` change. Exact final-head GitHub Actions evidence is
-required before P8-002 acceptance or merge.
+Accepted: PR #53 was squash-merged at
+`a9112a525e07de0e4b5cc8a02433f636246b683f` after matching final-head Actions
+run `35523493929` passed both jobs, the **886/886** complete suite and **23/23**
+focused P8-002 tests. The loader runtime bound the canonical accepted P7 export
+SHA-256 `8e11935814a57389399eea4046beed2f98b7bb448b25465740ef868f7e4dc456`,
+quality SHA-256
+`2c62a387c8ad24535eb9c4a2bd828d05ef6a8269cdd4529d261544c991e39a07`
+and segmentation SHA-256
+`be0a03a702b4b672e912c54435a37ce6c2b910f0cf0cd40e147ccfed4eefcba0`.
+It preserved read-only/no-write behavior, exact expected-digest binding,
+`INSUFFICIENT_EVIDENCE`, fail-closed tamper handling and the no
+execution/account/risk/network boundary. No dependency or `uv.lock` change was
+made.
 
 ### P8-003 — System / safety / quality overview projection
 
@@ -119,6 +110,30 @@ invented beyond accepted P7 fields.
 Acceptance: exact source-field conservation, explicit stale/unknown handling,
 stable overview SHA-256 and no conversion of descriptive status into trade/live
 permission.
+
+Current candidate: branch `p8-003-overview-projection` from accepted P8-002
+checkpoint `a9112a525e07de0e4b5cc8a02433f636246b683f`. The projection consumes only
+the immutable `LoadedP7Export` boundary and emits a fixed **15-card** overview:
+symbol, accepted export identity, snapshot time, Paper state,
+`LIVE_MASTER_LOCK=OFF`, strategy evidence, P7 quality status, completed trade
+count and the five accepted-chain identities. Each visible source-derived field is
+bound to a deterministic source-path/value SHA-256.
+
+Because accepted P7 segmentation export does not carry an exact open-trade count,
+`open_trade_count` is explicitly `UNKNOWN`. Because P8-003 has no clock or
+staleness threshold, `snapshot_freshness` is also explicitly `UNKNOWN`. No
+freshness, health, profitability, readiness or live/trade-permission inference is
+invented. The projection SHA-256 is deterministic and the source export/provenance
+binding is rechecked before projection.
+
+Focused suite: **24 tests**. Runtime gate:
+
+```powershell
+uv run --locked python -m yatl.dashboard.overview_runtime
+```
+
+No dependency or `uv.lock` change. Exact final-head GitHub Actions evidence is
+required before P8-003 acceptance or merge.
 
 ### P8-004 — Completed-trade table projection
 
