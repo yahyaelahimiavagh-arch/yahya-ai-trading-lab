@@ -83,3 +83,31 @@ __all__ += [
     "OverviewProjectionError",
     "project_overview",
 ]
+
+from .trade_table import (
+    MAX_PAGE_SIZE,
+    TRADE_TABLE_SCHEMA_VERSION,
+    CompletedTradeTableProjection,
+    DashboardCompletedTradeMetricRow,
+    TradeOutcomeFilter,
+    TradeSortDirection,
+    TradeSortKey,
+    TradeTableProjectionError,
+    TradeTableQuery,
+    apply_trade_table_query,
+    project_completed_trade_table,
+)
+
+__all__ += [
+    "MAX_PAGE_SIZE",
+    "TRADE_TABLE_SCHEMA_VERSION",
+    "CompletedTradeTableProjection",
+    "DashboardCompletedTradeMetricRow",
+    "TradeOutcomeFilter",
+    "TradeSortDirection",
+    "TradeSortKey",
+    "TradeTableProjectionError",
+    "TradeTableQuery",
+    "apply_trade_table_query",
+    "project_completed_trade_table",
+]
