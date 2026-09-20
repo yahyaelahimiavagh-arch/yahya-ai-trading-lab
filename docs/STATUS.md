@@ -1504,9 +1504,9 @@ Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `3aad07f`**.
   permission/order endpoint or AI execution.
 
 
-## P7-009 current candidate — 2026-09-20
+## P7-009 accepted implementation — 2026-09-20
 
-Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `840a3d4`**.
 
 - Entry checkpoint: P7-008 merged at
   `3aad07f7ad110a66a3d0b494fb9b8e8e81279cc7`; branch
@@ -1539,3 +1539,37 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
 - No dependency or `uv.lock` change; no execution/backtest/account/risk import,
   environment credentials, network/provider transport, quantity authority, TRADE
   permission/order endpoint or AI execution.
+
+
+## P7-010 current candidate — 2026-09-20
+
+Status: **IMPLEMENTED — CHAIN-SET FROZEN / FINAL-HEAD CI PENDING**.
+
+- Entry checkpoint: P7-009 merged at
+  `840a3d471ad0ea0b0f120d99920bd3ccf7a557f3`; branch
+  `p7-010-independent-final-audit`.
+- Independently reconstructs frozen P7 analytics policy and requires policy
+  SHA-256
+  `534fb28e630a8bca4ccffd4c8ef572f4aac440d4a3d05de190cf70264ac9f4d9`.
+- Reads and validates all 19 P7-009 evidence files independently: exact names,
+  nonsymlink regular files, bounded size, canonical JSON, forbidden-material
+  scan, exact scenario safety/outcomes, index coverage/order and file SHA-256.
+- Regenerates the 18-run P7-009 matrix independently and requires exact byte
+  equality with the published evidence directory.
+- Rebuilds healthy analytics chains independently for BTCUSDT and ETHUSDT,
+  twice each: ingestion → timeline → trade reconstruction → metrics →
+  segmentation → quality → sanitized export identity. Replay must be exact and
+  both upstream databases must remain byte-identical.
+- BTC chain is pinned to the already accepted runtime identities:
+  manifest `aff65af1...`, timeline `c0738c02...`, reconstruction
+  `2162b742...`, metrics `d2aa2ad3...`, segmentation `be0a03a7...`,
+  quality `2c62a387...`, export `8e119358...`.
+- Discovery run `35516730233` independently recomputed the two-symbol
+  chain-set SHA-256 as
+  `76face2aa41fbea1dc0ae718964eb77b5990d258beb41312c74132c8bb5c1209`. It is now frozen in code. That discovery run is superseded for
+  acceptance; a replacement exact Final-HEAD run must pass before P7-010 can be
+  accepted.
+- Source safety independently scans the full `yatl/analytics` package.
+- No dependency or `uv.lock` change; no execution/backtest/account/risk import,
+  environment credentials, network/provider transport, RiskAuthorization or
+  quantity authority, TRADE permission/order endpoint or AI execution.

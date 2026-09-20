@@ -231,3 +231,23 @@ __all__ += [
     "scenario_artifact_json",
     "write_adversarial_analytics_matrix",
 ]
+
+from .audit import (
+    EXPECTED_BTC_CHAIN,
+    EXPECTED_CHAIN_SET_SHA256,
+    EXPECTED_INDEX_SHA256 as P7_EXPECTED_INDEX_SHA256,
+    EXPECTED_POLICY_SHA256 as P7_EXPECTED_POLICY_SHA256,
+    P7AuditError,
+    P7AuditResult,
+    audit_p7,
+)
+
+__all__ += [
+    "EXPECTED_BTC_CHAIN",
+    "EXPECTED_CHAIN_SET_SHA256",
+    "P7_EXPECTED_INDEX_SHA256",
+    "P7_EXPECTED_POLICY_SHA256",
+    "P7AuditError",
+    "P7AuditResult",
+    "audit_p7",
+]
