@@ -47,6 +47,8 @@ jobs:
         run: uv run --locked python -m unittest discover -s tests -p 'test_analyst_request.py' -v
       - name: P6 strict model-response schema focused gate
         run: uv run --locked python -m unittest discover -s tests -p 'test_analyst_response.py' -v
+      - name: P6 claim/evidence grounding focused gate
+        run: uv run --locked python -m unittest discover -s tests -p 'test_analyst_grounding.py' -v
       - name: Compile and whitespace gates
         run: |
           uv run --locked python -m compileall -q yatl
@@ -141,6 +143,8 @@ jobs:
         run: uv run --locked python -m yatl.analyst.request_runtime
       - name: P6 strict model-response schema runtime
         run: uv run --locked python -m yatl.analyst.response_runtime
+      - name: P6 claim/evidence grounding runtime
+        run: uv run --locked python -m yatl.analyst.grounding_runtime
       - name: Publish P5-009 adversarial evidence
         uses: actions/upload-artifact@v4
         with:
