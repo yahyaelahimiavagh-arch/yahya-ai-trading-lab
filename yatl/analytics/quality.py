@@ -121,7 +121,7 @@ def _decimal(value):
     return number
 
 
-@dataclass(frozen=True, slots=True, order=True)
+@dataclass(frozen=True, slots=True)
 class QualityDiagnostic:
     code: QualityCode
     component: QualityComponent
@@ -204,7 +204,13 @@ class AnalyticsQualityReport:
             or type(self.diagnostics) is not tuple
             or len(self.diagnostics) > MAX_DIAGNOSTICS
             or any(not isinstance(item, QualityDiagnostic) for item in self.diagnostics)
-            or tuple(sorted(set(self.diagnostics))) != self.diagnostics
+            or tuple(
+                sorted(
+                    set(self.diagnostics),
+                    key=lambda item: (item.code.value, item.component.value),
+                )
+            )
+            != self.diagnostics
             or type(self.passed_checks) is not tuple
             or len(self.passed_checks) > MAX_PASSED_CHECKS
             or any(not isinstance(item, QualityCheck) for item in self.passed_checks)
@@ -285,7 +291,12 @@ class AnalyticsQualityGate:
 
 
 def _diagnostics(*items):
-    unique = tuple(sorted(set(items)))
+    unique = tuple(
+        sorted(
+            set(items),
+            key=lambda item: (item.code.value, item.component.value),
+        )
+    )
     return unique[:MAX_DIAGNOSTICS]
 
 
