@@ -1,8 +1,8 @@
 # YATL — نقشه مرجع اجرا و وضعیت پروژه
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
-وضعیت جاری: **P0 تا P6 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P7 JOURNAL / ANALYTICS — PLAN OPENING / IMPLEMENTATION NEXT**
+وضعیت جاری: **P0 تا P7 RUNTIME ACCEPTED AND MERGED**
+قدم جاری: **P8 DASHBOARD — PLAN OPENING / IMPLEMENTATION NEXT**
 
 ## منشأ و حدود سند
 
@@ -28,6 +28,47 @@ P11 فقط نامزد اجرای واقعی بسیار محدود است، نه 
 قفل‌های فعلی: PAPER ONLY | LIVE_MASTER_LOCK=OFF | NO FUTURES | NO LEVERAGE |
 NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only باقی می‌ماند.
 
+
+## اصل حاکم اقتصادی — Profitability over Complexity
+
+هدف نهایی YATL **تولید خروجی اقتصادی مثبت و قابل‌تکرار پس از هزینه‌ها، با ریسک
+کنترل‌شده، روی داده‌ای است که سیستم قبلاً ندیده است**. تکمیل فازها، تعداد
+اندیکاتورها، تعداد تحلیل‌ها، استفاده از AI، تعداد خطوط کد، تعداد تست‌ها یا زیبایی
+Dashboard به‌تنهایی معیار موفقیت اقتصادی نیستند.
+
+قواعد حاکم:
+
+- **Profitability > Complexity**: اگر یک روش ساده روی داده جدید و پس از fee و
+  slippage بهتر و پایدارتر از ترکیب روش‌های پیچیده عمل کند، روش ساده ترجیح دارد.
+- **Evidence > Number of analyses**: اضافه‌کردن technical indicator، candlestick
+  pattern، price action، order flow، derivatives، on-chain، macro، fundamental،
+  news/sentiment یا AI فقط وقتی توجیه دارد که به‌صورت point-in-time و بدون leakage
+  قابل ارزیابی باشد و ارزش افزوده اقتصادی آن در مقایسه با baseline سنجیده شود.
+- **Out-of-sample / forward evidence > attractive backtest**: نتیجه خوب روی
+  داده‌ای که برای طراحی/تنظیم دیده شده است، به‌تنهایی edge را اثبات نمی‌کند.
+- **Risk-adjusted persistence > raw profit**: سود خالص باید همراه drawdown،
+  هزینه، sample size، stability across regimes، failure behavior و exposure بررسی
+  شود. سود خامی که با ریسک غیرقابل‌قبول یا شکنندگی بالا ساخته شود Gate را پاس
+  نمی‌کند.
+- **One profitable edge > many unproven signals**: هزار تحلیل بدون اثر مثبت
+  پایدار روی نتیجه اقتصادی ارزش محصولی ندارد. هیچ feature یا مدل صرفاً به‌خاطر
+  رایج‌بودن در ترید به سیستم اضافه نمی‌شود.
+- هر قابلیت تحلیلی جدید باید baseline روشن داشته باشد و در صورت امکان با
+  ablation/comparison نشان دهد که حذف/اضافه‌شدن آن چه اثری بر نتایج خارج از نمونه
+  دارد. افزایش complexity بدون evidence کافی مجاز نیست.
+- معیار اقتصادی اصلی در P10 شامل **Net PnL بعد از fee/slippage روی داده جدید**
+  است، اما پذیرش فقط با سود مثبت خام انجام نمی‌شود؛ drawdown، تعداد معاملات،
+  پایداری، consistency، failure/recovery و معیارهای از پیش‌ثبت‌شده نیز Gate هستند.
+- اگر P10 نشان دهد استراتژی‌های فعلی edge قابل‌قبول ندارند، پروژه **موفق یا Live
+  ready اعلام نمی‌شود**. مسیر به research/strategy iteration برمی‌گردد؛
+  candidateها دوباره با همان اصول point-in-time، no leakage و pre-registered gates
+  ارزیابی می‌شوند و P11 بسته می‌ماند.
+- P11 فقط پس از پذیرش P10 و gateهای امنیت/حساب/ریسک باز می‌شود و حتی آن زمان نیز
+  Tiny Live یک validation محدود است، نه تضمین سود.
+
+این اصل، ترتیب ایمنی فازها را تغییر نمی‌دهد؛ بلکه معیار تصمیم‌گیری درباره ارزش هر
+قابلیت و موفقیت نهایی سیستم را روشن می‌کند.
+
 ## ترتیب ثابت فازها
 
 | فاز | خروجی مورد انتظار | وضعیت امروز |
@@ -39,16 +80,23 @@ NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only ب�
 | P4 Risk Manager | اندازه موقعیت، محدودیت ریسک و Kill Switch مستقل | **RUNTIME ACCEPTED — checkpoint `f3a5575`** |
 | P5 Paper/Testnet Execution | اجرای آزمایشی زیر نظر Risk Manager و ثبت وضعیت سفارش | **RUNTIME ACCEPTED — checkpoint `cd5ff565`** |
 | P6 AI Analyst | تحلیل ساختاریافته و NO_TRADE بدون دسترسی مستقیم به اجرا | **RUNTIME ACCEPTED — checkpoint `f07f220`** |
-| P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | **NEXT — implementation plan opened** |
-| P8 Dashboard | نمایش وضعیت، معاملات، عملکرد و خطاها | شروع نشده |
+| P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | **RUNTIME ACCEPTED — checkpoint `93b9d87`** |
+| P8 Dashboard | نمایش وضعیت، معاملات، عملکرد و خطاها | **NEXT — implementation plan opened** |
 | P9 Telegram | هشدار و کنترل محدود طبق قواعد امنیتی | شروع نشده |
 | P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | شروع نشده |
 | P11 Tiny Live Candidate | فقط پس از پذیرش P10، ممیزی امنیت، الزامات حساب و تأیید صریح | LOCKED |
 
 ## نمای پیشرفت فعلی — 2026-09-20
 
-جای فعلی پروژه: هفت فاز اول توسعه، یعنی P0 تا P6، در runtime پذیرفته و روی
-`main` بسته شده‌اند. P6-001 تا P6-010 قراردادهای analysis-only، evidence
+جای فعلی پروژه: هشت فاز اول توسعه، یعنی P0 تا P7، در runtime پذیرفته و روی
+`main` بسته شده‌اند. P7-001 تا P7-010 قرارداد analytics، ingestion read-only،
+timeline، trade reconstruction، metrics، segmentation، quality gate، CLI/export،
+adversarial matrix و independent final audit را تکمیل کردند. checkpoint نهایی P7
+`93b9d87cf23fe8a52470c4a01b480b0935be87c3` است. Final-head Actions run
+`35516951238` هر دو job را با **842/842** تست کامل و **17/17** تست متمرکز
+P7-010 پذیرفت. chain-set پذیرفته‌شده BTCUSDT+ETHUSDT برابر
+`76face2aa41fbea1dc0ae718964eb77b5990d258beb41312c74132c8bb5c1209` است.
+P6-001 تا P6-010 قراردادهای analysis-only، evidence
 point-in-time، baseline قطعی، request boundary، response schema، grounding،
 journal trace، CLI محافظت‌شده، adversarial matrix و independent final audit را
 تکمیل کردند. checkpoint نهایی P6
@@ -77,31 +125,43 @@ merge شد. P4-010 ممیزی مستقل نهایی را پیاده‌سازی �
 
 | معیار | انجام‌شده | باقی‌مانده | تفسیر صحیح |
 |---|---:|---:|---|
-| فازهای تحویل نرم‌افزاری P0 تا P9 | 7 از 10 | 3 فاز | **70% بر مبنای شمارش ساده فازها**؛ تخمین زمان یا حجم کار نیست |
-| checkpointهای P6 | 10 از 10 | صفر | P6-001 تا P6-010 پذیرفته و روی `main` بسته شده‌اند |
-| فازهای پیش از Forward Validation | P0 تا P6 | P7 تا P9 | پس از آن P10 باید روی داده جدید اجرا و پذیرفته شود |
+| فازهای تحویل نرم‌افزاری P0 تا P9 | 8 از 10 | 2 فاز | **80% بر مبنای شمارش ساده فازها**؛ تخمین زمان یا حجم کار نیست |
+| checkpointهای P7 | 10 از 10 | صفر | P7-001 تا P7-010 پذیرفته و روی `main` بسته شده‌اند |
+| فازهای پیش از Forward Validation | P0 تا P7 | P8 تا P9 | پس از آن P10 باید روی داده جدید اجرا و پذیرفته شود |
 | مسیر Live | هیچ | P5 تا P10 و ممیزی‌های P11 | P11 همچنان LOCKED و مشروط به تأیید صریح است |
 
 ### کار باقی‌مانده تا نسخه آزمایشی نرم‌افزار
 
-1. P7: Journal/Analytics read-only و قابل ممیزی روی شواهد پذیرفته‌شده P5/P6.
-2. P8 تا P9: Dashboard و Telegram محدود و ایمن.
+1. P8: Dashboard local/read-only روی export پذیرفته‌شده P7.
+2. P9: Telegram محدود و ایمن روی status/alertهای پذیرفته‌شده upstream.
 
 ### کار باقی‌مانده تا ارزیابی عملکرد
 
+- **هدف اقتصادی P10:** مشخص شود آیا candidateهای YATL روی داده جدید و بعد از
+  fee/slippage، با drawdown و ریسک کنترل‌شده، evidence کافی برای یک edge مثبت و
+  قابل‌تکرار دارند یا نه.
 - P10 باید روی داده جدید و بازه کافی انجام شود؛ بک‌تست ۲۰روزه فعلی برای اثبات edge
   کافی نیست. هر دو candidate فعلاً `INSUFFICIENT_EVIDENCE` هستند.
 - معیار ثبت‌شده P3 حداقل ۱۸۰ روز ارزیابی، ۳۰ معامله برای هر نماد و ۶۰ معامله pooled
   است. رسیدن به این حجم نمونه تضمین قبولی یا سوددهی نیست؛ فقط اجازه ارزیابی معتبرتر می‌دهد.
+- Net PnL پس از هزینه معیار اصلی اقتصادی است، اما به‌تنهایی کافی نیست؛ drawdown،
+  stability across regimes، consistency، failure/recovery و risk controls نیز
+  باید Gateهای از پیش‌ثبت‌شده را پاس کنند.
+- اگر P10 edge قابل‌قبول را تأیید نکند، P11 باز نمی‌شود؛ پروژه به
+  research/strategy iteration برمی‌گردد. در آن iteration، candlestick/price
+  action، volume/order flow، derivatives، on-chain، macro/fundamental،
+  news/sentiment یا AI فقط در صورتی اضافه می‌شوند که ارزش افزوده‌شان نسبت به
+  baseline با شواهد خارج از نمونه قابل‌اندازه‌گیری باشد.
 - Live بخشی از درصد تحویل نرم‌افزاری نیست. P11 تنها در صورت پذیرش P10، ممیزی امنیتی،
   آماده‌بودن حساب و تأیید صریح جداگانه بررسی می‌شود.
 
-بنابراین گزارش کوتاه این است: **70% فازهای نرم‌افزاری P0 تا P9 بسته شده‌اند؛
-P6-001 تا P6-010 runtime accepted و merge شده‌اند و P7 مرحله بعدی است.** این عدد پیشرفت مهندسی است، نه درصد آمادگی برای سود یا Live.
+بنابراین گزارش کوتاه این است: **80% فازهای نرم‌افزاری P0 تا P9 بسته شده‌اند؛
+P7-001 تا P7-010 runtime accepted و merge شده‌اند و P8 مرحله بعدی است.** این عدد
+پیشرفت مهندسی است، نه درصد آمادگی برای سود یا Live.
 
 در گفت‌وگوی قبلی برای P10 بازه ۳۰–۶۰ روز واقعی بازار مطرح شده است؛ این تخمین است،
 نه تضمین کافی‌بودن نمونه. تاریخ‌های قبلی پایان توسعه و شروع Live، تعهد اجرایی نیستند.
-درصد وزنیِ زمان/حجم کار نداریم؛ درصد 50% بالا فقط شمارش ساده فازهای بسته‌شده است.
+درصد وزنیِ زمان/حجم کار نداریم؛ درصد 80% بالا فقط شمارش ساده فازهای بسته‌شده است.
 پیشرفت authoritative بر اساس تحویل و پذیرش runtime ثبت می‌شود.
 تایم‌فریم‌های 4h/1h/15m و 5m برای اجرای دقیق‌تر، پیشنهاد قبلی‌اند؛ تصمیم نهایی داده/استراتژی در P1/P3 ثبت می‌شود.
 
@@ -147,6 +207,14 @@ P3 تا checkpoint نهایی P2 باز نمی‌شود.
 - پیش از پذیرش یک فاز، فاز بعدی شروع رسمی نمی‌شود؛ نمونه‌های اولیه به معنای تکمیل فاز نیستند.
 - پیشنهاد خارج از فاز در backlog ثبت می‌شود و جای کار جاری را نمی‌گیرد.
 - تغییر دامنه یا ترتیب باید همراه دلیل در همین سند ثبت شود.
+- برای هر قابلیت تحلیلی/استراتژیک جدید، سؤال اول «آیا احتمالاً performance
+  out-of-sample را بعد از هزینه بهتر می‌کند؟» است، نه «آیا این تکنیک در بازار
+  مشهور است؟». قابلیت بدون روش ارزیابی روشن وارد production path نمی‌شود.
+- P8 Dashboard و P9 Telegram باید **minimum sufficient** باقی بمانند: فقط آن‌قدر
+  ساخته شوند که مشاهده، audit، alert و کنترل ایمن برای P10 فراهم شود. featureهای
+  تزئینی یا پیچیدگی‌ای که رسیدن به P10 را به تأخیر بیندازد در backlog می‌ماند.
+- تکمیل P0 تا P9 «software delivery» است؛ موفقیت نهایی سیستم فقط با evidence
+  اقتصادی P10 و سپس validation محدود P11 سنجیده می‌شود.
 
 ## اصلاح مسیر — 2026-09-07
 
@@ -377,3 +445,65 @@ Journal / Analytics read-only و قابل ممیزی روی شواهد پذیر�
 نتیجه analytics را به‌عنوان مجوز معامله یا اثبات edge تفسیر نمی‌کند. P7-001
 قراردادهای immutable analytics و policy مرزی را بدون network، credential،
 provider یا execution capability تعریف می‌کند.
+
+
+## P7 closure record — 2026-09-20
+
+- P7-001 تا P7-010 به‌ترتیب روی شاخه/PR مستقل پیاده‌سازی، با matching final-head
+  GitHub Actions پذیرفته و روی `main` squash-merge شدند.
+- P7 فقط read-only analytics روی شواهد پذیرفته‌شده P5/P6 باقی ماند و هیچ
+  execution/backtest/account/risk import، credential، network/provider transport،
+  RiskAuthorization mutation، quantity authority، trade permission یا order
+  endpoint اضافه نکرد.
+- P7-008 export canonical و guarded CLI را برای مصرف downstream ساخت؛ export
+  پذیرفته‌شده BTC fixture SHA-256
+  `8e11935814a57389399eea4046beed2f98b7bb448b25465740ef868f7e4dc456`
+  بود و source path/private input وارد خروجی نشد.
+- P7-009 نه سناریوی adversarial را برای BTCUSDT و ETHUSDT اجرا کرد؛ 18 run و
+  19 فایل canonical evidence دو بار byte-identical بازتولید شدند. index SHA-256:
+  `f13a322e7071b48a8b05182fceee8024ee6d22d6b08a7b223d337e5f7850e60b`.
+- P7-010 ممیزی مستقل نهایی را روی policy، evidence، هر دو analytics chain،
+  metrics/segmentation/quality/export identity و source safety اجرا کرد. policy
+  SHA-256:
+  `534fb28e630a8bca4ccffd4c8ef572f4aac440d4a3d05de190cf70264ac9f4d9`.
+  chain-set SHA-256 پذیرفته‌شده BTCUSDT+ETHUSDT:
+  `76face2aa41fbea1dc0ae718964eb77b5990d258beb41312c74132c8bb5c1209`.
+- Final-head GitHub Actions run `35516951238` هر دو job را با **842/842** تست
+  کامل و **17/17** تست متمرکز P7-010، exact outcomes، replay equality، no-write
+  و source safety پذیرفت.
+- PR #50 در checkpoint نهایی
+  `93b9d87cf23fe8a52470c4a01b480b0935be87c3` squash-merge شد؛ P7 بسته است.
+- هر دو candidate فعلی P3 همچنان `INSUFFICIENT_EVIDENCE` هستند. پذیرش P7
+  ادعای سوددهی، پیش‌بینی عملکرد یا اجازه Live نیست.
+- PAPER ONLY; READ_ONLY_ANALYTICS; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO MARGIN;
+  NO LEVERAGE; NO SHORT; NO WITHDRAWAL API; NO TRADE PERMISSION;
+  NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
+
+## P8 planning record — 2026-09-20
+
+برنامه ترتیبی P8 در `P8-IMPLEMENTATION-PLAN.md` ثبت شد. P8 یک Dashboard
+local/read-only روی **accepted/sanitized P7 export only** می‌سازد. Dashboard منبع
+حقیقت جدید نیست و به P5/P6 journalها مستقیم وصل نمی‌شود. P8-001 قراردادهای
+immutable view و policy مرزی را تعریف می‌کند؛ سپس export loader، overview،
+trade table، performance/segmentation، quality diagnostics، renderer self-contained،
+CLI guarded، adversarial matrix و independent final audit به‌ترتیب اجرا می‌شوند.
+Dashboard هیچ credential، remote asset، provider/network transport، execution
+capability، RiskAuthorization/quantity authority، trade permission یا order
+endpoint ندارد و `INSUFFICIENT_EVIDENCE` را تغییر نمی‌دهد. P8 و سپس P9 عمداً
+minimum-sufficient نگه داشته می‌شوند تا observability/alerting لازم را بدون
+gold-plating فراهم کنند و مسیر ورود به P10 Forward/Paper Validation را بی‌دلیل
+طولانی نکنند.
+
+
+## Economic objective clarification — 2026-09-20
+
+هدف محصول به‌صورت صریح supersede/clarify شد: **YATL برای «داشتن تحلیل بیشتر» ساخته
+نمی‌شود؛ برای یافتن و اعتبارسنجی edge اقتصادی قابل‌تکرار با ریسک کنترل‌شده ساخته
+می‌شود.** تعداد تکنیک‌ها معیار موفقیت نیست. Technical/candlestick/price-action،
+order-flow، derivatives، on-chain، fundamental/macro، news/sentiment و AI همگی
+candidate input هستند، نه checklist اجباری.
+
+P8/P9 scope باید minimum-sufficient بماند تا P10 سریع‌تر آغاز شود. در P10 معیار
+اصلی اقتصادی Net PnL پس از fee/slippage روی داده جدید است، همراه با drawdown،
+sample size، stability و سایر gateهای از پیش‌ثبت‌شده. اگر P10 edge قابل‌قبول را
+تأیید نکند، P11 باز نمی‌شود و چرخه research/strategy iteration ادامه می‌یابد.

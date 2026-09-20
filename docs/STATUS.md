@@ -1541,9 +1541,9 @@ Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `840a3d4`**.
   permission/order endpoint or AI execution.
 
 
-## P7-010 current candidate — 2026-09-20
+## P7-010 accepted implementation — 2026-09-20
 
-Status: **IMPLEMENTED — CHAIN-SET FROZEN / FINAL-HEAD CI PENDING**.
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `93b9d87`**.
 
 - Entry checkpoint: P7-009 merged at
   `840a3d471ad0ea0b0f120d99920bd3ccf7a557f3`; branch
@@ -1566,10 +1566,57 @@ Status: **IMPLEMENTED — CHAIN-SET FROZEN / FINAL-HEAD CI PENDING**.
   quality `2c62a387...`, export `8e119358...`.
 - Discovery run `35516730233` independently recomputed the two-symbol
   chain-set SHA-256 as
-  `76face2aa41fbea1dc0ae718964eb77b5990d258beb41312c74132c8bb5c1209`. It is now frozen in code. That discovery run is superseded for
-  acceptance; a replacement exact Final-HEAD run must pass before P7-010 can be
-  accepted.
+  `76face2aa41fbea1dc0ae718964eb77b5990d258beb41312c74132c8bb5c1209` and is
+  superseded for acceptance.
+- Final-head Actions run `35516951238` on candidate
+  `40cdf85d70585202315944a5b373bb0fe993a382` passed both jobs, **842/842**
+  complete tests and **17/17** focused P7-010 tests.
+- Independent audit PASS: symbols=2, scenarios=9, runs=18, files=19,
+  exact_outcomes=true, replay_equal=true, chain_recomputed=true, no_write=true,
+  source_safe=true.
+- PR #50 squash-merged; final P7 checkpoint on `main` is
+  `93b9d87cf23fe8a52470c4a01b480b0935be87c3`.
 - Source safety independently scans the full `yatl/analytics` package.
 - No dependency or `uv.lock` change; no execution/backtest/account/risk import,
   environment credentials, network/provider transport, RiskAuthorization or
   quantity authority, TRADE permission/order endpoint or AI execution.
+
+
+## P7 final closeout — 2026-09-20
+
+Status: **P7 CLOSED — P8 DASHBOARD PLAN OPENED**.
+
+- P7-001 through P7-010 are runtime accepted and squash-merged on `main`.
+- Final checkpoint:
+  `93b9d87cf23fe8a52470c4a01b480b0935be87c3`.
+- Final matching Actions run: `35516951238`.
+- Final complete suite: **842/842 PASS**.
+- Final focused P7-010 suite: **17/17 PASS**.
+- Frozen P7 policy SHA-256:
+  `534fb28e630a8bca4ccffd4c8ef572f4aac440d4a3d05de190cf70264ac9f4d9`.
+- Frozen P7-009 adversarial index SHA-256:
+  `f13a322e7071b48a8b05182fceee8024ee6d22d6b08a7b223d337e5f7850e60b`.
+- Frozen accepted BTCUSDT+ETHUSDT analytics chain-set SHA-256:
+  `76face2aa41fbea1dc0ae718964eb77b5990d258beb41312c74132c8bb5c1209`.
+- P7 remained read-only/descriptive and added no execution/account/risk/network
+  capability, credentials, TRADE permission, order endpoints or AI execution.
+- Both current P3 strategy candidates remain `INSUFFICIENT_EVIDENCE`; P7 closure
+  is engineering acceptance, not proof of edge/profitability or Live readiness.
+- Software-delivery phase count P0–P9 is now **8/10 = 80%** by simple phase count.
+
+## P8 planning opened — 2026-09-20
+
+Status: **P8-001 NEXT — DASHBOARD POLICY / IMMUTABLE VIEW CONTRACTS**.
+
+- Plan file: `docs/P8-IMPLEMENTATION-PLAN.md`.
+- P8 consumes **accepted/sanitized P7 export only** and does not read P5/P6
+  journals directly.
+- Planned outputs: safety/quality overview, completed Paper trade view,
+  descriptive performance/segmentation, sanitized diagnostics and a deterministic
+  self-contained local Dashboard artifact.
+- Default architecture remains local/read-only with no remote assets, external
+  scripts, fetch/WebSocket/provider transport, environment credentials,
+  execution/account/risk import, RiskAuthorization/quantity authority, TRADE
+  permission or order endpoints.
+- P8 sequence is fixed as P8-001 through P8-010; P8-009 is adversarial Dashboard
+  matrix and P8-010 is independent final audit.
