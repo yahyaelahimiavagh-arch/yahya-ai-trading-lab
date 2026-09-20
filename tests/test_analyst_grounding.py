@@ -168,14 +168,13 @@ class ClaimEvidenceGroundingTests(unittest.TestCase):
 
     def test_unknown_claim_fails_closed(self):
         claims = grounded_claims()
-        claims.insert(
-            4,
+        claims.append(
             {
                 "claim_id": "MODEL_UNKNOWN_FACT",
                 "kind": "FACT",
                 "text": "A new unsupported fact is asserted.",
                 "evidence_ids": ["E_P1_MARKET"],
-            },
+            }
         )
         result = ground_model_response(validated(claims))
         self.assertFalse(result.accepted)
