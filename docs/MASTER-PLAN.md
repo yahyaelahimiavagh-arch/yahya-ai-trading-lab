@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P7 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P8-001 DASHBOARD POLICY / IMMUTABLE VIEW CONTRACTS — CANDIDATE**
+قدم جاری: **P8-002 ACCEPTED P7 EXPORT LOADER / PROVENANCE BINDING — CANDIDATE**
 
 ## منشأ و حدود سند
 
@@ -508,6 +508,23 @@ execution/account/risk capability، credential، RiskAuthorization/quantity
 authority، TRADE permission یا order endpoint اضافه نمی‌کند. P8-001 فقط پس از
 matching exact Final-HEAD Actions و merge مستقل پذیرفته می‌شود؛ P8-002 قبل از آن
 باز نیست.
+
+
+## P8-001 acceptance / P8-002 candidate — 2026-09-20
+
+P8-001 با PR #52، Actions `35522537152`، **863/863** تست کامل و **21/21**
+تست focused پذیرفته و در checkpoint
+`e675fd06461e9bbd168404eda3b42dd53d3ef2b8` روی `main` merge شد. policy
+`P8_DASHBOARD_V1` local/read-only/display-only باقی ماند.
+
+P8-002 روی branch `p8-002-p7-export-loader` فقط loader و provenance binding
+برای **accepted/sanitized P7 export** را می‌سازد. ورودی به expected export digest
+صریح bind می‌شود؛ canonical JSON، quality PASS، safety fields و segmentation
+identity دوباره بررسی می‌شوند و symlink/oversize/tamper/schema-smuggling/secret
+material fail-closed رد می‌شوند. این checkpoint هیچ overview projection، UI،
+renderer، network/provider، credential، execution/account/risk capability،
+RiskAuthorization/quantity authority، TRADE permission یا order endpoint اضافه
+نمی‌کند. P8-003 تا پذیرش و merge مستقل P8-002 بسته می‌ماند.
 
 
 ## Economic objective clarification — 2026-09-20
