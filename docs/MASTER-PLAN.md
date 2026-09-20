@@ -28,6 +28,47 @@ P11 فقط نامزد اجرای واقعی بسیار محدود است، نه 
 قفل‌های فعلی: PAPER ONLY | LIVE_MASTER_LOCK=OFF | NO FUTURES | NO LEVERAGE |
 NO WITHDRAWAL API | NO AI DIRECT EXECUTION. کلید فعلی USER_DATA only باقی می‌ماند.
 
+
+## اصل حاکم اقتصادی — Profitability over Complexity
+
+هدف نهایی YATL **تولید خروجی اقتصادی مثبت و قابل‌تکرار پس از هزینه‌ها، با ریسک
+کنترل‌شده، روی داده‌ای است که سیستم قبلاً ندیده است**. تکمیل فازها، تعداد
+اندیکاتورها، تعداد تحلیل‌ها، استفاده از AI، تعداد خطوط کد، تعداد تست‌ها یا زیبایی
+Dashboard به‌تنهایی معیار موفقیت اقتصادی نیستند.
+
+قواعد حاکم:
+
+- **Profitability > Complexity**: اگر یک روش ساده روی داده جدید و پس از fee و
+  slippage بهتر و پایدارتر از ترکیب روش‌های پیچیده عمل کند، روش ساده ترجیح دارد.
+- **Evidence > Number of analyses**: اضافه‌کردن technical indicator، candlestick
+  pattern، price action، order flow، derivatives، on-chain، macro، fundamental،
+  news/sentiment یا AI فقط وقتی توجیه دارد که به‌صورت point-in-time و بدون leakage
+  قابل ارزیابی باشد و ارزش افزوده اقتصادی آن در مقایسه با baseline سنجیده شود.
+- **Out-of-sample / forward evidence > attractive backtest**: نتیجه خوب روی
+  داده‌ای که برای طراحی/تنظیم دیده شده است، به‌تنهایی edge را اثبات نمی‌کند.
+- **Risk-adjusted persistence > raw profit**: سود خالص باید همراه drawdown،
+  هزینه، sample size، stability across regimes، failure behavior و exposure بررسی
+  شود. سود خامی که با ریسک غیرقابل‌قبول یا شکنندگی بالا ساخته شود Gate را پاس
+  نمی‌کند.
+- **One profitable edge > many unproven signals**: هزار تحلیل بدون اثر مثبت
+  پایدار روی نتیجه اقتصادی ارزش محصولی ندارد. هیچ feature یا مدل صرفاً به‌خاطر
+  رایج‌بودن در ترید به سیستم اضافه نمی‌شود.
+- هر قابلیت تحلیلی جدید باید baseline روشن داشته باشد و در صورت امکان با
+  ablation/comparison نشان دهد که حذف/اضافه‌شدن آن چه اثری بر نتایج خارج از نمونه
+  دارد. افزایش complexity بدون evidence کافی مجاز نیست.
+- معیار اقتصادی اصلی در P10 شامل **Net PnL بعد از fee/slippage روی داده جدید**
+  است، اما پذیرش فقط با سود مثبت خام انجام نمی‌شود؛ drawdown، تعداد معاملات،
+  پایداری، consistency، failure/recovery و معیارهای از پیش‌ثبت‌شده نیز Gate هستند.
+- اگر P10 نشان دهد استراتژی‌های فعلی edge قابل‌قبول ندارند، پروژه **موفق یا Live
+  ready اعلام نمی‌شود**. مسیر به research/strategy iteration برمی‌گردد؛
+  candidateها دوباره با همان اصول point-in-time، no leakage و pre-registered gates
+  ارزیابی می‌شوند و P11 بسته می‌ماند.
+- P11 فقط پس از پذیرش P10 و gateهای امنیت/حساب/ریسک باز می‌شود و حتی آن زمان نیز
+  Tiny Live یک validation محدود است، نه تضمین سود.
+
+این اصل، ترتیب ایمنی فازها را تغییر نمی‌دهد؛ بلکه معیار تصمیم‌گیری درباره ارزش هر
+قابلیت و موفقیت نهایی سیستم را روشن می‌کند.
+
 ## ترتیب ثابت فازها
 
 | فاز | خروجی مورد انتظار | وضعیت امروز |
@@ -96,10 +137,21 @@ merge شد. P4-010 ممیزی مستقل نهایی را پیاده‌سازی �
 
 ### کار باقی‌مانده تا ارزیابی عملکرد
 
+- **هدف اقتصادی P10:** مشخص شود آیا candidateهای YATL روی داده جدید و بعد از
+  fee/slippage، با drawdown و ریسک کنترل‌شده، evidence کافی برای یک edge مثبت و
+  قابل‌تکرار دارند یا نه.
 - P10 باید روی داده جدید و بازه کافی انجام شود؛ بک‌تست ۲۰روزه فعلی برای اثبات edge
   کافی نیست. هر دو candidate فعلاً `INSUFFICIENT_EVIDENCE` هستند.
 - معیار ثبت‌شده P3 حداقل ۱۸۰ روز ارزیابی، ۳۰ معامله برای هر نماد و ۶۰ معامله pooled
   است. رسیدن به این حجم نمونه تضمین قبولی یا سوددهی نیست؛ فقط اجازه ارزیابی معتبرتر می‌دهد.
+- Net PnL پس از هزینه معیار اصلی اقتصادی است، اما به‌تنهایی کافی نیست؛ drawdown،
+  stability across regimes، consistency، failure/recovery و risk controls نیز
+  باید Gateهای از پیش‌ثبت‌شده را پاس کنند.
+- اگر P10 edge قابل‌قبول را تأیید نکند، P11 باز نمی‌شود؛ پروژه به
+  research/strategy iteration برمی‌گردد. در آن iteration، candlestick/price
+  action، volume/order flow، derivatives، on-chain، macro/fundamental،
+  news/sentiment یا AI فقط در صورتی اضافه می‌شوند که ارزش افزوده‌شان نسبت به
+  baseline با شواهد خارج از نمونه قابل‌اندازه‌گیری باشد.
 - Live بخشی از درصد تحویل نرم‌افزاری نیست. P11 تنها در صورت پذیرش P10، ممیزی امنیتی،
   آماده‌بودن حساب و تأیید صریح جداگانه بررسی می‌شود.
 
@@ -155,6 +207,14 @@ P3 تا checkpoint نهایی P2 باز نمی‌شود.
 - پیش از پذیرش یک فاز، فاز بعدی شروع رسمی نمی‌شود؛ نمونه‌های اولیه به معنای تکمیل فاز نیستند.
 - پیشنهاد خارج از فاز در backlog ثبت می‌شود و جای کار جاری را نمی‌گیرد.
 - تغییر دامنه یا ترتیب باید همراه دلیل در همین سند ثبت شود.
+- برای هر قابلیت تحلیلی/استراتژیک جدید، سؤال اول «آیا احتمالاً performance
+  out-of-sample را بعد از هزینه بهتر می‌کند؟» است، نه «آیا این تکنیک در بازار
+  مشهور است؟». قابلیت بدون روش ارزیابی روشن وارد production path نمی‌شود.
+- P8 Dashboard و P9 Telegram باید **minimum sufficient** باقی بمانند: فقط آن‌قدر
+  ساخته شوند که مشاهده، audit، alert و کنترل ایمن برای P10 فراهم شود. featureهای
+  تزئینی یا پیچیدگی‌ای که رسیدن به P10 را به تأخیر بیندازد در backlog می‌ماند.
+- تکمیل P0 تا P9 «software delivery» است؛ موفقیت نهایی سیستم فقط با evidence
+  اقتصادی P10 و سپس validation محدود P11 سنجیده می‌شود.
 
 ## اصلاح مسیر — 2026-09-07
 
@@ -429,4 +489,21 @@ trade table، performance/segmentation، quality diagnostics، renderer self-con
 CLI guarded، adversarial matrix و independent final audit به‌ترتیب اجرا می‌شوند.
 Dashboard هیچ credential، remote asset، provider/network transport، execution
 capability، RiskAuthorization/quantity authority، trade permission یا order
-endpoint ندارد و `INSUFFICIENT_EVIDENCE` را تغییر نمی‌دهد.
+endpoint ندارد و `INSUFFICIENT_EVIDENCE` را تغییر نمی‌دهد. P8 و سپس P9 عمداً
+minimum-sufficient نگه داشته می‌شوند تا observability/alerting لازم را بدون
+gold-plating فراهم کنند و مسیر ورود به P10 Forward/Paper Validation را بی‌دلیل
+طولانی نکنند.
+
+
+## Economic objective clarification — 2026-09-20
+
+هدف محصول به‌صورت صریح supersede/clarify شد: **YATL برای «داشتن تحلیل بیشتر» ساخته
+نمی‌شود؛ برای یافتن و اعتبارسنجی edge اقتصادی قابل‌تکرار با ریسک کنترل‌شده ساخته
+می‌شود.** تعداد تکنیک‌ها معیار موفقیت نیست. Technical/candlestick/price-action،
+order-flow، derivatives، on-chain، fundamental/macro، news/sentiment و AI همگی
+candidate input هستند، نه checklist اجباری.
+
+P8/P9 scope باید minimum-sufficient بماند تا P10 سریع‌تر آغاز شود. در P10 معیار
+اصلی اقتصادی Net PnL پس از fee/slippage روی داده جدید است، همراه با drawdown،
+sample size، stability و سایر gateهای از پیش‌ثبت‌شده. اگر P10 edge قابل‌قبول را
+تأیید نکند، P11 باز نمی‌شود و چرخه research/strategy iteration ادامه می‌یابد.
