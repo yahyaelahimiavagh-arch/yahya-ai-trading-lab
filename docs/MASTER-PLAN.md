@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P7 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P8 DASHBOARD — PLAN OPENING / IMPLEMENTATION NEXT**
+قدم جاری: **P8-001 DASHBOARD POLICY / IMMUTABLE VIEW CONTRACTS — CANDIDATE**
 
 ## منشأ و حدود سند
 
@@ -493,6 +493,21 @@ endpoint ندارد و `INSUFFICIENT_EVIDENCE` را تغییر نمی‌دهد. 
 minimum-sufficient نگه داشته می‌شوند تا observability/alerting لازم را بدون
 gold-plating فراهم کنند و مسیر ورود به P10 Forward/Paper Validation را بی‌دلیل
 طولانی نکنند.
+
+### P8-001 implementation candidate — 2026-09-20
+
+روی branch `p8-001-dashboard-policy-contracts` از baseline
+`9344d0d6a45ac77b5ea676a119b8cd7e782f00da`، policy ثابت
+`P8_DASHBOARD_V1` و قراردادهای immutable/display-only برای source identity،
+safety banner، overview، completed Paper trade rows، metrics، segmentation و
+diagnostics پیاده‌سازی شدند. قراردادها canonical serialization/SHA-256 و
+reconstruction سخت‌گیرانه دارند، schema smuggling را fail-closed رد می‌کنند و
+`INSUFFICIENT_EVIDENCE` را قابل ارتقا نمی‌کنند. focused suite شامل 21 تست است.
+این checkpoint هیچ P7 loader واقعی، renderer، network/provider transport،
+execution/account/risk capability، credential، RiskAuthorization/quantity
+authority، TRADE permission یا order endpoint اضافه نمی‌کند. P8-001 فقط پس از
+matching exact Final-HEAD Actions و merge مستقل پذیرفته می‌شود؛ P8-002 قبل از آن
+باز نیست.
 
 
 ## Economic objective clarification — 2026-09-20
