@@ -269,7 +269,7 @@ class AnalyticsContractTests(unittest.TestCase):
                 ),
             ),
             (
-                replace(good[0], event_time_ms=accepted.end_time_ms),
+                replace(good[0], event_time_ms=accepted.start_time_ms - 1),
                 good[1],
             ),
         )
