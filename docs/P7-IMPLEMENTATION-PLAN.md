@@ -243,7 +243,11 @@ carry the frozen accepted P3 index, P4 index/policy, P5 index/policy and P6
 index/policy/evidence SHA-256 identities. Each individual scenario is executed
 twice in-process and must be byte-identical; CI then executes/publishes the full
 matrix twice into separate directories and requires a recursive byte-for-byte
-diff. Evidence publication is atomic, bounded and refuses overwrite. No artifact
+diff. P7-009 also tightens the already fail-closed P7-007 timeline diagnostic
+classifier so an explicit cross-symbol fill-linkage failure is reported as
+`SOURCE_IDENTITY_INVALID` before the broader out-of-order/timeline-gap branch;
+this changes diagnostic precision only and does not relax any timeline or source
+validation. Evidence publication is atomic, bounded and refuses overwrite. No artifact
 contains local paths, SQL, traceback, secrets, raw provider material, execution
 requests or authority-bearing material. Matching final-head GitHub Actions
 evidence is required before P7-009 acceptance.
