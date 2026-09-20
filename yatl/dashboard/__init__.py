@@ -167,3 +167,21 @@ __all__ += [
     "RenderedDashboardArtifact",
     "render_dashboard",
 ]
+
+from .cli import (
+    DASHBOARD_CLI_SCHEMA_VERSION,
+    DashboardCliCode,
+    DashboardCliError,
+    dashboard_build,
+    dashboard_summary,
+    dashboard_validate,
+)
+
+__all__ += [
+    "DASHBOARD_CLI_SCHEMA_VERSION",
+    "DashboardCliCode",
+    "DashboardCliError",
+    "dashboard_build",
+    "dashboard_summary",
+    "dashboard_validate",
+]
