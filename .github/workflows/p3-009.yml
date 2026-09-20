@@ -55,6 +55,8 @@ jobs:
         run: uv run --locked python -m unittest discover -s tests -p 'test_analyst_cli.py' -v
       - name: P6 adversarial analyst matrix focused gate
         run: uv run --locked python -m unittest discover -s tests -p 'test_analyst_scenarios.py' -v
+      - name: P6 independent final audit focused gate
+        run: uv run --locked python -m unittest discover -s tests -p 'test_analyst_audit.py' -v
       - name: Compile and whitespace gates
         run: |
           uv run --locked python -m compileall -q yatl
@@ -163,6 +165,10 @@ jobs:
             --output data/p6/p6-009-evidence-replay
           diff -r data/p6/p6-009-evidence data/p6/p6-009-evidence-replay
           sha256sum data/p6/p6-009-evidence/p6-009-index.json
+      - name: P6-010 independent final audit
+        run: |
+          uv run --locked python -m yatl.analyst.audit_runtime \
+            --evidence data/p6/p6-009-evidence
       - name: Publish P5-009 adversarial evidence
         uses: actions/upload-artifact@v4
         with:

@@ -1,6 +1,6 @@
 # P6 — AI Analyst implementation plan
 
-Status: **P6-001 / P6-002 / P6-003 / P6-004 / P6-005 / P6-006 / P6-007 / P6-008 RUNTIME ACCEPTED / MERGED — P6-009 CURRENT CANDIDATE**
+Status: **P6-001 / P6-002 / P6-003 / P6-004 / P6-005 / P6-006 / P6-007 / P6-008 / P6-009 RUNTIME ACCEPTED / MERGED — P6-010 CURRENT CANDIDATE**
 
 Entry baseline: P5 runtime accepted and merged at checkpoint
 `cd5ff5651e2d1df509dba6de8bc717a3ba7bf34f`. Final P5 Actions run
@@ -185,25 +185,39 @@ provider-response corruption for BTCUSDT and ETHUSDT.
 Acceptance: two byte-identical runs, exact fail-closed outcomes and published
 canonical evidence.
 
-Current candidate: branch `p6-009-adversarial-analyst-matrix` runs eight fixed
-scenarios for both BTCUSDT and ETHUSDT: prompt injection, unsupported certainty,
-fabricated evidence, stale input, future input, schema smuggling, executable-action
-requests and corrupted provider responses. Prompt injection is required to remain
-inert untrusted data and may only produce the conservative grounded `REVIEW`
-outcome; every other adversarial scenario must reject at the exact evidence,
-response or grounding boundary and resolve to `INSUFFICIENT_DATA`. The matrix
-runs each scenario twice, requires byte-identical artifacts, publishes one
-canonical artifact per symbol/scenario plus `p6-009-index.json`, and preserves
-`INSUFFICIENT_EVIDENCE` and every P6 safety lock. No raw provider text,
-credentials, provider/network integration, execution, quantity, RiskAuthorization,
-order or trade authority is added. Matching final-head GitHub Actions evidence is
-required before P6-009 can be accepted.
+Accepted: PR #38 was squash-merged at
+`9ece941fe79139d55c5c349c3774720563a4ef28` after matching final-head Actions
+run `35503798774` passed both jobs, the **690/690** complete suite, **13/13**
+focused P6-009 tests, byte-identical dual matrix generation and the analyst safety
+scan. P6-009 published 16 canonical artifacts across eight scenarios and two
+symbols with index SHA-256
+`a5a09bdde1600c706bdc3665b46f334ae04fd5fc4fe364613cc9ed7913018524`.
+Prompt injection remained inert untrusted data; every remaining adversarial case
+failed closed at the exact evidence/response/grounding boundary. P3 remained
+`INSUFFICIENT_EVIDENCE`, and no raw provider text, credentials, provider/network,
+execution, quantity, RiskAuthorization, order or trade authority was added.
 
 ### P6-010 — Independent final audit
 
 Independently recompute P6 policy, evidence bundles, adversarial outcomes, source
 safety and accepted artifacts. P6 closes only after matching final-head GitHub
 Actions pass.
+
+Current candidate: branch `p6-010-independent-final-audit` adds a fail-closed
+audit that independently freezes and recomputes the analyst policy digest
+(`355ad5a2ed274878db4c9a56e15b14548ee6ba0c16016c7cc3b04b02120bbe44`),
+the two-symbol evidence manifest digest
+(`93dd09b73d439ed60b781f38783f2fb716689210ad66fb7ed5a395ed7b5b5f0f`)
+and the accepted P6-009 index digest
+(`a5a09bdde1600c706bdc3665b46f334ae04fd5fc4fe364613cc9ed7913018524`).
+It reads the published evidence directory twice, rejects symlinks, missing/extra
+files, size violations, noncanonical JSON, digest changes and forbidden material,
+independently checks all eight exact adversarial outcomes, replays the entire
+matrix and byte-compares every accepted artifact, and scans every analyst source
+file for execution/account/risk/network/environment capability. The CI runs this
+audit against the P6-009 evidence generated earlier in the same workflow.
+Matching final-head GitHub Actions evidence is required before P6-010 can be
+accepted and P6 can close.
 
 ## Exit condition
 
