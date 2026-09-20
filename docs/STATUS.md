@@ -1284,9 +1284,9 @@ Status: **PLANNED BEFORE IMPLEMENTATION**.
 - No code, dependency or lockfile change is part of this planning closeout.
 
 
-## P7-001 current candidate — 2026-09-20
+## P7-001 accepted implementation — 2026-09-20
 
-Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `53e3cde`**.
 
 - Entry baseline: P6 closeout plan merge checkpoint
   `99198e33713517f7257b3c1e5e1eb1d8275459bf`.
@@ -1299,5 +1299,39 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
   origins. Reports cannot create execution, risk, quantity or permission authority.
 - No P5/P6 journal ingestion, persistence, metrics, CLI, dependency or lockfile
   change is included in this checkpoint.
-- Acceptance remains pending matching final-head GitHub Actions and explicit merge
-  approval.
+- Final-head GitHub Actions run `35506503002` passed both jobs with **721/721**
+  complete tests and **18/18** focused P7-001 tests.
+- Runtime policy SHA-256:
+  `534fb28e630a8bca4ccffd4c8ef572f4aac440d4a3d05de190cf70264ac9f4d9`;
+  scope SHA-256:
+  `11d3aaf68daf8299599cd7651e558ab5bb396a24167417e94205da98a574f4a2`;
+  report SHA-256:
+  `b59f847dd18e63f4d7f2022770ca27b66e79794cd354180de3a5988c4516e2ba`.
+- PR #41 was squash-merged at
+  `53e3cde1956b130c940aebc12adaaa4d905e132f`. P7-002 opened next.
+
+
+## P7-002 current candidate — 2026-09-20
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
+
+- Entry checkpoint: P7-001 merged at
+  `53e3cde1956b130c940aebc12adaaa4d905e132f`; implementation branch
+  `p7-002-readonly-ingestion`.
+- Adds bounded read-only ingestion for the accepted P5 intent journal and sanitized
+  P6 analyst trace journal without importing execution/account/risk modules into
+  P7 production code.
+- Every source requires an expected raw SQLite SHA-256 and is opened with
+  `mode=ro` and `PRAGMA query_only=ON`. File identity/stat is checked before
+  and after ingestion; no path is emitted in the manifest.
+- P5/P6 migration versions and exact relevant table schemas are checked. P5 intent
+  digest bindings and P6 trace plus nested grounding bindings are independently
+  verified before a canonical source digest is accepted.
+- The manifest requires exactly one P5 and one P6 source, same symbol, unique sorted
+  IDs and point-in-time observations not later than the snapshot. P3 remains
+  `INSUFFICIENT_EVIDENCE`.
+- Missing, empty, symlinked, oversized, changed, newer-schema, duplicate-path,
+  tampered or provider/secret-bearing inputs fail closed.
+- No dependency or `uv.lock` change; no upstream mutation, credential, network,
+  provider, execution, RiskAuthorization, quantity, trade or order capability is
+  added.
