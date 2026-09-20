@@ -571,11 +571,13 @@ deterministic نمایش می‌دهد و open/incomplete را جدا نگه م�
 
 P8-005 روی branch `p8-005-performance-segmentation-views` performance aggregate
 و segmentation views را از accepted P7 می‌سازد. aggregate با فرمول canonical P7
-بازسازی و با SYMBOL segment روی count/PnL/cost/outcomes reconcile می‌شود. هر
-segmentation dimension باید memberهای خودش را دقیقاً یک‌بار partition کند؛ هیچ
-cross-dimension sum، causality، extrapolation یا evidence upgrade مجاز نیست.
-nullهای واقعی `UNAVAILABLE` می‌مانند. P8-006 تا پذیرش و merge مستقل P8-005 بسته
-می‌ماند.
+و Decimal precision دقیق **256** بازسازی و با SYMBOL segment روی
+count/PnL/cost/outcomes reconcile می‌شود. returnهای high-precision بدون rounding
+در `DashboardExactMetricValue` جدا نگه‌داری می‌شوند و قرارداد frozen P8-001
+تغییر نمی‌کند. هر segmentation dimension باید memberهای خودش را دقیقاً یک‌بار
+partition کند؛ هیچ cross-dimension sum، causality، extrapolation یا evidence
+upgrade مجاز نیست. nullهای واقعی `UNAVAILABLE` می‌مانند. P8-006 تا پذیرش و
+merge مستقل P8-005 بسته می‌ماند.
 
 
 ## Economic objective clarification — 2026-09-20
