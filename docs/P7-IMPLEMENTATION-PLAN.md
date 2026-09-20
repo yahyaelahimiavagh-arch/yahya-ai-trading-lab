@@ -1,6 +1,6 @@
 # P7 — Journal / Analytics implementation plan
 
-Status: **P7-001 / P7-002 / P7-003 / P7-004 RUNTIME ACCEPTED / MERGED — P7-005 CURRENT CANDIDATE**
+Status: **P7-001 / P7-002 / P7-003 / P7-004 / P7-005 RUNTIME ACCEPTED / MERGED — P7-006 CURRENT CANDIDATE**
 
 Entry baseline: P6 runtime accepted and merged at checkpoint
 `f07f2209cac5b46be8f9d74da2d162925ed8ab65`. Final P6 Actions run
@@ -151,22 +151,14 @@ insufficient samples remain explicitly undefined/insufficient; no extrapolation.
 Acceptance: Decimal-safe deterministic arithmetic, empty/zero-denominator tests,
 metric monotonicity checks and exact replay.
 
-Current candidate: branch `p7-005-performance-metrics` adds completed-trade-only
-descriptive metrics over accepted P7-004 reconstruction. Each per-trade metric is
-bound to its `trade_sha256` and carries the accepted entry gross quote, exit
-gross quote and entry cash outflow required to independently recompute both return
-denominators. Aggregate `gross_return` is capital-weighted over accepted
-execution gross quotes (before fees; after accepted slippage); aggregate
-`net_return` is realized completed-trade cash PnL divided by accepted entry cash
-outflow. The report also includes realized PnL, fee/slippage/cost totals,
-win/loss/breakeven counts, win rate, completed-trade realized-PnL drawdown in quote
-units, holding-time bounds/mean and best/worst trade PnL. No annualization,
-volatility extrapolation, Sharpe-like score, forecast or profitability/readiness
-claim is produced. Empty/open-only completed sets are explicitly
-`INSUFFICIENT_DATA` with returns/win rate/holding averages undefined rather than
-fabricated. All arithmetic uses Decimal and reports are self-recomputing from
-their per-trade metric records. Matching final-head GitHub Actions evidence is
-required before P7-005 acceptance.
+Accepted: PR #45 was squash-merged at
+`7c623e8056e2f7bc0ea319816ebb95d9cabf06e1` after matching final-head Actions
+run `35509873943` passed both jobs, the **772/772** complete suite and **11/11**
+focused P7-005 tests. The accepted runtime preserved one completed Paper trade,
+`replay_equal=true` and `no_write=true`, with metrics SHA-256
+`d2aa2ad3cf2b29aef0eb5ce1db21fb1dfda6ebeef2dfa142d61bda815f6b3dbb`.
+Return denominators remain self-verifying from accepted trade fields; empty
+completed-trade populations remain explicitly `INSUFFICIENT_DATA`.
 
 ### P7-006 — Strategy / evidence segmentation
 
@@ -177,6 +169,26 @@ describe correlations but cannot assert causality or upgrade
 
 Acceptance: exact partition conservation, no double counting, stable segment IDs
 and conservative insufficient-evidence labeling.
+
+Current candidate: branch `p7-006-evidence-segmentation` partitions two distinct
+accepted populations without inventing a cross-population causal link. Completed
+Paper trades are independently partitioned by symbol, strategy identity and
+evidence label. Because accepted durable P5 execution evidence stores
+authorization/intent/decision hashes but does not persist a strategy identifier,
+the strategy dimension is explicitly
+`UNATTRIBUTED_DURABLE_P5`; no strategy name is inferred from P3 candidates or
+opaque hashes. The evidence-label partition remains
+`INSUFFICIENT_EVIDENCE`. Sanitized P6 traces form a separate population and are
+partitioned by accepted disposition, grounding code and trace acceptance. There
+is no trade-to-P6-disposition attribution because the accepted durable evidence
+does not contain a cryptographic trade-to-trace link. Each partition family must
+cover its source population exactly once with no duplicate membership. Segment
+IDs depend only on population/dimension/value and therefore remain stable across
+membership changes; segment SHA-256 includes the exact members and summary.
+Trade-segment summaries conserve realized PnL, accepted costs and outcome counts.
+The report is bound to the immutable P7-005 source metrics contract and canonical
+P6 source SHA-256. Matching final-head GitHub Actions evidence is required before
+P7-006 acceptance.
 
 ### P7-007 — Reconciliation and analytics-quality gate
 

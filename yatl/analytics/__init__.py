@@ -125,3 +125,31 @@ __all__ += [
     "TradePerformanceMetric",
     "calculate_performance_metrics",
 ]
+
+from .segmentation import (
+    SEGMENTATION_SCHEMA_VERSION,
+    STRATEGY_ATTRIBUTION_STATUS,
+    UNATTRIBUTED_STRATEGY_IDENTITY,
+    AnalystSegment,
+    AnalystTraceDimensionRecord,
+    SegmentDimension,
+    SegmentPopulation,
+    SegmentationError,
+    SegmentationReport,
+    TradeSegment,
+    build_segmentation,
+)
+
+__all__ += [
+    "SEGMENTATION_SCHEMA_VERSION",
+    "STRATEGY_ATTRIBUTION_STATUS",
+    "UNATTRIBUTED_STRATEGY_IDENTITY",
+    "AnalystSegment",
+    "AnalystTraceDimensionRecord",
+    "SegmentDimension",
+    "SegmentPopulation",
+    "SegmentationError",
+    "SegmentationReport",
+    "TradeSegment",
+    "build_segmentation",
+]

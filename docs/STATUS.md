@@ -1390,9 +1390,9 @@ Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `2fece9c`**.
   quantity authority, no TRADE permission/order endpoint and no AI execution.
 
 
-## P7-005 current candidate — 2026-09-20
+## P7-005 accepted implementation — 2026-09-20
 
-Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `7c623e8`**.
 
 - Entry checkpoint: P7-004 merged at
   `2fece9cc70bf6762a24540311876eb6e6d2be51e`; branch
@@ -1415,3 +1415,30 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
   in P7 metrics production code, no credentials/network/provider, no
   RiskAuthorization/quantity authority, TRADE permission/order endpoint or AI
   execution.
+
+
+## P7-006 current candidate — 2026-09-20
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
+
+- Entry checkpoint: P7-005 merged at
+  `7c623e8056e2f7bc0ea319816ebb95d9cabf06e1`; branch
+  `p7-006-evidence-segmentation`.
+- Completed-trade analytics and sanitized P6 traces remain separate populations.
+  Each dimension family must conserve every member exactly once with no duplicate
+  membership.
+- Trade partitions: symbol, strategy identity, evidence label. Durable P5 does
+  not persist a strategy identifier, so strategy attribution is explicitly
+  `UNATTRIBUTED_DURABLE_P5`; opaque hashes are not renamed into strategies.
+  Evidence stays `INSUFFICIENT_EVIDENCE`.
+- Analyst-trace partitions: disposition, grounding code and accepted/rejected
+  state. No trade-to-analyst-disposition link or causal statement is invented.
+- Stable segment IDs hash only population/dimension/value; exact membership and
+  summary material use a separate segment SHA-256.
+- Trade-segment summaries conserve accepted realized PnL, accepted fee/slippage
+  cost and win/loss/breakeven counts.
+- Report is bound to immutable P7-005 source metrics and canonical sanitized P6
+  source SHA-256; replay and source files remain read-only.
+- No dependency or `uv.lock` change; no execution/backtest/account/risk import,
+  credentials/network/provider, RiskAuthorization/quantity authority, TRADE
+  permission/order endpoint or AI execution.
