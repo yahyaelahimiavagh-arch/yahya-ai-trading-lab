@@ -1363,9 +1363,9 @@ Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `9d22817`**.
   execution authority is added.
 
 
-## P7-004 current candidate — 2026-09-20
+## P7-004 accepted implementation — 2026-09-20
 
-Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `2fece9c`**.
 
 - Entry checkpoint: P7-003 merged at
   `9d22817d0ac76c4e724120d9189de3100ef03b58`; branch
@@ -1388,3 +1388,30 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
 - No dependency or `uv.lock` change; no execution/backtest import in P7 trade
   production code, no credentials/network/provider, no RiskAuthorization or
   quantity authority, no TRADE permission/order endpoint and no AI execution.
+
+
+## P7-005 current candidate — 2026-09-20
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE APPROVAL PENDING**.
+
+- Entry checkpoint: P7-004 merged at
+  `2fece9cc70bf6762a24540311876eb6e6d2be51e`; branch
+  `p7-005-performance-metrics`.
+- Computes deterministic descriptive metrics only from reconstructed completed
+  P7-004 Paper trades; open trades are flagged but excluded from completed-trade
+  performance denominators.
+- Gross return is capital-weighted from accepted execution `gross_quote` values;
+  net return is accepted realized cash PnL divided by accepted entry cash outflow.
+  Per-trade denominator bases are retained so the report self-recomputes exactly.
+- Includes realized/gross PnL, fees, slippage, total cost, win/loss/breakeven
+  counts, win rate, maximum cumulative-realized-PnL drawdown in quote units,
+  holding-time aggregates and best/worst trade PnL.
+- Empty/no-completed-trade inputs remain `INSUFFICIENT_DATA`; denominator-based
+  metrics are `null`. No annualization, extrapolation, volatility score, forecast
+  or profitability/readiness conclusion is produced.
+- Decimal-only arithmetic, deterministic report SHA-256, replay/no-write,
+  monotonic aggregate checks and report-tamper rejection are covered.
+- No dependency or `uv.lock` change; no execution/backtest/account/risk import
+  in P7 metrics production code, no credentials/network/provider, no
+  RiskAuthorization/quantity authority, TRADE permission/order endpoint or AI
+  execution.

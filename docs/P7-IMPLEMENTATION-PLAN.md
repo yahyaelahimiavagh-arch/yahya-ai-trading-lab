@@ -1,6 +1,6 @@
 # P7 — Journal / Analytics implementation plan
 
-Status: **P7-001 / P7-002 / P7-003 RUNTIME ACCEPTED / MERGED — P7-004 CURRENT CANDIDATE**
+Status: **P7-001 / P7-002 / P7-003 / P7-004 RUNTIME ACCEPTED / MERGED — P7-005 CURRENT CANDIDATE**
 
 Entry baseline: P6 runtime accepted and merged at checkpoint
 `f07f2209cac5b46be8f9d74da2d162925ed8ab65`. Final P6 Actions run
@@ -130,23 +130,16 @@ silently closed.
 Acceptance: exact P2/P5 economics preservation, duplicate/orphan rejection,
 open-trade handling and deterministic trade SHA-256.
 
-Current candidate: branch `p7-004-completed-trades` reconstructs long-only Paper
-episodes only after the P7-003 timeline and P5 durable fill/portfolio material
-have passed read-only validation. Each reconstructed fill copies the accepted P5
-identity, action, quantity, timestamps, execution/reference price, fee, slippage,
-cash delta and asset delta verbatim. A completed trade is only an accepted
-`ENTER_LONG` followed by the full-quantity accepted `EXIT_LONG`; realized
-PnL is derived solely from those already-accepted cash deltas and is reconciled
-to the final P5 portfolio `realized_pnl_quote`. Fill fees/slippage are likewise
-reconciled to the final portfolio totals. An unmatched accepted entry remains an
-explicit `OPEN` trade with `realized_pnl_quote=null`; it is never silently
-closed. The final LONG position quantity and cost basis must reconcile to that
-open accepted entry; FLAT books must reconcile to zero asset/cost basis and the
-accepted closed-trade count. Fabricated portfolio PnL, missing exits, orphan
-fills, overlapping episodes, cross-symbol sources or changed upstream evidence
-fail closed. No P2 cost model, execution module or new economics is imported into
-P7 production code. Matching final-head GitHub Actions evidence is required
-before P7-004 acceptance.
+Accepted: PR #44 was squash-merged at
+`2fece9cc70bf6762a24540311876eb6e6d2be51e` after matching final-head Actions
+run `35509089440` passed both jobs, the **761/761** complete suite and **11/11**
+focused P7-004 tests. The runtime reconstructed one completed FLAT Paper trade
+with `replay_equal=true` and `no_write=true`, trade SHA-256
+`f08daef518cd64108bc6b135e77d4fb088af0224ec97b851cdb3189b17902b54`
+and reconstruction SHA-256
+`2162b742d014f9cb00dd959fae04309a7aaa6824cdd65e79037166c5c384ecab`.
+Normal closed, still-open and same-bar protective-exit fixtures all passed with
+exact accepted P2/P5 economics reconciliation.
 
 ### P7-005 — Deterministic performance metrics
 
@@ -157,6 +150,23 @@ insufficient samples remain explicitly undefined/insufficient; no extrapolation.
 
 Acceptance: Decimal-safe deterministic arithmetic, empty/zero-denominator tests,
 metric monotonicity checks and exact replay.
+
+Current candidate: branch `p7-005-performance-metrics` adds completed-trade-only
+descriptive metrics over accepted P7-004 reconstruction. Each per-trade metric is
+bound to its `trade_sha256` and carries the accepted entry gross quote, exit
+gross quote and entry cash outflow required to independently recompute both return
+denominators. Aggregate `gross_return` is capital-weighted over accepted
+execution gross quotes (before fees; after accepted slippage); aggregate
+`net_return` is realized completed-trade cash PnL divided by accepted entry cash
+outflow. The report also includes realized PnL, fee/slippage/cost totals,
+win/loss/breakeven counts, win rate, completed-trade realized-PnL drawdown in quote
+units, holding-time bounds/mean and best/worst trade PnL. No annualization,
+volatility extrapolation, Sharpe-like score, forecast or profitability/readiness
+claim is produced. Empty/open-only completed sets are explicitly
+`INSUFFICIENT_DATA` with returns/win rate/holding averages undefined rather than
+fabricated. All arithmetic uses Decimal and reports are self-recomputing from
+their per-trade metric records. Matching final-head GitHub Actions evidence is
+required before P7-005 acceptance.
 
 ### P7-006 — Strategy / evidence segmentation
 

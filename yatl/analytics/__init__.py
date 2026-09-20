@@ -105,3 +105,23 @@ __all__ += [
     "TradeReconstructionError",
     "reconstruct_paper_trades",
 ]
+
+from .metrics import (
+    METRICS_SCHEMA_VERSION,
+    MAX_COMPLETED_TRADES,
+    PerformanceMetricsError,
+    PerformanceMetricsReport,
+    PerformanceMetricsStatus,
+    TradePerformanceMetric,
+    calculate_performance_metrics,
+)
+
+__all__ += [
+    "METRICS_SCHEMA_VERSION",
+    "MAX_COMPLETED_TRADES",
+    "PerformanceMetricsError",
+    "PerformanceMetricsReport",
+    "PerformanceMetricsStatus",
+    "TradePerformanceMetric",
+    "calculate_performance_metrics",
+]
