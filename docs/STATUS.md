@@ -1237,3 +1237,48 @@ NO AI DIRECT EXECUTION. Current P3 candidate strategies remain
 
 Next phase: **P6 AI Analyst**. P6 begins analysis-only and may not call or influence
 the P5 executor directly.
+
+
+## P6 final closeout — 2026-09-20
+
+Status: **P6 RUNTIME ACCEPTED AND MERGED — PHASE CLOSED**.
+
+- P6-009 PR #38 final-head `200097635eeb12135b7c4d26f4045527aeed0145`;
+  Actions `35503798774` PASS; **690/690** complete and **13/13** focused;
+  deterministic 16-run adversarial matrix with byte-identical replay; squash-merged
+  at `9ece941fe79139d55c5c349c3774720563a4ef28`.
+- P6-010 PR #39 final-head `b3a3c677eed854ee9738e67d5c06dcb96236be22`;
+  Actions `35504753305` PASS; **703/703** complete and **13/13** focused
+  independent-audit tests; squash-merged at final P6 checkpoint
+  `f07f2209cac5b46be8f9d74da2d162925ed8ab65`.
+- Final P6 independent audit: symbols=2, scenarios=8, runs=16, files=17,
+  exact_outcomes=true, replay_equal=true, source_safe=true.
+- P6-009 index SHA-256:
+  `a5a09bdde1600c706bdc3665b46f334ae04fd5fc4fe364613cc9ed7913018524`.
+- P6 analyst-policy SHA-256:
+  `355ad5a2ed274878db4c9a56e15b14548ee6ba0c16016c7cc3b04b02120bbe44`.
+- P6 evidence-manifest SHA-256:
+  `93dd09b73d439ed60b781f38783f2fb716689210ad66fb7ed5a395ed7b5b5f0f`.
+- P3 remains `INSUFFICIENT_EVIDENCE` for TREND_PULLBACK and RANGE_BREAKOUT.
+- PAPER ONLY; LIVE_MASTER_LOCK=OFF; NO FUTURES; NO LEVERAGE; NO WITHDRAWAL API;
+  NO TRADE PERMISSION; NO ORDER ENDPOINTS; NO AI DIRECT EXECUTION.
+
+Next phase: **P7 Journal / Analytics**. P7 is read-only over accepted durable
+evidence and may not modify P5/P6 journals or create execution authority.
+
+## P7 planning baseline — 2026-09-20
+
+Status: **PLANNED BEFORE IMPLEMENTATION**.
+
+- Entry baseline: authoritative `main` commit
+  `f07f2209cac5b46be8f9d74da2d162925ed8ab65`.
+- `P7-IMPLEMENTATION-PLAN.md` freezes ten ordered checkpoints for analytics
+  policy/contracts, read-only ingestion, unified timeline, trade reconstruction,
+  performance metrics, segmentation, reconciliation/quality, guarded export/CLI,
+  adversarial matrix and independent final audit.
+- P7 must consume only accepted/canonical P5/P6 evidence or explicit immutable
+  fixtures; it cannot mutate upstream SQLite journals.
+- P7 outputs are descriptive analytics only and cannot upgrade P3
+  `INSUFFICIENT_EVIDENCE`, create RiskAuthorization, quantity, order, permission
+  changes or Live readiness.
+- No code, dependency or lockfile change is part of this planning closeout.

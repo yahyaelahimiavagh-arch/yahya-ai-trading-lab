@@ -1,13 +1,13 @@
 # Yahya AI Trading Lab
 
-P0 تا P5 با شواهد runtime پذیرفته و روی `main` بسته شده‌اند. P5-010 ممیزی مستقل
-نهایی اجرای Local Paper را با **524/524** تست روی final-head پس از rebase و
-GitHub Actions run `35449752993` تکمیل کرد. PRهای #26، #27 و #28 به‌ترتیب
-squash-merge شدند و checkpoint نهایی P5 روی `main` برابر است با
-`cd5ff5651e2d1df509dba6de8bc717a3ba7bf34f`.
-P6 — AI Analyst مرحله بعدی است. P6 فقط تحلیل ساختاریافته و research-only خواهد بود
-و هیچ دسترسی مستقیم یا غیرمستقیم به executor، credential، TRADE permission یا
-exchange order endpoint ندارد.
+P0 تا P6 با شواهد runtime پذیرفته و روی `main` بسته شده‌اند. P6-010 ممیزی مستقل
+نهایی AI Analyst را با **703/703** تست روی final-head و GitHub Actions run
+`35504753305` تکمیل کرد. PR #39 squash-merge شد و checkpoint نهایی P6 روی
+`main` برابر است با
+`f07f2209cac5b46be8f9d74da2d162925ed8ab65`.
+P7 — Journal / Analytics مرحله بعدی است. P7 فقط read-only analytics و گزارش
+قابل ممیزی روی شواهد پذیرفته‌شده P5/P6 می‌سازد و هیچ credential، network/provider،
+TRADE permission، order endpoint یا مسیر اجرای جدیدی اضافه نمی‌کند.
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
 
@@ -44,16 +44,18 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 ## مسیر بعدی
 
 مرجع ترتیب اجرا: [نقشه پروژه](docs/MASTER-PLAN.md).
-وضعیت جاری **P0 تا P5 پذیرفته‌شده در runtime و merge‌شده روی main** است. P1 در `4e77e34` بسته شد.
+وضعیت جاری **P0 تا P6 پذیرفته‌شده در runtime و merge‌شده روی main** است. P1 در `4e77e34` بسته شد.
 P2 بارگذاری point-in-time، ساعت رویداد، fill محافظه‌کارانه، هزینه، دفتر پرتفوی،
 معیارها، artifact تکرارپذیر و شش سناریوی واقعی BTC/ETH را تکمیل کرده است. ممیزی
 نهایی P2 همه این gateها را بازسازی و تأیید می‌کند. P3 در `90d5847` بسته شد؛
 P4-001 تا P4-010 نیز به‌ترتیب پذیرفته و روی `main` merge شده‌اند. P4 در
 checkpoint `f3a5575` بسته شد. P5-001 تا P5-010 نیز به‌ترتیب runtime accepted
 و merge شده‌اند؛ P5 در checkpoint
-`cd5ff5651e2d1df509dba6de8bc717a3ba7bf34f` بسته شد. مرحله بعدی P6 — AI
-Analyst است. ترتیب P5 در `docs/P5-IMPLEMENTATION-PLAN.md` و برنامه P6 در
-`docs/P6-IMPLEMENTATION-PLAN.md` ثبت می‌شوند.
+`cd5ff5651e2d1df509dba6de8bc717a3ba7bf34f` بسته شد. P6-001 تا P6-010 نیز
+به‌ترتیب runtime accepted و merge شده‌اند؛ P6 در checkpoint
+`f07f2209cac5b46be8f9d74da2d162925ed8ab65` بسته شد. مرحله بعدی P7 —
+Journal / Analytics است. برنامه P6 در `docs/P6-IMPLEMENTATION-PLAN.md` و
+برنامه P7 در `docs/P7-IMPLEMENTATION-PLAN.md` ثبت می‌شوند.
 
 P3-001 قرارداد research-only سیگنال را اضافه می‌کند. تصمیم فقط یکی از `NO_TRADE`،
 `ENTER_LONG` یا `EXIT_LONG` است و به context نقطه‌زمانی و digest آن متصل می‌شود.
