@@ -30,8 +30,9 @@ EXPECTED_INDEX_SHA256 = (
 EXPECTED_POLICY_SHA256 = (
     "534fb28e630a8bca4ccffd4c8ef572f4aac440d4a3d05de190cf70264ac9f4d9"
 )
-# Frozen after the first independent P7-010 candidate run and then required.
-EXPECTED_CHAIN_SET_SHA256 = ""
+EXPECTED_CHAIN_SET_SHA256 = (
+    "76face2aa41fbea1dc0ae718964eb77b5990d258beb41312c74132c8bb5c1209"
+)
 
 EXPECTED_BTC_CHAIN = {
     "manifest_sha256":
