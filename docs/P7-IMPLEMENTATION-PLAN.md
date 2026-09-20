@@ -1,6 +1,6 @@
 # P7 — Journal / Analytics implementation plan
 
-Status: **P7-001 / P7-002 / P7-003 / P7-004 / P7-005 / P7-006 / P7-007 / P7-008 / P7-009 RUNTIME ACCEPTED / MERGED — P7-010 CURRENT CANDIDATE**
+Status: **P7-001 THROUGH P7-010 RUNTIME ACCEPTED / MERGED — P7 CLOSED; P8 NEXT**
 
 Entry baseline: P6 runtime accepted and merged at checkpoint
 `f07f2209cac5b46be8f9d74da2d162925ed8ab65`. Final P6 Actions run
@@ -243,30 +243,21 @@ Independently recompute the P7 policy, ingestion identities, reconstructed trade
 metrics, segmentation, adversarial outcomes, source safety and accepted artifacts.
 P7 closes only after matching final-head GitHub Actions pass.
 
-Current candidate: branch `p7-010-independent-final-audit` independently audits
-the complete P7 boundary. It reconstructs the frozen `P7_ANALYTICS_V1` policy
-and requires policy SHA-256
-`534fb28e630a8bca4ccffd4c8ef572f4aac440d4a3d05de190cf70264ac9f4d9`.
-It reads the P7-009 evidence directory twice, requires exactly 19 nonsymlink
-canonical JSON files under strict per-file/total bounds, independently checks
-every scenario's exact expected/observed outcome and fixed safety fields, verifies
-every index-to-file digest, then independently regenerates the full adversarial
-matrix and requires exact byte equality with published evidence. The audit also
-rebuilds healthy closed-trade analytics chains separately for BTCUSDT and
-ETHUSDT: ingestion manifest, unified timeline, Paper trade reconstruction,
-performance metrics, segmentation, quality gate and sanitized export identity are
-each executed twice and must match exactly without changing either source
-database. The BTC chain is compared against the previously accepted P7-007/P7-008
-frozen runtime digests; both-symbol chain identities are then aggregated into one
-canonical chain-set SHA-256. Source safety is scanned across the full
-`yatl/analytics` package for execution/backtest/account/risk imports,
-order/withdrawal endpoints, environment credentials and network/provider clients.
-The discovery candidate run `35516730233` independently recomputed the
-two-symbol chain-set SHA-256 as
-`76face2aa41fbea1dc0ae718964eb77b5990d258beb41312c74132c8bb5c1209`. That digest is now frozen in code and is required by both the
-audit result contract and focused regression tests. The discovery run is not
-acceptance evidence; a replacement exact Final-HEAD run is required before
-P7-010 acceptance.
+Accepted: PR #50 was squash-merged at
+`93b9d87cf23fe8a52470c4a01b480b0935be87c3` after matching final-head Actions
+run `35516951238` passed both jobs, the **842/842** complete suite and **17/17**
+focused P7-010 tests. The independent audit rebuilt the P7 policy, all 19 P7-009
+evidence files and exact outcomes, and healthy analytics chains for BTCUSDT and
+ETHUSDT through ingestion, timeline, trade reconstruction, metrics, segmentation,
+quality and sanitized export identity. It required `replay_equal=true`,
+`chain_recomputed=true`, `no_write=true` and `source_safe=true`. Frozen P7
+policy SHA-256 is
+`534fb28e630a8bca4ccffd4c8ef572f4aac440d4a3d05de190cf70264ac9f4d9`;
+P7-009 index SHA-256 is
+`f13a322e7071b48a8b05182fceee8024ee6d22d6b08a7b223d337e5f7850e60b`;
+and the accepted BTCUSDT+ETHUSDT chain-set SHA-256 is
+`76face2aa41fbea1dc0ae718964eb77b5990d258beb41312c74132c8bb5c1209`.
+Discovery run `35516730233` is superseded and is not acceptance evidence.
 
 ## Exit condition
 
@@ -278,3 +269,19 @@ create execution/risk authority fails closed.
 P7 completion does not grant TRADE permission, does not open Live, does not change
 P3 evidence labels and does not prove strategy profitability. P8 Dashboard may
 consume only accepted/sanitized P7 outputs.
+
+
+## Closure
+
+P7 is **CLOSED** at checkpoint
+`93b9d87cf23fe8a52470c4a01b480b0935be87c3`. Its exit condition is satisfied:
+accepted P5/P6 evidence is consumed read-only and converted into deterministic,
+reproducible, reconciled analytics while mutation, fabricated performance,
+evidence-label upgrade and execution/risk-authority attempts fail closed.
+
+This closure does **not** establish strategy edge or profitability, does not grant
+TRADE permission and does not open Live. Current P3 candidates remain
+`INSUFFICIENT_EVIDENCE`.
+
+Next phase: **P8 — Dashboard**, governed by
+`docs/P8-IMPLEMENTATION-PLAN.md`, consuming accepted/sanitized P7 export only.
