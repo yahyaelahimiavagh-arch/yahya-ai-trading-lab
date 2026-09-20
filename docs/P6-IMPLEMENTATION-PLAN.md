@@ -1,6 +1,6 @@
 # P6 — AI Analyst implementation plan
 
-Status: **P6-001 / P6-002 / P6-003 RUNTIME ACCEPTED / MERGED — P6-004 CURRENT CANDIDATE**
+Status: **P6-001 / P6-002 / P6-003 / P6-004 RUNTIME ACCEPTED / MERGED — P6-005 CURRENT CANDIDATE**
 
 Entry baseline: P5 runtime accepted and merged at checkpoint
 `cd5ff5651e2d1df509dba6de8bc717a3ba7bf34f`. Final P5 Actions run
@@ -93,15 +93,14 @@ only from the accepted evidence bundle.
 Acceptance: prompt injection strings remain inert data, bounded size, deterministic
 materialization and no secret/environment access.
 
-Current candidate: branch `p6-004-model-request-boundary` adds an offline,
-provider-neutral request envelope generated solely from an accepted P6-002 evidence
-bundle. Fixed analyst instructions are code-owned and never derived from evidence;
-bundle strings are serialized only beneath an explicit `UNTRUSTED_DATA_ONLY`
-material boundary. Material is canonical JSON with a fixed byte ceiling, digest
-binding and allowlisted accepted evidence only. The envelope declares
-`transport=NONE` and has no provider, network, environment, credential, account,
-execution, quantity, RiskAuthorization, order or trade capability. Matching
-final-head GitHub Actions evidence is required before P6-004 can be accepted.
+Accepted: PR #33 was squash-merged at
+`0a5a3ddf209938cfd33e65064fae146682519e9e` after matching final-head Actions
+run `35467414835` passed both jobs, the **592/592** complete suite, **17/17**
+focused P6-004 tests, the analyst safety scan and deterministic request runtime.
+The accepted request boundary keeps provider-like material offline with
+`transport=NONE`, treats bundle strings as `UNTRUSTED_DATA_ONLY`, preserves
+`INSUFFICIENT_EVIDENCE`, and grants no execution, quantity, RiskAuthorization,
+order, credential, network or trade authority.
 
 ### P6-005 — Strict model-response schema
 
@@ -110,6 +109,18 @@ quantities, credentials, URLs/actions and malformed or over-sized responses.
 
 Acceptance: adversarial response matrix, canonical validated output and
 fail-closed fallback to `INSUFFICIENT_DATA`.
+
+Current candidate: branch `p6-005-strict-model-response-schema` adds a strict
+offline parser for untrusted model text. Only an exact JSON schema containing
+typed claims is accepted; unknown fields, duplicate keys, malformed or over-sized
+payloads, unsupported claim kinds, executable-action material, quantities,
+credentials and URL-like content fail closed. Rejected raw text is not retained;
+only a SHA-256 identity and deterministic rejection code remain. Accepted output is
+canonicalized and bound to the reconstructed `AnalystReport`. Because current P3
+evidence remains `INSUFFICIENT_EVIDENCE`, accepted responses must preserve an
+explicit uncertainty claim and resolve to `REVIEW`; every rejected response falls
+back to an empty `INSUFFICIENT_DATA` report. Matching final-head GitHub Actions
+evidence is required before P6-005 can be accepted.
 
 ### P6-006 — Claim/evidence grounding gate
 
