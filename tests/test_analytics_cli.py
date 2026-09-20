@@ -239,6 +239,15 @@ class AnalyticsCliTests(unittest.TestCase):
         self.assertNotIn(marker, output.getvalue())
         self.assertNotIn(str(self.spec), output.getvalue())
 
+    def test_noncanonical_spec_is_rejected(self):
+        record = self.spec_record()
+        self.spec.write_text(
+            json.dumps(record, indent=2, sort_keys=True),
+            encoding="utf-8",
+        )
+        with self.assertRaises(AnalyticsCliError):
+            load_analytics_spec(self.spec)
+
     def test_duplicate_json_keys_and_oversized_spec_are_rejected(self):
         self.spec.write_text(
             '{"schema_version":1,"schema_version":1}',
