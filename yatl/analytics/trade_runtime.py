@@ -4,6 +4,7 @@ import hashlib
 import json
 import sqlite3
 import tempfile
+from decimal import Decimal
 from pathlib import Path
 
 from .contracts import AnalyticsSourceKind
@@ -136,16 +137,16 @@ def _close_fixture(path):
 
     entry_cash = entry_payload["cash_delta"]
     realized = str(
-        __import__("decimal").Decimal(entry_cash)
-        + __import__("decimal").Decimal(exit_payload["cash_delta"])
+        Decimal(entry_cash)
+        + Decimal(exit_payload["cash_delta"])
     )
     total_fee = str(
-        __import__("decimal").Decimal(entry_payload["fee_quote"])
-        + __import__("decimal").Decimal(exit_payload["fee_quote"])
+        Decimal(entry_payload["fee_quote"])
+        + Decimal(exit_payload["fee_quote"])
     )
     total_slippage = str(
-        __import__("decimal").Decimal(entry_payload["slippage_quote"])
-        + __import__("decimal").Decimal(exit_payload["slippage_quote"])
+        Decimal(entry_payload["slippage_quote"])
+        + Decimal(exit_payload["slippage_quote"])
     )
     current = connection.execute(
         "SELECT spec_sha256 FROM local_paper_portfolios WHERE symbol = 'BTCUSDT'"
