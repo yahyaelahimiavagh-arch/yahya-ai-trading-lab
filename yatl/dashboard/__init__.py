@@ -151,3 +151,19 @@ __all__ += [
     "QualityDiagnosticProjectionError",
     "project_quality_diagnostics",
 ]
+
+from .renderer import (
+    MAX_DASHBOARD_BYTES,
+    RENDERER_SCHEMA_VERSION,
+    DashboardRenderError,
+    RenderedDashboardArtifact,
+    render_dashboard,
+)
+
+__all__ += [
+    "MAX_DASHBOARD_BYTES",
+    "RENDERER_SCHEMA_VERSION",
+    "DashboardRenderError",
+    "RenderedDashboardArtifact",
+    "render_dashboard",
+]
