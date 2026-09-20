@@ -1,6 +1,6 @@
 # P8 — Dashboard implementation plan
 
-Status: **P8-008 RUNTIME ACCEPTED / MERGED — P8-009 CURRENT CANDIDATE**
+Status: **P8-009 RUNTIME ACCEPTED / MERGED — P8-010 CURRENT CANDIDATE**
 
 Entry baseline: P7 runtime accepted and merged at checkpoint
 `93b9d87cf23fe8a52470c4a01b480b0935be87c3`. Final P7 Actions run
@@ -241,57 +241,58 @@ smuggling and dashboard artifact mutation.
 Acceptance: exact fail-closed outcomes, byte-identical replay, canonical evidence,
 XSS/remote-resource prevention and unchanged accepted P7 identities.
 
-Current candidate: branch `p8-009-adversarial-dashboard-matrix` from accepted
-P8-008 checkpoint `20df93ead290d918ce55c93c5f3beab090a14f62`.
-
-P8-009 runs a fixed **9-scenario × 2-symbol = 18-run** deterministic matrix over
-real accepted P7 exports for both `BTCUSDT` and `ETHUSDT`. The accepted fixtures
-are produced by the P7 quality/export pipeline in runtime/test-only code; the
-production scenario engine itself imports no P7 analytics runtime/database.
-
-Frozen scenarios:
-
-1. `P7_EXPORT_TAMPERING`
-2. `FABRICATED_QUALITY_PASS`
-3. `EVIDENCE_LABEL_UPGRADE`
-4. `CROSS_SYMBOL_ROW_INJECTION`
-5. `DUPLICATE_TRADE_IDENTITY`
-6. `OVERSIZED_INPUT_OUTPUT`
-7. `HTML_SCRIPT_INJECTION`
-8. `PATH_PRIVATE_MATERIAL_SMUGGLING`
-9. `DASHBOARD_ARTIFACT_MUTATION`
-
-Each scenario operates on a disposable attack copy while the accepted source file
-is retained and compared byte-for-byte before/after. Every scenario is executed
-twice; the canonical artifact bytes must match exactly. Cross-symbol and duplicate
-trade attempts target the frozen P8 trade-table contracts directly. HTML/script
-payloads are allowed through the display contract but must appear only escaped in
-the rendered HTML with no executable/remote tag. Oversized input and output test
-both the 8 MiB P7-loader bound and 4 MiB renderer bound. Private/path smuggling
-must fail source validation and CLI errors must remain redacted.
-
-Every run emits one canonical redacted JSON artifact containing the exact expected
-and observed safe outcome plus the unchanged accepted source identity
-(export/quality/metrics/segmentation SHA-256). The matrix index binds all **18**
-scenario files and both accepted P7 identities. Evidence publication contains
-exactly **19 files** and refuses overwrite.
-
-Focused suite: **37 tests**. Runtime/evidence gate:
-
-```powershell
-mkdir -p data/p8
-uv run --locked python -m yatl.dashboard.scenarios_runtime --output data/p8/p8-009-evidence
-```
-
-The workflow uploads `data/p8/p8-009-evidence/` as the
-`p8-009-evidence` artifact. No dependency or `uv.lock` change. Exact final-head
-GitHub Actions evidence is required before P8-009 acceptance or merge.
+Accepted: PR #60 was squash-merged at
+`503e78dd6fb741f33dce838b70ff4c2c4fea3452` after matching final-head Actions
+run `35533242415` passed both jobs, the **1107/1107** complete suite and
+**37/37** focused P8-009 tests. The matrix completed **18/18** deterministic runs,
+published exactly **19** canonical evidence files and froze index SHA-256
+`38bc0e1eafedd44b1776ecec1a65fc48352a3155341dfca323641686739a8608`.
+Accepted export identities remained:
+BTCUSDT `8e11935814a57389399eea4046beed2f98b7bb448b25465740ef868f7e4dc456`
+and ETHUSDT `1ea65455e44f8723709f504f585da965683558608909bd2da75ab561c5e9c092`.
+No dependency or `uv.lock` change was made.
 
 ### P8-010 — Independent final audit
 
 Independently recompute the P8 policy, P7 export identity, all dashboard view
 projections, renderer identity, adversarial outcomes, source safety and published
 artifacts. P8 closes only after a matching final-head GitHub Actions run passes.
+
+Current candidate: branch `p8-010-independent-final-audit` from accepted P8-009
+checkpoint `503e78dd6fb741f33dce838b70ff4c2c4fea3452`.
+
+The production audit imports only P8 Dashboard modules. It accepts the two
+sanitized accepted P7 export files, the published P8-009 evidence directory and two
+published static Dashboard HTML files. It independently verifies:
+
+- frozen P8 policy SHA-256
+  `b4534112975f519714592ad7468c950eb6aa112f49b9aee80b1d15bf51804c2e`;
+- frozen accepted BTCUSDT and ETHUSDT P7 export SHA-256 values;
+- frozen combined export-set SHA-256
+  `6f884ea930cd929292f000e8ada2da370b4428d7173a1f3d2423deacc6523439`;
+- deterministic replay of quality, overview, completed trades,
+  performance/segmentation and renderer projections for both symbols;
+- exact byte/hash equality of the published HTML against independently rendered
+  artifacts plus no executable/remote-resource markup;
+- deterministic replay of the full P8-009 matrix and exact byte-for-byte equality
+  of all **19** published evidence files;
+- frozen P8-009 index SHA-256
+  `38bc0e1eafedd44b1776ecec1a65fc48352a3155341dfca323641686739a8608`;
+- no mutation of accepted export bytes during audit;
+- production P8 source-safety boundaries across contracts, loader, views,
+  renderer, CLI, scenarios and the audit itself.
+
+Focused suite: **32 tests** covering frozen identities, no-write behavior,
+projection/renderer recomputation, evidence coverage/canonicalization, export
+tampering, evidence tampering, artifact tampering, symlink rejection and audit
+result integrity. Runtime gate:
+
+```powershell
+uv run --locked python -m yatl.dashboard.audit_runtime --evidence data/p8/p8-009-evidence
+```
+
+No dependency or `uv.lock` change. P8 remains **open** until exact final-head
+GitHub Actions pass and this checkpoint receives explicit merge approval.
 
 ## Exit condition
 
