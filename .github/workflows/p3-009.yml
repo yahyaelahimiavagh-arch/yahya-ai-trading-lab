@@ -53,6 +53,8 @@ jobs:
         run: uv run --locked python -m unittest discover -s tests -p 'test_analyst_journal.py' -v
       - name: P6 guarded analyst CLI focused gate
         run: uv run --locked python -m unittest discover -s tests -p 'test_analyst_cli.py' -v
+      - name: P6 adversarial analyst matrix focused gate
+        run: uv run --locked python -m unittest discover -s tests -p 'test_analyst_scenarios.py' -v
       - name: Compile and whitespace gates
         run: |
           uv run --locked python -m compileall -q yatl
@@ -153,11 +155,26 @@ jobs:
         run: uv run --locked python -m yatl.analyst.journal_runtime
       - name: P6 guarded analyst CLI runtime
         run: uv run --locked python -m yatl.analyst.cli_runtime
+      - name: P6-009 adversarial analyst matrix twice
+        run: |
+          uv run --locked python -m yatl.analyst.scenarios \
+            --output data/p6/p6-009-evidence
+          uv run --locked python -m yatl.analyst.scenarios \
+            --output data/p6/p6-009-evidence-replay
+          diff -r data/p6/p6-009-evidence data/p6/p6-009-evidence-replay
+          sha256sum data/p6/p6-009-evidence/p6-009-index.json
       - name: Publish P5-009 adversarial evidence
         uses: actions/upload-artifact@v4
         with:
           name: p5-009-evidence
           path: data/p5/p5-009-evidence/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Publish P6-009 adversarial analyst evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: p6-009-evidence
+          path: data/p6/p6-009-evidence/
           if-no-files-found: error
           retention-days: 30
 
