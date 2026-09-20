@@ -311,6 +311,38 @@ def _p6_canonical(connection):
         }
         if any(trace.get(key) != value for key, value in expected_values.items()):
             raise AnalyticsIngestionError("P6 trace row and canonical JSON disagree")
+
+        grounding = trace["grounding_record"]
+        grounding_keys = {
+            "schema_version",
+            "request_sha256",
+            "response_validation_sha256",
+            "bundle_sha256",
+            "accepted",
+            "code",
+            "grounded_claim_ids",
+            "report",
+            "report_sha256",
+        }
+        if (
+            not isinstance(grounding, dict)
+            or set(grounding) != grounding_keys
+            or grounding.get("schema_version") != 1
+            or grounding.get("request_sha256") != values["request_sha256"]
+            or grounding.get("response_validation_sha256")
+            != values["response_validation_sha256"]
+            or grounding.get("bundle_sha256") != values["bundle_sha256"]
+            or grounding.get("accepted") is not bool(values["accepted"])
+            or grounding.get("code") != values["grounding_code"]
+            or grounding.get("grounded_claim_ids") != claim_ids
+            or grounding.get("report_sha256") != values["report_sha256"]
+            or not isinstance(grounding.get("report"), dict)
+            or grounding["report"].get("input_sha256") != values["input_sha256"]
+            or grounding["report"].get("disposition") != values["disposition"]
+            or grounding["report"].get("reason") != values["reason"]
+        ):
+            raise AnalyticsIngestionError("P6 grounding trace binding is invalid")
+
         if _sha256_text(values["trace_json"]) != values["trace_sha256"]:
             raise AnalyticsIngestionError("P6 trace digest verification failed")
 
