@@ -1966,3 +1966,54 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
   execution/account/risk, quantity, order or AI execution capability.
 - No dependency or `uv.lock` change.
 - P8-009 remains closed until exact final-head Actions pass and P8-008 is merged.
+
+## P8-008 accepted implementation — 2026-09-20
+
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `20df93e`**.
+
+- PR #59 final candidate HEAD:
+  `800319d9dd9c2c800e793e5e80a4fa5057f66454`.
+- Matching GitHub Actions: `35532396801` — both jobs PASS.
+- Complete suite: **1070/1070 PASS**.
+- Focused P8-008: **44/44 PASS**.
+- Published dashboard bytes: **10,587**.
+- View-model SHA-256:
+  `f0f4bc42f6abd9d0629a5314c734caa3d0c5264ac4a9136fc3aa7e35b0652abc`.
+- Dashboard SHA-256:
+  `a5d51099537c39b933c510161b2223b049ba78e38205284736a279199966d6ea`.
+- Noninteractive validate/summary/build, default overwrite refusal, atomic
+  same-directory publication, source revalidation and stable redacted errors pass.
+- PR #59 squash-merged; accepted checkpoint:
+  `20df93ead290d918ce55c93c5f3beab090a14f62`.
+- No dependency or `uv.lock` change.
+
+## P8-009 current candidate — 2026-09-20
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry checkpoint: accepted P8-008 at
+  `20df93ead290d918ce55c93c5f3beab090a14f62`.
+- Branch: `p8-009-adversarial-dashboard-matrix`.
+- Fixed **9 scenarios × 2 symbols = 18 deterministic runs**.
+- Runtime fixtures are genuine PASS P7 exports for BTCUSDT and ETHUSDT.
+- Scenarios cover export tampering, fabricated quality PASS, evidence upgrade,
+  cross-symbol row injection, duplicate trade identity, oversized input/output,
+  HTML/script injection, path/private smuggling and dashboard artifact mutation.
+- Accepted sources are never attacked in place; every mutation uses a disposable
+  copy and accepted source bytes/identities must remain unchanged.
+- Every scenario executes twice and must produce byte-identical canonical evidence.
+- Matrix index binds export/quality/metrics/segmentation SHA-256 identities for
+  both symbols and all 18 scenario artifact digests.
+- Evidence directory contains exactly **19 canonical JSON files** and refuses
+  overwrite.
+- HTML/script payload must be escaped and non-executable; remote resources remain
+  absent.
+- Scenario evidence is redacted and excludes credentials, private paths,
+  traceback/SQL and executable markup.
+- **37 focused tests** plus deterministic runtime, source-safety gate and uploaded
+  `p8-009-evidence` workflow artifact.
+- Production scenario engine imports no analytics runtime/database,
+  network/provider, execution/account/risk, quantity, order or AI execution
+  capability.
+- No dependency or `uv.lock` change.
+- P8-010 remains closed until exact final-head Actions pass and P8-009 is merged.
