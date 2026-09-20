@@ -1,6 +1,6 @@
 # P7 — Journal / Analytics implementation plan
 
-Status: **PLANNED BEFORE IMPLEMENTATION — P7-001 NEXT**
+Status: **P7-001 CURRENT CANDIDATE — FINAL-HEAD CI REQUIRED**
 
 Entry baseline: P6 runtime accepted and merged at checkpoint
 `f07f2209cac5b46be8f9d74da2d162925ed8ab65`. Final P6 Actions run
@@ -53,6 +53,19 @@ execution/risk/permission authority.
 Acceptance: deterministic construction/reconstruction, canonical SHA-256,
 invalid-field rejection, P3 `INSUFFICIENT_EVIDENCE` preservation and source
 scan proving no execution/account/network/provider capability.
+
+Current candidate: branch `p7-001-analytics-contracts` defines frozen
+`P7_ANALYTICS_V1` contracts for read-only upstream source identities, upstream
+journal/trace event references, point-in-time analytics scopes, explicitly
+P7-derived field identities and conservative report dispositions. The P7-local
+strategy-evidence enum exposes only `INSUFFICIENT_EVIDENCE`; no upgrade state
+exists. Reports containing accepted events can only be `DESCRIPTIVE_ONLY`;
+empty reports become `INSUFFICIENT_DATA`. The policy hard-disables upstream
+mutation, external transport, credentials, execution import, RiskAuthorization
+mutation, quantity authority, trade permission, order endpoints, leverage,
+futures/margin/short and AI direct execution. No upstream journal reader,
+SQLite persistence, metric engine or CLI is added in P7-001. Matching final-head
+GitHub Actions evidence is required before acceptance.
 
 ### P7-002 — Read-only upstream ingestion manifest
 
