@@ -103,7 +103,7 @@ def _sha256_text(payload):
 
 def _fallback_report(validation):
     return build_analyst_report(
-        validation.request.bundle.analyst_input,
+        validation.report.analysis_input,
         (),
     )
 
