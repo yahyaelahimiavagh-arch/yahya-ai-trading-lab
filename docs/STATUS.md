@@ -1874,3 +1874,49 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
   RiskAuthorization, quantity authority, trade permission or order endpoint.
 - No dependency or `uv.lock` change.
 - P8-007 remains closed until exact final-head Actions pass and P8-006 is merged.
+
+## P8-006 accepted implementation — 2026-09-20
+
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `4ac351c`**.
+
+- PR #57 final candidate HEAD:
+  `07978b91c7d7a8db47e26a3fca7499929e867bf7`.
+- Matching GitHub Actions: `35529109856` — both jobs PASS.
+- Complete suite: **992/992 PASS**.
+- Focused P8-006: **30/30 PASS**.
+- PASS projection SHA-256:
+  `dfcd7828b29ae569ade6e13611a8468093acc2d3d534eb51abad8bf9b4c199e8`.
+- FAIL projection SHA-256:
+  `9a1c662966c9ee7498ae231ad9853293505a457081df76d428b987b34a42a6c3`.
+- ABSENT projection SHA-256:
+  `db92ad16c4914ac56fdfd4a38344c9cc35d18a87e10b04fb482f849023cb77e6`.
+- FAIL/ABSENT analytics remain fully blocked and diagnostics remain sanitized.
+- PR #57 squash-merged; accepted checkpoint:
+  `4ac351c384bebf5abd47ea1d6baee84f08a9bfc5`.
+- No dependency or `uv.lock` change.
+
+## P8-007 current candidate — 2026-09-20
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry checkpoint: accepted P8-006 at
+  `4ac351c384bebf5abd47ea1d6baee84f08a9bfc5`.
+- Branch: `p8-007-deterministic-dashboard-renderer`.
+- In-memory deterministic renderer only; **no file write / CLI / publication**.
+- PASS requires overview, completed-trade and performance projections bound to the
+  same accepted P7 export plus matching metrics/segmentation identities.
+- FAIL/ABSENT reject any injected analytics projection and render quality-only
+  blocked output.
+- Static UTF-8 HTML + embedded local CSS; no JavaScript.
+- Strict escaping for every dynamic display value.
+- CSP blocks script, network, fonts and images; structural validator rejects
+  remote-capable tags/attributes.
+- Exact view-model SHA-256 plus exact rendered-byte dashboard SHA-256.
+- Maximum artifact size: **4 MiB**.
+- Exact high-precision P7 metric strings remain unchanged in display.
+- **34 focused tests** plus deterministic runtime and source-safety CI gate.
+- Renderer production source has no analytics runtime/database, file-write,
+  credentials, network/provider, execution/account/risk, quantity or order
+  capability.
+- No dependency or `uv.lock` change.
+- P8-008 remains closed until exact final-head Actions pass and P8-007 is merged.
