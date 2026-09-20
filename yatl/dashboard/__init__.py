@@ -185,3 +185,31 @@ __all__ += [
     "dashboard_summary",
     "dashboard_validate",
 ]
+
+from .scenarios import (
+    ARTIFACT_KIND as DASHBOARD_SCENARIO_ARTIFACT_KIND,
+    MATRIX_KIND as DASHBOARD_SCENARIO_MATRIX_KIND,
+    SCENARIOS as DASHBOARD_SCENARIOS,
+    DashboardAcceptedFixture,
+    DashboardScenarioError,
+    DashboardScenarioMatrixResult,
+    DashboardScenarioResult,
+    dashboard_matrix_sha256,
+    run_adversarial_dashboard_matrix,
+    scenario_artifact_json as dashboard_scenario_artifact_json,
+    write_adversarial_dashboard_matrix,
+)
+
+__all__ += [
+    "DASHBOARD_SCENARIO_ARTIFACT_KIND",
+    "DASHBOARD_SCENARIO_MATRIX_KIND",
+    "DASHBOARD_SCENARIOS",
+    "DashboardAcceptedFixture",
+    "DashboardScenarioError",
+    "DashboardScenarioMatrixResult",
+    "DashboardScenarioResult",
+    "dashboard_matrix_sha256",
+    "run_adversarial_dashboard_matrix",
+    "dashboard_scenario_artifact_json",
+    "write_adversarial_dashboard_matrix",
+]
