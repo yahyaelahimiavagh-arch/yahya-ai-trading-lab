@@ -430,6 +430,11 @@ def _preflight(snapshot_time_ms, specs):
 
 def _classify_timeline_error(error):
     text = str(error).casefold()
+    if "cross-symbol" in text:
+        return QualityDiagnostic(
+            QualityCode.SOURCE_IDENTITY_INVALID,
+            QualityComponent.TIMELINE,
+        )
     if "future" in text:
         return QualityDiagnostic(
             QualityCode.FUTURE_TIMESTAMP,

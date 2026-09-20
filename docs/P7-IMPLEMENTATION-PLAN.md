@@ -1,6 +1,6 @@
 # P7 — Journal / Analytics implementation plan
 
-Status: **P7-001 / P7-002 / P7-003 / P7-004 / P7-005 / P7-006 / P7-007 RUNTIME ACCEPTED / MERGED — P7-008 CURRENT CANDIDATE**
+Status: **P7-001 / P7-002 / P7-003 / P7-004 / P7-005 / P7-006 / P7-007 / P7-008 RUNTIME ACCEPTED / MERGED — P7-009 CURRENT CANDIDATE**
 
 Entry baseline: P6 runtime accepted and merged at checkpoint
 `f07f2209cac5b46be8f9d74da2d162925ed8ab65`. Final P6 Actions run
@@ -208,24 +208,14 @@ input must not be echoed.
 Acceptance: stable exit codes, bounded JSON output, atomic export, no overwrite by
 default, noninteractive behavior and source scans.
 
-Current candidate: branch `p7-008-analytics-cli-export` adds a bounded local
-noninteractive interface over the accepted P7-007 quality gate. A canonical
-bounded JSON spec binds exactly one P5 execution-evidence database and one P6
-analyst-trace database to source identity, symbol, observation time and expected
-raw SHA-256. Commands are `validate`, `summary`, `trades` and `export`.
-Every command reruns the fail-closed P7-007 quality gate before returning
-analytics; quality failure returns only the sanitized quality report and cannot
-write an export. Summary output is bounded descriptive analytics; completed-trade
-view is explicitly limited to at most 100 entries per invocation. Canonical export
-contains the accepted quality report plus sanitized segmentation only—never source
-paths—and has its own SHA-256. Export writes a temporary same-directory file,
-flushes it, then atomically publishes; existing output is refused by default and
-requires explicit `--overwrite` to replace. CLI errors use stable exit codes and
-compact machine-readable records that never echo rejected arguments, missing
-paths, local database locations or secret-like input. Spec and stdout sizes are
-bounded, duplicate JSON keys are rejected and the CLI has no interactive prompt,
-environment credential access, network/provider transport or execution capability.
-Matching final-head GitHub Actions evidence is required before P7-008 acceptance.
+Accepted: PR #48 was squash-merged at
+`3aad07f7ad110a66a3d0b494fb9b8e8e81279cc7` after matching final-head Actions
+run `35514904769` passed both jobs, the **812/812** complete suite and **16/16**
+focused P7-008 tests. The accepted runtime verified four noninteractive commands,
+stable exit codes, bounded JSON, atomic export, no-overwrite by default, path
+redaction, `replay_equal=true` and `no_write=true`, with canonical export
+SHA-256
+`8e11935814a57389399eea4046beed2f98b7bb448b25465740ef868f7e4dc456`.
 
 ### P7-009 — Adversarial analytics matrix
 
@@ -236,6 +226,31 @@ schema smuggling.
 
 Acceptance: two byte-identical runs, exact fail-closed outcomes, canonical
 published evidence and unchanged P3/P4/P5/P6 accepted identities.
+
+Current candidate: branch `p7-009-adversarial-analytics-matrix` runs nine fixed
+scenarios independently for BTCUSDT and ETHUSDT, producing 18 canonical scenario
+artifacts plus one canonical index. The matrix covers upstream raw-digest
+tampering, duplicate/orphan fill insertion, cross-symbol fill linkage, future
+source observation, changed fee/equity totals, fabricated realized profitability,
+strategy-evidence label upgrade, direct journal mutation attempts and schema
+smuggling. Quality-gated failures require exact diagnostic outcomes and prohibit
+accepted-chain or analytics payload publication. Evidence-label upgrade is tested
+directly against the immutable segmentation contract and must retain
+`INSUFFICIENT_EVIDENCE`; journal mutation is attempted only through the SQLite
+read-only connection and must be rejected with byte-identical source data and a
+subsequent healthy quality PASS. Every scenario artifact and the matrix index
+carry the frozen accepted P3 index, P4 index/policy, P5 index/policy and P6
+index/policy/evidence SHA-256 identities. Each individual scenario is executed
+twice in-process and must be byte-identical; CI then executes/publishes the full
+matrix twice into separate directories and requires a recursive byte-for-byte
+diff. P7-009 also tightens the already fail-closed P7-007 timeline diagnostic
+classifier so an explicit cross-symbol fill-linkage failure is reported as
+`SOURCE_IDENTITY_INVALID` before the broader out-of-order/timeline-gap branch;
+this changes diagnostic precision only and does not relax any timeline or source
+validation. Evidence publication is atomic, bounded and refuses overwrite. No artifact
+contains local paths, SQL, traceback, secrets, raw provider material, execution
+requests or authority-bearing material. Matching final-head GitHub Actions
+evidence is required before P7-009 acceptance.
 
 ### P7-010 — Independent final audit
 

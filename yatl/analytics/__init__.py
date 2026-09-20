@@ -205,3 +205,29 @@ __all__ += [
     "analytics_validate",
     "load_analytics_spec",
 ]
+
+from .scenarios import (
+    ACCEPTED_UPSTREAM_IDENTITIES,
+    SCENARIOS as ANALYTICS_ADVERSARIAL_SCENARIOS,
+    AnalyticsScenarioError,
+    AnalyticsScenarioMatrixResult,
+    AnalyticsScenarioResult,
+    analytics_matrix_sha256,
+    run_adversarial_analytics_matrix,
+    run_and_write_adversarial_analytics_matrix,
+    scenario_artifact_json,
+    write_adversarial_analytics_matrix,
+)
+
+__all__ += [
+    "ACCEPTED_UPSTREAM_IDENTITIES",
+    "ANALYTICS_ADVERSARIAL_SCENARIOS",
+    "AnalyticsScenarioError",
+    "AnalyticsScenarioMatrixResult",
+    "AnalyticsScenarioResult",
+    "analytics_matrix_sha256",
+    "run_adversarial_analytics_matrix",
+    "run_and_write_adversarial_analytics_matrix",
+    "scenario_artifact_json",
+    "write_adversarial_analytics_matrix",
+]
