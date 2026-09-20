@@ -1,6 +1,6 @@
 # P6 — AI Analyst implementation plan
 
-Status: **P6-001 / P6-002 / P6-003 / P6-004 / P6-005 RUNTIME ACCEPTED / MERGED — P6-006 CURRENT CANDIDATE**
+Status: **P6-001 / P6-002 / P6-003 / P6-004 / P6-005 / P6-006 RUNTIME ACCEPTED / MERGED — P6-007 CURRENT CANDIDATE**
 
 Entry baseline: P5 runtime accepted and merged at checkpoint
 `cd5ff5651e2d1df509dba6de8bc717a3ba7bf34f`. Final P5 Actions run
@@ -128,19 +128,16 @@ closed and cannot be promoted to operator guidance.
 
 Acceptance: exact grounding tests and deterministic rejection reasons.
 
-Current candidate: branch `p6-006-claim-evidence-grounding` adds an exact,
-deterministic semantic grounding gate after P6-005 schema validation. Groundable
-claims use a fixed analysis-only vocabulary with an exact claim kind, text, one
-evidence reference and required P1/P3/P4/P5 layer. The gate rebinds the request to
-the current evidence bundle, checks point-in-time validity and accepted safety
-state, rejects unsupported claims and fixed contradictions, and rejects wrong-layer
-or altered evidence references. Upstream schema failures and invented identifiers
-remain fail-closed. Any grounding failure returns an empty `INSUFFICIENT_DATA`
-report with a deterministic rejection code; grounded output remains `REVIEW`
-because P3 is still `INSUFFICIENT_EVIDENCE`. No provider/network, credential,
-execution, quantity, RiskAuthorization, order or trade capability is added.
-Matching final-head GitHub Actions evidence is required before P6-006 can be
-accepted.
+Accepted: PR #35 was squash-merged at
+`8ae58c2a0ca712fed0d2246930b7e3afb0d2435a` after matching final-head Actions
+run `35498896415` passed both jobs, the **636/636** complete suite, **21/21**
+focused P6-006 tests, the analyst safety scan and deterministic grounding runtime.
+P6-006 verifies exact claim vocabulary, evidence layer, point-in-time state,
+symbol/reference identity and current request/bundle binding. Unsupported,
+contradictory, invented, stale, future or altered evidence remains fail-closed to
+`INSUFFICIENT_DATA`, while grounded output remains `REVIEW` because P3 is
+still `INSUFFICIENT_EVIDENCE`. It grants no execution, quantity,
+RiskAuthorization, order, credential, network or trade authority.
 
 ### P6-007 — Analyst journal and reproducible trace
 
@@ -148,6 +145,20 @@ Persist canonical analysis input/output evidence locally for audit without stori
 secrets or mutable provider internals. Duplicate replay is idempotent.
 
 Acceptance: transaction rollback, duplicate replay, reopen and tamper tests.
+
+Current candidate: branch `p6-007-analyst-journal-trace` adds a local SQLite
+journal for sanitized, canonical P6 traces. Each durable row is hash-bound to the
+request, response-validation, evidence bundle, grounding result, analyst input and
+report identities, plus the exact grounded claim IDs and fail-closed disposition.
+The stored canonical grounding record contains no raw model response,
+`canonical_response_json`, credentials, endpoint data or mutable provider
+internals. Recording is transactional and idempotent by response-validation
+identity; conflicting durable state fails closed. Canonical export is order
+independent, reopen-stable and tamper checked. Accepted grounded traces remain
+`REVIEW`; rejected traces remain empty `INSUFFICIENT_DATA`. No provider/network,
+execution, quantity, RiskAuthorization, order or trade capability is added.
+Matching final-head GitHub Actions evidence is required before P6-007 can be
+accepted.
 
 ### P6-008 — Guarded analyst CLI
 
