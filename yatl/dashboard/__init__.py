@@ -115,6 +115,7 @@ __all__ += [
 from .performance_views import (
     PERFORMANCE_VIEW_SCHEMA_VERSION,
     DashboardAnalystSegmentSummary,
+    DashboardExactMetricValue,
     DashboardTradeSegmentSummary,
     PerformanceSegmentationProjection,
     PerformanceViewProjectionError,
@@ -124,6 +125,7 @@ from .performance_views import (
 __all__ += [
     "PERFORMANCE_VIEW_SCHEMA_VERSION",
     "DashboardAnalystSegmentSummary",
+    "DashboardExactMetricValue",
     "DashboardTradeSegmentSummary",
     "PerformanceSegmentationProjection",
     "PerformanceViewProjectionError",
