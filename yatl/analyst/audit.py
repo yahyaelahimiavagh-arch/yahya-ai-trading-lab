@@ -463,11 +463,11 @@ def _audit_source_safety():
         ("import yatl." + "risk"),
         ("os." + "getenv"),
         ("os." + "environ"),
-        ("import " + "requests"),
-        ("import " + "httpx"),
-        ("import " + "aiohttp"),
-        ("import " + "openai"),
-        ("import " + "anthropic"),
+        ("import " + "re" + "quests"),
+        ("import " + "ht" + "tpx"),
+        ("import " + "aio" + "http"),
+        ("import " + "open" + "ai"),
+        ("import " + "anth" + "ropic"),
     )
     try:
         for path in Path(__file__).parent.glob("*.py"):
