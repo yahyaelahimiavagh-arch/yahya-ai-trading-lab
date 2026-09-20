@@ -1,6 +1,6 @@
 # P7 — Journal / Analytics implementation plan
 
-Status: **P7-001 / P7-002 RUNTIME ACCEPTED / MERGED — P7-003 CURRENT CANDIDATE**
+Status: **P7-001 / P7-002 / P7-003 RUNTIME ACCEPTED / MERGED — P7-004 CURRENT CANDIDATE**
 
 Entry baseline: P6 runtime accepted and merged at checkpoint
 `f07f2209cac5b46be8f9d74da2d162925ed8ab65`. Final P6 Actions run
@@ -101,23 +101,23 @@ out-of-order or future-linked records fail closed.
 Acceptance: stable ordering, exact relationship checks, cross-symbol/time
 isolation and byte-identical replay.
 
-Current candidate: branch `p7-003-unified-timeline` builds a canonical timeline
-from the P7-002 manifest plus the same read-only P5/P6 databases. It independently
-replays P5 intent-to-order chains, current order projections, fill-to-active-order
-relationships and the final portfolio projection, while reusing P7-002 canonical
-P6 trace validation. Risk/execution identities are retained only as SHA-256
-relationships; no upstream payload is rewritten. Because accepted P5 intent rows
-do not contain their own timestamp, intent placement explicitly uses
-`RELATED_ORDER_TIME` tied to the first durable order event rather than inventing
-an intent timestamp. Order events use `UPSTREAM_EVENT_TIME`, fills use
-`UPSTREAM_FILL_TIME`, the portfolio projection uses `LAST_FILL_TIME`, and P6
-traces use the trusted source `SOURCE_OBSERVED_AT`. Orphan intents, broken or
-skipped order chains, cross-symbol fills, future-linked material, invalid current
-order projections, fill/order-state mismatches, portfolio/fill mismatches,
-duplicate timeline identities and noncanonical relationship ordering fail closed.
-The output preserves `INSUFFICIENT_EVIDENCE`, is read-only, path-free and
-deterministic. Matching final-head GitHub Actions evidence is required before
-P7-003 acceptance.
+Accepted: PR #43 was squash-merged at
+`9d22817d0ac76c4e724120d9189de3100ef03b58` after matching final-head Actions
+run `35508427366` passed both jobs, the **750/750** complete suite and **15/15**
+focused P7-003 tests. The accepted runtime produced six canonical entries and
+timeline SHA-256
+`945324f10b7107d8ab13f42d0c5c9207bc8cf0aa6a650d2765275d6f8d26e535`
+with `replay_equal=true` and `no_write=true`. Intent placement explicitly
+uses `RELATED_ORDER_TIME`; order/fill/portfolio/P6 entries retain their own
+provenance-preserving time basis.
+
+P7-004 includes one compatibility correction to that accepted timeline validator:
+a valid P5 same-bar protective exit is a second `EXIT_LONG` fill inside the same
+`ENTER_LONG` fill-step. The correction permits exactly that two-fill pattern
+only when the second fill shares the same accepted intent/order state, quantity
+and fill time and has a protective reason (`STOP`, `TARGET` or
+`AMBIGUOUS_STOP_PRIORITY`). It does not weaken orphan, ordering, symbol, time
+or digest validation.
 
 ### P7-004 — Completed Paper trade reconstruction
 
@@ -129,6 +129,24 @@ silently closed.
 
 Acceptance: exact P2/P5 economics preservation, duplicate/orphan rejection,
 open-trade handling and deterministic trade SHA-256.
+
+Current candidate: branch `p7-004-completed-trades` reconstructs long-only Paper
+episodes only after the P7-003 timeline and P5 durable fill/portfolio material
+have passed read-only validation. Each reconstructed fill copies the accepted P5
+identity, action, quantity, timestamps, execution/reference price, fee, slippage,
+cash delta and asset delta verbatim. A completed trade is only an accepted
+`ENTER_LONG` followed by the full-quantity accepted `EXIT_LONG`; realized
+PnL is derived solely from those already-accepted cash deltas and is reconciled
+to the final P5 portfolio `realized_pnl_quote`. Fill fees/slippage are likewise
+reconciled to the final portfolio totals. An unmatched accepted entry remains an
+explicit `OPEN` trade with `realized_pnl_quote=null`; it is never silently
+closed. The final LONG position quantity and cost basis must reconcile to that
+open accepted entry; FLAT books must reconcile to zero asset/cost basis and the
+accepted closed-trade count. Fabricated portfolio PnL, missing exits, orphan
+fills, overlapping episodes, cross-symbol sources or changed upstream evidence
+fail closed. No P2 cost model, execution module or new economics is imported into
+P7 production code. Matching final-head GitHub Actions evidence is required
+before P7-004 acceptance.
 
 ### P7-005 — Deterministic performance metrics
 
