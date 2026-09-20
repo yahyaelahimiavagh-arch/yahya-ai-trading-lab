@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P7 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P8-002 ACCEPTED P7 EXPORT LOADER / PROVENANCE BINDING — CANDIDATE**
+قدم جاری: **P8-003 SYSTEM / SAFETY / QUALITY OVERVIEW PROJECTION — CANDIDATE**
 
 ## منشأ و حدود سند
 
@@ -525,6 +525,22 @@ material fail-closed رد می‌شوند. این checkpoint هیچ overview pro
 renderer، network/provider، credential، execution/account/risk capability،
 RiskAuthorization/quantity authority، TRADE permission یا order endpoint اضافه
 نمی‌کند. P8-003 تا پذیرش و merge مستقل P8-002 بسته می‌ماند.
+
+
+## P8-002 acceptance / P8-003 candidate — 2026-09-20
+
+P8-002 با PR #53، Actions `35523493929`، **886/886** تست کامل و **23/23**
+تست focused پذیرفته و در checkpoint
+`a9112a525e07de0e4b5cc8a02433f636246b683f` روی `main` merge شد. loader فقط
+accepted/sanitized P7 export را با canonical/digest/provenance binding و بدون write
+یا دسترسی مستقیم P5/P6 مصرف می‌کند.
+
+P8-003 روی branch `p8-003-overview-projection` فقط overview ثابت
+system/safety/quality را از همان boundary می‌سازد. source fields بدون تفسیر
+اقتصادی جدید حفظ می‌شوند؛ `open_trade_count` و `snapshot_freshness` به دلیل
+نبودن source کافی صریحاً `UNKNOWN` می‌مانند. هیچ health/readiness/profitability
+یا live/trade permission جدیدی استنباط نمی‌شود. P8-004 تا پذیرش و merge مستقل
+P8-003 بسته می‌ماند.
 
 
 ## Economic objective clarification — 2026-09-20
