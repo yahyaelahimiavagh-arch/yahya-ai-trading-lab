@@ -1543,7 +1543,7 @@ Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `840a3d4`**.
 
 ## P7-010 current candidate — 2026-09-20
 
-Status: **IMPLEMENTED — CHAIN-SET FREEZE / FINAL-HEAD CI PENDING**.
+Status: **IMPLEMENTED — CHAIN-SET FROZEN / FINAL-HEAD CI PENDING**.
 
 - Entry checkpoint: P7-009 merged at
   `840a3d471ad0ea0b0f120d99920bd3ccf7a557f3`; branch
@@ -1564,9 +1564,11 @@ Status: **IMPLEMENTED — CHAIN-SET FREEZE / FINAL-HEAD CI PENDING**.
   manifest `aff65af1...`, timeline `c0738c02...`, reconstruction
   `2162b742...`, metrics `d2aa2ad3...`, segmentation `be0a03a7...`,
   quality `2c62a387...`, export `8e119358...`.
-- The two-symbol chain-set digest will be frozen after the first independent
-  candidate CI run, then a replacement Final-HEAD run must pass before P7-010
-  can be accepted.
+- Discovery run `35516730233` independently recomputed the two-symbol
+  chain-set SHA-256 as
+  `76face2aa41fbea1dc0ae718964eb77b5990d258beb41312c74132c8bb5c1209`. It is now frozen in code. That discovery run is superseded for
+  acceptance; a replacement exact Final-HEAD run must pass before P7-010 can be
+  accepted.
 - Source safety independently scans the full `yatl/analytics` package.
 - No dependency or `uv.lock` change; no execution/backtest/account/risk import,
   environment credentials, network/provider transport, RiskAuthorization or
