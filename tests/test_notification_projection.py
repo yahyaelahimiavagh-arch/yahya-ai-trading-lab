@@ -150,26 +150,32 @@ class NotificationProjectionFormatterTests(unittest.TestCase):
         item = overview()
         cards = list(item.cards)
         cards[9] = replace(cards[9], value="FRESH")
+        object.__setattr__(item, "cards", tuple(cards))
         with self.assertRaises(NotificationProjectionError):
-            project_system_status(replace(item, cards=tuple(cards)))
+            project_system_status(item)
 
     def test_system_status_rejects_invented_open_trade_count(self):
         item = overview()
         cards = list(item.cards)
         cards[8] = replace(cards[8], value="1")
+        object.__setattr__(item, "cards", tuple(cards))
         with self.assertRaises(NotificationProjectionError):
-            project_system_status(replace(item, cards=tuple(cards)))
+            project_system_status(item)
 
     def test_system_status_rejects_weakened_evidence_or_live_lock(self):
         item = overview()
         cards = list(item.cards)
         cards[5] = replace(cards[5], value="PROFITABLE")
+        object.__setattr__(item, "cards", tuple(cards))
         with self.assertRaises(NotificationProjectionError):
-            project_system_status(replace(item, cards=tuple(cards)))
+            project_system_status(item)
+
+        item = overview()
         cards = list(item.cards)
         cards[4] = replace(cards[4], value="ON")
+        object.__setattr__(item, "cards", tuple(cards))
         with self.assertRaises(NotificationProjectionError):
-            project_system_status(replace(item, cards=tuple(cards)))
+            project_system_status(item)
 
     def test_quality_alert_accepts_only_sanitized_fail_projection(self):
         item = project_data_quality_alert(failed_quality())
@@ -191,10 +197,9 @@ class NotificationProjectionFormatterTests(unittest.TestCase):
 
     def test_quality_alert_rejects_partial_analytics(self):
         fail = failed_quality()
+        object.__setattr__(fail, "partial_analytics_visible", True)
         with self.assertRaises(NotificationProjectionError):
-            project_data_quality_alert(
-                replace(fail, partial_analytics_visible=True)
-            )
+            project_data_quality_alert(fail)
 
     def test_quality_alert_is_deterministic(self):
         first = project_data_quality_alert(failed_quality())
