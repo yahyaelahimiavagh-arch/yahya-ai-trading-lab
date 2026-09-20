@@ -1,6 +1,6 @@
 # P7 — Journal / Analytics implementation plan
 
-Status: **P7-001 / P7-002 / P7-003 / P7-004 / P7-005 / P7-006 RUNTIME ACCEPTED / MERGED — P7-007 CURRENT CANDIDATE**
+Status: **P7-001 / P7-002 / P7-003 / P7-004 / P7-005 / P7-006 / P7-007 RUNTIME ACCEPTED / MERGED — P7-008 CURRENT CANDIDATE**
 
 Entry baseline: P6 runtime accepted and merged at checkpoint
 `f07f2209cac5b46be8f9d74da2d162925ed8ab65`. Final P6 Actions run
@@ -189,24 +189,14 @@ digests, future timestamps and report-level arithmetic reconciliation.
 Acceptance: healthy fixture PASS, fixed failure matrix, bounded diagnostics and
 no partial analytics publication on quality failure.
 
-Current candidate: branch `p7-007-analytics-quality-gate` adds a single
-fail-closed publication gate over the full P7 chain. It performs source preflight
-for exact P5/P6 coverage, unique identities/paths, expected raw database SHA-256
-and point-in-time observation before building ingestion, timeline, trade
-reconstruction, metrics and segmentation. It then independently checks contiguous
-timeline sequence, duplicate identities, durable relationship reachability,
-trade-to-fill/portfolio linkage, exact metric replay, segmentation/source
-bindings and per-dimension conservation of realized PnL, accepted costs and
-member/outcome counts. Upstream files are stat/hash checked again after the full
-chain to prove no write occurred. PASS reports publish only the accepted chain
-digests and counts; FAIL reports carry at most eight sanitized diagnostic
-code/component pairs and force both `accepted_chain=null` and
-`accepted_segmentation=None`. The fixed failure matrix covers missing source,
-changed digest, future observation, duplicate source identity, orphan relationship
-and timeline gap; report-level arithmetic/reconciliation and partition checks are
-explicit PASS gates on the healthy fixture. No local path, SQL, traceback or
-partial analytics payload is included in failure output. Matching final-head
-GitHub Actions evidence is required before P7-007 acceptance.
+Accepted: PR #47 was squash-merged at
+`7e57edee4ec90b63afc6e837536bb3286b03d528` after matching final-head Actions
+run `35512606439` passed both jobs, the **796/796** complete suite and **12/12**
+focused P7-007 tests. The healthy quality fixture passed the full chain, the fixed
+six-case fail-closed matrix matched exact diagnostic codes, no failure exposed a
+partial analytics payload, and runtime quality SHA-256 was
+`2c62a387c8ad24535eb9c4a2bd828d05ef6a8269cdd4529d261544c991e39a07`
+with `replay_equal=true` and `no_write=true`.
 
 ### P7-008 — Guarded analytics export and CLI
 
@@ -217,6 +207,25 @@ input must not be echoed.
 
 Acceptance: stable exit codes, bounded JSON output, atomic export, no overwrite by
 default, noninteractive behavior and source scans.
+
+Current candidate: branch `p7-008-analytics-cli-export` adds a bounded local
+noninteractive interface over the accepted P7-007 quality gate. A canonical
+bounded JSON spec binds exactly one P5 execution-evidence database and one P6
+analyst-trace database to source identity, symbol, observation time and expected
+raw SHA-256. Commands are `validate`, `summary`, `trades` and `export`.
+Every command reruns the fail-closed P7-007 quality gate before returning
+analytics; quality failure returns only the sanitized quality report and cannot
+write an export. Summary output is bounded descriptive analytics; completed-trade
+view is explicitly limited to at most 100 entries per invocation. Canonical export
+contains the accepted quality report plus sanitized segmentation only—never source
+paths—and has its own SHA-256. Export writes a temporary same-directory file,
+flushes it, then atomically publishes; existing output is refused by default and
+requires explicit `--overwrite` to replace. CLI errors use stable exit codes and
+compact machine-readable records that never echo rejected arguments, missing
+paths, local database locations or secret-like input. Spec and stdout sizes are
+bounded, duplicate JSON keys are rejected and the CLI has no interactive prompt,
+environment credential access, network/provider transport or execution capability.
+Matching final-head GitHub Actions evidence is required before P7-008 acceptance.
 
 ### P7-009 — Adversarial analytics matrix
 
