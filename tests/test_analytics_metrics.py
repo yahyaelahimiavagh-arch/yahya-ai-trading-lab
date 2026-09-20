@@ -13,6 +13,7 @@ from yatl.analytics import (
     PerformanceMetricsError,
     PerformanceMetricsStatus,
     StrategyEvidenceState,
+    TradeBookStatus,
     UpstreamSourceSpec,
     calculate_performance_metrics,
     reconstruct_paper_trades,
@@ -140,7 +141,7 @@ class PerformanceMetricsTests(unittest.TestCase):
             completed=(),
             open_trade=None,
             final_portfolio=None,
-            status=book.status.NO_FILLS,
+            status=TradeBookStatus.NO_FILLS,
         )
         report = calculate_performance_metrics(empty)
         self.assertEqual(report.status, PerformanceMetricsStatus.INSUFFICIENT_DATA)
