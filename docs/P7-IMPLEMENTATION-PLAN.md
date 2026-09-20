@@ -1,6 +1,6 @@
 # P7 — Journal / Analytics implementation plan
 
-Status: **P7-001 / P7-002 / P7-003 / P7-004 / P7-005 / P7-006 / P7-007 / P7-008 RUNTIME ACCEPTED / MERGED — P7-009 CURRENT CANDIDATE**
+Status: **P7-001 / P7-002 / P7-003 / P7-004 / P7-005 / P7-006 / P7-007 / P7-008 / P7-009 RUNTIME ACCEPTED / MERGED — P7-010 CURRENT CANDIDATE**
 
 Entry baseline: P6 runtime accepted and merged at checkpoint
 `f07f2209cac5b46be8f9d74da2d162925ed8ab65`. Final P6 Actions run
@@ -227,36 +227,43 @@ schema smuggling.
 Acceptance: two byte-identical runs, exact fail-closed outcomes, canonical
 published evidence and unchanged P3/P4/P5/P6 accepted identities.
 
-Current candidate: branch `p7-009-adversarial-analytics-matrix` runs nine fixed
-scenarios independently for BTCUSDT and ETHUSDT, producing 18 canonical scenario
-artifacts plus one canonical index. The matrix covers upstream raw-digest
-tampering, duplicate/orphan fill insertion, cross-symbol fill linkage, future
-source observation, changed fee/equity totals, fabricated realized profitability,
-strategy-evidence label upgrade, direct journal mutation attempts and schema
-smuggling. Quality-gated failures require exact diagnostic outcomes and prohibit
-accepted-chain or analytics payload publication. Evidence-label upgrade is tested
-directly against the immutable segmentation contract and must retain
-`INSUFFICIENT_EVIDENCE`; journal mutation is attempted only through the SQLite
-read-only connection and must be rejected with byte-identical source data and a
-subsequent healthy quality PASS. Every scenario artifact and the matrix index
-carry the frozen accepted P3 index, P4 index/policy, P5 index/policy and P6
-index/policy/evidence SHA-256 identities. Each individual scenario is executed
-twice in-process and must be byte-identical; CI then executes/publishes the full
-matrix twice into separate directories and requires a recursive byte-for-byte
-diff. P7-009 also tightens the already fail-closed P7-007 timeline diagnostic
-classifier so an explicit cross-symbol fill-linkage failure is reported as
-`SOURCE_IDENTITY_INVALID` before the broader out-of-order/timeline-gap branch;
-this changes diagnostic precision only and does not relax any timeline or source
-validation. Evidence publication is atomic, bounded and refuses overwrite. No artifact
-contains local paths, SQL, traceback, secrets, raw provider material, execution
-requests or authority-bearing material. Matching final-head GitHub Actions
-evidence is required before P7-009 acceptance.
+Accepted: PR #49 was squash-merged at
+`840a3d471ad0ea0b0f120d99920bd3ccf7a557f3` after matching final-head Actions
+run `35515929819` passed both jobs, the **825/825** complete suite and **13/13**
+focused P7-009 tests. The accepted matrix covered **9 scenarios × 2 symbols = 18
+runs**, reproduced byte-for-byte across two full executions, published 19 canonical
+evidence files and froze P7-009 index SHA-256
+`f13a322e7071b48a8b05182fceee8024ee6d22d6b08a7b223d337e5f7850e60b`.
+The matrix also tightened diagnostic precision for explicit cross-symbol fill
+linkage to `SOURCE_IDENTITY_INVALID`; all validation remained fail-closed.
 
 ### P7-010 — Independent final audit
 
 Independently recompute the P7 policy, ingestion identities, reconstructed trades,
 metrics, segmentation, adversarial outcomes, source safety and accepted artifacts.
 P7 closes only after matching final-head GitHub Actions pass.
+
+Current candidate: branch `p7-010-independent-final-audit` independently audits
+the complete P7 boundary. It reconstructs the frozen `P7_ANALYTICS_V1` policy
+and requires policy SHA-256
+`534fb28e630a8bca4ccffd4c8ef572f4aac440d4a3d05de190cf70264ac9f4d9`.
+It reads the P7-009 evidence directory twice, requires exactly 19 nonsymlink
+canonical JSON files under strict per-file/total bounds, independently checks
+every scenario's exact expected/observed outcome and fixed safety fields, verifies
+every index-to-file digest, then independently regenerates the full adversarial
+matrix and requires exact byte equality with published evidence. The audit also
+rebuilds healthy closed-trade analytics chains separately for BTCUSDT and
+ETHUSDT: ingestion manifest, unified timeline, Paper trade reconstruction,
+performance metrics, segmentation, quality gate and sanitized export identity are
+each executed twice and must match exactly without changing either source
+database. The BTC chain is compared against the previously accepted P7-007/P7-008
+frozen runtime digests; both-symbol chain identities are then aggregated into one
+canonical chain-set SHA-256. Source safety is scanned across the full
+`yatl/analytics` package for execution/backtest/account/risk imports,
+order/withdrawal endpoints, environment credentials and network/provider clients.
+The first candidate CI run is used only to obtain the independently recomputed
+two-symbol chain-set digest; that digest is then frozen in code and a new exact
+Final-HEAD run is required before P7-010 acceptance.
 
 ## Exit condition
 
