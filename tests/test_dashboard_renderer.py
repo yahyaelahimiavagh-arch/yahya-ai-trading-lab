@@ -98,7 +98,6 @@ class DashboardRendererTests(unittest.TestCase):
     def test_content_security_policy_blocks_script_and_network(self):
         artifact = self.render_full()
         self.assertIn("Content-Security-Policy", artifact.html)
-        self.assertIn("default-src &#x27;none&#x27;", artifact.html.replace("'", "&#x27;") if False else artifact.html)
         self.assertIn("default-src 'none'", artifact.html)
         self.assertIn("connect-src 'none'", artifact.html)
         self.assertIn("script-src 'none'", artifact.html)
