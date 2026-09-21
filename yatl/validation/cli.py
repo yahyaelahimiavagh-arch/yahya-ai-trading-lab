@@ -13,6 +13,7 @@ import os
 import stat
 import tempfile
 from dataclasses import dataclass
+from decimal import Decimal
 from enum import Enum
 from pathlib import Path
 
@@ -300,15 +301,17 @@ def _base_ready(command, code, bundle):
     }
 
 
-def validation_status(database_path, snapshot_path):
-    bundle = _pipeline(database_path, snapshot_path)
+def _status_from_bundle(bundle):
     if not bundle.ready:
         return _not_ready("status", bundle)
     return _base_ready("status", ValidationCliCode.STATUS_READY, bundle)
 
 
-def validation_summary(database_path, snapshot_path):
-    bundle = _pipeline(database_path, snapshot_path)
+def validation_status(database_path, snapshot_path):
+    return _status_from_bundle(_pipeline(database_path, snapshot_path))
+
+
+def _summary_from_bundle(bundle):
     if not bundle.ready:
         return _not_ready("summary", bundle)
     record = _base_ready("summary", ValidationCliCode.SUMMARY_READY, bundle)
@@ -324,9 +327,11 @@ def validation_summary(database_path, snapshot_path):
         "net_return_after_costs": pooled["net_return_after_costs"],
         "profit_factor_after_costs": pooled["profit_factor_after_costs"],
         "maximum_validation_drawdown_fraction": max(
-            pooled["realized_drawdown"]["maximum_drawdown_fraction"],
-            pooled["sampled_liquidation_drawdown"]["maximum_drawdown_fraction"],
-            key=lambda value: float(value),
+            (
+                pooled["realized_drawdown"]["maximum_drawdown_fraction"],
+                pooled["sampled_liquidation_drawdown"]["maximum_drawdown_fraction"],
+            ),
+            key=Decimal,
         ),
         "criteria": {
             item["criterion"]: item["status"]
@@ -344,6 +349,10 @@ def validation_summary(database_path, snapshot_path):
         ],
     })
     return record
+
+
+def validation_summary(database_path, snapshot_path):
+    return _summary_from_bundle(_pipeline(database_path, snapshot_path))
 
 
 def _paper_summary(run):
@@ -461,8 +470,7 @@ def _atomic_no_overwrite(output_path, encoded):
                 pass
 
 
-def validation_export(database_path, snapshot_path, output_path):
-    bundle = _pipeline(database_path, snapshot_path)
+def _export_from_bundle(bundle, output_path):
     if not bundle.ready:
         return _not_ready("export", bundle)
     record, encoded = _export_payload(bundle)
@@ -475,6 +483,13 @@ def validation_export(database_path, snapshot_path, output_path):
         "overwrite_allowed": False,
     })
     return result
+
+
+def validation_export(database_path, snapshot_path, output_path):
+    return _export_from_bundle(
+        _pipeline(database_path, snapshot_path),
+        output_path,
+    )
 
 
 def _compact_error(command, code):
