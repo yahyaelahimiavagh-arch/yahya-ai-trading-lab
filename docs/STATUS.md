@@ -2304,3 +2304,65 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
 - No dependency or `uv.lock` change.
 - P9-005 remains closed until exact final-head Actions pass and explicit merge
   approval is received.
+
+
+## P9-004 accepted implementation — 2026-09-21
+
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `1e3cba7`**.
+
+- PR #65 exact final candidate HEAD:
+  `5c1ceb206d44a5f6e9e728c1cb36162cc0852ac4`.
+- Matching GitHub Actions: `35553839765` — both jobs PASS.
+- Complete suite: **1218/1218 PASS**.
+- Focused P9-004: **23/23 PASS**.
+- P9-003 transport regression: **20/20 PASS**.
+- Frozen delivery guard policy SHA-256:
+  `6d180d548e5294cb7974ce4023ddff2f83bbbe2b707beb25cfdb76f81bb87533`.
+- PR #65 squash-merged; accepted checkpoint:
+  `1e3cba7a0aeb820c9d0a006cc38e053d12f83085`.
+- Duplicate suppression, restart snapshot reconstruction, bounded retry and
+  ambiguous-send non-retry behavior were all runtime accepted.
+- Acceptance remained mocked:
+  `real_credentials_loaded=false`, `real_network_called=false`.
+- No dependency or `uv.lock` change.
+- No inbound command/control, TRADE permission, order endpoint or AI direct
+  execution was introduced.
+
+## P9-005 current candidate — 2026-09-21
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry checkpoint: accepted P9-004 at
+  `1e3cba7a0aeb820c9d0a006cc38e053d12f83085`.
+- Branch: `p9-005-guarded-runner-adversarial-matrix`.
+- Adds one-shot noninteractive runner `P9_NOTIFIER_RUNNER_V1`.
+- Runner has no subcommand/operator control surface.
+- Input requirements:
+  - one exact canonical P9 notification batch;
+  - exactly one notification;
+  - explicit expected batch SHA-256;
+  - explicit approved symbol;
+  - separate runner-owned delivery state path.
+- Input notification source is read-only and byte-compared before/after delivery.
+- State persistence is bounded, canonical and atomic; only the dedupe state file
+  is writable.
+- Duplicate state is checked before Bot credential loading and sender/network.
+- CLI output is canonical bounded JSON with stable redacted exit codes.
+- No caller path, source payload, provider body or credential is included in
+  failure output.
+- Fixed adversarial matrix:
+  **8 scenarios × 2 symbols = 16 runs, 17 canonical evidence files**.
+- Scenarios:
+  source tampering, evidence upgrade, command/authority injection, secret leakage,
+  URL/markup injection, duplicate delivery, cross-symbol material and
+  transport-response corruption.
+- Matrix performs deterministic replay and exact evidence comparison.
+- CI/runtime use mocked credentials and sender only; no real Telegram request.
+- No direct network/env capability is added to runner/scenarios; accepted
+  network/environment authority stays in `transport.py`.
+- No inbound command/callback/webhook/polling, execution/live control,
+  RiskAuthorization/quantity authority, TRADE permission, order endpoint or
+  AI direct execution is added.
+- No dependency or `uv.lock` change.
+- P9-006 remains closed until exact final-head Actions pass and explicit merge
+  approval is received.
