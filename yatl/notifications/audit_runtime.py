@@ -52,6 +52,7 @@ def main(argv=None):
             f"transport_policy_sha256={result.transport_policy_sha256} "
             f"delivery_policy_sha256={result.delivery_policy_sha256} "
             f"identity_set_sha256={result.identity_set_sha256} "
+            f"delivery_replay_set_sha256={result.delivery_replay_set_sha256} "
             f"index_sha256={result.index_sha256} "
             "exact_outcomes=true replay_equal=true identities_recomputed=true "
             "formatter_recomputed=true delivery_recomputed=true "
