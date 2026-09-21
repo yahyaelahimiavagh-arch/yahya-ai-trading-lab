@@ -8,7 +8,6 @@ from pathlib import Path
 
 from .audit import audit_p10
 from .cli import _pipeline, snapshot_json
-from .forward_store import ForwardCandleStore
 from .paper_runner_runtime import build_mock_forward_runner_fixture
 from .scenarios import (
     accepted_validation_fixture,
@@ -53,13 +52,11 @@ def main(argv=None):
             for path in sorted(evidence.iterdir(), key=lambda item: item.name)
         }
 
-        with ForwardCandleStore(database) as accepted_store:
-            result = audit_p10(
-                accepted_store,
-                snapshot,
-                database_sha,
-                evidence,
-            )
+        result = audit_p10(
+            database,
+            snapshot,
+            evidence,
+        )
 
         evidence_after = {
             path.name: path.read_bytes()
