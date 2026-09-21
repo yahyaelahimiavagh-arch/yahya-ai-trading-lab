@@ -11,6 +11,7 @@ from uuid import uuid4
 
 from .contracts import (
     NotificationCategory,
+    NotificationContractError,
     NotificationMessage,
     NotificationSeverity,
     NotificationSourceIdentity,
@@ -88,9 +89,7 @@ class NotificationAcceptedFixture:
         try:
             record = json.loads(self.canonical_batch_json)
             batch = notification_batch_from_record(record)
-        except (json.JSONDecodeError, Exception) as exc:
-            if isinstance(exc, NotificationScenarioError):
-                raise
+        except (json.JSONDecodeError, NotificationContractError, TypeError, ValueError):
             raise NotificationScenarioError("Accepted notification fixture JSON is invalid") from None
         if (
             _json(batch.as_record()) != self.canonical_batch_json
