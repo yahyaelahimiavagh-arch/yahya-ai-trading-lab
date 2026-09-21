@@ -7,11 +7,12 @@ P0 تا P8 با شواهد runtime پذیرفته و روی `main` بسته شد
 squash-merge شد و checkpoint نهایی P8 روی `main` برابر است با
 `fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e`.
 
-P9 به‌طور کامل runtime accepted و merge شده است. P10-001 نیز پذیرفته و در
-checkpoint `326bc85b0c7cf2b456f4a51ad648330b8a9845a0` merge شده است. مرحله جاری
-P10-002 است: baseline واحد `TREND_PULLBACK/1.0.0` و gateهای اقتصادی قبل از
-دیدن forward result فریز می‌شوند. validation window هنوز تا P10-003 بسته است.
-برنامه P10 در `docs/P10-IMPLEMENTATION-PLAN.md` ثبت شده است.
+P9، P10-001 و P10-002 runtime accepted و merge شده‌اند. checkpoint فعلی
+`main` برابر `e327e2b99a0883fc096941db18b27e572561a7d1` است. مرحله جاری
+P10-003 است: مرز no-peek و forward window قبل از ورود هر داده جدید seal می‌شود.
+شروع forward window روی **2026-09-22 00:00 UTC** ثابت است؛ قبل از آن هیچ داده‌ای
+برای P10 قابل قبول نیست. برنامه P10 در `docs/P10-IMPLEMENTATION-PLAN.md`
+ثبت شده است.
 
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
@@ -49,11 +50,11 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 ## مسیر بعدی
 
 مرجع ترتیب اجرا: [نقشه پروژه](docs/MASTER-PLAN.md).
-وضعیت جاری **P0 تا P9 و P10-001 runtime accepted و merge‌شده روی main** است.
-checkpoint فعلی برابر
-`326bc85b0c7cf2b456f4a51ad648330b8a9845a0` است و مرحله جاری
-**P10-002 — Candidate freeze and pre-registered economic gates** روی branch
-`p10-002-candidate-economic-gates` است. P11 تا پذیرش کامل P10 قفل می‌ماند.
+وضعیت جاری **P0 تا P9 و P10-001/P10-002 runtime accepted و merge‌شده روی main**
+است. checkpoint فعلی برابر
+`e327e2b99a0883fc096941db18b27e572561a7d1` است و مرحله جاری
+**P10-003 — New-data window seal and no-peek boundary** روی branch
+`p10-003-forward-window-seal` است. P11 تا پذیرش کامل P10 قفل می‌ماند.
 
 P9 برای رسیدن سریع‌تر به P10 عمداً محدود است: status/alertهای accepted و sanitized
 را به notificationهای information-only تبدیل می‌کند. transport واقعی Telegram
