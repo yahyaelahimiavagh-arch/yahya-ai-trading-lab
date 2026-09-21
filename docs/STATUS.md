@@ -2480,3 +2480,55 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
 - No execution/account/risk/network/provider capability, credential, trade
   permission, order endpoint, Live candidate or AI direct execution is added.
 - P10-002 remains closed until exact Final-HEAD CI and explicit merge approval.
+
+
+## P10-001 accepted implementation — 2026-09-21
+
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `326bc85`**.
+
+- PR #68 exact final candidate HEAD:
+  `ea6532c617b7c78137fc3c396055bc314e70e464`.
+- Matching GitHub Actions: `35573516304` — both jobs PASS.
+- Complete suite: **1296/1296 PASS**.
+- Focused P10-001: **21/21 PASS**.
+- Frozen validation policy SHA-256:
+  `a85981d7ec835b584907bc89f3cff62b662a11d46c163900101ad46a213aa2c2`.
+- Frozen preregistration charter SHA-256:
+  `9d44d28de13445fcacbf5dad85ec0257ae65d198cf75ec26fb95c81fb1dffa71`.
+- PR #68 squash-merged; accepted checkpoint:
+  `326bc85b0c7cf2b456f4a51ad648330b8a9845a0`.
+- No forward data was loaded and no economic result was computed.
+
+## P10-002 current candidate — 2026-09-21
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry checkpoint: accepted P10-001 at
+  `326bc85b0c7cf2b456f4a51ad648330b8a9845a0`.
+- Branch: `p10-002-candidate-economic-gates`.
+- Baseline candidate:
+  `TREND_PULLBACK/1.0.0`.
+- Candidate configuration SHA-256:
+  `98301c6ee14e9ee01ffdbb1ca68cdce4c0ea0db6a504fc6e4e280bd9f027e20a`.
+- Candidate source blob identities for contracts/features/regime/registry/trend
+  are frozen and checked against the checkout.
+- Candidate selection uses accepted **sample feasibility only**:
+  TREND_PULLBACK 31 trades vs RANGE_BREAKOUT 4; both remain
+  `INSUFFICIENT_EVIDENCE`; historical return is not used.
+- Frozen costs: initial Paper equity 10,000; fee 10 bps; slippage 5 bps.
+- Accepted P4 risk snapshot is frozen unchanged.
+- Pre-registered economic gates:
+  90 days; 60 pooled completed trades; 20 per symbol; net return after costs
+  >=2%; profit factor >=1.10; drawdown <=8%; 2/3 positive segments; no segment
+  worse than -4%; positive net PnL on each symbol.
+- Regime gate: at least 2 distinct regimes observed; entries only in TREND_UP;
+  out-of-regime entries = 0.
+- Failure/recovery and risk-control violations are zero-tolerance; Kill Switch
+  recovery requires clear evidence plus manual reset.
+- Candidate is frozen and gates are registered.
+- Forward validation window remains `NOT_OPEN`; no forward data is collected;
+  no economic result exists; strategy evidence remains
+  `INSUFFICIENT_EVIDENCE`.
+- P11 remains locked.
+- No dependency or `uv.lock` change.
+- P10-003 remains closed until exact Final-HEAD Actions and explicit merge.

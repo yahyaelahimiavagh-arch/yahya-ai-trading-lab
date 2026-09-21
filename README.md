@@ -7,12 +7,11 @@ P0 تا P8 با شواهد runtime پذیرفته و روی `main` بسته شد
 squash-merge شد و checkpoint نهایی P8 روی `main` برابر است با
 `fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e`.
 
-P9 به‌طور کامل runtime accepted و merge شده است. checkpoint نهایی P9 برابر
-`60d7e267fdd878f513afb2a8febb30d509b61314` است. P10 اکنون فاز جاری پروژه
-است و با P10-001 preregistration-only آغاز می‌شود: معیارهای اقتصادی قبل از دیدن
-forward result فریز می‌شوند، ولی candidate، thresholdهای عددی و validation window
-تا P10-002/P10-003 بسته می‌مانند. برنامه P10 در
-`docs/P10-IMPLEMENTATION-PLAN.md` ثبت شده است.
+P9 به‌طور کامل runtime accepted و merge شده است. P10-001 نیز پذیرفته و در
+checkpoint `326bc85b0c7cf2b456f4a51ad648330b8a9845a0` merge شده است. مرحله جاری
+P10-002 است: baseline واحد `TREND_PULLBACK/1.0.0` و gateهای اقتصادی قبل از
+دیدن forward result فریز می‌شوند. validation window هنوز تا P10-003 بسته است.
+برنامه P10 در `docs/P10-IMPLEMENTATION-PLAN.md` ثبت شده است.
 
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
@@ -50,11 +49,11 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 ## مسیر بعدی
 
 مرجع ترتیب اجرا: [نقشه پروژه](docs/MASTER-PLAN.md).
-وضعیت جاری **P0 تا P9 runtime accepted و merge‌شده روی main** است. checkpoint
-نهایی P9 برابر
-`60d7e267fdd878f513afb2a8febb30d509b61314` است و مرحله جاری
-**P10-001 — Validation policy and immutable preregistration contracts** روی branch
-`p10-001-validation-policy-contracts` است. P11 تا پذیرش کامل P10 قفل می‌ماند.
+وضعیت جاری **P0 تا P9 و P10-001 runtime accepted و merge‌شده روی main** است.
+checkpoint فعلی برابر
+`326bc85b0c7cf2b456f4a51ad648330b8a9845a0` است و مرحله جاری
+**P10-002 — Candidate freeze and pre-registered economic gates** روی branch
+`p10-002-candidate-economic-gates` است. P11 تا پذیرش کامل P10 قفل می‌ماند.
 
 P9 برای رسیدن سریع‌تر به P10 عمداً محدود است: status/alertهای accepted و sanitized
 را به notificationهای information-only تبدیل می‌کند. transport واقعی Telegram
