@@ -35,7 +35,6 @@ VALIDATION_CLI_SCHEMA_VERSION = 1
 VALIDATION_EXPORT_SCHEMA_VERSION = 1
 MAX_SNAPSHOT_BYTES = 128 * 1024
 MAX_DATABASE_BYTES = 512 * 1024 * 1024
-MAX_WAL_BYTES = 128 * 1024 * 1024
 MAX_CLI_OUTPUT_BYTES = 32 * 1024
 MAX_EXPORT_BYTES = 2 * 1024 * 1024
 
@@ -170,17 +169,71 @@ def _read_regular_bounded(path, max_bytes):
             os.close(descriptor)
 
 
-def _copy_regular_bounded(source, target, max_bytes):
-    raw = _read_regular_bounded(source, max_bytes)
+def _stream_digest_regular(path, max_bytes, *, target=None):
+    if not _valid_path(path) or type(max_bytes) is not int or max_bytes <= 0:
+        raise ValidationCliError(ValidationCliCode.INVALID_REQUEST)
+    flags = os.O_RDONLY
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    source_fd = None
+    target_handle = None
     try:
-        with Path(target).open("xb") as handle:
-            handle.write(raw)
-            handle.flush()
-            os.fsync(handle.fileno())
+        source_fd = os.open(os.fspath(path), flags)
+        before = os.fstat(source_fd)
+        if (
+            not stat.S_ISREG(before.st_mode)
+            or before.st_size <= 0
+            or before.st_size > max_bytes
+        ):
+            raise ValidationCliError(ValidationCliCode.SOURCE_REJECTED)
+        if target is not None:
+            target_handle = Path(target).open("xb")
+        digest = hashlib.sha256()
+        remaining = before.st_size
+        while remaining:
+            chunk = os.read(source_fd, min(remaining, 64 * 1024))
+            if not chunk:
+                raise ValidationCliError(ValidationCliCode.SOURCE_REJECTED)
+            digest.update(chunk)
+            if target_handle is not None:
+                target_handle.write(chunk)
+            remaining -= len(chunk)
+        after = os.fstat(source_fd)
+        if (
+            after.st_size != before.st_size
+            or after.st_mtime_ns != before.st_mtime_ns
+            or after.st_ctime_ns != before.st_ctime_ns
+        ):
+            raise ValidationCliError(ValidationCliCode.SOURCE_REJECTED)
+        if target_handle is not None:
+            target_handle.flush()
+            os.fsync(target_handle.fileno())
+        return digest.hexdigest()
+    except ValidationCliError:
+        raise
     except OSError:
-        raise ValidationCliError(ValidationCliCode.STORAGE_ERROR) from None
-    return _sha256_bytes(raw)
+        code = (
+            ValidationCliCode.STORAGE_ERROR
+            if target is not None
+            else ValidationCliCode.SOURCE_REJECTED
+        )
+        raise ValidationCliError(code) from None
+    finally:
+        if target_handle is not None:
+            target_handle.close()
+        if source_fd is not None:
+            os.close(source_fd)
 
+
+def _active_sqlite_sidecar(source):
+    for suffix in ("-wal", "-shm"):
+        sidecar = Path(str(source) + suffix)
+        try:
+            if sidecar.is_symlink() or sidecar.exists():
+                return True
+        except OSError:
+            raise ValidationCliError(ValidationCliCode.SOURCE_REJECTED) from None
+    return False
 
 def _load_snapshot(path):
     raw = _read_regular_bounded(path, MAX_SNAPSHOT_BYTES)
@@ -226,15 +279,25 @@ def _copy_database_family(database_path, directory):
         raise ValidationCliError(ValidationCliCode.INVALID_REQUEST)
     source = Path(database_path)
     target = Path(directory) / "p10-forward.sqlite3"
-    database_sha = _copy_regular_bounded(source, target, MAX_DATABASE_BYTES)
-    wal = Path(str(source) + "-wal")
-    try:
-        wal_exists = wal.exists()
-    except OSError:
-        raise ValidationCliError(ValidationCliCode.SOURCE_REJECTED) from None
-    if wal_exists:
-        _copy_regular_bounded(wal, Path(str(target) + "-wal"), MAX_WAL_BYTES)
-    return target, database_sha
+
+    # A live WAL/SHM means the evidence may still be changing. P10-008 never
+    # tries to reconstruct across a concurrent writer; the operator must retry
+    # after the collector closes its transaction/store.
+    if _active_sqlite_sidecar(source):
+        raise ValidationCliError(ValidationCliCode.SOURCE_REJECTED)
+
+    copied_sha = _stream_digest_regular(
+        source,
+        MAX_DATABASE_BYTES,
+        target=target,
+    )
+    if _active_sqlite_sidecar(source):
+        raise ValidationCliError(ValidationCliCode.SOURCE_REJECTED)
+
+    replay_sha = _stream_digest_regular(source, MAX_DATABASE_BYTES)
+    if replay_sha != copied_sha or _active_sqlite_sidecar(source):
+        raise ValidationCliError(ValidationCliCode.SOURCE_REJECTED)
+    return target, copied_sha
 
 
 def _pipeline(database_path, snapshot_path):
