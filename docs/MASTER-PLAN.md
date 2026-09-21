@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P9 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P10-008 GUARDED VALIDATION EXPORT / CLI — CANDIDATE**
+قدم جاری: **P10-009 ADVERSARIAL FORWARD-VALIDATION MATRIX — CANDIDATE**
 
 ## منشأ و حدود سند
 
@@ -83,7 +83,7 @@ Dashboard به‌تنهایی معیار موفقیت اقتصادی نیستن�
 | P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | **RUNTIME ACCEPTED — checkpoint `93b9d87`** |
 | P8 Dashboard | نمایش وضعیت، معاملات، عملکرد و خطاها | **RUNTIME ACCEPTED — checkpoint `fe973e8`** |
 | P9 Telegram | هشدار و notification محدود طبق قواعد امنیتی | **RUNTIME ACCEPTED — checkpoint `60d7e267`** |
-| P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | **P10-008 CURRENT CANDIDATE** |
+| P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | **P10-009 CURRENT CANDIDATE** |
 | P11 Tiny Live Candidate | فقط پس از پذیرش P10، ممیزی امنیت، الزامات حساب و تأیید صریح | LOCKED |
 
 ## نمای پیشرفت فعلی — 2026-09-20
@@ -1050,3 +1050,20 @@ upstream P10 evidence را read-only snapshot می‌کند، وجود WAL/SHM �
 رد می‌کند و replay/economics/gate را فقط روی temporary copy اجرا می‌کند. export
 canonical SHA-256 دارد، atomic و strict no-overwrite است، path/secret را echo نمی‌کند،
 `INSUFFICIENT_EVIDENCE` را ارتقا نمی‌دهد و P11 را بسته نگه می‌دارد.
+
+
+## P10-008 acceptance / P10-009 candidate — 2026-09-21
+
+P10-008 با PR #75 و exact Final HEAD
+`a26d7a96c6c9ffcacbdfa81ac195f6d53562f322` روی matching Actions
+`35628760039` پذیرفته شد؛ هر دو job PASS، full suite برابر **1455/1455** و
+focused P10-008 برابر **27/27** بود. canonical audit SHA-256 برابر
+`1c11ea83affa5dd8d55644a573e765bb83435d0be6e39135384c9d79dda16be8`
+بود. PR #75 با همان expected HEAD squash-merge شد و checkpoint جدید `main`
+برابر `24190b29e769212bbc1a2cee376cc6fc6fc0ec88` است.
+
+P10-009 فقط adversarial validation evidence تولید می‌کند. همه attackها دوباره
+re-sign می‌شوند تا ردشدن متکی به stale outer hash نباشد. accepted candidate،
+gate registry، sealed window، provenance، Paper/economics/gate identities باید
+در تمام سناریوها ثابت بمانند. هیچ network، credential، order، sizing، threshold
+tuning یا Live authorization اضافه نمی‌شود و P11 بسته می‌ماند.
