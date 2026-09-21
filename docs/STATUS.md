@@ -2532,3 +2532,57 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
 - P11 remains locked.
 - No dependency or `uv.lock` change.
 - P10-003 remains closed until exact Final-HEAD Actions and explicit merge.
+
+
+## P10-002 accepted implementation — 2026-09-21
+
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `e327e2b`**.
+
+- PR #69 exact final candidate HEAD:
+  `8161f96dff29e076ef34cc8198073c18c42a647f`.
+- Matching GitHub Actions: `35574963153` — both jobs PASS.
+- Complete suite: **1319/1319 PASS**.
+- Focused P10-002: **23/23 PASS**.
+- Frozen candidate:
+  `TREND_PULLBACK/1.0.0`.
+- Candidate SHA-256:
+  `64f2e116616f84e09fbf70a19977395eac99b16fe7e24a283dd53a8b0b84ac86`.
+- Gate-registry SHA-256:
+  `f8d706df050bb095219ae4b76e400eff73e1a7a6755c4a197d489b03117a3e95`.
+- Candidate+gate registration SHA-256:
+  `0e4914e98754bceebf9dc99cc0ae7ab65b2b1a5b135c1fd9d736a071d843f14e`.
+- PR #69 squash-merged; accepted checkpoint:
+  `e327e2b99a0883fc096941db18b27e572561a7d1`.
+- No forward data was loaded and no economic result was computed.
+
+## P10-003 current candidate — 2026-09-21
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry checkpoint: accepted P10-002 at
+  `e327e2b99a0883fc096941db18b27e572561a7d1`.
+- Branch: `p10-003-forward-window-seal`.
+- Accepted source remains `BINANCE_SPOT_PUBLIC`, bound to tracked P1 manifest
+  Git blob `d86ce9d2344ef3ece54c27d3271aebb2f28399c8`.
+- P3 accepted development evidence ends at
+  `1788912000000` (2026-09-09 00:00 UTC).
+- Accepted historical source material ends no later than
+  `1788970500000` (2026-09-09 16:15 UTC).
+- Seal timestamp is `1789978020000`
+  (2026-09-21 08:07 UTC).
+- Forward window starts at `1790035200000`
+  (2026-09-22 00:00 UTC), aligned to 15m / 1h / 4h.
+- Earliest evaluation after the 90-day gate is
+  `1797811200000` (2026-12-21 00:00 UTC).
+- The evaluation window may extend beyond 90 days if the frozen trade-count gates
+  are still insufficient; candidate/gates may not change.
+- P10-003 carries only source/symbol/interval/time identity and no OHLCV values.
+- Pre-window data, historical backfill disguised as forward, wrong source,
+  cross-symbol/cross-interval material, misalignment, open observations,
+  candidate/gate mutation and lookahead fail closed.
+- Window state is `SEALED`; forward collection remains `NOT_COLLECTED`;
+  economic evaluation remains `NOT_EVALUATED`; evidence remains
+  `INSUFFICIENT_EVIDENCE`.
+- P11 remains locked.
+- No dependency or `uv.lock` change.
+- P10-004 remains closed until exact Final-HEAD Actions and explicit merge.
