@@ -486,6 +486,19 @@ Current P10-009 candidate semantics:
 - no network/credential/order/risk-authorization/threshold-tuning/AI authority is
   added; strategy evidence remains `INSUFFICIENT_EVIDENCE` and P11 remains locked.
 
+P10-009 final acceptance evidence:
+- PR #76 exact final candidate HEAD:
+  `1e25910851d2672e8fcd5e76a89a9ea043b20ac3`;
+- matching GitHub Actions run: `35631525673`, both jobs PASS;
+- complete suite: **1476/1476 PASS**;
+- focused P10-009: **21/21 PASS**;
+- adversarial scenario count: **11**;
+- matrix SHA-256:
+  `e9b36b749519c4793b94913e3d40c56aaf3aa60a82d42138cc17683568528b93`;
+- P11 remained locked and all trade/order/AI authority flags stayed false;
+- PR #76 squash-merged at checkpoint
+  `7baf3c7000bb66d406fa8348692f73d9907d3f15`.
+
 ### P10-010 — Independent final economic audit
 
 Independently recompute the full P10 chain:
@@ -506,6 +519,24 @@ Even `PASS_CANDIDATE` is not a guarantee of future profit.
 
 Acceptance: independent exact recomputation, no hidden threshold/candidate drift,
 matching Final-HEAD CI evidence and explicit operator merge approval.
+
+Current P10-010 candidate semantics:
+- independently verifies the frozen candidate, economic gate registry and sealed window
+  against exact accepted SHA-256 identities;
+- reproduces the exact accepted snapshot/store contents and rejects material outside the
+  admitted snapshot scope;
+- recomputes the frozen forward Paper run, reconciled economics and all seven P10 gates;
+- independently reconstructs the canonical P10-008 audit record and requires exact equality
+  with the accepted export schema;
+- recomputes the full 11-scenario P10-009 matrix and requires published evidence to match
+  byte-for-byte without mutation;
+- final disposition is copied only from the recomputed P10-007 gate result;
+- `INSUFFICIENT_DATA` means continue forward observation with unchanged candidate/gates;
+- `FAIL` means end this validation attempt and require a new research/registration cycle;
+- `PASS_CANDIDATE` means Paper economic acceptance only and allows P11 consideration,
+  but never sets `p11_unlocked=true` and never creates Live authorization;
+- source, store and evidence are read-only; no credential/network/order/sizing/AI authority
+  is added by the audit itself.
 
 ## Phase transition
 
