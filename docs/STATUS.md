@@ -2139,3 +2139,55 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
 - No dependency or `uv.lock` change.
 - P9-002 remains closed until this exact candidate receives matching final-head
   GitHub Actions evidence and explicit merge approval.
+
+
+## P9-001 accepted implementation — 2026-09-20
+
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `fa77126`**.
+
+- PR #62 exact final candidate HEAD:
+  `58c02a4a6054eb1029c43c15c71c1717cf6b0aca`.
+- Matching GitHub Actions: `35536327437` — both jobs PASS.
+- Complete suite: **1160/1160 PASS**.
+- Focused P9-001: **21/21 PASS**.
+- Frozen policy SHA-256:
+  `e5274de931300114fccffc772c971c99b5ba140a2632d98f897687e591be0a35`.
+- Runtime batch SHA-256:
+  `a99852b6eff7c25b2ddd94219cdc16f2406688e8019ec54b86074b613476be50`.
+- PR #62 squash-merged; accepted checkpoint:
+  `fa77126d22b8091eff5d355c8bd7cbd816901874`.
+- No dependency or `uv.lock` change.
+- No Telegram transport, Bot token, Chat ID, network path, inbound command,
+  execution/live control, RiskAuthorization/quantity authority, TRADE permission,
+  order endpoint or AI direct execution was introduced.
+
+## P9-002 current candidate — 2026-09-20
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry checkpoint: accepted P9-001 at
+  `fa77126d22b8091eff5d355c8bd7cbd816901874`.
+- Branch: `p9-002-upstream-projection-formatter`.
+- Adds explicit production adapters from closed P8 view material into P9-001
+  immutable notification contracts.
+- System-status adapter accepts only `DashboardOverviewProjection`, binds its
+  exact overview SHA-256 and event time, preserves PAPER ONLY,
+  `LIVE_MASTER_LOCK=OFF`, `INSUFFICIENT_EVIDENCE`, P7 quality PASS and exact
+  completed-trade count.
+- `open_trade_count` and `snapshot_freshness` are required to remain
+  `UNKNOWN`; no value is inferred.
+- Data-quality adapter accepts only sanitized fail-closed
+  `QualityDiagnosticProjection` with analytics publication blocked; PASS and
+  ABSENT are not converted into alerts.
+- Deterministic formatter uses `PLAIN_TEXT_NO_PARSE_MODE`, bounded output,
+  explicit source/event SHA identity and information-only actionability.
+- Runtime exercises accepted P7 → P8 overview → P9 system status plus sanitized
+  failed P7 quality → P8 diagnostic projection → P9 alert.
+- Adds focused P9-002 tests and source-safety/runtime CI gates.
+- No Telegram API call, credential/environment access, network/provider transport,
+  inbound command/callback/webhook/polling, execution/account/risk import,
+  RiskAuthorization/quantity authority, strategy optimizer, TRADE permission,
+  order endpoint or AI direct execution is added.
+- No dependency or `uv.lock` change.
+- P9-003 remains closed until exact final-head Actions pass and explicit merge
+  approval is received.

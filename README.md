@@ -7,12 +7,13 @@ P0 تا P8 با شواهد runtime پذیرفته و روی `main` بسته شد
 squash-merge شد و checkpoint نهایی P8 روی `main` برابر است با
 `fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e`.
 
-P9 — Telegram اکنون باز شده است، اما minimum-sufficient باقی می‌ماند. P9-001 فقط
-policy و قراردادهای immutable/read-only notification را با
-`transport_mode=NONE` تعریف می‌کند. در این checkpoint هیچ Telegram API call،
-Bot token، Chat ID، inbound command، webhook/polling، execution control، TRADE
-permission یا order endpoint وجود ندارد. برنامه ترتیبی P9 در
-`docs/P9-IMPLEMENTATION-PLAN.md` ثبت شده است.
+P9 — Telegram اکنون باز شده و minimum-sufficient باقی می‌ماند. P9-001 در
+checkpoint `fa77126d22b8091eff5d355c8bd7cbd816901874` پذیرفته و merge شده است.
+P9-002 فقط accepted P8 overview/quality material را به notificationهای
+information-only تبدیل و به plain text deterministic آفلاین format می‌کند.
+هنوز هیچ Telegram API call، Bot token، Chat ID، inbound command، webhook/polling،
+execution control، TRADE permission یا order endpoint وجود ندارد. برنامه ترتیبی
+P9 در `docs/P9-IMPLEMENTATION-PLAN.md` ثبت شده است.
 
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
@@ -53,8 +54,8 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 وضعیت جاری **P0 تا P8 runtime accepted و merge‌شده روی main** است. checkpoint
 نهایی P8 برابر
 `fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e` است و مرحله جاری
-**P9-001 — Notification policy and immutable contracts** روی branch
-`p9-001-notification-policy-contracts` است.
+**P9-002 — Accepted upstream projection and deterministic formatter** روی branch
+`p9-002-upstream-projection-formatter` است.
 
 P9 برای رسیدن سریع‌تر به P10 عمداً محدود است: status/alertهای accepted و sanitized
 را به notificationهای information-only تبدیل می‌کند. transport واقعی Telegram

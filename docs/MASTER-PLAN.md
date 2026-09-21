@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P8 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P9-001 NOTIFICATION POLICY / IMMUTABLE CONTRACTS — CANDIDATE**
+قدم جاری: **P9-002 ACCEPTED UPSTREAM PROJECTION / FORMATTER — CANDIDATE**
 
 ## منشأ و حدود سند
 
@@ -734,3 +734,23 @@ baseline با evidence، ترجیحاً OOS/forward، تحت همان fee/slippa
 اصول اقتصادی حاکم بدون تغییرند: Profitability > Complexity؛ Evidence > Number
 of analyses؛ OOS/Forward evidence > attractive backtest؛ Risk-adjusted
 persistence > raw profit؛ One profitable edge > many unproven signals.
+
+
+## P9-001 acceptance / P9-002 candidate — 2026-09-20
+
+P9-001 با PR #62 و matching Actions `35536327437`، **1160/1160** تست کامل و
+**21/21** تست focused پذیرفته و در checkpoint
+`fa77126d22b8091eff5d355c8bd7cbd816901874` روی `main` squash-merge شد.
+policy SHA-256 ثابت P9 برابر
+`e5274de931300114fccffc772c971c99b5ba140a2632d98f897687e591be0a35` است.
+
+P9-002 روی branch `p9-002-upstream-projection-formatter` فقط accepted/sanitized
+upstream projection و deterministic formatter آفلاین را می‌سازد. scope عمداً به
+sourceهای واقعاً موجود محدود است: P8 overview برای system status و P8 sanitized
+quality FAIL برای data-quality alert. مقادیر ناموجود مانند open trade count و
+snapshot freshness جعل نمی‌شوند و `UNKNOWN` باقی می‌مانند. PASS به alert تبدیل
+نمی‌شود و ABSENT source ساخته نمی‌شود.
+
+Formatter فقط plain text bounded با `PLAIN_TEXT_NO_PARSE_MODE` می‌سازد و هیچ
+Telegram API call، token/chat ID، network transport یا command surface ندارد.
+P9-003 تا پذیرش و merge مستقل P9-002 بسته می‌ماند.
