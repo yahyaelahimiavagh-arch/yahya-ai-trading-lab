@@ -2735,9 +2735,9 @@ Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `846be619`**.
 - P10-007 opened only after explicit merge approval.
 
 
-## P10-007 current candidate — 2026-09-21
+## P10-007 accepted implementation — 2026-09-21
 
-Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `4bd187fe`**.
 
 - Entry checkpoint: accepted P10-006 at
   `846be6190ce936425e546ecca7528fed979aab7f`.
@@ -2751,15 +2751,43 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
 - Drawdown above 8%, any entry outside `TREND_UP`, unresolved safety/recovery
   breach or risk-control violation can fail immediately.
 - Three equal time segments use completed-trade exit attribution; final open
-  net-liquidation PnL, if any, is assigned only to the final segment so segment
-  PnL reconciles to P10-006 pooled net equity.
-- Regime classification is recomputed point-in-time from the exact accepted store;
-  `UNKNOWN` is reported but does not count toward the two-regime requirement.
-- Kill Switch remains latch-only in P10-005. Any latch without accepted clear
-  observation + manual reset evidence is unresolved and fails the recovery gate.
+  net-liquidation PnL, if any, is assigned only to the final segment.
+- Regime classification is recomputed point-in-time from the exact accepted store.
+- Kill Switch remains latch-only without accepted clear observation + manual reset.
 - `PASS_CANDIDATE` is not Live authorization; strategy evidence remains
   `INSUFFICIENT_EVIDENCE`, P11 remains locked, and trade/order/AI execution
   permissions stay false.
-- Mocked CI uses no real forward data and no network in the gate module.
+- Final candidate HEAD:
+  `d0b51c50896ce6bff00d1fad1e6f7d37b25485f9`.
+- Matching Actions: `35620212752`; both jobs PASS.
+- Full suite: **1428/1428 PASS**; P10-005 regression **12/12 PASS**;
+  P10-006 **26/26 PASS**; focused P10-007 **25/25 PASS**.
+- Mocked gate disposition: `INSUFFICIENT_DATA`.
+- Mocked gate report SHA-256:
+  `a7761f5ee0b9c6a61626dae15dc93bc430c0f96387189e8d39e85f22cb0bdd2b`.
+- PR #74 squash-merged with the exact expected HEAD; accepted checkpoint:
+  `4bd187fe5780c1f672a6d386887fcf6fb0bc82c4`.
+
+## P10-008 current candidate — 2026-09-21
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry checkpoint: accepted P10-007 at
+  `4bd187fe5780c1f672a6d386887fcf6fb0bc82c4`.
+- Branch: `p10-008-validation-cli-export`.
+- Adds bounded local noninteractive `status`, `summary` and `export` commands.
+- Reconstructs the exact P10 chain from a canonical ingestion snapshot and a
+  stable local copy of the accepted P10 SQLite evidence.
+- Upstream database evidence is never opened writable by the CLI. Active
+  `-wal` or `-shm` sidecars fail closed so a concurrent writer cannot be
+  mislabeled as a stable audit snapshot.
+- Runner/economics/gate replay occurs only in a temporary workspace.
+- Export packages candidate, gate registry, sealed window, provenance, bounded
+  forward-Paper summary, economics and gate result into one canonical artifact.
+- Export SHA-256 is deterministic, output is bounded/redacted, publication is
+  atomic and overwrite is never permitted.
+- CLI has no collector, credential, network, order or AI execution capability.
+- Strategy evidence remains `INSUFFICIENT_EVIDENCE`; P11 remains locked.
 - No dependency or `uv.lock` change.
-- P10-008 remains closed until exact Final-HEAD Actions and explicit merge.
+- P10-009 remains closed until exact Final-HEAD Actions and explicit merge.
+\n

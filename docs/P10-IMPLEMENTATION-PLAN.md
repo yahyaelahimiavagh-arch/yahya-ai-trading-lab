@@ -404,6 +404,20 @@ Current P10-007 candidate semantics:
 - no threshold, candidate, quantity, credential, network or execution authority is
   added; strategy evidence remains `INSUFFICIENT_EVIDENCE` and P11 remains locked.
 
+P10-007 final acceptance evidence:
+- PR #74 exact final candidate HEAD:
+  `d0b51c50896ce6bff00d1fad1e6f7d37b25485f9`;
+- matching GitHub Actions run: `35620212752`, both jobs PASS;
+- complete suite: **1428/1428 PASS**;
+- focused P10-005 regression: **12/12 PASS**;
+- focused P10-006: **26/26 PASS**;
+- focused P10-007: **25/25 PASS**;
+- mocked gate disposition: `INSUFFICIENT_DATA`;
+- mocked gate SHA-256:
+  `a7761f5ee0b9c6a61626dae15dc93bc430c0f96387189e8d39e85f22cb0bdd2b`;
+- PR #74 squash-merged at checkpoint
+  `4bd187fe5780c1f672a6d386887fcf6fb0bc82c4`.
+
 ### P10-008 — Guarded validation export and CLI
 
 Expose bounded local noninteractive status/summary/export commands for P10
@@ -415,6 +429,22 @@ evidence.
 
 Acceptance: stable exit codes, bounded/redacted output, atomic no-overwrite
 export, canonical SHA-256 and source-safety scans.
+
+Current P10-008 candidate semantics:
+- local commands are `status`, `summary` and `export`; all are noninteractive;
+- canonical ingestion snapshot input must reconstruct exactly through the accepted
+  P10-004 schema;
+- upstream SQLite is never opened writable by the CLI and active WAL/SHM evidence
+  fails closed rather than being copied across a concurrent writer;
+- a stable database snapshot is replayed only inside a temporary workspace;
+- the audit package contains candidate, frozen gate registry, sealed window,
+  provenance, bounded forward-Paper metrics, exact economics and gate result;
+- artifact publication is atomic and strict no-overwrite; there is no overwrite flag;
+- caller paths, secret-like material and raw errors are not echoed;
+- the CLI adds no market-data collection, credential, network, order, quantity,
+  threshold-tuning or AI execution authority;
+- `PASS_CANDIDATE` remains Paper-only, strategy evidence stays
+  `INSUFFICIENT_EVIDENCE`, and P11 remains locked.
 
 ### P10-009 — Adversarial forward-validation matrix
 

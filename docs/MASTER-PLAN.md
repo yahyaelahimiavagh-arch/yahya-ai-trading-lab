@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P9 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P10-007 CONSISTENCY / REGIME / FAILURE-RECOVERY GATE — CANDIDATE**
+قدم جاری: **P10-008 GUARDED VALIDATION EXPORT / CLI — CANDIDATE**
 
 ## منشأ و حدود سند
 
@@ -83,7 +83,7 @@ Dashboard به‌تنهایی معیار موفقیت اقتصادی نیستن�
 | P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | **RUNTIME ACCEPTED — checkpoint `93b9d87`** |
 | P8 Dashboard | نمایش وضعیت، معاملات، عملکرد و خطاها | **RUNTIME ACCEPTED — checkpoint `fe973e8`** |
 | P9 Telegram | هشدار و notification محدود طبق قواعد امنیتی | **RUNTIME ACCEPTED — checkpoint `60d7e267`** |
-| P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | **P10-007 CURRENT CANDIDATE** |
+| P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | **P10-008 CURRENT CANDIDATE** |
 | P11 Tiny Live Candidate | فقط پس از پذیرش P10، ممیزی امنیت، الزامات حساب و تأیید صریح | LOCKED |
 
 ## نمای پیشرفت فعلی — 2026-09-20
@@ -1030,3 +1030,23 @@ failure/recovery یا risk-control می‌تواند زودتر `FAIL` شود. �
 بازسازی می‌شود و هر Kill Switch latch بدون clear + manual-reset evidence unresolved
 است. `PASS_CANDIDATE` همچنان Paper-only است، evidence را ارتقا نمی‌دهد و P11
 را باز نمی‌کند.
+
+
+## P10-007 acceptance / P10-008 candidate — 2026-09-21
+
+P10-007 با PR #74 و exact Final HEAD
+`d0b51c50896ce6bff00d1fad1e6f7d37b25485f9` روی matching Actions
+`35620212752` پذیرفته شد؛ هر دو job PASS، full suite برابر **1428/1428**،
+focused P10-005 برابر **12/12**، focused P10-006 برابر **26/26** و focused
+P10-007 برابر **25/25** بود. mocked gate disposition برابر
+`INSUFFICIENT_DATA` و report SHA-256 برابر
+`a7761f5ee0b9c6a61626dae15dc93bc430c0f96387189e8d39e85f22cb0bdd2b` بود.
+PR #74 با همان expected HEAD به روش squash merge شد و checkpoint جدید `main`
+برابر `4bd187fe5780c1f672a6d386887fcf6fb0bc82c4` است.
+
+P10-008 candidate/gate/window را تغییر نمی‌دهد و هیچ network collection یا execution
+authority اضافه نمی‌کند. CLI فقط status/summary/export محلی و bounded ارائه می‌دهد،
+upstream P10 evidence را read-only snapshot می‌کند، وجود WAL/SHM فعال را fail-closed
+رد می‌کند و replay/economics/gate را فقط روی temporary copy اجرا می‌کند. export
+canonical SHA-256 دارد، atomic و strict no-overwrite است، path/secret را echo نمی‌کند،
+`INSUFFICIENT_EVIDENCE` را ارتقا نمی‌دهد و P11 را بسته نگه می‌دارد.

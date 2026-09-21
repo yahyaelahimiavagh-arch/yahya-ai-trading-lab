@@ -234,3 +234,28 @@ __all__ += [
     "GateDisposition",
     "evaluate_forward_gate",
 ]
+
+
+from .cli import (
+    VALIDATION_CLI_SCHEMA_VERSION,
+    VALIDATION_EXPORT_SCHEMA_VERSION,
+    ValidationCliCode,
+    ValidationCliError,
+    ValidationEvidenceBundle,
+    snapshot_json,
+    validation_export,
+    validation_status,
+    validation_summary,
+)
+
+__all__ += [
+    "VALIDATION_CLI_SCHEMA_VERSION",
+    "VALIDATION_EXPORT_SCHEMA_VERSION",
+    "ValidationCliCode",
+    "ValidationCliError",
+    "ValidationEvidenceBundle",
+    "snapshot_json",
+    "validation_export",
+    "validation_status",
+    "validation_summary",
+]
