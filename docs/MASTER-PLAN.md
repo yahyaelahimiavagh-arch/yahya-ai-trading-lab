@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P9 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P10-001 VALIDATION POLICY / PREREGISTRATION CONTRACTS — CANDIDATE**
+قدم جاری: **P10-002 CANDIDATE FREEZE / ECONOMIC GATES — CANDIDATE**
 
 ## منشأ و حدود سند
 
@@ -83,7 +83,7 @@ Dashboard به‌تنهایی معیار موفقیت اقتصادی نیستن�
 | P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | **RUNTIME ACCEPTED — checkpoint `93b9d87`** |
 | P8 Dashboard | نمایش وضعیت، معاملات، عملکرد و خطاها | **RUNTIME ACCEPTED — checkpoint `fe973e8`** |
 | P9 Telegram | هشدار و notification محدود طبق قواعد امنیتی | **RUNTIME ACCEPTED — checkpoint `60d7e267`** |
-| P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | **P10-001 CURRENT CANDIDATE** |
+| P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | **P10-002 CURRENT CANDIDATE** |
 | P11 Tiny Live Candidate | فقط پس از پذیرش P10، ممیزی امنیت، الزامات حساب و تأیید صریح | LOCKED |
 
 ## نمای پیشرفت فعلی — 2026-09-20
@@ -883,3 +883,29 @@ failure/recovery و risk controls. P4 limits بدون شل‌شدن به P10 م�
 new data را باز نمی‌کند. P10-002 باید candidate و gateهای اقتصادی عددی را قبل از
 شروع window فریز کند. بنابراین نتیجه‌ای از P10-001 نمی‌تواند به‌عنوان edge،
 profitability، Live readiness یا اجازه ورود به P11 تفسیر شود.
+
+
+## P10-001 acceptance / P10-002 candidate — 2026-09-21
+
+P10-001 با PR #68، Final HEAD
+`ea6532c617b7c78137fc3c396055bc314e70e464` و matching Actions
+`35573516304` پذیرفته شد: **1296/1296** full suite و **21/21** focused.
+policy SHA برابر
+`a85981d7ec835b584907bc89f3cff62b662a11d46c163900101ad46a213aa2c2`
+و charter SHA برابر
+`9d44d28de13445fcacbf5dad85ec0257ae65d198cf75ec26fb95c81fb1dffa71`
+است. PR #68 squash-merge و checkpoint جدید `main` برابر
+`326bc85b0c7cf2b456f4a51ad648330b8a9845a0` شد.
+
+P10-002 baseline واحد را `TREND_PULLBACK/1.0.0` فریز می‌کند. انتخاب صرفاً به
+خاطر feasibility جمع‌آوری sample است (31 معامله پذیرفته‌شده در P3 در برابر 4)
+و نه return تاریخی؛ هر دو candidate قبلی همچنان `INSUFFICIENT_EVIDENCE` هستند.
+
+Gateها قبل از بازشدن forward window ثبت می‌شوند: حداقل 90 روز، 60 معامله pooled،
+20 معامله برای هر symbol، net return after costs حداقل +2%، profit factor حداقل
+1.10، drawdown حداکثر 8%، حداقل 2 segment مثبت از 3، هیچ segment بدتر از -4%،
+PnL خالص مثبت روی هر دو symbol، حداقل دو regime مشاهده‌شده و صفر entry خارج از
+TREND_UP. failure/recovery و risk/safety violationها zero-tolerance هستند.
+
+P10-003 تنها بعد از پذیرش مستقل P10-002 اجازه seal کردن window را دارد. تا آن
+زمان هیچ forward data، economic result یا Live readiness وجود ندارد و P11 قفل است.
