@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P8 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P9-002 ACCEPTED UPSTREAM PROJECTION / FORMATTER — CANDIDATE**
+قدم جاری: **P9-003 OUTBOUND-ONLY TELEGRAM TRANSPORT — CANDIDATE**
 
 ## منشأ و حدود سند
 
@@ -754,3 +754,28 @@ snapshot freshness جعل نمی‌شوند و `UNKNOWN` باقی می‌مان�
 Formatter فقط plain text bounded با `PLAIN_TEXT_NO_PARSE_MODE` می‌سازد و هیچ
 Telegram API call، token/chat ID، network transport یا command surface ندارد.
 P9-003 تا پذیرش و merge مستقل P9-002 بسته می‌ماند.
+
+
+## P9-002 acceptance / P9-003 candidate — 2026-09-21
+
+P9-002 با PR #63 و matching Actions `35536906561`، **1175/1175** تست کامل و
+**15/15** تست focused پذیرفته و در checkpoint
+`7158fbc84287b9327116581d6877f17a68a294a4` روی `main` squash-merge شد.
+projection/formatter همچنان بدون network و credential باقی ماند.
+
+P9-003 روی branch `p9-003-outbound-telegram-transport` اولین network boundary
+Telegram را اضافه می‌کند، اما فقط به‌صورت outbound/send-only. transport policy
+مستقل `P9_TELEGRAM_SEND_MESSAGE_V1` فقط HTTPS POST به
+`api.telegram.org:443/bot<token>/sendMessage` را اجازه می‌دهد. P9-001 contract
+policy دست‌نخورده می‌ماند و خودش هیچ transport authority نمی‌دهد.
+
+credentialها فقط در transport boundary از
+`YATL_TELEGRAM_BOT_TOKEN` و `YATL_TELEGRAM_CHAT_ID` خوانده می‌شوند و در
+repr/error/receipt ظاهر نمی‌شوند. redirect دنبال نمی‌شود، proxy path وجود ندارد،
+TLS verification، timeout و response/request bound اجباری است و provider error
+text به exception منتقل نمی‌شود.
+
+CI P9-003 فقط mocked transport را اجرا می‌کند؛ real Telegram send بخشی از
+acceptance evidence این checkpoint نیست. inbound command/update/webhook/polling
+و هر execution/live/trade authority همچنان ممنوع است. P9-004 تا merge مستقل این
+checkpoint بسته می‌ماند.
