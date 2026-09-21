@@ -7,14 +7,14 @@ P0 تا P8 با شواهد runtime پذیرفته و روی `main` بسته شد
 squash-merge شد و checkpoint نهایی P8 روی `main` برابر است با
 `fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e`.
 
-P9 — Telegram minimum-sufficient باقی می‌ماند. P9-001 و P9-002 پذیرفته و
+P9 — Telegram minimum-sufficient باقی می‌ماند. P9-001 تا P9-003 پذیرفته و
 merge شده‌اند؛ checkpoint فعلی accepted برابر
-`7158fbc84287b9327116581d6877f17a68a294a4` است. P9-003 اولین transport واقعی
-قابل‌استفاده را اضافه می‌کند، اما فقط outbound/send-only: HTTPS POST به
-Telegram `sendMessage` برای notificationهای canonical P9. inbound command،
-webhook/polling، execution control، TRADE permission و order endpoint همچنان
-وجود ندارند. CI این checkpoint از mock استفاده می‌کند و credential واقعی در
-repository یا evidence قرار نمی‌گیرد. برنامه ترتیبی P9 در
+`0d29710f320cec2dde6b7f585b8f62e496daae1e` است. P9-004 delivery guard،
+duplicate suppression و retry محدود را روی send-only transport اضافه می‌کند.
+حداکثر سه attempt وجود دارد و state dedupe به‌صورت canonical caller-managed
+snapshot بازسازی می‌شود؛ در این checkpoint فایل/دیتابیس persistence اضافه
+نمی‌شود. inbound command، webhook/polling، execution control، TRADE permission
+و order endpoint همچنان وجود ندارند. برنامه ترتیبی P9 در
 `docs/P9-IMPLEMENTATION-PLAN.md` ثبت شده است.
 
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
@@ -56,8 +56,8 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 وضعیت جاری **P0 تا P8 runtime accepted و merge‌شده روی main** است. checkpoint
 نهایی P8 برابر
 `fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e` است و مرحله جاری
-**P9-003 — Outbound-only Telegram transport** روی branch
-`p9-003-outbound-telegram-transport` است.
+**P9-004 — Delivery guard, deduplication and bounded retry** روی branch
+`p9-004-delivery-guard` است.
 
 P9 برای رسیدن سریع‌تر به P10 عمداً محدود است: status/alertهای accepted و sanitized
 را به notificationهای information-only تبدیل می‌کند. transport واقعی Telegram
