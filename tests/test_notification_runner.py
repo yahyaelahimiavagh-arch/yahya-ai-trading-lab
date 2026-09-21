@@ -16,6 +16,7 @@ from yatl.notifications import (
 from yatl.notifications.delivery import DeliveryState
 from yatl.notifications.runner import (
     EXIT_CONFIG,
+    EXIT_INTERNAL,
     EXIT_INVALID,
     EXIT_OK,
     EXIT_SOURCE,
@@ -354,6 +355,36 @@ class NotifierRunnerTests(unittest.TestCase):
             self.assertEqual(invalid, EXIT_INVALID)
             self.assertNotIn(secret_marker, output)
             self.assertEqual(json.loads(output)["code"], "INVALID_REQUEST")
+
+    def test_cli_unexpected_sender_failure_is_redacted_internal_error(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            batch, source = self._source(root)
+            state = root / "state.json"
+            marker = "SENSITIVE_RUNTIME_DETAIL"
+
+            def broken_sender(*args, **kwargs):
+                raise RuntimeError(marker)
+
+            stream = io.StringIO()
+            with contextlib.redirect_stdout(stream):
+                exit_code = main(
+                    [
+                        "--input", str(source),
+                        "--expected-batch-sha256", batch.batch_sha256,
+                        "--state", str(state),
+                        "--symbol", "BTCUSDT",
+                    ],
+                    credentials=_credentials(),
+                    sender=broken_sender,
+                    sleep_fn=lambda seconds: None,
+                )
+            output = stream.getvalue()
+            self.assertEqual(exit_code, EXIT_INTERNAL)
+            self.assertEqual(json.loads(output)["code"], "INTERNAL_ERROR")
+            self.assertNotIn(marker, output)
+            self.assertNotIn(str(source), output)
+            self.assertFalse(state.exists())
 
     def test_runner_source_has_no_direct_network_or_control_surface(self):
         import inspect
