@@ -7,11 +7,12 @@ P0 تا P8 با شواهد runtime پذیرفته و روی `main` بسته شد
 squash-merge شد و checkpoint نهایی P8 روی `main` برابر است با
 `fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e`.
 
-P9 و P10-001 تا P10-008 runtime accepted و merge شده‌اند. checkpoint فعلی
-`main` برابر `24190b29e769212bbc1a2cee376cc6fc6fc0ec88` است. مرحله جاری
-P10-009 است: adversarial forward-validation matrix تمام حمله‌های از پیش‌تعریف‌شده
-به candidate/gates/window/provenance/economics/safety را با attackهای re-signed
-fail-closed بررسی می‌کند. P11 همچنان قفل است. برنامه P10 در
+P9 و P10-001 تا P10-009 runtime accepted و merge شده‌اند. checkpoint فعلی
+`main` برابر `7baf3c7000bb66d406fa8348692f73d9907d3f15` است. مرحله جاری
+P10-010 است: independent final economic audit کل زنجیره
+candidate/gates/window/provenance/Paper/economics/gate/adversarial evidence را
+مستقل بازسازی می‌کند و disposition نهایی P10 را بدون ایجاد Live authority ثبت
+می‌کند. P11 همچنان قفل است. برنامه P10 در
 `docs/P10-IMPLEMENTATION-PLAN.md` ثبت شده است.
 
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
@@ -50,11 +51,13 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 ## مسیر بعدی
 
 مرجع ترتیب اجرا: [نقشه پروژه](docs/MASTER-PLAN.md).
-وضعیت جاری **P0 تا P9 و P10-001 تا P10-008 runtime accepted و merge‌شده روی
+وضعیت جاری **P0 تا P9 و P10-001 تا P10-009 runtime accepted و merge‌شده روی
 main** است. checkpoint فعلی برابر
-`24190b29e769212bbc1a2cee376cc6fc6fc0ec88` است و مرحله جاری
-**P10-009 — Adversarial forward-validation matrix** روی branch
-`p10-009-adversarial-validation` است. P11 تا پذیرش کامل P10 قفل می‌ماند.
+`7baf3c7000bb66d406fa8348692f73d9907d3f15` است و مرحله جاری
+**P10-010 — Independent final economic audit** روی branch
+`p10-010-independent-final-audit` است. پایان مهندسی P10 به‌تنهایی به معنی
+پذیرش اقتصادی نیست؛ P11 فقط پس از disposition واقعی `PASS_CANDIDATE` می‌تواند
+برای بررسی جداگانه مطرح شود و هیچ‌گاه خودکار unlock نمی‌شود.
 
 P9 برای رسیدن سریع‌تر به P10 عمداً محدود است: status/alertهای accepted و sanitized
 را به notificationهای information-only تبدیل می‌کند. transport واقعی Telegram
