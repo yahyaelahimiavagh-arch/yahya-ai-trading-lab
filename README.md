@@ -7,12 +7,12 @@ P0 تا P8 با شواهد runtime پذیرفته و روی `main` بسته شد
 squash-merge شد و checkpoint نهایی P8 روی `main` برابر است با
 `fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e`.
 
-P9، P10-001 و P10-002 runtime accepted و merge شده‌اند. checkpoint فعلی
-`main` برابر `e327e2b99a0883fc096941db18b27e572561a7d1` است. مرحله جاری
-P10-003 است: مرز no-peek و forward window قبل از ورود هر داده جدید seal می‌شود.
-شروع forward window روی **2026-09-22 00:00 UTC** ثابت است؛ قبل از آن هیچ داده‌ای
-برای P10 قابل قبول نیست. برنامه P10 در `docs/P10-IMPLEMENTATION-PLAN.md`
-ثبت شده است.
+P9 و P10-001 تا P10-003 runtime accepted و merge شده‌اند. checkpoint فعلی
+`main` برابر `179d0bed3a1191dee21a654eb965a3b108328b90` است. مرحله جاری
+P10-004 است: collector read-only داده جدید با stack پذیرفته‌شده P1 و SQLite
+مستقل P10 ساخته می‌شود. forward start همچنان **2026-09-22 00:00 UTC** است و
+هیچ داده قبل از آن admissible نیست. برنامه P10 در
+`docs/P10-IMPLEMENTATION-PLAN.md` ثبت شده است.
 
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
@@ -50,11 +50,11 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 ## مسیر بعدی
 
 مرجع ترتیب اجرا: [نقشه پروژه](docs/MASTER-PLAN.md).
-وضعیت جاری **P0 تا P9 و P10-001/P10-002 runtime accepted و merge‌شده روی main**
-است. checkpoint فعلی برابر
-`e327e2b99a0883fc096941db18b27e572561a7d1` است و مرحله جاری
-**P10-003 — New-data window seal and no-peek boundary** روی branch
-`p10-003-forward-window-seal` است. P11 تا پذیرش کامل P10 قفل می‌ماند.
+وضعیت جاری **P0 تا P9 و P10-001/P10-002/P10-003 runtime accepted و merge‌شده
+روی main** است. checkpoint فعلی برابر
+`179d0bed3a1191dee21a654eb965a3b108328b90` است و مرحله جاری
+**P10-004 — Read-only forward market-data ingestion and quality gate** روی branch
+`p10-004-forward-ingestion-quality` است. P11 تا پذیرش کامل P10 قفل می‌ماند.
 
 P9 برای رسیدن سریع‌تر به P10 عمداً محدود است: status/alertهای accepted و sanitized
 را به notificationهای information-only تبدیل می‌کند. transport واقعی Telegram
