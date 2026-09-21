@@ -254,6 +254,20 @@ class ValidationCliTests(unittest.TestCase):
             _pipeline(link, self.snapshot_path)
         self.assertIs(caught.exception.code, ValidationCliCode.SOURCE_REJECTED)
 
+    def test_active_sqlite_wal_or_shm_is_rejected_fail_closed(self):
+        for suffix in ("-wal", "-shm"):
+            with self.subTest(suffix=suffix):
+                database = self.work_root / ("copy" + suffix.replace("-", "") + ".sqlite3")
+                database.write_bytes(self.database.read_bytes())
+                sidecar = Path(str(database) + suffix)
+                sidecar.write_bytes(b"active")
+                with self.assertRaises(ValidationCliError) as caught:
+                    _pipeline(database, self.snapshot_path)
+                self.assertIs(
+                    caught.exception.code,
+                    ValidationCliCode.SOURCE_REJECTED,
+                )
+
     def test_export_parent_must_exist_and_be_real_directory(self):
         with self.assertRaises(ValidationCliError) as caught:
             _export_from_bundle(self.bundle, self.work_root / "missing" / "audit.json")
