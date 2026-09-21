@@ -54,6 +54,7 @@ class TelegramTransportErrorCode(str, Enum):
     REQUEST_INVALID = "TELEGRAM_REQUEST_INVALID"
     NETWORK_ERROR = "TELEGRAM_NETWORK_ERROR"
     HTTP_STATUS = "TELEGRAM_HTTP_STATUS"
+    RATE_LIMITED = "TELEGRAM_RATE_LIMITED"
     RESPONSE_TOO_LARGE = "TELEGRAM_RESPONSE_TOO_LARGE"
     RESPONSE_INVALID = "TELEGRAM_RESPONSE_INVALID"
     API_REJECTED = "TELEGRAM_API_REJECTED"
@@ -62,10 +63,19 @@ class TelegramTransportErrorCode(str, Enum):
 class TelegramTransportError(RuntimeError):
     """Stable redacted transport failure. Provider text and credentials are omitted."""
 
-    def __init__(self, code):
+    def __init__(self, code, *, retry_after_seconds=None):
         if not isinstance(code, TelegramTransportErrorCode):
             raise TypeError("Telegram transport error code is invalid")
+        if code is TelegramTransportErrorCode.RATE_LIMITED:
+            if (
+                type(retry_after_seconds) is not int
+                or not 1 <= retry_after_seconds <= 86_400
+            ):
+                raise TypeError("Telegram retry-after value is invalid")
+        elif retry_after_seconds is not None:
+            raise TypeError("Retry-after is only valid for rate limits")
         self.code = code
+        self.retry_after_seconds = retry_after_seconds
         super().__init__(code.value)
 
 
@@ -247,12 +257,7 @@ def _request_body(formatted, credentials):
     return body
 
 
-def _read_success_response(response):
-    if type(response.status) is not int or response.status != 200:
-        raise TelegramTransportError(
-            TelegramTransportErrorCode.HTTP_STATUS
-        )
-
+def _read_bounded_json(response):
     content_length = response.getheader("Content-Length")
     if content_length is not None:
         try:
@@ -281,11 +286,40 @@ def _read_success_response(response):
         raise TelegramTransportError(
             TelegramTransportErrorCode.RESPONSE_INVALID
         ) from None
-
     if not isinstance(payload, dict):
         raise TelegramTransportError(
             TelegramTransportErrorCode.RESPONSE_INVALID
         )
+    return payload
+
+
+def _read_success_response(response):
+    if type(response.status) is not int:
+        raise TelegramTransportError(
+            TelegramTransportErrorCode.RESPONSE_INVALID
+        )
+    if response.status == 429:
+        payload = _read_bounded_json(response)
+        parameters = payload.get("parameters")
+        retry_after = (
+            parameters.get("retry_after")
+            if isinstance(parameters, dict)
+            else None
+        )
+        if type(retry_after) is not int or not 1 <= retry_after <= 86_400:
+            raise TelegramTransportError(
+                TelegramTransportErrorCode.RESPONSE_INVALID
+            )
+        raise TelegramTransportError(
+            TelegramTransportErrorCode.RATE_LIMITED,
+            retry_after_seconds=retry_after,
+        )
+    if response.status != 200:
+        raise TelegramTransportError(
+            TelegramTransportErrorCode.HTTP_STATUS
+        )
+
+    payload = _read_bounded_json(response)
     if payload.get("ok") is not True:
         raise TelegramTransportError(
             TelegramTransportErrorCode.API_REJECTED
