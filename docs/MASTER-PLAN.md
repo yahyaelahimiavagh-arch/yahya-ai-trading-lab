@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P9 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P10-003 NEW-DATA WINDOW SEAL / NO-PEEK — CANDIDATE**
+قدم جاری: **P10-004 FORWARD INGESTION / QUALITY GATE — CANDIDATE**
 
 ## منشأ و حدود سند
 
@@ -83,7 +83,7 @@ Dashboard به‌تنهایی معیار موفقیت اقتصادی نیستن�
 | P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | **RUNTIME ACCEPTED — checkpoint `93b9d87`** |
 | P8 Dashboard | نمایش وضعیت، معاملات، عملکرد و خطاها | **RUNTIME ACCEPTED — checkpoint `fe973e8`** |
 | P9 Telegram | هشدار و notification محدود طبق قواعد امنیتی | **RUNTIME ACCEPTED — checkpoint `60d7e267`** |
-| P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | **P10-003 CURRENT CANDIDATE** |
+| P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | **P10-004 CURRENT CANDIDATE** |
 | P11 Tiny Live Candidate | فقط پس از پذیرش P10، ممیزی امنیت، الزامات حساب و تأیید صریح | LOCKED |
 
 ## نمای پیشرفت فعلی — 2026-09-20
@@ -936,3 +936,30 @@ evidence پذیرفته‌شده P3 در 2026-09-09 00:00 UTC پایان می‌
 candidate و thresholdها تغییر نمی‌کنند. P10-003 هنوز market values، PnL یا
 economic verdict تولید نمی‌کند. P10-004 فقط پس از merge صریح این checkpoint
 می‌تواند ingestion واقعی read-only را شروع کند. P11 قفل است.
+
+
+## P10-003 acceptance / P10-004 candidate — 2026-09-21
+
+P10-003 با PR #70، Final HEAD
+`8f28c8a0cc984b1b03b45e2f8731dfcded8cfefb` و matching Actions
+`35577086427` پذیرفته شد: **1341/1341** full suite و **22/22** focused.
+window SHA برابر
+`115f72be7941f682ccd28a70058677eba2ea24ee8ed44b5380510fe685022867`
+است. PR #70 squash-merge و checkpoint جدید `main` برابر
+`179d0bed3a1191dee21a654eb965a3b108328b90` شد.
+
+P10-004 collector واقعی read-only بازار را روی stack پذیرفته‌شده P1 می‌سازد:
+public Binance Spot REST بدون credential، canonical Candle و health gate فعلی.
+داده فقط در SQLite مستقل P10 که به window SHA قفل شده ذخیره می‌شود؛ DB غیرخالی
+بدون metadata P10 پذیرفته نمی‌شود تا هیچ store قدیمی/P1 به‌اشتباه mutate نشود.
+
+هر run با Binance server time کار می‌کند و فقط candleهای کاملاً بسته بعد از
+forward start را می‌پذیرد. snapshot شش dataset دقیق BTC/ETH × 15m/1h/4h را با
+dataset/health SHA ثبت می‌کند و gap/duplicate/malformed/open/pre-window را
+fail-closed رد می‌کند.
+
+Acceptance CI این checkpoint با transport mock است، زیرا forward window تا
+**2026-09-22 00:00 UTC** شروع نمی‌شود. بنابراین در 21 سپتامبر هیچ داده واقعی
+P10 به evidence اضافه نمی‌شود. پس از merge، deployment عملی collector روی VPS
+می‌تواند برای شروع window آماده شود؛ economic evaluation هنوز ممنوع و P11 قفل
+است.
