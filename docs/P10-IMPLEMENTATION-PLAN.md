@@ -446,6 +446,17 @@ Current P10-008 candidate semantics:
 - `PASS_CANDIDATE` remains Paper-only, strategy evidence stays
   `INSUFFICIENT_EVIDENCE`, and P11 remains locked.
 
+P10-008 final acceptance evidence:
+- PR #75 exact final candidate HEAD:
+  `a26d7a96c6c9ffcacbdfa81ac195f6d53562f322`;
+- matching GitHub Actions run: `35628760039`, both jobs PASS;
+- complete suite: **1455/1455 PASS**;
+- focused P10-008: **27/27 PASS**;
+- canonical audit SHA-256:
+  `1c11ea83affa5dd8d55644a573e765bb83435d0be6e39135384c9d79dda16be8`;
+- PR #75 squash-merged at checkpoint
+  `24190b29e769212bbc1a2cee376cc6fc6fc0ec88`.
+
 ### P10-009 — Adversarial forward-validation matrix
 
 Run fixed BTCUSDT/ETHUSDT scenarios for:
@@ -463,6 +474,17 @@ Run fixed BTCUSDT/ETHUSDT scenarios for:
 
 Acceptance: exact fail-closed outcomes, byte-identical replay, canonical evidence
 and unchanged accepted P10 identities.
+
+Current P10-009 candidate semantics:
+- the matrix spans the exact BTCUSDT+ETHUSDT accepted P10 audit chain;
+- all 11 registered attack classes are re-signed before verification;
+- rejection therefore must come from exact identity/provenance/economics/safety
+  reconciliation, not merely from a stale outer digest;
+- accepted candidate, gate registry, window, ingestion, Paper, economics, gate and
+  audit identities remain byte/digest stable across all scenarios;
+- evidence artifacts and index are canonical, bounded, atomic and no-overwrite;
+- no network/credential/order/risk-authorization/threshold-tuning/AI authority is
+  added; strategy evidence remains `INSUFFICIENT_EVIDENCE` and P11 remains locked.
 
 ### P10-010 — Independent final economic audit
 
