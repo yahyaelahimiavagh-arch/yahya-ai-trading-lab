@@ -28,7 +28,7 @@ from yatl.strategy import (
 )
 from yatl.strategy.adapter import FIXED_RESEARCH_QUANTITY
 
-from .forward_store import ForwardCandleStore
+from .forward_store import ForwardCandleStore, ForwardStoreError
 from .ingestion import ForwardIngestionSnapshot
 from .registration import CandidateFreeze, CandidateGateRegistration
 from .window import ForwardWindowSeal
@@ -514,12 +514,17 @@ def _verify_snapshot_store(store, snapshot):
         raise ForwardPaperRunnerError("P10 runner input provenance is invalid")
 
     for evidence in snapshot.datasets:
-        candles = store.candles_between(
-            evidence.symbol,
-            evidence.interval,
-            evidence.requested_start_time_ms,
-            evidence.requested_end_time_ms,
-        )
+        try:
+            candles = store.candles_between(
+                evidence.symbol,
+                evidence.interval,
+                evidence.requested_start_time_ms,
+                evidence.requested_end_time_ms,
+            )
+        except ForwardStoreError:
+            raise ForwardPaperRunnerError(
+                "P10 runner store cannot reproduce accepted ingestion evidence"
+            ) from None
         if (
             len(candles) != evidence.total_rows
             or _dataset_digest(candles) != evidence.dataset_sha256
@@ -557,15 +562,20 @@ def _dataset_for_symbol(store, snapshot, symbol):
         fee_bps=candidate.fee_bps,
         slippage_bps=candidate.slippage_bps,
     )
-    values = {
-        interval: store.candles_between(
-            symbol,
-            interval,
-            window.forward_window_start_ms,
-            common_end,
-        )
-        for interval in window.intervals
-    }
+    try:
+        values = {
+            interval: store.candles_between(
+                symbol,
+                interval,
+                window.forward_window_start_ms,
+                common_end,
+            )
+            for interval in window.intervals
+        }
+    except ForwardStoreError:
+        raise ForwardPaperRunnerError(
+            "P10 runner cannot read the sealed forward prefix"
+        ) from None
     dataset = AcceptedBacktestDataset(
         spec=spec,
         manifest_generated_at_ms=snapshot.generated_at_ms,
