@@ -15,7 +15,7 @@ concurrency:
 jobs:
   unit-and-safety:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -127,6 +127,8 @@ jobs:
         run: uv run --locked python -m unittest discover -s tests -p 'test_validation_gate.py' -v
       - name: P10 guarded validation CLI/export focused gate
         run: uv run --locked python -m unittest discover -s tests -p 'test_validation_cli.py' -v
+      - name: P10 adversarial forward-validation matrix focused gate
+        run: uv run --locked python -m unittest discover -s tests -p 'test_validation_scenarios.py' -v
       - name: Compile and whitespace gates
         run: |
           uv run --locked python -m compileall -q yatl
@@ -204,6 +206,7 @@ jobs:
           assert_absent 'QUALIFIED_FOR_P4_RESEARCH|RiskAuthorization|size_entry\(|urllib|http\.client|requests|httpx|aiohttp|websockets|socket|os\.environ|os\.getenv|dotenv|API_KEY|API_SECRET|openai|anthropic|api/v3/(order|orderList)|/fapi|/dapi|withdraw\(|time\.time|time\.monotonic|datetime\.now|sqlite3|subprocess' yatl/validation/economics.py
           assert_absent 'QUALIFIED_FOR_P4_RESEARCH|RiskAuthorization|size_entry\(|urllib|http\.client|requests|httpx|aiohttp|websockets|socket|os\.environ|os\.getenv|dotenv|API_KEY|API_SECRET|openai|anthropic|api/v3/(order|orderList)|/fapi|/dapi|withdraw\(|time\.time|time\.monotonic|datetime\.now|sqlite3|subprocess' yatl/validation/gate.py
           assert_absent 'collect_forward_snapshot|BinancePublicRestClient|write_many\(|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|urllib|http\.client|requests|httpx|aiohttp|websockets|socket|os\.environ|os\.getenv|dotenv|API_KEY|API_SECRET|openai|anthropic|api/v3/(order|orderList)|/fapi|/dapi|withdraw\(|time\.time|time\.monotonic|datetime\.now|subprocess|input\(|eval\(|exec\(' yatl/validation/cli.py
+          assert_absent 'BinancePublicRestClient|collect_forward_snapshot|write_many\(|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|urllib|http\.client|requests|httpx|aiohttp|websockets|socket|os\.environ|os\.getenv|dotenv|API_KEY|API_SECRET|openai|anthropic|api/v3/(order|orderList)|/fapi|/dapi|withdraw\(|time\.time|time\.monotonic|datetime\.now|subprocess|input\(|eval\(|exec\(' yatl/validation/scenarios.py
       - name: P4 risk contract runtime
         run: uv run --locked python -m yatl risk-contract-check
       - name: P4 exact sizing runtime
@@ -361,6 +364,13 @@ jobs:
         run: uv run --locked python -m yatl.validation.gate_runtime
       - name: P10 mocked guarded validation CLI/export runtime
         run: uv run --locked python -m yatl.validation.cli_runtime
+      - name: P10 adversarial forward-validation matrix twice
+        run: |
+          mkdir -p data/p10
+          uv run --locked python -m yatl.validation.scenarios_runtime --output data/p10/p10-009-evidence
+          uv run --locked python -m yatl.validation.scenarios_runtime --output data/p10/p10-009-evidence-replay
+          diff -r data/p10/p10-009-evidence data/p10/p10-009-evidence-replay
+          sha256sum data/p10/p10-009-evidence/p10-009-index.json
       - name: Publish P5-009 adversarial evidence
         uses: actions/upload-artifact@v4
         with:
@@ -394,6 +404,13 @@ jobs:
         with:
           name: p9-005-evidence
           path: data/p9/p9-005-evidence/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Publish P10-009 adversarial validation evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: p10-009-evidence
+          path: data/p10/p10-009-evidence/
           if-no-files-found: error
           retention-days: 30
 
