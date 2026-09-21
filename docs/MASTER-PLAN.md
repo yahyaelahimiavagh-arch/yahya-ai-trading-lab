@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P9 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P10-010 INDEPENDENT FINAL ECONOMIC AUDIT — CANDIDATE**
+قدم جاری: **P10 OPERATIONS — REAL FORWARD COLLECTOR CANDIDATE**
 
 ## منشأ و حدود سند
 
@@ -83,7 +83,7 @@ Dashboard به‌تنهایی معیار موفقیت اقتصادی نیستن�
 | P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | **RUNTIME ACCEPTED — checkpoint `93b9d87`** |
 | P8 Dashboard | نمایش وضعیت، معاملات، عملکرد و خطاها | **RUNTIME ACCEPTED — checkpoint `fe973e8`** |
 | P9 Telegram | هشدار و notification محدود طبق قواعد امنیتی | **RUNTIME ACCEPTED — checkpoint `60d7e267`** |
-| P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | **P10-010 CURRENT CANDIDATE** |
+| P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | **ENGINEERING ACCEPTED / REAL FORWARD DATA COLLECTION NEXT** |
 | P11 Tiny Live Candidate | فقط پس از پذیرش P10، ممیزی امنیت، الزامات حساب و تأیید صریح | LOCKED |
 
 ## نمای پیشرفت فعلی — 2026-09-20
@@ -1089,3 +1089,20 @@ evidence را byte-for-byte با recomputation تطبیق می‌دهد و فق�
 **Engineering completion is not economic acceptance.** روی CI mocked فعلی disposition
 باید `INSUFFICIENT_DATA` بماند. پذیرش اقتصادی واقعی فقط از forward evidence
 واقعی و gateهای از قبل ثبت‌شده حاصل می‌شود.
+
+
+## P10-010 acceptance / operational collection — 2026-09-21
+
+P10-010 با PR #77 و exact Final HEAD
+`5943265e22a8a3ddbec97c3a924d7febf7f5c2da` روی matching Actions
+`35639615088` پذیرفته شد؛ هر دو job PASS، full suite برابر **1502/1502** و
+focused P10-010 برابر **26/26** بود. final mocked disposition برابر
+`INSUFFICIENT_DATA`، `p11_unlocked=false` و `live_authorized=false` باقی
+ماند. PR #77 squash-merge شد و checkpoint جدید `main` برابر
+`ed7e7e705dc71dfc6a67d5b052d6facc08ee5e86` است.
+
+مرحله بعدی P11 نیست. ابتدا real forward market data از پنجره sealed P10 روی VPS
+جمع‌آوری می‌شود. collector عملیاتی فقط Binance Spot public REST را می‌خواند،
+DB اختصاصی P10 و canonical snapshot را به‌روزرسانی می‌کند و هیچ credential،
+account access، order endpoint یا Live authority ندارد. runbook:
+`docs/P10-OPERATIONS.md`.
