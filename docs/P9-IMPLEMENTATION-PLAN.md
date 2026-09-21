@@ -1,6 +1,6 @@
 # P9 — Telegram notification implementation plan
 
-Status: **P9-004 RUNTIME ACCEPTED / MERGED — P9-005 CURRENT CANDIDATE**
+Status: **P9-001 THROUGH P9-006 RUNTIME ACCEPTED / MERGED — PHASE CLOSED; P10 NEXT**
 
 Entry baseline: P8 runtime accepted and squash-merged at checkpoint
 `fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e`. Matching final-head GitHub Actions
@@ -307,6 +307,14 @@ The audit freezes and independently recomputes:
 P9-006 adds no notification semantics, no transport capability, no runner command,
 no state mutation authority and no new dependency. Acceptance remains offline and
 mocked: no real Telegram credential is loaded and no real network request is made.
+
+Accepted: PR #67 exact final candidate HEAD
+`f7ff546d7310876fd969f03c4f2d153137889de1` passed matching Actions run
+`35566103007` with both jobs PASS, **1275/1275** complete tests and **34/34**
+focused P9-006 tests. The independent runtime froze delivery-replay-set SHA-256
+`b0fe40c76b57034eb84568f9ee95bdd36558f8eae665c4f71fee14fd0a12ba30`.
+PR #67 was squash-merged and P9 closed on `main` at checkpoint
+`60d7e267fdd878f513afb2a8febb30d509b61314`.
 
 ## AI direction after the baseline
 
