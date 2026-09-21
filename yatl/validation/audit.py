@@ -10,6 +10,8 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
+from yatl.data import DATA_SOURCE, HealthError, build_health_report
+
 from .cli import ValidationEvidenceBundle
 from .economics import ForwardEconomicsError, calculate_forward_economics
 from .forward_store import ForwardCandleStore, ForwardStoreError
@@ -145,15 +147,33 @@ def _store_identity(store, snapshot):
         except ForwardStoreError:
             raise P10AuditError("P10 audit cannot reproduce forward dataset") from None
         digest = _dataset_digest(candles)
+        try:
+            health = build_health_report(
+                DATA_SOURCE,
+                evidence.symbol,
+                evidence.interval,
+                evidence.requested_start_time_ms,
+                evidence.requested_end_time_ms,
+                candles,
+                evidence.server_time_ms,
+                malformed_rows=0,
+                conflicting_rows=0,
+            )
+        except HealthError:
+            raise P10AuditError("P10 audit cannot reproduce data-quality health") from None
+        health_sha256 = _sha256(json.loads(health.to_json()))
         if (
             len(candles) != evidence.total_rows
             or digest != evidence.dataset_sha256
+            or health.backtest_ready is not True
+            or health_sha256 != evidence.health_sha256
         ):
-            raise P10AuditError("P10 audit dataset differs from ingestion evidence")
+            raise P10AuditError("P10 audit dataset/quality differs from ingestion evidence")
         key = f"{evidence.symbol}:{evidence.interval}"
         per_dataset[key] = {
             "rows": len(candles),
             "dataset_sha256": digest,
+            "health_sha256": health_sha256,
         }
         total += len(candles)
         records.extend(
@@ -575,6 +595,7 @@ def audit_p10(store, snapshot, database_snapshot_sha256, evidence_directory):
         raise
     except (
         ForwardStoreError,
+        HealthError,
         ForwardPaperRunnerError,
         ForwardEconomicsError,
         ForwardGateError,
