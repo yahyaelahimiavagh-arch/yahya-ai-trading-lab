@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P9 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P10-002 CANDIDATE FREEZE / ECONOMIC GATES — CANDIDATE**
+قدم جاری: **P10-003 NEW-DATA WINDOW SEAL / NO-PEEK — CANDIDATE**
 
 ## منشأ و حدود سند
 
@@ -83,7 +83,7 @@ Dashboard به‌تنهایی معیار موفقیت اقتصادی نیستن�
 | P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | **RUNTIME ACCEPTED — checkpoint `93b9d87`** |
 | P8 Dashboard | نمایش وضعیت، معاملات، عملکرد و خطاها | **RUNTIME ACCEPTED — checkpoint `fe973e8`** |
 | P9 Telegram | هشدار و notification محدود طبق قواعد امنیتی | **RUNTIME ACCEPTED — checkpoint `60d7e267`** |
-| P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | **P10-002 CURRENT CANDIDATE** |
+| P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | **P10-003 CURRENT CANDIDATE** |
 | P11 Tiny Live Candidate | فقط پس از پذیرش P10، ممیزی امنیت، الزامات حساب و تأیید صریح | LOCKED |
 
 ## نمای پیشرفت فعلی — 2026-09-20
@@ -909,3 +909,30 @@ TREND_UP. failure/recovery و risk/safety violationها zero-tolerance هستن�
 
 P10-003 تنها بعد از پذیرش مستقل P10-002 اجازه seal کردن window را دارد. تا آن
 زمان هیچ forward data، economic result یا Live readiness وجود ندارد و P11 قفل است.
+
+
+## P10-002 acceptance / P10-003 candidate — 2026-09-21
+
+P10-002 با PR #69، Final HEAD
+`8161f96dff29e076ef34cc8198073c18c42a647f` و matching Actions
+`35574963153` پذیرفته شد: **1319/1319** full suite و **23/23** focused.
+candidate SHA برابر
+`64f2e116616f84e09fbf70a19977395eac99b16fe7e24a283dd53a8b0b84ac86`،
+gate registry SHA برابر
+`f8d706df050bb095219ae4b76e400eff73e1a7a6755c4a197d489b03117a3e95`
+و registration SHA برابر
+`0e4914e98754bceebf9dc99cc0ae7ab65b2b1a5b135c1fd9d736a071d843f14e`
+است. PR #69 squash-merge و checkpoint جدید `main` برابر
+`e327e2b99a0883fc096941db18b27e572561a7d1` شد.
+
+P10-003 مرز no-peek را قبل از ورود هر داده جدید seal می‌کند. development
+evidence پذیرفته‌شده P3 در 2026-09-09 00:00 UTC پایان می‌یابد و آخرین source
+تاریخی پذیرفته‌شده P1 حداکثر تا 2026-09-09 16:15 UTC است. forward window از
+**2026-09-22 00:00 UTC** شروع می‌شود و هر observation قبل از آن برای P10 مردود
+است، حتی اگر بعداً دانلود شود.
+
+حداقل 90 روز در **2026-12-21 00:00 UTC** کامل می‌شود، اما اگر gate نمونه
+60 معامله pooled / 20 برای هر symbol هنوز کامل نباشد observation ادامه می‌یابد؛
+candidate و thresholdها تغییر نمی‌کنند. P10-003 هنوز market values، PnL یا
+economic verdict تولید نمی‌کند. P10-004 فقط پس از merge صریح این checkpoint
+می‌تواند ingestion واقعی read-only را شروع کند. P11 قفل است.
