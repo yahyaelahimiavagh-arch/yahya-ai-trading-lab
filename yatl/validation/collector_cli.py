@@ -6,7 +6,10 @@ and atomically advances the canonical ingestion snapshot.
 """
 
 import argparse
-import fcntl
+try:
+    import fcntl
+except ImportError:  # Windows/dev import remains safe; collector itself is Linux-only.
+    fcntl = None
 import json
 import os
 import stat
@@ -183,6 +186,8 @@ class _CollectorLock:
         self._fd = None
 
     def __enter__(self):
+        if fcntl is None:
+            raise CollectorError(CollectorCode.STORAGE_ERROR)
         flags = os.O_CREAT | os.O_RDWR
         if hasattr(os, "O_NOFOLLOW"):
             flags |= os.O_NOFOLLOW
