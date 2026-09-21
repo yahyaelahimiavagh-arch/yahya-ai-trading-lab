@@ -302,6 +302,33 @@ class DeliveryGuardTests(unittest.TestCase):
         self.assertEqual(len(calls), MAX_ATTEMPTS)
         self.assertEqual(sleeps, [1, 2])
 
+    def test_ambiguous_network_failure_is_never_retried(self):
+        message = _message()
+        formatted = format_notification(message)
+        calls = []
+        sleeps = []
+
+        def sender(item, rendered, credentials):
+            calls.append(1)
+            raise TelegramTransportError(
+                TelegramTransportErrorCode.NETWORK_AMBIGUOUS
+            )
+
+        with self.assertRaises(DeliveryGuardError) as caught:
+            guarded_send(
+                message,
+                formatted,
+                _credentials(),
+                sender=sender,
+                sleep_fn=sleeps.append,
+            )
+        self.assertEqual(
+            caught.exception.code,
+            DeliveryGuardErrorCode.TRANSPORT_REJECTED,
+        )
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(sleeps, [])
+
     def test_rate_limit_waits_exact_safe_retry_after_then_succeeds(self):
         message = _message()
         formatted = format_notification(message)
@@ -391,6 +418,7 @@ class DeliveryGuardTests(unittest.TestCase):
     def test_nonretryable_transport_errors_fail_immediately(self):
         codes = (
             TelegramTransportErrorCode.HTTP_STATUS,
+            TelegramTransportErrorCode.NETWORK_AMBIGUOUS,
             TelegramTransportErrorCode.RESPONSE_TOO_LARGE,
             TelegramTransportErrorCode.RESPONSE_INVALID,
             TelegramTransportErrorCode.API_REJECTED,
