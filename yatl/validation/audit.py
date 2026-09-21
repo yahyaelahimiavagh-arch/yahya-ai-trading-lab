@@ -56,6 +56,7 @@ FINAL_DISPOSITIONS = (
     GateDisposition.PASS_CANDIDATE.value,
 )
 EXPECTED_EVIDENCE_FILES = 1 + len(SCENARIOS)
+MAX_DATABASE_BYTES = 512 * 1024 * 1024
 _HEX = frozenset("0123456789abcdef")
 
 
@@ -123,6 +124,33 @@ def _candidate_gate_window():
 
 def _dataset_digest(candles):
     return _sha256([item.as_record() for item in candles])
+
+
+def _database_identity(store, expected_sha256):
+    path = getattr(store, "_path", None)
+    if (
+        not isinstance(path, Path)
+        or not _valid_sha(expected_sha256)
+        or path.is_symlink()
+        or not path.is_file()
+    ):
+        raise P10AuditError("P10 database snapshot source is invalid")
+    for suffix in ("-wal", "-shm"):
+        sidecar = Path(str(path) + suffix)
+        if sidecar.is_symlink() or sidecar.exists():
+            raise P10AuditError("P10 database snapshot has active SQLite sidecars")
+    try:
+        size = path.stat().st_size
+        if size <= 0 or size > MAX_DATABASE_BYTES:
+            raise P10AuditError("P10 database snapshot size is invalid")
+        observed = _sha256(path.read_bytes())
+    except P10AuditError:
+        raise
+    except OSError:
+        raise P10AuditError("P10 database snapshot cannot be read") from None
+    if observed != expected_sha256:
+        raise P10AuditError("P10 database snapshot SHA differs from accepted identity")
+    return observed
 
 
 def _store_identity(store, snapshot):
@@ -415,6 +443,7 @@ def _disposition_flags(disposition):
 @dataclass(frozen=True, slots=True)
 class P10AuditResult:
     disposition: str
+    database_snapshot_sha256: str
     candidate_sha256: str
     gate_registry_sha256: str
     window_sha256: str
@@ -431,6 +460,7 @@ class P10AuditResult:
     exact_outcomes: bool
     replay_equal: bool
     chain_recomputed: bool
+    data_quality_recomputed: bool
     adversarial_recomputed: bool
     evidence_verified: bool
     candidate_unchanged: bool
@@ -449,6 +479,7 @@ class P10AuditResult:
         flags = _disposition_flags(self.disposition)
         if (
             self.disposition not in FINAL_DISPOSITIONS
+            or not _valid_sha(self.database_snapshot_sha256)
             or self.candidate_sha256 != EXPECTED_CANDIDATE_SHA256
             or self.gate_registry_sha256 != EXPECTED_GATE_REGISTRY_SHA256
             or self.window_sha256 != EXPECTED_WINDOW_SHA256
@@ -473,6 +504,7 @@ class P10AuditResult:
                     self.exact_outcomes,
                     self.replay_equal,
                     self.chain_recomputed,
+                    self.data_quality_recomputed,
                     self.adversarial_recomputed,
                     self.evidence_verified,
                     self.candidate_unchanged,
@@ -501,6 +533,7 @@ def audit_p10(store, snapshot, database_snapshot_sha256, evidence_directory):
     try:
         if not _valid_sha(database_snapshot_sha256):
             raise P10AuditError("P10 database snapshot identity is invalid")
+        database_before = _database_identity(store, database_snapshot_sha256)
         candidate, gates, window = _candidate_gate_window()
         if (
             type(snapshot) is not ForwardIngestionSnapshot
@@ -555,12 +588,14 @@ def audit_p10(store, snapshot, database_snapshot_sha256, evidence_directory):
         evidence = _audit_evidence(matrix, evidence_directory)
 
         store_after = _store_identity(store, snapshot)
-        if store_before != store_after:
-            raise P10AuditError("P10 final audit mutated accepted forward store")
+        database_after = _database_identity(store, database_snapshot_sha256)
+        if store_before != store_after or database_before != database_after:
+            raise P10AuditError("P10 final audit mutated accepted forward evidence")
 
         flags = _disposition_flags(disposition)
         return P10AuditResult(
             disposition=disposition,
+            database_snapshot_sha256=database_before,
             candidate_sha256=candidate.candidate_sha256,
             gate_registry_sha256=gates.registry_sha256,
             window_sha256=window.window_sha256,
@@ -577,6 +612,7 @@ def audit_p10(store, snapshot, database_snapshot_sha256, evidence_directory):
             exact_outcomes=True,
             replay_equal=True,
             chain_recomputed=True,
+            data_quality_recomputed=True,
             adversarial_recomputed=True,
             evidence_verified=True,
             candidate_unchanged=True,
