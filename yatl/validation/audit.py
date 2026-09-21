@@ -342,7 +342,7 @@ def _audit_source_safety():
         "req" + "uests",
         "http" + "x",
         "aio" + "http",
-        "web" + "sockets",
+        "web" + "sock" + "ets",
         "os." + "getenv",
         "os." + "environ",
         "open" + "ai",
