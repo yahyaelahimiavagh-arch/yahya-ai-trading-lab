@@ -43,7 +43,7 @@ def _identity(*, symbol="BTCUSDT", interval="1h", open_time_ms=None,
               source_id=ACCEPTED_SOURCE_ID, is_closed=True):
     if open_time_ms is None:
         open_time_ms = FORWARD_WINDOW_START_MS
-    duration = INTERVAL_MILLISECONDS[interval]
+    duration = INTERVAL_MILLISECONDS.get(interval, 300_000)
     return ForwardObservationIdentity(
         source_id=source_id,
         symbol=symbol,
