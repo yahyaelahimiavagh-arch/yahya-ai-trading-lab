@@ -2768,26 +2768,48 @@ Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `4bd187fe`**.
 - PR #74 squash-merged with the exact expected HEAD; accepted checkpoint:
   `4bd187fe5780c1f672a6d386887fcf6fb0bc82c4`.
 
-## P10-008 current candidate — 2026-09-21
+## P10-008 accepted implementation — 2026-09-21
 
-Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `24190b29`**.
 
 - Entry checkpoint: accepted P10-007 at
   `4bd187fe5780c1f672a6d386887fcf6fb0bc82c4`.
 - Branch: `p10-008-validation-cli-export`.
-- Adds bounded local noninteractive `status`, `summary` and `export` commands.
-- Reconstructs the exact P10 chain from a canonical ingestion snapshot and a
-  stable local copy of the accepted P10 SQLite evidence.
-- Upstream database evidence is never opened writable by the CLI. Active
-  `-wal` or `-shm` sidecars fail closed so a concurrent writer cannot be
-  mislabeled as a stable audit snapshot.
-- Runner/economics/gate replay occurs only in a temporary workspace.
-- Export packages candidate, gate registry, sealed window, provenance, bounded
-  forward-Paper summary, economics and gate result into one canonical artifact.
-- Export SHA-256 is deterministic, output is bounded/redacted, publication is
-  atomic and overwrite is never permitted.
-- CLI has no collector, credential, network, order or AI execution capability.
+- Adds bounded local noninteractive `status`, `summary` and `export`.
+- Replays runner/economics/gate only on a stable temporary copy of accepted P10 evidence.
+- Active SQLite `-wal` / `-shm` fails closed; upstream evidence is not opened writable.
+- Export is canonical, atomic, strict no-overwrite and path/secret redacted.
+- Final candidate HEAD:
+  `a26d7a96c6c9ffcacbdfa81ac195f6d53562f322`.
+- Matching Actions: `35628760039`; both jobs PASS.
+- Full suite: **1455/1455 PASS**; focused P10-008 **27/27 PASS**.
+- Canonical audit SHA-256:
+  `1c11ea83affa5dd8d55644a573e765bb83435d0be6e39135384c9d79dda16be8`.
+- P11 remained locked; strategy evidence remained `INSUFFICIENT_EVIDENCE`.
+- PR #75 squash-merged with exact expected HEAD; accepted checkpoint:
+  `24190b29e769212bbc1a2cee376cc6fc6fc0ec88`.
+
+## P10-009 current candidate — 2026-09-21
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry checkpoint: accepted P10-008 at
+  `24190b29e769212bbc1a2cee376cc6fc6fc0ec88`.
+- Branch: `p10-009-adversarial-validation`.
+- Covers 11 fixed attack classes across the accepted BTCUSDT+ETHUSDT P10 chain:
+  pre-window contamination; candidate mutation; threshold mutation; fee/slippage
+  removal; fabricated positive PnL; drawdown suppression; sample deletion;
+  cross-symbol/cross-window material; data-quality failure; risk/safety breach;
+  evidence-label / Live-readiness upgrade.
+- Every attack is re-signed before verification, so fail-closed acceptance cannot
+  rely only on a stale audit SHA.
+- Exact accepted candidate/gate/window/ingestion/Paper/economics/gate/audit
+  identities must remain unchanged across every scenario.
+- Scenario artifacts and matrix index are canonical with deterministic replay.
+- Evidence publication is atomic and strict no-overwrite.
+- No credential, network, order, sizing, threshold-tuning, risk authorization or
+  AI execution capability is added.
 - Strategy evidence remains `INSUFFICIENT_EVIDENCE`; P11 remains locked.
 - No dependency or `uv.lock` change.
-- P10-009 remains closed until exact Final-HEAD Actions and explicit merge.
-\n
+- P10-010 remains closed until exact Final-HEAD Actions and explicit merge.
+
