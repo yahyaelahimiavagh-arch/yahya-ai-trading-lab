@@ -15,7 +15,7 @@ concurrency:
 jobs:
   unit-and-safety:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -123,6 +123,8 @@ jobs:
         run: uv run --locked python -m unittest discover -s tests -p 'test_validation_paper_runner.py' -v
       - name: P10 reconciled forward economics focused gate
         run: uv run --locked python -m unittest discover -s tests -p 'test_validation_economics.py' -v
+      - name: P10 forward validation gate focused gate
+        run: uv run --locked python -m unittest discover -s tests -p 'test_validation_gate.py' -v
       - name: Compile and whitespace gates
         run: |
           uv run --locked python -m compileall -q yatl
@@ -198,6 +200,7 @@ jobs:
           assert_absent 'urllib|http\.client|requests|httpx|aiohttp|websockets|socket|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|openai|anthropic|api/v3/(order|orderList)|/fapi|/dapi|withdraw\(' yatl/validation/forward_store.py
           assert_absent 'QUALIFIED_FOR_P4_RESEARCH|RiskAuthorization|authorize_paper_request|RiskManagedPaperAdapter|size_entry\(|assess_entry_limits\(|assess_protective_entry\(|urllib|http\.client|requests|httpx|aiohttp|websockets|socket|os\.environ|os\.getenv|dotenv|API_KEY|API_SECRET|openai|anthropic|api/v3/(order|orderList)|/fapi|/dapi|withdraw\(|time\.time|time\.monotonic|datetime\.now' yatl/validation/paper_runner.py
           assert_absent 'QUALIFIED_FOR_P4_RESEARCH|RiskAuthorization|size_entry\(|urllib|http\.client|requests|httpx|aiohttp|websockets|socket|os\.environ|os\.getenv|dotenv|API_KEY|API_SECRET|openai|anthropic|api/v3/(order|orderList)|/fapi|/dapi|withdraw\(|time\.time|time\.monotonic|datetime\.now|sqlite3|subprocess' yatl/validation/economics.py
+          assert_absent 'QUALIFIED_FOR_P4_RESEARCH|RiskAuthorization|size_entry\(|urllib|http\.client|requests|httpx|aiohttp|websockets|socket|os\.environ|os\.getenv|dotenv|API_KEY|API_SECRET|openai|anthropic|api/v3/(order|orderList)|/fapi|/dapi|withdraw\(|time\.time|time\.monotonic|datetime\.now|sqlite3|subprocess' yatl/validation/gate.py
       - name: P4 risk contract runtime
         run: uv run --locked python -m yatl risk-contract-check
       - name: P4 exact sizing runtime
@@ -351,6 +354,8 @@ jobs:
         run: uv run --locked python -m yatl.validation.paper_runner_runtime
       - name: P10 mocked reconciled forward economics runtime
         run: uv run --locked python -m yatl.validation.economics_runtime
+      - name: P10 mocked forward validation gate runtime
+        run: uv run --locked python -m yatl.validation.gate_runtime
       - name: Publish P5-009 adversarial evidence
         uses: actions/upload-artifact@v4
         with:

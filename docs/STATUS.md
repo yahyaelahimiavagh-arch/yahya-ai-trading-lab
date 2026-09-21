@@ -2697,9 +2697,9 @@ Final acceptance evidence:
 - PR #72 squash-merged; accepted checkpoint:
   `62c55b675a8efb55c18d4a420a17d2b4a62d65ac`.
 
-## P10-006 current candidate — 2026-09-21
+## P10-006 accepted implementation — 2026-09-21
 
-Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `846be619`**.
 
 - Entry checkpoint: accepted P10-005 at
   `62c55b675a8efb55c18d4a420a17d2b4a62d65ac`.
@@ -2723,4 +2723,43 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
   PASS/FAIL, upgrade strategy evidence, or unlock P11.
 - Mocked CI has no real network or real forward evidence.
 - No dependency or `uv.lock` change.
-- P10-007 remains closed until exact Final-HEAD Actions and explicit merge.
+- Final candidate HEAD:
+  `21b904d2b025396784c5f86a7602c8be7c411b75`.
+- Matching Actions: `35612692034`; both jobs PASS.
+- Full suite: **1403/1403 PASS**; P10-005 regression **12/12 PASS**;
+  focused P10-006 **26/26 PASS**.
+- Mocked economics SHA-256:
+  `36f3e1dcb35d002b286c81b1b192056789e8294777ecc49f5d03d9affe469c4e`.
+- PR #73 squash-merged with the exact expected HEAD; accepted checkpoint:
+  `846be6190ce936425e546ecca7528fed979aab7f`.
+- P10-007 opened only after explicit merge approval.
+
+
+## P10-007 current candidate — 2026-09-21
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry checkpoint: accepted P10-006 at
+  `846be6190ce936425e546ecca7528fed979aab7f`.
+- Branch: `p10-007-validation-gate`.
+- Recomputes exact P10-006 economics before admitting gate evaluation.
+- Evaluates all seven frozen P10-002 criteria exactly once in registry order.
+- Disposition precedence is `FAIL > INSUFFICIENT_DATA > PASS_CANDIDATE`.
+- Sample-dependent profitability, consistency and regime-coverage criteria remain
+  `INSUFFICIENT_DATA` until the registered 90-day / 60 pooled / 20-per-symbol
+  minimum sample is met.
+- Drawdown above 8%, any entry outside `TREND_UP`, unresolved safety/recovery
+  breach or risk-control violation can fail immediately.
+- Three equal time segments use completed-trade exit attribution; final open
+  net-liquidation PnL, if any, is assigned only to the final segment so segment
+  PnL reconciles to P10-006 pooled net equity.
+- Regime classification is recomputed point-in-time from the exact accepted store;
+  `UNKNOWN` is reported but does not count toward the two-regime requirement.
+- Kill Switch remains latch-only in P10-005. Any latch without accepted clear
+  observation + manual reset evidence is unresolved and fails the recovery gate.
+- `PASS_CANDIDATE` is not Live authorization; strategy evidence remains
+  `INSUFFICIENT_EVIDENCE`, P11 remains locked, and trade/order/AI execution
+  permissions stay false.
+- Mocked CI uses no real forward data and no network in the gate module.
+- No dependency or `uv.lock` change.
+- P10-008 remains closed until exact Final-HEAD Actions and explicit merge.

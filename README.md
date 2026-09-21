@@ -7,10 +7,10 @@ P0 تا P8 با شواهد runtime پذیرفته و روی `main` بسته شد
 squash-merge شد و checkpoint نهایی P8 روی `main` برابر است با
 `fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e`.
 
-P9 و P10-001 تا P10-005 runtime accepted و merge شده‌اند. checkpoint فعلی
-`main` برابر `62c55b675a8efb55c18d4a420a17d2b4a62d65ac` است. مرحله جاری
-P10-006 است: economics توصیفی از evidence دقیق runner با Decimal، reconciliation
-و هزینه‌های کامل محاسبه می‌شود. forward data از 2026-09-22 00:00 UTC
+P9 و P10-001 تا P10-006 runtime accepted و merge شده‌اند. checkpoint فعلی
+`main` برابر `846be6190ce936425e546ecca7528fed979aab7f` است. مرحله جاری
+P10-007 است: تمام هفت gate ثبت‌شده را روی economics reconciled، consistency
+زمانی، regime stability و failure/recovery بدون تغییر threshold ارزیابی می‌کند. forward data از 2026-09-22 00:00 UTC
 جمع می‌شود، اما به‌دلیل warm-up 51×4h اولین decision قانونی زودتر از
 2026-09-30 12:00 UTC نیست. برنامه P10 در
 `docs/P10-IMPLEMENTATION-PLAN.md` ثبت شده است.
@@ -51,11 +51,11 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 ## مسیر بعدی
 
 مرجع ترتیب اجرا: [نقشه پروژه](docs/MASTER-PLAN.md).
-وضعیت جاری **P0 تا P9 و P10-001 تا P10-005 runtime accepted و merge‌شده روی
+وضعیت جاری **P0 تا P9 و P10-001 تا P10-006 runtime accepted و merge‌شده روی
 main** است. checkpoint فعلی برابر
-`62c55b675a8efb55c18d4a420a17d2b4a62d65ac` است و مرحله جاری
-**P10-006 — Cost- and risk-aware forward economics** روی branch
-`p10-006-forward-economics` است. P11 تا پذیرش کامل P10 قفل می‌ماند.
+`846be6190ce936425e546ecca7528fed979aab7f` است و مرحله جاری
+**P10-007 — Consistency, regime stability and failure/recovery gate** روی branch
+`p10-007-validation-gate` است. P11 تا پذیرش کامل P10 قفل می‌ماند.
 
 P9 برای رسیدن سریع‌تر به P10 عمداً محدود است: status/alertهای accepted و sanitized
 را به notificationهای information-only تبدیل می‌کند. transport واقعی Telegram
