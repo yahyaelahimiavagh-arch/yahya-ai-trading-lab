@@ -28,9 +28,9 @@ class ForwardGateTests(unittest.TestCase):
     def setUpClass(cls):
         cls.directory = tempfile.TemporaryDirectory()
         cls.store, cls.snapshot, _ = build_mock_forward_runner_fixture(cls.directory.name)
-        cls.run = run_forward_paper(cls.store, cls.snapshot)
-        cls.economics = calculate_forward_economics(cls.store, cls.snapshot, cls.run)
-        cls.report = evaluate_forward_gate(cls.store, cls.snapshot, cls.run, cls.economics)
+        cls.paper_run = run_forward_paper(cls.store, cls.snapshot)
+        cls.economics = calculate_forward_economics(cls.store, cls.snapshot, cls.paper_run)
+        cls.report = evaluate_forward_gate(cls.store, cls.snapshot, cls.paper_run, cls.economics)
         cls.gates = EconomicGateRegistry()
 
     @classmethod
@@ -135,11 +135,11 @@ class ForwardGateTests(unittest.TestCase):
 
         return {
             "economics_id": "P10_FORWARD_ECONOMICS_V1",
-            "input_run_sha256": self.run.run_sha256,
+            "input_run_sha256": self.paper_run.run_sha256,
             "ingestion_snapshot_sha256": self.snapshot.snapshot_sha256,
-            "window_sha256": self.run.window_sha256,
-            "candidate_sha256": self.run.candidate_sha256,
-            "gate_registry_sha256": self.run.gate_registry_sha256,
+            "window_sha256": self.paper_run.window_sha256,
+            "candidate_sha256": self.paper_run.candidate_sha256,
+            "gate_registry_sha256": self.paper_run.gate_registry_sha256,
             "observation_start_ms": start,
             "observation_end_ms": end,
             "observation_duration_ms": end - start,
@@ -192,7 +192,7 @@ class ForwardGateTests(unittest.TestCase):
     def statuses(self, economics=None, regime=None, run=None):
         results = _criteria(
             self.snapshot,
-            self.run if run is None else run,
+            self.paper_run if run is None else run,
             self.economics_record() if economics is None else economics,
             self.regime() if regime is None else regime,
             self.gates,
@@ -218,7 +218,7 @@ class ForwardGateTests(unittest.TestCase):
         )
 
     def test_gate_reconciles_exact_economics(self):
-        repeated = evaluate_forward_gate(self.store, self.snapshot, self.run, self.economics)
+        repeated = evaluate_forward_gate(self.store, self.snapshot, self.paper_run, self.economics)
         self.assertEqual(repeated.canonical_json, self.report.canonical_json)
 
     def test_gate_rejects_detached_mutated_economics(self):
@@ -228,17 +228,17 @@ class ForwardGateTests(unittest.TestCase):
             json.dumps(changed, sort_keys=True, separators=(",", ":"))
         )
         with self.assertRaises(ForwardGateError):
-            evaluate_forward_gate(self.store, self.snapshot, self.run, fake)
+            evaluate_forward_gate(self.store, self.snapshot, self.paper_run, fake)
 
     def test_gate_rejects_non_economics_input(self):
         with self.assertRaises(ForwardGateError):
-            evaluate_forward_gate(self.store, self.snapshot, self.run, {})
+            evaluate_forward_gate(self.store, self.snapshot, self.paper_run, {})
 
     def test_registered_pass_fixture_passes_all_criteria(self):
         statuses = self.statuses()
         self.assertTrue(all(value == "PASS" for value in statuses.values()))
         criteria = _criteria(
-            self.snapshot, self.run, self.economics_record(), self.regime(), self.gates
+            self.snapshot, self.paper_run, self.economics_record(), self.regime(), self.gates
         )
         self.assertEqual(_disposition(criteria), GateDisposition.PASS_CANDIDATE)
 
@@ -341,8 +341,8 @@ class ForwardGateTests(unittest.TestCase):
         self.assertEqual(self.statuses(regime=regime)["FAILURE_RECOVERY"], "FAIL")
 
     def test_latched_kill_switch_without_reset_evidence_fails(self):
-        symbol = replace(self.run.symbols[0], kill_switch_latched=True)
-        run = replace(self.run, symbols=(symbol, self.run.symbols[1]))
+        symbol = replace(self.paper_run.symbols[0], kill_switch_latched=True)
+        run = replace(self.paper_run, symbols=(symbol, self.paper_run.symbols[1]))
         self.assertEqual(self.statuses(run=run)["FAILURE_RECOVERY"], "FAIL")
 
     def test_risk_policy_violation_fails_risk_controls(self):
