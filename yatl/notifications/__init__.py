@@ -1,4 +1,4 @@
-"""P9 read-only notification contracts. No Telegram transport or command capability."""
+"""P9 read-only notifications with bounded outbound-only Telegram delivery."""
 
 from .contracts import (
     MAX_BODY_CHARS,
@@ -63,4 +63,45 @@ __all__ += [
     "FormattedNotification",
     "NotificationFormatError",
     "format_notification",
+]
+
+
+from .transport import (
+    TELEGRAM_CHAT_ID_ENV,
+    TELEGRAM_HOST,
+    TELEGRAM_MAX_RESPONSE_BYTES,
+    TELEGRAM_MAX_TEXT_CHARS,
+    TELEGRAM_METHOD,
+    TELEGRAM_PATH_SUFFIX,
+    TELEGRAM_PORT,
+    TELEGRAM_TIMEOUT_SECONDS,
+    TELEGRAM_TOKEN_ENV,
+    TELEGRAM_TRANSPORT_ID,
+    TelegramCredentials,
+    TelegramDeliveryReceipt,
+    TelegramTransportError,
+    TelegramTransportErrorCode,
+    TelegramTransportPolicy,
+    load_telegram_credentials,
+    send_formatted_notification,
+)
+
+__all__ += [
+    "TELEGRAM_CHAT_ID_ENV",
+    "TELEGRAM_HOST",
+    "TELEGRAM_MAX_RESPONSE_BYTES",
+    "TELEGRAM_MAX_TEXT_CHARS",
+    "TELEGRAM_METHOD",
+    "TELEGRAM_PATH_SUFFIX",
+    "TELEGRAM_PORT",
+    "TELEGRAM_TIMEOUT_SECONDS",
+    "TELEGRAM_TOKEN_ENV",
+    "TELEGRAM_TRANSPORT_ID",
+    "TelegramCredentials",
+    "TelegramDeliveryReceipt",
+    "TelegramTransportError",
+    "TelegramTransportErrorCode",
+    "TelegramTransportPolicy",
+    "load_telegram_credentials",
+    "send_formatted_notification",
 ]
