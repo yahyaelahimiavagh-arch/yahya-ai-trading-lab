@@ -87,6 +87,27 @@ def _real_parent(path):
     return target
 
 
+def _database_target(path):
+    if not _valid_path(path):
+        raise CollectorError(CollectorCode.INVALID_REQUEST)
+    target = Path(path)
+    parent = target.parent
+    try:
+        if (
+            target.is_symlink()
+            or not parent.exists()
+            or not parent.is_dir()
+            or parent.is_symlink()
+            or (target.exists() and not target.is_file())
+        ):
+            raise CollectorError(CollectorCode.SOURCE_REJECTED)
+    except CollectorError:
+        raise
+    except OSError:
+        raise CollectorError(CollectorCode.SOURCE_REJECTED) from None
+    return target
+
+
 def _existing_snapshot(path):
     target = Path(path)
     try:
@@ -199,8 +220,7 @@ class _CollectorLock:
 
 def collect_once(database_path, snapshot_path, *, client=None):
     """Collect one bounded forward snapshot and publish it atomically."""
-    if not _valid_path(database_path):
-        raise CollectorError(CollectorCode.INVALID_REQUEST)
+    database_target = _database_target(database_path)
     snapshot_target = _real_parent(snapshot_path)
 
     with _CollectorLock(snapshot_target):
@@ -208,7 +228,7 @@ def collect_once(database_path, snapshot_path, *, client=None):
         public_client = client or BinancePublicRestClient()
 
         try:
-            with ForwardCandleStore(database_path) as store:
+            with ForwardCandleStore(database_target) as store:
                 snapshot = collect_forward_snapshot(store, public_client)
                 store_count = store.count()
         except ForwardIngestionError as exc:
