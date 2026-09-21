@@ -2810,25 +2810,52 @@ Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `7baf3c70`**.
 - PR #76 squash-merged with exact expected HEAD; accepted checkpoint:
   `7baf3c7000bb66d406fa8348692f73d9907d3f15`.
 
-## P10-010 current candidate — 2026-09-21
+## P10-010 accepted implementation — 2026-09-21
 
-Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+Status: **ENGINEERING RUNTIME ACCEPTED AND MERGED — CHECKPOINT `ed7e7e70`**.
 
 - Entry checkpoint: accepted P10-009 at
   `7baf3c7000bb66d406fa8348692f73d9907d3f15`.
 - Branch: `p10-010-independent-final-audit`.
-- Independently verifies exact frozen candidate/gate/window SHA identities.
-- Reproduces accepted snapshot/store content and detects out-of-scope material.
-- Recomputes the frozen forward Paper run, reconciled economics and all seven gates.
-- Rebuilds the canonical P10-008 audit record independently and requires equality
-  with the accepted export identity.
-- Recomputes the complete 11-scenario P10-009 matrix and verifies all 12 evidence
-  files byte-for-byte, canonical and unchanged.
-- Final disposition is exactly one of `INSUFFICIENT_DATA`, `FAIL`,
-  `PASS_CANDIDATE` and is taken only from the recomputed gate.
-- `PASS_CANDIDATE` can only set `p11_consideration_allowed=true`; P11 itself
-  remains locked and Live authorization remains false.
-- Mocked CI evidence must remain `INSUFFICIENT_DATA`.
+- Final candidate HEAD:
+  `5943265e22a8a3ddbec97c3a924d7febf7f5c2da`.
+- Matching Actions: `35639615088`; both jobs PASS.
+- Full suite: **1502/1502 PASS**.
+- Focused P10-010: **26/26 PASS**.
+- P10-009 matrix remained **11/11 PASS**.
+- Final mocked disposition: `INSUFFICIENT_DATA`.
+- `data_quality_recomputed=true`.
+- `evidence_verified=true`.
+- `no_write=true`.
+- `source_safe=true`.
+- `p11_unlocked=false`.
+- `live_authorized=false`.
+- Adversarial matrix SHA-256:
+  `e9b36b749519c4793b94913e3d40c56aaf3aa60a82d42138cc17683568528b93`.
+- Canonical audit SHA-256:
+  `1c11ea83affa5dd8d55644a573e765bb83435d0be6e39135384c9d79dda16be8`.
+- PR #77 squash-merged with exact expected HEAD; accepted checkpoint:
+  `ed7e7e705dc71dfc6a67d5b052d6facc08ee5e86`.
+- Engineering completion is not economic acceptance; P11 remains locked.
+
+## P10 Operations current candidate — 2026-09-21
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry checkpoint:
+  `ed7e7e705dc71dfc6a67d5b052d6facc08ee5e86`.
+- Branch: `ops/p10-forward-collector`.
+- Adds a production, noninteractive, credential-free P10 forward collector.
+- Uses only the accepted Binance Spot public REST client and the sealed P10 window.
+- Writes only the dedicated P10 SQLite store and canonical current snapshot.
+- Existing unowned non-empty databases, symlink targets, corrupted snapshots,
+  rollback attempts and overlapping collectors fail closed.
+- Snapshot publication is atomic; local paths are not echoed in JSON output.
+- Hourly hardened systemd service/timer is included under `ops/systemd/`.
+- `NOT_READY` before the first closed 4h bar is stable exit 40 and is accepted
+  by systemd without weakening any gate.
+- No API key, secret, account access, trade permission, order endpoint, P11 unlock
+  or AI direct execution capability is added.
+- Runbook: `docs/P10-OPERATIONS.md`.
 - No dependency or `uv.lock` change.
-- **Engineering completion is not economic acceptance.**
 
