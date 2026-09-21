@@ -2366,3 +2366,66 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
 - No dependency or `uv.lock` change.
 - P9-006 remains closed until exact final-head Actions pass and explicit merge
   approval is received.
+
+
+## P9-005 accepted implementation — 2026-09-21
+
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `8614758`**.
+
+- PR #66 exact final candidate HEAD:
+  `da9d347b50d09d823b3b1bed9791ebc8ba7ec5f2`.
+- Matching GitHub Actions: `35555391256` — both jobs PASS.
+- Complete suite: **1241/1241 PASS**.
+- Focused guarded notifier runner: **13/13 PASS**.
+- Focused adversarial notification matrix: **10/10 PASS**.
+- Existing P9-004 delivery guard regression: **23/23 PASS**.
+- Existing P9-003 transport regression: **20/20 PASS**.
+- Fixed matrix: **8 scenarios × 2 symbols = 16 runs / 17 evidence files**.
+- Matrix index SHA-256:
+  `30a2c7ff705e9ecc3e83d5fa6b7ec38f9e432a6f6cd9a7f9ae531ca8b040c063`.
+- Runner runtime demonstrated:
+  `DELIVERED -> DUPLICATE_SUPPRESSED`, sender calls `1`,
+  duplicate before credentials `true`, source unchanged `true`,
+  state replay equal `true`.
+- Acceptance remained mocked:
+  `real_credentials_loaded=false`, `real_network_called=false`.
+- PR #66 squash-merged; accepted checkpoint:
+  `8614758fa8229c12ed297d75cf79adc86353c8e7`.
+- No dependency or `uv.lock` change.
+- No inbound Telegram command/callback/webhook/polling, execution/live control,
+  TRADE permission, order endpoint or AI direct execution was introduced.
+
+## P9-006 current candidate — 2026-09-21
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry checkpoint: accepted P9-005 at
+  `8614758fa8229c12ed297d75cf79adc86353c8e7`.
+- Branch: `p9-006-independent-final-audit`.
+- Adds independent final audit only; no new notification/transport capability.
+- Frozen policy digests independently recomputed:
+  - notification:
+    `e5274de931300114fccffc772c971c99b5ba140a2632d98f897687e591be0a35`;
+  - transport:
+    `26428411750db1d2290e9d54fc60b831f5497077822e3e26be63a60acf9cc9d4`;
+  - delivery:
+    `6d180d548e5294cb7974ce4023ddff2f83bbbe2b707beb25cfdb76f81bb87533`.
+- BTCUSDT and ETHUSDT source/message/batch/formatted/delivery identities are
+  independently rebuilt and frozen.
+- Delivery is independently replayed with a mocked sender for both symbols:
+  `DELIVERED -> DUPLICATE_SUPPRESSED`, exactly one sender call, zero retry wait,
+  and frozen secret-free receipt/state SHA-256 identities.
+- Combined identity-set SHA-256:
+  `37531b4283d3e7da22040b28eb5c73dfb76d7281938b9170e6d6d31a238206e1`.
+- P9-005 matrix is independently replayed twice and compared against the exact
+  17-file evidence directory.
+- Frozen P9-005 index SHA-256 remains:
+  `30a2c7ff705e9ecc3e83d5fa6b7ec38f9e432a6f6cd9a7f9ae531ca8b040c063`.
+- Audit independently scans source-safety and confirms direct network/environment
+  authority remains confined to `transport.py`.
+- Focused tests include policy/identity drift, missing/extra/symlink/noncanonical
+  evidence, evidence-upgrade/trade-permission injection and scenario digest tamper.
+- Acceptance runtime loads no real credential and performs no real network request.
+- No dependency or `uv.lock` change.
+- P10 remains closed until this exact final audit passes matching Final-HEAD
+  Actions and explicit merge approval.

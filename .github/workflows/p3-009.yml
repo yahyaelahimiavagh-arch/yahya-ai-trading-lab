@@ -109,6 +109,8 @@ jobs:
         run: uv run --locked python -m unittest discover -s tests -p 'test_notification_runner.py' -v
       - name: P9 adversarial notification matrix focused gate
         run: uv run --locked python -m unittest discover -s tests -p 'test_notification_scenarios.py' -v
+      - name: P9 independent final audit focused gate
+        run: uv run --locked python -m unittest discover -s tests -p 'test_notification_audit.py' -v
       - name: Compile and whitespace gates
         run: |
           uv run --locked python -m compileall -q yatl
@@ -176,6 +178,7 @@ jobs:
           assert_absent 'while[[:space:]]' yatl/notifications/delivery.py
           assert_absent 'http\.client|urllib|requests|httpx|aiohttp|websockets|socket|ssl\.|os\.environ|os\.getenv|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|openai|anthropic|add_subparsers|input\(|eval\(|exec\(|getUpdates|setWebhook|answerCallbackQuery' yatl/notifications/runner.py
           assert_absent 'http\.client|urllib|requests|httpx|aiohttp|websockets|socket|ssl\.|os\.environ|os\.getenv|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|openai|anthropic' yatl/notifications/scenarios.py
+          assert_absent 'http\.client|urllib|requests|httpx|aiohttp|websockets|socket|ssl\.|os\.environ|os\.getenv|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|openai|anthropic' yatl/notifications/audit.py
       - name: P4 risk contract runtime
         run: uv run --locked python -m yatl risk-contract-check
       - name: P4 exact sizing runtime
@@ -315,6 +318,8 @@ jobs:
           uv run --locked python -m yatl.notifications.scenarios_runtime --output data/p9/p9-005-evidence-replay
           diff -r data/p9/p9-005-evidence data/p9/p9-005-evidence-replay
           sha256sum data/p9/p9-005-evidence/p9-005-index.json
+      - name: P9-006 independent final audit
+        run: uv run --locked python -m yatl.notifications.audit_runtime --evidence data/p9/p9-005-evidence
       - name: Publish P5-009 adversarial evidence
         uses: actions/upload-artifact@v4
         with:

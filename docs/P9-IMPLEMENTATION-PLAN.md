@@ -239,9 +239,15 @@ No operator command surface is added.
 Acceptance: exact fail-closed outcomes, deterministic replay, canonical evidence,
 stable exit codes and no upstream mutation.
 
-Current candidate: branch `p9-005-guarded-runner-adversarial-matrix` from
-accepted P9-004 checkpoint
-`1e3cba7a0aeb820c9d0a006cc38e053d12f83085`.
+Accepted: PR #66 exact final candidate HEAD
+`da9d347b50d09d823b3b1bed9791ebc8ba7ec5f2` passed matching GitHub
+Actions run `35555391256` with both jobs green, **1241/1241** complete tests,
+**13/13** focused guarded-runner tests and **10/10** focused notification-matrix
+tests. The 16-run / 17-file matrix replayed byte-identically with frozen index
+SHA-256
+`30a2c7ff705e9ecc3e83d5fa6b7ec38f9e432a6f6cd9a7f9ae531ca8b040c063`.
+PR #66 was squash-merged at accepted checkpoint
+`8614758fa8229c12ed297d75cf79adc86353c8e7`.
 
 The runner is one-shot and noninteractive. It exposes no subcommands or operator
 control surface. Each invocation accepts exactly one canonical P9 notification
@@ -275,6 +281,32 @@ Independently recompute the P9 policy, source/message identities, delivery
 boundaries, adversarial outcomes and source safety. P9 closes only after a matching
 final-head GitHub Actions run passes and the checkpoint is explicitly approved
 and merged.
+
+Current candidate: branch `p9-006-independent-final-audit` from accepted P9-005
+checkpoint `8614758fa8229c12ed297d75cf79adc86353c8e7`.
+
+The audit freezes and independently recomputes:
+- notification policy SHA-256:
+  `e5274de931300114fccffc772c971c99b5ba140a2632d98f897687e591be0a35`;
+- Telegram transport policy SHA-256:
+  `26428411750db1d2290e9d54fc60b831f5497077822e3e26be63a60acf9cc9d4`;
+- delivery guard policy SHA-256:
+  `6d180d548e5294cb7974ce4023ddff2f83bbbe2b707beb25cfdb76f81bb87533`;
+- BTCUSDT/ETHUSDT source, message, batch, formatted and delivery identities;
+- combined accepted identity-set SHA-256:
+  `37531b4283d3e7da22040b28eb5c73dfb76d7281938b9170e6d6d31a238206e1`;
+- the exact P9-005 8-scenario × 2-symbol matrix and 17-file evidence set;
+- frozen P9-005 matrix index SHA-256:
+  `30a2c7ff705e9ecc3e83d5fa6b7ec38f9e432a6f6cd9a7f9ae531ca8b040c063`;
+- source-safety confinement of network/environment authority to the accepted
+  `transport.py` boundary;
+- an independent mocked delivery replay for both approved symbols that must produce
+  `DELIVERED -> DUPLICATE_SUPPRESSED`, exactly one sender call, frozen
+  delivery/receipt/state identities and zero retry sleeps.
+
+P9-006 adds no notification semantics, no transport capability, no runner command,
+no state mutation authority and no new dependency. Acceptance remains offline and
+mocked: no real Telegram credential is loaded and no real network request is made.
 
 ## AI direction after the baseline
 
