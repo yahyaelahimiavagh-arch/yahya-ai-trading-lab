@@ -2287,11 +2287,14 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
   no filesystem/database persistence is introduced in this checkpoint.
 - Retry policy is finite:
   - maximum 3 total attempts;
-  - network backoff 1s then 2s;
+  - only connection-stage failure before request uses 1s then 2s backoff;
+  - request/response-stage network failure becomes
+    `TELEGRAM_NETWORK_AMBIGUOUS` and is never retried;
   - HTTP 429 may retry only with validated integer `retry_after`;
   - per-rate-limit wait <= 30s;
   - total wait <= 60s.
-- Non-retryable transport/config/schema/provider failures stop immediately.
+- Ambiguous send state and all other non-retryable transport/config/schema/provider
+  failures stop immediately.
 - P9-003 transport adds redacted bounded `TELEGRAM_RATE_LIMITED` signal only;
   provider description/body is never surfaced.
 - Receipt bindings are revalidated before any delivery record is accepted.
