@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P8 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P9-004 DELIVERY GUARD / DEDUPE / BOUNDED RETRY — CANDIDATE**
+قدم جاری: **P9-005 GUARDED NOTIFIER / ADVERSARIAL MATRIX — CANDIDATE**
 
 ## منشأ و حدود سند
 
@@ -805,3 +805,31 @@ state تحویل immutable، canonical و strict-reconstructable است؛ duplic
 persistence boundary را مشخص کند. هیچ upstream mutation یا control loop ساخته
 نمی‌شود و محدودیت‌های PAPER ONLY، LIVE lock، no trade/order و no AI direct
 execution بدون تغییرند.
+
+
+## P9-004 acceptance / P9-005 candidate — 2026-09-21
+
+P9-004 با PR #65 و matching Actions `35553839765`، **1218/1218** تست کامل،
+**23/23** focused P9-004 و **20/20** regression حمل‌ونقل P9-003 پذیرفته و در
+checkpoint `1e3cba7a0aeb820c9d0a006cc38e053d12f83085` روی `main`
+squash-merge شد. guard policy SHA-256 برابر
+`6d180d548e5294cb7974ce4023ddff2f83bbbe2b707beb25cfdb76f81bb87533`
+فریز است.
+
+P9-005 روی branch `p9-005-guarded-runner-adversarial-matrix` یک runner
+one-shot و noninteractive اضافه می‌کند. runner فقط یک notification canonical
+با expected batch hash و symbol مشخص می‌پذیرد، source را read-only نگه می‌دارد و
+فقط delivery-state خودش را atomically ذخیره می‌کند. duplicate قبل از credential
+loading و قبل از network متوقف می‌شود و خروجی/exit codeها bounded و redacted
+هستند.
+
+adversarial matrix ثابت شامل ۸ سناریو برای هر یک از BTCUSDT و ETHUSDT است:
+source tampering، evidence upgrade، command/authority injection، secret leakage،
+URL/markup injection، duplicate delivery، cross-symbol material و
+transport-response corruption. جمعاً ۱۶ run و ۱۷ evidence file canonical تولید
+می‌شود و replay دقیقاً مقایسه می‌شود.
+
+هیچ command ورودی Telegram، callback/webhook/polling، execution/live control،
+RiskAuthorization mutation، quantity authority، trade permission، order endpoint
+یا AI direct execution اضافه نمی‌شود. P9-006 تا merge مستقل این checkpoint
+بسته می‌ماند.
