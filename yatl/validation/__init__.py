@@ -215,3 +215,22 @@ __all__ += [
     "ForwardEconomicsReport",
     "calculate_forward_economics",
 ]
+
+
+from .gate import (
+    FORWARD_GATE_ID,
+    CriterionStatus,
+    ForwardGateError,
+    ForwardGateReport,
+    GateDisposition,
+    evaluate_forward_gate,
+)
+
+__all__ += [
+    "FORWARD_GATE_ID",
+    "CriterionStatus",
+    "ForwardGateError",
+    "ForwardGateReport",
+    "GateDisposition",
+    "evaluate_forward_gate",
+]
