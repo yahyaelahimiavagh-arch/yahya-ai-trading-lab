@@ -103,6 +103,8 @@ jobs:
         run: uv run --locked python -m unittest discover -s tests -p 'test_notification_projection.py' -v
       - name: P9 outbound-only Telegram transport focused gate
         run: uv run --locked python -m unittest discover -s tests -p 'test_telegram_transport.py' -v
+      - name: P9 delivery guard dedupe retry focused gate
+        run: uv run --locked python -m unittest discover -s tests -p 'test_delivery_guard.py' -v
       - name: Compile and whitespace gates
         run: |
           uv run --locked python -m compileall -q yatl
@@ -166,6 +168,8 @@ jobs:
           assert_absent 'getUpdates|setWebhook|deleteWebhook|answerCallbackQuery|editMessageText|sendPhoto|sendDocument|forwardMessage' yatl/notifications/transport.py
           transport_capability_files="$(git grep -lE 'http\.client|os\.environ|ssl\.create_default_context' -- yatl/notifications || true)"
           test "$transport_capability_files" = "yatl/notifications/transport.py"
+          assert_absent 'http\.client|urllib|requests|httpx|aiohttp|websockets|socket|ssl\.|os\.environ|os\.getenv|pathlib|sqlite3|open\(|write_text|write_bytes|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|openai|anthropic' yatl/notifications/delivery.py
+          assert_absent 'while[[:space:]]' yatl/notifications/delivery.py
       - name: P4 risk contract runtime
         run: uv run --locked python -m yatl risk-contract-check
       - name: P4 exact sizing runtime
@@ -294,6 +298,8 @@ jobs:
         run: uv run --locked python -m yatl.notifications.projection_runtime
       - name: P9 outbound-only Telegram transport runtime
         run: uv run --locked python -m yatl.notifications.transport_runtime
+      - name: P9 delivery guard dedupe retry runtime
+        run: uv run --locked python -m yatl.notifications.delivery_runtime
       - name: Publish P5-009 adversarial evidence
         uses: actions/upload-artifact@v4
         with:

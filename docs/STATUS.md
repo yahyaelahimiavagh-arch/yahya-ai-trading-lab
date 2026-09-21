@@ -2247,3 +2247,60 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
 - No dependency or `uv.lock` change.
 - P9-004 remains closed until exact final-head Actions pass and explicit merge
   approval is received.
+
+
+## P9-003 accepted implementation — 2026-09-21
+
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `0d29710`**.
+
+- PR #64 exact final candidate HEAD:
+  `013bb6928322ac718310c49a8700d9854f3c9966`.
+- Matching GitHub Actions: `35553060397` — both jobs PASS.
+- Complete suite: **1194/1194 PASS**.
+- Focused P9-003: **19/19 PASS**.
+- Existing focused P9-002: **15/15 PASS**.
+- Existing focused P9-001: **21/21 PASS**.
+- Frozen transport policy SHA-256:
+  `26428411750db1d2290e9d54fc60b831f5497077822e3e26be63a60acf9cc9d4`.
+- PR #64 squash-merged; accepted checkpoint:
+  `0d29710f320cec2dde6b7f585b8f62e496daae1e`.
+- Acceptance runtime was mocked:
+  `real_credentials_loaded=false`, `real_network_called=false`.
+- No dependency or `uv.lock` change.
+- No inbound command/callback/webhook/polling surface, execution/live control,
+  TRADE permission, order endpoint or AI direct execution was introduced.
+
+## P9-004 current candidate — 2026-09-21
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry checkpoint: accepted P9-003 at
+  `0d29710f320cec2dde6b7f585b8f62e496daae1e`.
+- Branch: `p9-004-delivery-guard`.
+- Adds frozen policy `P9_DELIVERY_GUARD_V1`.
+- Deterministic delivery identity binds:
+  notification SHA-256 + formatted SHA-256 + accepted Telegram transport ID.
+- Successful sends create bounded secret-free immutable delivery records.
+- Duplicate delivery identities are suppressed before sender/network invocation.
+- Delivery state is canonical, strictly reconstructable and SHA-bound.
+- Caller-managed snapshot reconstruction preserves dedupe identity across restart;
+  no filesystem/database persistence is introduced in this checkpoint.
+- Retry policy is finite:
+  - maximum 3 total attempts;
+  - only connection-stage failure before request uses 1s then 2s backoff;
+  - request/response-stage network failure becomes
+    `TELEGRAM_NETWORK_AMBIGUOUS` and is never retried;
+  - HTTP 429 may retry only with validated integer `retry_after`;
+  - per-rate-limit wait <= 30s;
+  - total wait <= 60s.
+- Ambiguous send state and all other non-retryable transport/config/schema/provider
+  failures stop immediately.
+- P9-003 transport adds redacted bounded `TELEGRAM_RATE_LIMITED` signal only;
+  provider description/body is never surfaced.
+- Receipt bindings are revalidated before any delivery record is accepted.
+- No unbounded `while` loop, upstream mutation, filesystem/database persistence,
+  execution/account/risk import, TRADE permission, order endpoint or AI direct
+  execution is added.
+- No dependency or `uv.lock` change.
+- P9-005 remains closed until exact final-head Actions pass and explicit merge
+  approval is received.

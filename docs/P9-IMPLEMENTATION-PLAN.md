@@ -1,6 +1,6 @@
 # P9 — Telegram notification implementation plan
 
-Status: **P9-002 RUNTIME ACCEPTED / MERGED — P9-003 CURRENT CANDIDATE**
+Status: **P9-003 RUNTIME ACCEPTED / MERGED — P9-004 CURRENT CANDIDATE**
 
 Entry baseline: P8 runtime accepted and squash-merged at checkpoint
 `fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e`. Matching final-head GitHub Actions
@@ -145,6 +145,14 @@ Acceptance: exact host/method/path allowlist, TLS, timeout/response-size bounds,
 redirect/proxy restrictions, stable redacted errors, mocked transport tests and
 no execution/account/risk imports.
 
+Accepted: PR #64 was squash-merged at
+`0d29710f320cec2dde6b7f585b8f62e496daae1e` after matching exact final-head
+Actions run `35553060397` passed both jobs, the **1194/1194** complete suite
+and **19/19** focused P9-003 tests. Frozen transport policy SHA-256:
+`26428411750db1d2290e9d54fc60b831f5497077822e3e26be63a60acf9cc9d4`.
+Acceptance used mocked transport only; no real credential or network call was
+part of the evidence.
+
 Current candidate: branch `p9-003-outbound-telegram-transport` from accepted
 P9-002 checkpoint `7158fbc84287b9327116581d6877f17a68a294a4`.
 
@@ -179,6 +187,37 @@ not mutate upstream state or create a control loop.
 Acceptance: idempotency, bounded retry/backoff, rate-limit behavior, restart-safe
 delivery state if persistence is required, redacted failures and unchanged
 notification/source identity.
+
+Current candidate: branch `p9-004-delivery-guard` from accepted P9-003
+checkpoint `0d29710f320cec2dde6b7f585b8f62e496daae1e`.
+
+P9-004 adds frozen delivery policy `P9_DELIVERY_GUARD_V1` around the accepted
+P9-003 sender. Delivery identity is deterministic over the canonical notification,
+canonical formatted text and transport ID. A successful acknowledgement creates
+one bounded secret-free `DeliveryRecord`; the same delivery identity is then
+suppressed before network access.
+
+Retry is finite and conservative: at most three total attempts. Only a connection
+failure that occurs before any Telegram request is issued receives fixed backoff
+of 1 then 2 seconds. A request/response-stage network failure is classified
+`TELEGRAM_NETWORK_AMBIGUOUS` and is never retried because Telegram may already
+have accepted the message. Validated Telegram HTTP 429 `retry_after` may be
+retried within a per-wait bound of 30 seconds and total wait bound of 60 seconds.
+HTTP status, provider rejection, malformed/oversized response, invalid request,
+credential errors and ambiguous network state are never retried.
+
+P9-003 transport now recognizes only the safe numeric `retry_after` field from a
+bounded 429 JSON response and converts it to a redacted `TELEGRAM_RATE_LIMITED`
+signal. Provider description/body text remains absent from exceptions.
+
+The dedupe state is an immutable canonical caller-managed snapshot with strict
+reconstruction and SHA-256. This checkpoint intentionally adds no filesystem or
+database persistence because the noninteractive runner/persistence ownership is
+not introduced until P9-005. A reconstructed snapshot preserves duplicate
+suppression across a caller-managed restart boundary.
+
+No upstream source is mutated, no delivery control loop is created and no
+execution/account/risk/AI authority is added.
 
 ### P9-005 — Guarded notifier runner and adversarial notification matrix
 

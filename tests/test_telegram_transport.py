@@ -351,10 +351,32 @@ class TelegramTransportTests(unittest.TestCase):
         self.assertNotIn(TOKEN, str(caught.exception))
         self.assertNotIn(CHAT_ID, str(caught.exception))
 
-    def test_network_failure_is_stable_redacted_and_connection_closes(self):
+    def test_request_stage_network_failure_is_ambiguous_redacted_and_closes(self):
         factory, bucket = factory_for(
             request_error=OSError(f"network path included {TOKEN}")
         )
+        with self.assertRaises(TelegramTransportError) as caught:
+            send_formatted_notification(
+                message(),
+                format_notification(message()),
+                self.credentials(),
+                connection_factory=factory,
+            )
+        self.assertEqual(
+            caught.exception.code,
+            TelegramTransportErrorCode.NETWORK_AMBIGUOUS,
+        )
+        self.assertEqual(
+            str(caught.exception),
+            "TELEGRAM_NETWORK_AMBIGUOUS",
+        )
+        self.assertNotIn(TOKEN, str(caught.exception))
+        self.assertTrue(bucket["connection"].closed)
+
+    def test_connection_stage_failure_is_retry_safe_and_redacted(self):
+        def factory(host, port, *, timeout, context):
+            raise OSError(f"connect failed with hidden {TOKEN}")
+
         with self.assertRaises(TelegramTransportError) as caught:
             send_formatted_notification(
                 message(),
@@ -368,7 +390,6 @@ class TelegramTransportTests(unittest.TestCase):
         )
         self.assertEqual(str(caught.exception), "TELEGRAM_NETWORK_ERROR")
         self.assertNotIn(TOKEN, str(caught.exception))
-        self.assertTrue(bucket["connection"].closed)
 
     def test_declared_response_too_large_fails_before_read(self):
         response = FakeResponse(
