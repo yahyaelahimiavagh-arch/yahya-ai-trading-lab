@@ -106,6 +106,12 @@ class P10IndependentFinalAuditTests(unittest.TestCase):
             "INSUFFICIENT_EVIDENCE",
         )
 
+    def test_database_snapshot_digest_is_independently_bound(self):
+        self.assertEqual(
+            self.result.database_snapshot_sha256,
+            self.database_sha,
+        )
+
     def test_frozen_candidate_gate_window_digests_are_exact(self):
         self.assertEqual(
             self.result.candidate_sha256,
@@ -151,6 +157,7 @@ class P10IndependentFinalAuditTests(unittest.TestCase):
             "exact_outcomes",
             "replay_equal",
             "chain_recomputed",
+            "data_quality_recomputed",
             "adversarial_recomputed",
             "evidence_verified",
             "candidate_unchanged",
