@@ -792,9 +792,12 @@ transport policy SHA-256 برابر
 واقعی وارد evidence نشد.
 
 P9-004 روی branch `p9-004-delivery-guard` delivery identity، duplicate
-suppression و retry محدود را اضافه می‌کند. حداکثر سه attempt وجود دارد؛ network
-backoff ثابت 1 و 2 ثانیه است و 429 فقط با `retry_after` عددی معتبر و در bound
-پذیرفته می‌شود. HTTP/provider/schema/config failureهای دیگر retry نمی‌شوند.
+suppression و retry محدود را اضافه می‌کند. حداکثر سه attempt وجود دارد؛ فقط
+connection failure پیش از صدور request با backoff ثابت 1 و 2 ثانیه retry می‌شود.
+خطای network در request/response به `TELEGRAM_NETWORK_AMBIGUOUS` تبدیل می‌شود و
+برای جلوگیری از duplicate احتمالی هرگز retry نمی‌شود. 429 فقط با
+`retry_after` عددی معتبر و در bound پذیرفته می‌شود. HTTP/provider/schema/config
+failureهای دیگر نیز retry نمی‌شوند.
 
 state تحویل immutable، canonical و strict-reconstructable است؛ duplicate با state
 قبلی قبل از network متوقف می‌شود. persistence فایل/دیتابیس در این checkpoint
