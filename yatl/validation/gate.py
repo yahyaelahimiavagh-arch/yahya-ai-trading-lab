@@ -198,22 +198,18 @@ def _regime_summary(store, snapshot, run, gates):
                     symbol_outside += 1
                 if kill_active is True:
                     entries_while_kill += 1
-                if (
-                    strategy_action != "ENTER_LONG"
-                    or not isinstance(veto, dict)
-                    or veto.get("allowed") is not True
-                    or veto.get("reasons") != []
-                ):
-                    risk_policy_violations += 1
+
+            violation = False
             if strategy_action == "ENTER_LONG":
                 if not isinstance(veto, dict):
-                    risk_policy_violations += 1
+                    violation = True
                 elif veto.get("allowed") is True:
-                    if effective != "ENTER_LONG" or veto.get("reasons") != []:
-                        risk_policy_violations += 1
-                elif effective != "HOLD" or not veto.get("reasons"):
-                    risk_policy_violations += 1
-            elif veto is not None:
+                    violation = effective != "ENTER_LONG" or veto.get("reasons") != []
+                else:
+                    violation = effective != "HOLD" or not veto.get("reasons")
+            else:
+                violation = veto is not None or effective == "ENTER_LONG"
+            if violation:
                 risk_policy_violations += 1
 
         per_symbol.append(
