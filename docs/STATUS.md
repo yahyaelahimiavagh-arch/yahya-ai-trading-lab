@@ -2586,3 +2586,56 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
 - P11 remains locked.
 - No dependency or `uv.lock` change.
 - P10-004 remains closed until exact Final-HEAD Actions and explicit merge.
+
+
+## P10-003 accepted implementation — 2026-09-21
+
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `179d0bed`**.
+
+- PR #70 exact final candidate HEAD:
+  `8f28c8a0cc984b1b03b45e2f8731dfcded8cfefb`.
+- Matching GitHub Actions: `35577086427` — both jobs PASS.
+- Complete suite: **1341/1341 PASS**.
+- Focused P10-003: **22/22 PASS**.
+- Frozen window SHA-256:
+  `115f72be7941f682ccd28a70058677eba2ea24ee8ed44b5380510fe685022867`.
+- Forward start:
+  `2026-09-22T00:00:00Z`.
+- Earliest 90-day evaluation:
+  `2026-12-21T00:00:00Z`.
+- PR #70 squash-merged; accepted checkpoint:
+  `179d0bed3a1191dee21a654eb965a3b108328b90`.
+- No real forward data was loaded and no economic result was computed.
+
+## P10-004 current candidate — 2026-09-21
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry checkpoint: accepted P10-003 at
+  `179d0bed3a1191dee21a654eb965a3b108328b90`.
+- Branch: `p10-004-forward-ingestion-quality`.
+- Reuses accepted P1 public Spot REST, pagination, normalization and health
+  semantics.
+- Network source is restricted to the primary public Binance host
+  `https://api.binance.com`; credentials remain absent.
+- P10-owned SQLite store is tagged with exact window/candidate/gate/registration
+  identities and refuses a non-empty unowned candle database.
+- Collection range is always
+  `[1790035200000, latest_fully_closed_interval_boundary)`.
+- Binance server time is authoritative; the local/system clock is not used.
+- Exact dataset scope remains BTCUSDT + ETHUSDT × 15m / 1h / 4h.
+- Every accepted row is a closed canonical P1 Candle and must also satisfy the
+  P10-003 ForwardObservationIdentity.
+- Gap, duplicate, malformed, conflict, stale/open and pre-window material fails
+  closed.
+- Canonical snapshot records dataset SHA-256 + health SHA-256 for all six
+  datasets and binds the frozen P10 window/candidate/gates/source lineage.
+- Repeat collection at the same server-time/data state must reproduce the same
+  snapshot identity even when all rows already exist locally.
+- P1 manifest writes and upstream writes are forbidden.
+- Economic evaluation remains forbidden and evidence remains
+  `INSUFFICIENT_EVIDENCE`.
+- CI/runtime uses mocked public data only; no real forward data can be accepted
+  before the sealed start on 2026-09-22 00:00 UTC.
+- No dependency or `uv.lock` change.
+- P10-005 remains closed until exact Final-HEAD Actions and explicit merge.

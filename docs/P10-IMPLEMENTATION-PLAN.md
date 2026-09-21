@@ -1,6 +1,6 @@
 # P10 — Forward / Paper Validation implementation plan
 
-Status: **P10-002 RUNTIME ACCEPTED / MERGED — P10-003 CURRENT CANDIDATE**
+Status: **P10-003 RUNTIME ACCEPTED / MERGED — P10-004 CURRENT CANDIDATE**
 
 Entry baseline: P9 runtime accepted and merged at checkpoint
 `60d7e267fdd878f513afb2a8febb30d509b61314`. Final P9-006 candidate HEAD
@@ -189,8 +189,13 @@ The window may open only after candidate and thresholds are frozen.
 Acceptance: deterministic window identity, cutoff/no-overlap checks,
 future-only admission, no lookahead and no post-open candidate/gate mutation.
 
-Current candidate: branch `p10-003-forward-window-seal` from accepted P10-002
-checkpoint `e327e2b99a0883fc096941db18b27e572561a7d1`.
+Accepted: PR #70 exact final candidate HEAD
+`8f28c8a0cc984b1b03b45e2f8731dfcded8cfefb` passed matching Actions run
+`35577086427` with both jobs PASS, **1341/1341** complete tests and **22/22**
+focused P10-003 tests. Frozen window SHA-256:
+`115f72be7941f682ccd28a70058677eba2ea24ee8ed44b5380510fe685022867`.
+PR #70 was squash-merged on `main` at checkpoint
+`179d0bed3a1191dee21a654eb965a3b108328b90`.
 
 Frozen no-peek chronology:
 - accepted P3 development evidence end:
@@ -230,6 +235,45 @@ cross-symbol material, data before the sealed window and provenance drift.
 
 Acceptance: exact provenance/data-range manifest, health/quality PASS,
 no-write upstream proof and deterministic replay.
+
+Current candidate: branch `p10-004-forward-ingestion-quality` from accepted
+P10-003 checkpoint `179d0bed3a1191dee21a654eb965a3b108328b90`.
+
+P10-004 reuses the accepted P1 public Spot stack rather than adding a second
+market-data implementation:
+- exact primary host `https://api.binance.com`;
+- credential-free public REST only;
+- existing bounded historical pagination;
+- canonical P1 Candle normalization;
+- existing P1 deterministic health/quality checks.
+
+Persistence is isolated in a P10-owned SQLite store tagged with the exact window,
+candidate, gate-registry and P10-002 registration identities. A non-empty
+untagged candle database is refused, preventing accidental mutation of an
+existing P1/other store.
+
+Each collection obtains Binance **server time**, derives the latest fully closed
+cutoff independently for 15m / 1h / 4h, and downloads only
+`[P10_FORWARD_START, CLOSED_CUTOFF)`. Every accepted candle is re-bound through
+the P10-003 `ForwardObservationIdentity`.
+
+A successful snapshot contains exactly six datasets (BTCUSDT/ETHUSDT ×
+15m/1h/4h), canonical dataset SHA-256 and health SHA-256 per dataset, plus the
+window/candidate/gate/source provenance. Missing, duplicated, malformed,
+conflicting, open, stale or pre-window material fails closed.
+
+Replay identity deliberately excludes transport counters such as pages/new rows,
+so the same server-time/data state produces the same canonical snapshot even
+when a second run finds every row already in the P10 store.
+
+P10-004 acceptance is mocked/offline in CI. Because the sealed forward window
+starts at **2026-09-22 00:00 UTC**, no real P10 forward market data is admitted
+during this checkpoint's acceptance on 2026-09-21. The real collector can be
+deployed after merge and may begin producing admissible data only after the
+sealed start; the first complete 15m/1h/4h snapshot becomes possible after the
+first 4h candle closes.
+
+Economic evaluation and strategy-evidence upgrade remain forbidden.
 
 ### P10-005 — Frozen baseline forward Paper runner
 
