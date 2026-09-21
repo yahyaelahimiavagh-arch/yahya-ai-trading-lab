@@ -1,6 +1,6 @@
 # P9 — Telegram notification implementation plan
 
-Status: **P9-003 RUNTIME ACCEPTED / MERGED — P9-004 CURRENT CANDIDATE**
+Status: **P9-004 RUNTIME ACCEPTED / MERGED — P9-005 CURRENT CANDIDATE**
 
 Entry baseline: P8 runtime accepted and squash-merged at checkpoint
 `fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e`. Matching final-head GitHub Actions
@@ -188,6 +188,14 @@ Acceptance: idempotency, bounded retry/backoff, rate-limit behavior, restart-saf
 delivery state if persistence is required, redacted failures and unchanged
 notification/source identity.
 
+Accepted: PR #65 was squash-merged at
+`1e3cba7a0aeb820c9d0a006cc38e053d12f83085` after matching exact final-head
+Actions run `35553839765` passed both jobs, the **1218/1218** complete suite,
+**23/23** focused P9-004 tests and **20/20** P9-003 transport regression tests.
+Frozen P9-004 guard policy SHA-256:
+`6d180d548e5294cb7974ce4023ddff2f83bbbe2b707beb25cfdb76f81bb87533`.
+No real credential or network call was part of acceptance evidence.
+
 Current candidate: branch `p9-004-delivery-guard` from accepted P9-003
 checkpoint `0d29710f320cec2dde6b7f585b8f62e496daae1e`.
 
@@ -230,6 +238,36 @@ No operator command surface is added.
 
 Acceptance: exact fail-closed outcomes, deterministic replay, canonical evidence,
 stable exit codes and no upstream mutation.
+
+Current candidate: branch `p9-005-guarded-runner-adversarial-matrix` from
+accepted P9-004 checkpoint
+`1e3cba7a0aeb820c9d0a006cc38e053d12f83085`.
+
+The runner is one-shot and noninteractive. It exposes no subcommands or operator
+control surface. Each invocation accepts exactly one canonical P9 notification
+batch, its expected batch SHA-256, one approved symbol and one delivery-state
+path. The accepted notification source is read-only and byte-compared before and
+after delivery.
+
+Only the runner-owned delivery-state file may be written. State publication is
+bounded and atomic using a same-directory temporary file plus `os.replace`.
+Duplicate identity is checked before credential loading and before sender/network
+invocation, so a persisted duplicate does not require Bot credentials.
+
+The CLI emits canonical bounded JSON with stable exit codes and never echoes
+caller paths, source content, provider bodies or credentials. Real production
+invocation may load the dedicated P9-003 Telegram environment variables through
+the accepted transport boundary; tests/runtime inject mocked credentials/senders.
+
+The fixed adversarial matrix has 8 scenarios across BTCUSDT and ETHUSDT
+(**16 deterministic runs / 17 evidence files**): source tampering, evidence
+upgrade, command/authority injection, secret leakage, URL/markup injection,
+duplicate delivery, cross-symbol material and transport-response corruption.
+Each scenario is replayed and exact canonical evidence is compared.
+
+P9-005 does not add inbound Telegram commands, callbacks, webhooks, polling,
+execution/live control, RiskAuthorization mutation, quantity authority, TRADE
+permission, order endpoints or AI direct execution.
 
 ### P9-006 — Independent final audit
 
