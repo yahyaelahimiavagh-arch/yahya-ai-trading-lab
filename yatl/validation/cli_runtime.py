@@ -23,9 +23,10 @@ def _sha(path):
 
 def _family_identity(database):
     values = {"database": _sha(database)}
-    wal = Path(str(database) + "-wal")
-    if wal.exists():
-        values["wal"] = _sha(wal)
+    for suffix in ("-wal", "-shm"):
+        sidecar = Path(str(database) + suffix)
+        if sidecar.exists():
+            values[suffix] = _sha(sidecar)
     return values
 
 
