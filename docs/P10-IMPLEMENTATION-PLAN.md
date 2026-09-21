@@ -1,6 +1,6 @@
 # P10 — Forward / Paper Validation implementation plan
 
-Status: **P10-005 RUNTIME ACCEPTED / MERGED — P10-006 CURRENT CANDIDATE**
+Status: **P10-006 RUNTIME ACCEPTED / MERGED — P10-007 CURRENT CANDIDATE**
 
 Entry baseline: P9 runtime accepted and merged at checkpoint
 `60d7e267fdd878f513afb2a8febb30d509b61314`. Final P9-006 candidate HEAD
@@ -359,6 +359,18 @@ Current candidate implementation additionally fixes the reporting semantics:
 - realized and sampled-liquidation drawdowns are labeled separately;
 - `INSUFFICIENT_DATA` is a sample state, never an economic PASS/FAIL verdict.
 
+P10-006 final acceptance evidence:
+- PR #73 exact final candidate HEAD:
+  `21b904d2b025396784c5f86a7602c8be7c411b75`;
+- matching GitHub Actions run: `35612692034`, both jobs PASS;
+- complete suite: **1403/1403 PASS**;
+- focused P10-005 regression: **12/12 PASS**;
+- focused P10-006: **26/26 PASS**;
+- mocked economics SHA-256:
+  `36f3e1dcb35d002b286c81b1b192056789e8294777ecc49f5d03d9affe469c4e`;
+- PR #73 squash-merged at checkpoint
+  `846be6190ce936425e546ecca7528fed979aab7f`.
+
 ### P10-007 — Consistency, regime stability and failure/recovery gate
 
 Evaluate the remaining pre-registered criteria without changing them:
@@ -374,6 +386,23 @@ The gate disposition is one of:
 
 Acceptance: all registered criteria evaluated exactly once, no cherry-picking,
 fail-closed missing evidence, deterministic disposition and preserved safety locks.
+
+Current P10-007 candidate semantics:
+- exact P10-006 economics is recomputed before gate admission;
+- all seven frozen P10-002 criteria are emitted exactly once and in registry order;
+- precedence is `FAIL > INSUFFICIENT_DATA > PASS_CANDIDATE`;
+- profitability, consistency and regime-coverage do not become FAIL merely because
+  the pre-registered 90-day / 60-pooled / 20-per-symbol sample is not yet met;
+- an observed validation drawdown above 8%, an out-of-regime entry, unresolved
+  safety/recovery breach or risk-control violation fails immediately;
+- three equal time segments use completed-trade exit attribution, with any final
+  open-position net-liquidation PnL assigned only to the last observed segment;
+- `UNKNOWN` regime observations are reported but do not satisfy the requirement
+  for two distinct observed market regimes;
+- a P10-005 Kill Switch latch cannot auto-reset; without accepted clear observation
+  and manual-reset evidence it remains unresolved;
+- no threshold, candidate, quantity, credential, network or execution authority is
+  added; strategy evidence remains `INSUFFICIENT_EVIDENCE` and P11 remains locked.
 
 ### P10-008 — Guarded validation export and CLI
 
