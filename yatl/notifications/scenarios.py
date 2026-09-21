@@ -597,7 +597,9 @@ def scenario_artifact_json(record):
         "https://",
         "traceback",
         "approved_quantity",
-        "risk_authorization",
+        '"risk_authorization"',
+        '"risk_authorization_payload"',
+        '"risk_authorization_record"',
         "order_request",
     )
     if (
