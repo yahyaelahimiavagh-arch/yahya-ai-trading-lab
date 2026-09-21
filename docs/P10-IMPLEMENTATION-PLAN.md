@@ -1,6 +1,6 @@
 # P10 — Forward / Paper Validation implementation plan
 
-Status: **P10-003 RUNTIME ACCEPTED / MERGED — P10-004 CURRENT CANDIDATE**
+Status: **P10-004 RUNTIME ACCEPTED / MERGED — P10-005 CURRENT CANDIDATE**
 
 Entry baseline: P9 runtime accepted and merged at checkpoint
 `60d7e267fdd878f513afb2a8febb30d509b61314`. Final P9-006 candidate HEAD
@@ -236,8 +236,13 @@ cross-symbol material, data before the sealed window and provenance drift.
 Acceptance: exact provenance/data-range manifest, health/quality PASS,
 no-write upstream proof and deterministic replay.
 
-Current candidate: branch `p10-004-forward-ingestion-quality` from accepted
-P10-003 checkpoint `179d0bed3a1191dee21a654eb965a3b108328b90`.
+Accepted: PR #71 exact final candidate HEAD
+`11860e3d72473ba938ec17bccc8b209ac57e39aa` passed matching Actions run
+`35578517306` with both jobs PASS, **1365/1365** complete tests and **24/24**
+focused P10-004 tests. Mocked ingestion snapshot SHA-256:
+`f990b0286030331fe9283682342fb7b531f652a6851478409eb419ae57b6c822`.
+PR #71 was squash-merged on `main` at checkpoint
+`41c5e315a9b0595423d9d20186cc9a038b3e6630`.
 
 P10-004 reuses the accepted P1 public Spot stack rather than adding a second
 market-data implementation:
@@ -288,6 +293,48 @@ P6 AI material may not directly choose quantity, mutate risk or execute.
 Acceptance: deterministic forward Paper lifecycle, exact candidate/window
 bindings, no-lookahead proof, no post-open mutation and Paper-only execution
 evidence.
+
+Current candidate: branch `p10-005-frozen-forward-paper-runner` from accepted
+P10-004 checkpoint `41c5e315a9b0595423d9d20186cc9a038b3e6630`.
+
+P10-005 replays the full admitted forward prefix from the sealed window start on
+every run. It does not trust prior in-memory state: crash/restart must reproduce
+the same strategy trace, fill evidence and final Paper portfolio from the P10
+SQLite evidence.
+
+The runner is bound to:
+- frozen `TREND_PULLBACK/1.0.0` candidate and configuration;
+- P10-003 window SHA;
+- P10-002 gate-registry SHA;
+- exact P10-004 ingestion snapshot/store content;
+- accepted P5 local-Paper policy ID;
+- accepted P3 research execution quantity `0.001`, with adapter Git blob
+  `53500425684a9e0b4078a047eedbad4ae8176460`;
+- P2 next-primary-open fills and exact 10 bps fee / 5 bps adverse slippage.
+
+P10 deliberately does **not** fabricate `QUALIFIED_FOR_P4_RESEARCH` and does
+not create P4 `RiskAuthorization`. That P4 authorization contract requires the
+historical P3 qualification label, while P10 must keep strategy evidence
+`INSUFFICIENT_EVIDENCE` until P10-010. Instead, the already-frozen P3 research
+quantity is immutable and the accepted P4 numeric safety policy acts only as a
+veto: 1% loss budget, 25% position/gross caps, 2% session-loss, 10% drawdown,
+three-loss streak, cash sufficiency and protective post-cost economics can block
+an entry but cannot increase or invent quantity.
+
+The runner latches its safety stop on P4-equivalent session-loss, drawdown or
+loss-streak breach and does not auto-reset it. A later failure/recovery checkpoint
+must explicitly account for any such event.
+
+No pre-window warm-up is imported. Regime classification requires 51 closed 4h
+bars, therefore the earliest legal strategy decision is
+**2026-09-30 12:00 UTC** (15:00 Europe/Istanbul), 204 hours after the sealed
+forward start. Until then P10 can collect/quality-gate data but the runner must
+fail closed as insufficient warm-up.
+
+P10-005 acceptance uses mocked forward-only data and exercises deterministic
+ENTER_LONG and EXIT_LONG fills. It does not admit real market data before the
+sealed start and does not compute the P10 economic verdict; P10-006 owns the
+cost/risk-aware economic aggregation.
 
 ### P10-006 — Cost- and risk-aware forward economics
 
