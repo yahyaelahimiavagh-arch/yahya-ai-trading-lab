@@ -22,7 +22,6 @@ from yatl.validation.audit import (
     audit_p10,
 )
 from yatl.validation.cli import _pipeline, snapshot_json
-from yatl.validation.forward_store import ForwardCandleStore
 from yatl.validation.paper_runner_runtime import build_mock_forward_runner_fixture
 from yatl.validation.scenarios import (
     SCENARIOS,
@@ -75,13 +74,11 @@ class P10IndependentFinalAuditTests(unittest.TestCase):
             path.name: path.read_bytes()
             for path in sorted(cls.evidence.iterdir(), key=lambda item: item.name)
         }
-        with ForwardCandleStore(cls.database) as accepted_store:
-            cls.result = audit_p10(
-                accepted_store,
-                cls.snapshot,
-                cls.database_sha,
-                cls.evidence,
-            )
+        cls.result = audit_p10(
+            cls.database,
+            cls.snapshot,
+            cls.evidence,
+        )
         cls.evidence_after = {
             path.name: path.read_bytes()
             for path in sorted(cls.evidence.iterdir(), key=lambda item: item.name)
@@ -248,9 +245,19 @@ class P10IndependentFinalAuditTests(unittest.TestCase):
             with self.assertRaises(P10AuditError):
                 _read_evidence(target)
 
-    def test_invalid_database_digest_fails_before_audit(self):
+    def test_invalid_database_path_fails_before_audit(self):
         with self.assertRaises(P10AuditError):
-            audit_p10(None, self.snapshot, "bad", self.evidence)
+            audit_p10(None, self.snapshot, self.evidence)
+
+    def test_active_source_sidecar_is_rejected_fail_closed(self):
+        for suffix in ("-wal", "-shm"):
+            with self.subTest(suffix=suffix):
+                source = self.root / f"sidecar-{suffix[1:]}.sqlite3"
+                source.write_bytes(self.database.read_bytes())
+                sidecar = Path(str(source) + suffix)
+                sidecar.write_bytes(b"active")
+                with self.assertRaises(P10AuditError):
+                    audit_p10(source, self.snapshot, self.evidence)
 
     def test_disposition_flag_contract_is_exact(self):
         self.assertEqual(
