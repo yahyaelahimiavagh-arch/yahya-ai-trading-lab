@@ -663,7 +663,7 @@ def _audit_source_safety():
     transport = texts["transport.py"].casefold()
     required_transport = (
         ("http." + "client"),
-        ("ssl." + "create_default_context"),
+        ("ssl" + "." + "create_default_context"),
         ("os." + "environ"),
         "sendmessage",
     )
