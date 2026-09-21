@@ -111,6 +111,8 @@ jobs:
         run: uv run --locked python -m unittest discover -s tests -p 'test_notification_scenarios.py' -v
       - name: P9 independent final audit focused gate
         run: uv run --locked python -m unittest discover -s tests -p 'test_notification_audit.py' -v
+      - name: P10 validation preregistration contracts focused gate
+        run: uv run --locked python -m unittest discover -s tests -p 'test_validation_contracts.py' -v
       - name: Compile and whitespace gates
         run: |
           uv run --locked python -m compileall -q yatl
@@ -179,6 +181,7 @@ jobs:
           assert_absent 'http\.client|urllib|requests|httpx|aiohttp|websockets|socket|ssl\.|os\.environ|os\.getenv|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|openai|anthropic|add_subparsers|input\(|eval\(|exec\(|getUpdates|setWebhook|answerCallbackQuery' yatl/notifications/runner.py
           assert_absent 'http\.client|urllib|requests|httpx|aiohttp|websockets|socket|ssl\.|os\.environ|os\.getenv|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|openai|anthropic' yatl/notifications/scenarios.py
           assert_absent 'http\.client|urllib|requests|httpx|aiohttp|websockets|socket|ssl\.|os\.environ|os\.getenv|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|openai|anthropic' yatl/notifications/audit.py
+          assert_absent 'from yatl\.|import yatl\.|urllib|http\.client|requests|httpx|aiohttp|websockets|socket|ssl\.|os\.environ|os\.getenv|sqlite3|pathlib|subprocess|open\(|time\.time|datetime|openai|anthropic|api/v3/(order|orderList)|/fapi|/dapi|withdraw\(' yatl/validation/contracts.py
       - name: P4 risk contract runtime
         run: uv run --locked python -m yatl risk-contract-check
       - name: P4 exact sizing runtime
@@ -320,6 +323,8 @@ jobs:
           sha256sum data/p9/p9-005-evidence/p9-005-index.json
       - name: P9-006 independent final audit
         run: uv run --locked python -m yatl.notifications.audit_runtime --evidence data/p9/p9-005-evidence
+      - name: P10 validation preregistration contract runtime
+        run: uv run --locked python -m yatl.validation.contract_runtime
       - name: Publish P5-009 adversarial evidence
         uses: actions/upload-artifact@v4
         with:

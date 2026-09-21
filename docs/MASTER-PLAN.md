@@ -1,8 +1,8 @@
 # YATL — نقشه مرجع اجرا و وضعیت پروژه
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
-وضعیت جاری: **P0 تا P8 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P9-006 INDEPENDENT FINAL AUDIT — CANDIDATE**
+وضعیت جاری: **P0 تا P9 RUNTIME ACCEPTED AND MERGED**
+قدم جاری: **P10-001 VALIDATION POLICY / PREREGISTRATION CONTRACTS — CANDIDATE**
 
 ## منشأ و حدود سند
 
@@ -82,8 +82,8 @@ Dashboard به‌تنهایی معیار موفقیت اقتصادی نیستن�
 | P6 AI Analyst | تحلیل ساختاریافته و NO_TRADE بدون دسترسی مستقیم به اجرا | **RUNTIME ACCEPTED — checkpoint `f07f220`** |
 | P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | **RUNTIME ACCEPTED — checkpoint `93b9d87`** |
 | P8 Dashboard | نمایش وضعیت، معاملات، عملکرد و خطاها | **RUNTIME ACCEPTED — checkpoint `fe973e8`** |
-| P9 Telegram | هشدار و notification محدود طبق قواعد امنیتی | **P9-001 CURRENT CANDIDATE** |
-| P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | شروع نشده |
+| P9 Telegram | هشدار و notification محدود طبق قواعد امنیتی | **RUNTIME ACCEPTED — checkpoint `60d7e267`** |
+| P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | **P10-001 CURRENT CANDIDATE** |
 | P11 Tiny Live Candidate | فقط پس از پذیرش P10، ممیزی امنیت، الزامات حساب و تأیید صریح | LOCKED |
 
 ## نمای پیشرفت فعلی — 2026-09-20
@@ -859,3 +859,27 @@ P9-006 هیچ capability جدید Telegram، command surface، state authority،
 execution/live control، RiskAuthorization mutation، quantity authority،
 trade permission، order endpoint یا AI direct execution اضافه نمی‌کند. P10 فقط
 پس از PASS شدن exact Final HEAD و merge صریح این ممیزی می‌تواند باز شود.
+
+
+## P9 final acceptance / P10-001 candidate — 2026-09-21
+
+P9-006 با PR #67، Final HEAD
+`f7ff546d7310876fd969f03c4f2d153137889de1` و matching Actions
+`35566103007` پذیرفته شد: **1275/1275** full suite و **34/34** focused
+independent-audit tests. delivery-replay-set نهایی برابر
+`b0fe40c76b57034eb84568f9ee95bdd36558f8eae665c4f71fee14fd0a12ba30`
+است. PR #67 squash-merge شد و P9 در checkpoint
+`60d7e267fdd878f513afb2a8febb30d509b61314` بسته شد.
+
+P10 اکنون economic-validation gate فعال پروژه است. برنامه ثابت آن در
+`docs/P10-IMPLEMENTATION-PLAN.md` ثبت شده است.
+
+P10-001 روی branch `p10-001-validation-policy-contracts` فقط preregistration
+policy/contracts را فریز می‌کند. هفت بعد ارزیابی از قبل مشخص می‌شوند:
+Net PnL after costs، drawdown، sample size، consistency، regime stability،
+failure/recovery و risk controls. P4 limits بدون شل‌شدن به P10 منتقل می‌شوند.
+
+این checkpoint عمداً هنوز candidate، thresholdهای عددی P10، forward window یا
+new data را باز نمی‌کند. P10-002 باید candidate و gateهای اقتصادی عددی را قبل از
+شروع window فریز کند. بنابراین نتیجه‌ای از P10-001 نمی‌تواند به‌عنوان edge،
+profitability، Live readiness یا اجازه ورود به P11 تفسیر شود.
