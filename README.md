@@ -7,13 +7,12 @@ P0 تا P8 با شواهد runtime پذیرفته و روی `main` بسته شد
 squash-merge شد و checkpoint نهایی P8 روی `main` برابر است با
 `fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e`.
 
-P9 — Telegram minimum-sufficient باقی می‌ماند. P9-001 تا P9-005 پذیرفته و
-merge شده‌اند؛ checkpoint فعلی accepted برابر
-`8614758fa8229c12ed297d75cf79adc86353c8e7` است. P9-006 ممیزی مستقل نهایی
-notification/transport/delivery identities، adversarial evidence و source-safety
-است و هیچ capability جدیدی اضافه نمی‌کند. inbound command، webhook/polling،
-execution control، TRADE permission و order endpoint همچنان وجود ندارند.
-برنامه ترتیبی P9 در `docs/P9-IMPLEMENTATION-PLAN.md` ثبت شده است.
+P9 به‌طور کامل runtime accepted و merge شده است. checkpoint نهایی P9 برابر
+`60d7e267fdd878f513afb2a8febb30d509b61314` است. P10 اکنون فاز جاری پروژه
+است و با P10-001 preregistration-only آغاز می‌شود: معیارهای اقتصادی قبل از دیدن
+forward result فریز می‌شوند، ولی candidate، thresholdهای عددی و validation window
+تا P10-002/P10-003 بسته می‌مانند. برنامه P10 در
+`docs/P10-IMPLEMENTATION-PLAN.md` ثبت شده است.
 
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
@@ -51,18 +50,18 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 ## مسیر بعدی
 
 مرجع ترتیب اجرا: [نقشه پروژه](docs/MASTER-PLAN.md).
-وضعیت جاری **P0 تا P8 runtime accepted و merge‌شده روی main** است. checkpoint
-نهایی P8 برابر
-`fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e` است و مرحله جاری
-**P9-006 — Independent final audit** روی branch
-`p9-006-independent-final-audit` است. P10 تا PASS و merge همین checkpoint
-بسته می‌ماند.
+وضعیت جاری **P0 تا P9 runtime accepted و merge‌شده روی main** است. checkpoint
+نهایی P9 برابر
+`60d7e267fdd878f513afb2a8febb30d509b61314` است و مرحله جاری
+**P10-001 — Validation policy and immutable preregistration contracts** روی branch
+`p10-001-validation-policy-contracts` است. P11 تا پذیرش کامل P10 قفل می‌ماند.
 
 P9 برای رسیدن سریع‌تر به P10 عمداً محدود است: status/alertهای accepted و sanitized
 را به notificationهای information-only تبدیل می‌کند. transport واقعی Telegram
 قبل از P9-003 وارد نمی‌شود و inbound command/control جزو plan فعلی نیست.
 برنامه‌های فازها در `docs/P7-IMPLEMENTATION-PLAN.md`,
-`docs/P8-IMPLEMENTATION-PLAN.md` و `docs/P9-IMPLEMENTATION-PLAN.md` ثبت شده‌اند.
+`docs/P8-IMPLEMENTATION-PLAN.md`, `docs/P9-IMPLEMENTATION-PLAN.md` و
+`docs/P10-IMPLEMENTATION-PLAN.md` ثبت شده‌اند.
 
 P3-001 قرارداد research-only سیگنال را اضافه می‌کند. تصمیم فقط یکی از `NO_TRADE`،
 `ENTER_LONG` یا `EXIT_LONG` است و به context نقطه‌زمانی و digest آن متصل می‌شود.
