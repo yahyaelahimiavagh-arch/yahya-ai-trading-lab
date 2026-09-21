@@ -16,6 +16,7 @@ from .contracts import (
     NotificationSourceIdentity,
     NotificationSourcePhase,
     build_notification_batch,
+    notification_batch_from_record,
 )
 from .runner import NotifierRunnerCode, NotifierRunnerError, notifier_run
 from .transport import (
@@ -86,12 +87,16 @@ class NotificationAcceptedFixture:
             raise NotificationScenarioError("Accepted notification fixture is invalid")
         try:
             record = json.loads(self.canonical_batch_json)
-        except json.JSONDecodeError:
+            batch = notification_batch_from_record(record)
+        except (json.JSONDecodeError, Exception) as exc:
+            if isinstance(exc, NotificationScenarioError):
+                raise
             raise NotificationScenarioError("Accepted notification fixture JSON is invalid") from None
         if (
-            _json(record) != self.canonical_batch_json
-            or len(record.get("notifications", [])) != 1
-            or record["notifications"][0].get("symbol") != self.symbol
+            _json(batch.as_record()) != self.canonical_batch_json
+            or len(batch.notifications) != 1
+            or batch.notifications[0].symbol != self.symbol
+            or batch.batch_sha256 != self.batch_sha256
         ):
             raise NotificationScenarioError("Accepted notification fixture binding is invalid")
 
