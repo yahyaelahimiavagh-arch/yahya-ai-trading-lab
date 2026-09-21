@@ -2412,6 +2412,9 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
     `6d180d548e5294cb7974ce4023ddff2f83bbbe2b707beb25cfdb76f81bb87533`.
 - BTCUSDT and ETHUSDT source/message/batch/formatted/delivery identities are
   independently rebuilt and frozen.
+- Delivery is independently replayed with a mocked sender for both symbols:
+  `DELIVERED -> DUPLICATE_SUPPRESSED`, exactly one sender call, zero retry wait,
+  and frozen secret-free receipt/state SHA-256 identities.
 - Combined identity-set SHA-256:
   `37531b4283d3e7da22040b28eb5c73dfb76d7281938b9170e6d6d31a238206e1`.
 - P9-005 matrix is independently replayed twice and compared against the exact
