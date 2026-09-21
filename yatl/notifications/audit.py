@@ -494,7 +494,7 @@ def _audit_source_safety():
         ("http" + "x"),
         ("aio" + "http"),
         ("web" + "sock" + "ets"),
-        ("socket"),
+        ("sock" + "et"),
         ("os." + "environ"),
         ("os." + "getenv"),
     )
