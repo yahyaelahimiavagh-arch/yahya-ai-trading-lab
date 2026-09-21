@@ -1,6 +1,6 @@
 # P9 — Telegram notification implementation plan
 
-Status: **P9-001 RUNTIME ACCEPTED / MERGED — P9-002 CURRENT CANDIDATE**
+Status: **P9-002 RUNTIME ACCEPTED / MERGED — P9-003 CURRENT CANDIDATE**
 
 Entry baseline: P8 runtime accepted and squash-merged at checkpoint
 `fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e`. Matching final-head GitHub Actions
@@ -102,6 +102,13 @@ Acceptance: exact provenance conservation, point-in-time/event-time checks,
 deterministic formatting, bounded output, escaping and no authority/evidence
 upgrade.
 
+Accepted: PR #63 was squash-merged at
+`7158fbc84287b9327116581d6877f17a68a294a4` after matching exact final-head
+Actions run `35536906561` passed both jobs, the **1175/1175** complete suite
+and **15/15** focused P9-002 tests. Exact system-status and data-quality
+notification/format hashes were recorded in PR #63 final-head evidence.
+No Telegram network call or credential loading was introduced in P9-002.
+
 Current candidate: branch `p9-002-upstream-projection-formatter` from accepted
 P9-001 checkpoint `fa77126d22b8091eff5d355c8bd7cbd816901874`.
 
@@ -137,6 +144,31 @@ evidence or included in exceptions.
 Acceptance: exact host/method/path allowlist, TLS, timeout/response-size bounds,
 redirect/proxy restrictions, stable redacted errors, mocked transport tests and
 no execution/account/risk imports.
+
+Current candidate: branch `p9-003-outbound-telegram-transport` from accepted
+P9-002 checkpoint `7158fbc84287b9327116581d6877f17a68a294a4`.
+
+P9-003 keeps the frozen P9-001 notification contract policy unchanged and adds
+a separate transport authority `P9_TELEGRAM_SEND_MESSAGE_V1`. Only one network
+operation exists: HTTPS `POST` to `api.telegram.org:443` with exact path
+`/bot<token>/sendMessage` and JSON `chat_id` + canonical P9 text.
+
+Dedicated credentials are loaded only at this boundary from
+`YATL_TELEGRAM_BOT_TOKEN` and `YATL_TELEGRAM_CHAT_ID`. Credential values are
+hidden from repr, exceptions and secret-free delivery receipts.
+
+The transport uses direct TLS with certificate/hostname verification, fixed
+10-second timeout, bounded request/response sizes, no redirect following and no
+proxy mechanism. Provider response text is never copied into errors.
+
+Only canonical P9-002 formatted notifications are accepted: the transport
+recomputes the formatter output and fails closed on mismatch. The success
+receipt contains only notification/format/policy hashes and Telegram message ID.
+
+CI/runtime use mocked transport only. No real token, destination or Telegram
+network call is used as acceptance evidence. No inbound update, command,
+callback, webhook, polling, execution/live control, account/risk import,
+TRADE permission, order endpoint or AI direct execution is introduced.
 
 ### P9-004 — Delivery guard, deduplication and bounded retry
 
