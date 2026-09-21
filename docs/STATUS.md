@@ -2789,27 +2789,46 @@ Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `24190b29`**.
 - PR #75 squash-merged with exact expected HEAD; accepted checkpoint:
   `24190b29e769212bbc1a2cee376cc6fc6fc0ec88`.
 
-## P10-009 current candidate — 2026-09-21
+## P10-009 accepted implementation — 2026-09-21
 
-Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `7baf3c70`**.
 
 - Entry checkpoint: accepted P10-008 at
   `24190b29e769212bbc1a2cee376cc6fc6fc0ec88`.
 - Branch: `p10-009-adversarial-validation`.
-- Covers 11 fixed attack classes across the accepted BTCUSDT+ETHUSDT P10 chain:
-  pre-window contamination; candidate mutation; threshold mutation; fee/slippage
-  removal; fabricated positive PnL; drawdown suppression; sample deletion;
-  cross-symbol/cross-window material; data-quality failure; risk/safety breach;
-  evidence-label / Live-readiness upgrade.
-- Every attack is re-signed before verification, so fail-closed acceptance cannot
-  rely only on a stale audit SHA.
-- Exact accepted candidate/gate/window/ingestion/Paper/economics/gate/audit
-  identities must remain unchanged across every scenario.
-- Scenario artifacts and matrix index are canonical with deterministic replay.
-- Evidence publication is atomic and strict no-overwrite.
-- No credential, network, order, sizing, threshold-tuning, risk authorization or
-  AI execution capability is added.
-- Strategy evidence remains `INSUFFICIENT_EVIDENCE`; P11 remains locked.
+- Covers 11 fixed attack classes across the accepted BTCUSDT+ETHUSDT P10 chain.
+- Every attack is re-signed before verification; rejection is based on exact
+  identity/provenance/economics/safety reconciliation, not stale outer hashes.
+- Final candidate HEAD:
+  `1e25910851d2672e8fcd5e76a89a9ea043b20ac3`.
+- Matching Actions: `35631525673`; both jobs PASS.
+- Full suite: **1476/1476 PASS**; focused P10-009 **21/21 PASS**.
+- Matrix scenario count: **11**.
+- Matrix SHA-256:
+  `e9b36b749519c4793b94913e3d40c56aaf3aa60a82d42138cc17683568528b93`.
+- P11 remained locked; trade/order/AI execution permissions remained false.
+- PR #76 squash-merged with exact expected HEAD; accepted checkpoint:
+  `7baf3c7000bb66d406fa8348692f73d9907d3f15`.
+
+## P10-010 current candidate — 2026-09-21
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry checkpoint: accepted P10-009 at
+  `7baf3c7000bb66d406fa8348692f73d9907d3f15`.
+- Branch: `p10-010-independent-final-audit`.
+- Independently verifies exact frozen candidate/gate/window SHA identities.
+- Reproduces accepted snapshot/store content and detects out-of-scope material.
+- Recomputes the frozen forward Paper run, reconciled economics and all seven gates.
+- Rebuilds the canonical P10-008 audit record independently and requires equality
+  with the accepted export identity.
+- Recomputes the complete 11-scenario P10-009 matrix and verifies all 12 evidence
+  files byte-for-byte, canonical and unchanged.
+- Final disposition is exactly one of `INSUFFICIENT_DATA`, `FAIL`,
+  `PASS_CANDIDATE` and is taken only from the recomputed gate.
+- `PASS_CANDIDATE` can only set `p11_consideration_allowed=true`; P11 itself
+  remains locked and Live authorization remains false.
+- Mocked CI evidence must remain `INSUFFICIENT_DATA`.
 - No dependency or `uv.lock` change.
-- P10-010 remains closed until exact Final-HEAD Actions and explicit merge.
+- **Engineering completion is not economic acceptance.**
 

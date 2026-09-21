@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P9 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P10-009 ADVERSARIAL FORWARD-VALIDATION MATRIX — CANDIDATE**
+قدم جاری: **P10-010 INDEPENDENT FINAL ECONOMIC AUDIT — CANDIDATE**
 
 ## منشأ و حدود سند
 
@@ -83,7 +83,7 @@ Dashboard به‌تنهایی معیار موفقیت اقتصادی نیستن�
 | P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | **RUNTIME ACCEPTED — checkpoint `93b9d87`** |
 | P8 Dashboard | نمایش وضعیت، معاملات، عملکرد و خطاها | **RUNTIME ACCEPTED — checkpoint `fe973e8`** |
 | P9 Telegram | هشدار و notification محدود طبق قواعد امنیتی | **RUNTIME ACCEPTED — checkpoint `60d7e267`** |
-| P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | **P10-009 CURRENT CANDIDATE** |
+| P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | **P10-010 CURRENT CANDIDATE** |
 | P11 Tiny Live Candidate | فقط پس از پذیرش P10، ممیزی امنیت، الزامات حساب و تأیید صریح | LOCKED |
 
 ## نمای پیشرفت فعلی — 2026-09-20
@@ -1067,3 +1067,25 @@ re-sign می‌شوند تا ردشدن متکی به stale outer hash نباش�
 gate registry، sealed window، provenance، Paper/economics/gate identities باید
 در تمام سناریوها ثابت بمانند. هیچ network، credential، order، sizing، threshold
 tuning یا Live authorization اضافه نمی‌شود و P11 بسته می‌ماند.
+
+
+## P10-009 acceptance / P10-010 candidate — 2026-09-21
+
+P10-009 با PR #76 و exact Final HEAD
+`1e25910851d2672e8fcd5e76a89a9ea043b20ac3` روی matching Actions
+`35631525673` پذیرفته شد؛ هر دو job PASS، full suite برابر **1476/1476** و
+focused P10-009 برابر **21/21** بود. adversarial matrix شامل 11 attack re-signed
+بود و matrix SHA-256 برابر
+`e9b36b749519c4793b94913e3d40c56aaf3aa60a82d42138cc17683568528b93`
+ثبت شد. PR #76 با همان expected HEAD squash-merge شد و checkpoint جدید `main`
+برابر `7baf3c7000bb66d406fa8348692f73d9907d3f15` است.
+
+P10-010 کل زنجیره P10 را مستقل از artifactهای میانی بازسازی می‌کند، P10-009
+evidence را byte-for-byte با recomputation تطبیق می‌دهد و فقط یکی از سه disposition
+`INSUFFICIENT_DATA` / `FAIL` / `PASS_CANDIDATE` را می‌پذیرد. حتی
+`PASS_CANDIDATE` فقط اجازه بررسی جداگانه P11 را می‌دهد؛
+`p11_unlocked=false` و Live authorization همچنان false می‌ماند.
+
+**Engineering completion is not economic acceptance.** روی CI mocked فعلی disposition
+باید `INSUFFICIENT_DATA` بماند. پذیرش اقتصادی واقعی فقط از forward evidence
+واقعی و gateهای از قبل ثبت‌شده حاصل می‌شود.

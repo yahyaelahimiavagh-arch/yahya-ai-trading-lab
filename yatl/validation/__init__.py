@@ -292,3 +292,22 @@ __all__ += [
     "validation_matrix_sha256",
     "write_adversarial_validation_matrix",
 ]
+
+
+from .audit import (
+    EXPECTED_CANDIDATE_SHA256 as P10_FINAL_EXPECTED_CANDIDATE_SHA256,
+    EXPECTED_GATE_REGISTRY_SHA256 as P10_FINAL_EXPECTED_GATE_REGISTRY_SHA256,
+    EXPECTED_WINDOW_SHA256 as P10_FINAL_EXPECTED_WINDOW_SHA256,
+    P10AuditError,
+    P10AuditResult,
+    audit_p10,
+)
+
+__all__ += [
+    "P10_FINAL_EXPECTED_CANDIDATE_SHA256",
+    "P10_FINAL_EXPECTED_GATE_REGISTRY_SHA256",
+    "P10_FINAL_EXPECTED_WINDOW_SHA256",
+    "P10AuditError",
+    "P10AuditResult",
+    "audit_p10",
+]
