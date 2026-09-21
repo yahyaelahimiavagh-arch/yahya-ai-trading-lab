@@ -7,6 +7,7 @@ accepted store/snapshot. It never promotes a Paper candidate into Live authority
 
 import hashlib
 import json
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -126,32 +127,85 @@ def _dataset_digest(candles):
     return _sha256([item.as_record() for item in candles])
 
 
-def _database_identity(store, expected_sha256):
-    path = getattr(store, "_path", None)
-    if (
-        not isinstance(path, Path)
-        or not _valid_sha(expected_sha256)
-        or path.is_symlink()
-        or not path.is_file()
-    ):
-        raise P10AuditError("P10 database snapshot source is invalid")
+def _database_sidecar_exists(source):
     for suffix in ("-wal", "-shm"):
-        sidecar = Path(str(path) + suffix)
-        if sidecar.is_symlink() or sidecar.exists():
-            raise P10AuditError("P10 database snapshot has active SQLite sidecars")
+        sidecar = Path(str(source) + suffix)
+        try:
+            if sidecar.is_symlink() or sidecar.exists():
+                return True
+        except OSError:
+            raise P10AuditError("P10 database sidecar state cannot be read") from None
+    return False
+
+
+def _stream_database(source, target=None):
+    if (
+        not isinstance(source, Path)
+        or source.is_symlink()
+        or not source.is_file()
+        or _database_sidecar_exists(source)
+    ):
+        raise P10AuditError("P10 database snapshot source is not stable")
+
+    source_handle = None
+    target_handle = None
     try:
-        size = path.stat().st_size
-        if size <= 0 or size > MAX_DATABASE_BYTES:
+        before = source.stat()
+        if before.st_size <= 0 or before.st_size > MAX_DATABASE_BYTES:
             raise P10AuditError("P10 database snapshot size is invalid")
-        observed = _sha256(path.read_bytes())
+
+        source_handle = source.open("rb")
+        if target is not None:
+            target_handle = Path(target).open("xb")
+
+        digest = hashlib.sha256()
+        copied = 0
+        while True:
+            chunk = source_handle.read(64 * 1024)
+            if not chunk:
+                break
+            copied += len(chunk)
+            if copied > MAX_DATABASE_BYTES:
+                raise P10AuditError("P10 database snapshot exceeds bounded size")
+            digest.update(chunk)
+            if target_handle is not None:
+                target_handle.write(chunk)
+
+        if copied != before.st_size:
+            raise P10AuditError("P10 database snapshot changed during read")
+        if target_handle is not None:
+            target_handle.flush()
+
+        after = source.stat()
+        if (
+            after.st_size != before.st_size
+            or after.st_mtime_ns != before.st_mtime_ns
+            or after.st_ctime_ns != before.st_ctime_ns
+            or _database_sidecar_exists(source)
+        ):
+            raise P10AuditError("P10 database snapshot changed during capture")
+        return digest.hexdigest()
     except P10AuditError:
         raise
     except OSError:
         raise P10AuditError("P10 database snapshot cannot be read") from None
-    if observed != expected_sha256:
-        raise P10AuditError("P10 database snapshot SHA differs from accepted identity")
-    return observed
+    finally:
+        if target_handle is not None:
+            target_handle.close()
+        if source_handle is not None:
+            source_handle.close()
 
+
+def _capture_database(database_path, directory):
+    if not isinstance(database_path, (str, Path)) or not str(database_path):
+        raise P10AuditError("P10 database path is invalid")
+    source = Path(database_path)
+    target = Path(directory) / "p10-final-audit.sqlite3"
+    first = _stream_database(source, target)
+    second = _stream_database(source)
+    if first != second:
+        raise P10AuditError("P10 database snapshot is not replay-stable")
+    return source, target, first
 
 def _store_identity(store, snapshot):
     if (
@@ -528,12 +582,11 @@ class P10AuditResult:
             raise P10AuditError("P10 final audit result is inconsistent")
 
 
-def audit_p10(store, snapshot, database_snapshot_sha256, evidence_directory):
-    """Recompute the complete P10 chain and verify published P10-009 evidence."""
+def audit_p10(database_path, snapshot, evidence_directory):
+    """Recompute the complete P10 chain from a stable read-only source snapshot."""
+    source = None
+    source_sha256 = None
     try:
-        if not _valid_sha(database_snapshot_sha256):
-            raise P10AuditError("P10 database snapshot identity is invalid")
-        database_before = _database_identity(store, database_snapshot_sha256)
         candidate, gates, window = _candidate_gate_window()
         if (
             type(snapshot) is not ForwardIngestionSnapshot
@@ -544,58 +597,74 @@ def audit_p10(store, snapshot, database_snapshot_sha256, evidence_directory):
         ):
             raise P10AuditError("P10 ingestion provenance differs from frozen chain")
 
-        store_before = _store_identity(store, snapshot)
+        with tempfile.TemporaryDirectory(prefix="yatl-p10-final-audit-") as directory:
+            source, copied_database, source_sha256 = _capture_database(
+                database_path,
+                directory,
+            )
 
-        run = run_forward_paper(store, snapshot)
-        economics = calculate_forward_economics(store, snapshot, run)
-        gate = evaluate_forward_gate(store, snapshot, run, economics)
+            with ForwardCandleStore(copied_database) as store:
+                store_before = _store_identity(store, snapshot)
 
-        criteria = gate.as_record().get("criteria")
-        disposition = gate.as_record().get("disposition")
-        if (
-            not isinstance(criteria, list)
-            or tuple(item.get("criterion") for item in criteria) != EXPECTED_CRITERIA
-            or disposition not in FINAL_DISPOSITIONS
-        ):
-            raise P10AuditError("P10 gate result differs from registered criteria")
+                run = run_forward_paper(store, snapshot)
+                economics = calculate_forward_economics(store, snapshot, run)
+                gate = evaluate_forward_gate(store, snapshot, run, economics)
 
-        independent_record = _independent_audit_record(
-            candidate,
-            gates,
-            window,
-            snapshot,
-            database_snapshot_sha256,
-            run,
-            economics,
-            gate,
-        )
-        bundle = ValidationEvidenceBundle(
-            snapshot=snapshot,
-            database_snapshot_sha256=database_snapshot_sha256,
-            ready=True,
-            run=run,
-            economics=economics,
-            gate=gate,
-        )
-        fixture = accepted_validation_fixture(bundle)
-        if (
-            json.loads(fixture.canonical_audit_json) != independent_record
-            or fixture.audit_sha256 != independent_record["audit_sha256"]
-        ):
-            raise P10AuditError("P10-008 canonical audit differs from independent recomputation")
+                criteria = gate.as_record().get("criteria")
+                disposition = gate.as_record().get("disposition")
+                if (
+                    not isinstance(criteria, list)
+                    or tuple(item.get("criterion") for item in criteria)
+                    != EXPECTED_CRITERIA
+                    or disposition not in FINAL_DISPOSITIONS
+                ):
+                    raise P10AuditError(
+                        "P10 gate result differs from registered criteria"
+                    )
 
-        matrix = run_adversarial_validation_matrix(fixture)
-        evidence = _audit_evidence(matrix, evidence_directory)
+                independent_record = _independent_audit_record(
+                    candidate,
+                    gates,
+                    window,
+                    snapshot,
+                    source_sha256,
+                    run,
+                    economics,
+                    gate,
+                )
+                bundle = ValidationEvidenceBundle(
+                    snapshot=snapshot,
+                    database_snapshot_sha256=source_sha256,
+                    ready=True,
+                    run=run,
+                    economics=economics,
+                    gate=gate,
+                )
+                fixture = accepted_validation_fixture(bundle)
+                if (
+                    json.loads(fixture.canonical_audit_json) != independent_record
+                    or fixture.audit_sha256
+                    != independent_record["audit_sha256"]
+                ):
+                    raise P10AuditError(
+                        "P10-008 canonical audit differs from independent recomputation"
+                    )
 
-        store_after = _store_identity(store, snapshot)
-        database_after = _database_identity(store, database_snapshot_sha256)
-        if store_before != store_after or database_before != database_after:
-            raise P10AuditError("P10 final audit mutated accepted forward evidence")
+                matrix = run_adversarial_validation_matrix(fixture)
+                evidence = _audit_evidence(matrix, evidence_directory)
+                store_after = _store_identity(store, snapshot)
+                if store_before != store_after:
+                    raise P10AuditError(
+                        "P10 final audit mutated temporary forward evidence"
+                    )
+
+        if source is None or _stream_database(source) != source_sha256:
+            raise P10AuditError("P10 final audit source database changed")
 
         flags = _disposition_flags(disposition)
         return P10AuditResult(
             disposition=disposition,
-            database_snapshot_sha256=database_before,
+            database_snapshot_sha256=source_sha256,
             candidate_sha256=candidate.candidate_sha256,
             gate_registry_sha256=gates.registry_sha256,
             window_sha256=window.window_sha256,
