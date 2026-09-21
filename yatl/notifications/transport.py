@@ -53,6 +53,7 @@ class TelegramTransportErrorCode(str, Enum):
     CONFIG_INVALID = "TELEGRAM_CONFIG_INVALID"
     REQUEST_INVALID = "TELEGRAM_REQUEST_INVALID"
     NETWORK_ERROR = "TELEGRAM_NETWORK_ERROR"
+    NETWORK_AMBIGUOUS = "TELEGRAM_NETWORK_AMBIGUOUS"
     HTTP_STATUS = "TELEGRAM_HTTP_STATUS"
     RATE_LIMITED = "TELEGRAM_RATE_LIMITED"
     RESPONSE_TOO_LARGE = "TELEGRAM_RESPONSE_TOO_LARGE"
@@ -383,30 +384,37 @@ def send_formatted_notification(
     )
     connection = None
     try:
-        connection = factory(
-            policy.host,
-            policy.port,
-            timeout=policy.timeout_seconds,
-            context=context,
-        )
-        connection.request(
-            policy.method,
-            path,
-            body=body,
-            headers={
-                "Accept": "application/json",
-                "Content-Type": "application/json; charset=utf-8",
-                "Connection": "close",
-            },
-        )
-        response = connection.getresponse()
-        message_id = _read_success_response(response)
-    except TelegramTransportError:
-        raise
-    except (OSError, TimeoutError, http.client.HTTPException):
-        raise TelegramTransportError(
-            TelegramTransportErrorCode.NETWORK_ERROR
-        ) from None
+        try:
+            connection = factory(
+                policy.host,
+                policy.port,
+                timeout=policy.timeout_seconds,
+                context=context,
+            )
+        except (OSError, TimeoutError, http.client.HTTPException):
+            raise TelegramTransportError(
+                TelegramTransportErrorCode.NETWORK_ERROR
+            ) from None
+
+        try:
+            connection.request(
+                policy.method,
+                path,
+                body=body,
+                headers={
+                    "Accept": "application/json",
+                    "Content-Type": "application/json; charset=utf-8",
+                    "Connection": "close",
+                },
+            )
+            response = connection.getresponse()
+            message_id = _read_success_response(response)
+        except TelegramTransportError:
+            raise
+        except (OSError, TimeoutError, http.client.HTTPException):
+            raise TelegramTransportError(
+                TelegramTransportErrorCode.NETWORK_AMBIGUOUS
+            ) from None
     finally:
         if connection is not None:
             try:
