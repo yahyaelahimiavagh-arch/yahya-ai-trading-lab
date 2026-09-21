@@ -1,6 +1,6 @@
 # P10 — Forward / Paper Validation implementation plan
 
-Status: **P10-001 RUNTIME ACCEPTED / MERGED — P10-002 CURRENT CANDIDATE**
+Status: **P10-002 RUNTIME ACCEPTED / MERGED — P10-003 CURRENT CANDIDATE**
 
 Entry baseline: P9 runtime accepted and merged at checkpoint
 `60d7e267fdd878f513afb2a8febb30d509b61314`. Final P9-006 candidate HEAD
@@ -125,8 +125,17 @@ Acceptance: frozen candidate/config digest, frozen gate-registry digest,
 P10-001 criterion coverage, no missing/duplicate gate and proof that no forward
 data was consumed before registration.
 
-Current candidate: branch `p10-002-candidate-economic-gates` from accepted
-P10-001 checkpoint `326bc85b0c7cf2b456f4a51ad648330b8a9845a0`.
+Accepted: PR #69 exact final candidate HEAD
+`8161f96dff29e076ef34cc8198073c18c42a647f` passed matching Actions run
+`35574963153` with both jobs PASS, **1319/1319** complete tests and **23/23**
+focused P10-002 tests. Frozen candidate SHA-256:
+`64f2e116616f84e09fbf70a19977395eac99b16fe7e24a283dd53a8b0b84ac86`.
+Frozen economic-gate registry SHA-256:
+`f8d706df050bb095219ae4b76e400eff73e1a7a6755c4a197d489b03117a3e95`.
+Frozen candidate+gate registration SHA-256:
+`0e4914e98754bceebf9dc99cc0ae7ab65b2b1a5b135c1fd9d736a071d843f14e`.
+PR #69 was squash-merged on `main` at checkpoint
+`e327e2b99a0883fc096941db18b27e572561a7d1`.
 
 The single baseline is `TREND_PULLBACK/1.0.0` with configuration SHA-256
 `98301c6ee14e9ee01ffdbb1ca68cdce4c0ea0db6a504fc6e4e280bd9f027e20a`.
@@ -179,6 +188,36 @@ The window may open only after candidate and thresholds are frozen.
 
 Acceptance: deterministic window identity, cutoff/no-overlap checks,
 future-only admission, no lookahead and no post-open candidate/gate mutation.
+
+Current candidate: branch `p10-003-forward-window-seal` from accepted P10-002
+checkpoint `e327e2b99a0883fc096941db18b27e572561a7d1`.
+
+Frozen no-peek chronology:
+- accepted P3 development evidence end:
+  **2026-09-09 00:00:00 UTC** (`1788912000000`);
+- accepted P1 historical source maximum requested end:
+  **2026-09-09 16:15:00 UTC** (`1788970500000`);
+- P10-003 seal timestamp:
+  **2026-09-21 08:07:00 UTC** (`1789978020000`);
+- P10 forward window start:
+  **2026-09-22 00:00:00 UTC** (`1790035200000`);
+- earliest economic evaluation date after the pre-registered 90-day gate:
+  **2026-12-21 00:00:00 UTC** (`1797811200000`).
+
+The start is aligned simultaneously to 15m / 1h / 4h UTC grids. Any observation
+with an open time before the P10 start is ineligible, even if it is fetched later.
+The accepted source remains `BINANCE_SPOT_PUBLIC`; symbol scope remains
+BTCUSDT + ETHUSDT.
+
+P10-003 does not load market values. It freezes an identity-only admission
+boundary for closed observations and rejects source substitution, pre-window
+backfill, cross-symbol/cross-interval material, misaligned timestamps, open
+observations, candidate mutation, gate mutation and lookahead.
+
+The 90-day date is a minimum, not a forced end. If the 60 pooled / 20-per-symbol
+sample gate is not satisfied then, forward observation may continue without
+changing the candidate or gates. Economic evaluation remains forbidden in
+P10-003.
 
 ### P10-004 — Read-only forward market-data ingestion and quality gate
 
