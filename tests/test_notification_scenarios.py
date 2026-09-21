@@ -180,6 +180,8 @@ class NotificationScenarioTests(unittest.TestCase):
             item.artifact_json for item in result.runs
         )
         lowered = combined.lower()
+        self.assertIn('"risk_authorization_mutation":false', lowered)
+        self.assertNotIn('"risk_authorization":', lowered)
         for forbidden in (
             "http://",
             "https://",
@@ -191,7 +193,9 @@ class NotificationScenarioTests(unittest.TestCase):
             "bearer ",
             "traceback",
             "approved_quantity",
-            "risk_authorization",
+            '"risk_authorization":',
+            '"risk_authorization_payload":',
+            '"risk_authorization_record":',
             "order_request",
         ):
             with self.subTest(forbidden=forbidden):
