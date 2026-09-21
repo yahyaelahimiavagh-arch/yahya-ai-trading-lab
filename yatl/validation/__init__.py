@@ -201,3 +201,17 @@ __all__ += [
     "assess_fixed_quantity_entry",
     "run_forward_paper",
 ]
+
+from .economics import (
+    FORWARD_ECONOMICS_ID,
+    ForwardEconomicsError,
+    ForwardEconomicsReport,
+    calculate_forward_economics,
+)
+
+__all__ += [
+    "FORWARD_ECONOMICS_ID",
+    "ForwardEconomicsError",
+    "ForwardEconomicsReport",
+    "calculate_forward_economics",
+]

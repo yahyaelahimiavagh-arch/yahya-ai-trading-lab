@@ -1,6 +1,6 @@
 # P10 — Forward / Paper Validation implementation plan
 
-Status: **P10-004 RUNTIME ACCEPTED / MERGED — P10-005 CURRENT CANDIDATE**
+Status: **P10-005 RUNTIME ACCEPTED / MERGED — P10-006 CURRENT CANDIDATE**
 
 Entry baseline: P9 runtime accepted and merged at checkpoint
 `60d7e267fdd878f513afb2a8febb30d509b61314`. Final P9-006 candidate HEAD
@@ -350,6 +350,14 @@ Undefined or insufficient quantities remain explicit. No favorable extrapolation
 
 Acceptance: Decimal-safe arithmetic, reconciliation against forward Paper
 evidence, exact cost inclusion, deterministic replay and no evidence upgrade.
+
+Current candidate implementation additionally fixes the reporting semantics:
+- pooled return uses the sum of both independent symbol portfolio capital bases;
+- completed-trade gross PnL and costs exclude open positions;
+- executed costs identify open-entry costs separately;
+- net equity includes accepted P2 net-liquidation unrealized PnL;
+- realized and sampled-liquidation drawdowns are labeled separately;
+- `INSUFFICIENT_DATA` is a sample state, never an economic PASS/FAIL verdict.
 
 ### P10-007 — Consistency, regime stability and failure/recovery gate
 

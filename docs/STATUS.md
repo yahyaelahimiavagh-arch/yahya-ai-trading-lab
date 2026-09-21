@@ -2656,9 +2656,9 @@ Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `41c5e315`**.
   `41c5e315a9b0595423d9d20186cc9a038b3e6630`.
 - No real network / real forward data was part of acceptance.
 
-## P10-005 current candidate — 2026-09-21
+## P10-005 accepted implementation — 2026-09-21
 
-Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `62c55b67`**.
 
 - Entry checkpoint: accepted P10-004 at
   `41c5e315a9b0595423d9d20186cc9a038b3e6630`.
@@ -2688,4 +2688,39 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
 - Economic evaluation remains forbidden; strategy evidence remains
   `INSUFFICIENT_EVIDENCE`; P11 remains locked.
 - No dependency or `uv.lock` change.
-- P10-006 remains closed until exact Final-HEAD Actions and explicit merge.
+- P10-006 was opened only after exact Final-HEAD Actions and explicit merge.
+
+Final acceptance evidence:
+- PR #72 exact final candidate HEAD:
+  `747a7b91b32147aeb809cb669a3bd98fc76c56a7`.
+- Matching GitHub Actions run: `35580837803` — both jobs PASS.
+- PR #72 squash-merged; accepted checkpoint:
+  `62c55b675a8efb55c18d4a420a17d2b4a62d65ac`.
+
+## P10-006 current candidate — 2026-09-21
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry checkpoint: accepted P10-005 at
+  `62c55b675a8efb55c18d4a420a17d2b4a62d65ac`.
+- Branch: `p10-006-forward-economics`.
+- Reproduces the exact P10-005 run from the accepted store/snapshot before any
+  economics is admitted.
+- Re-costs every fill through accepted P2 fee/slippage arithmetic and rebuilds
+  every final portfolio for reconciliation.
+- Reports net PnL/return after costs, completed-reference gross PnL, executed
+  fees/slippage, completed trades, wins/losses/breakeven, profit factor where
+  defined, holding/exposure and both realized and sampled-liquidation drawdown.
+- Open positions remain separate from completed trades. Open entry costs are
+  explicit and net equity includes P2 net-liquidation unrealized PnL.
+- Pooled return uses the sum of the two independent 10,000-quote P10-005
+  portfolios as its 20,000-quote capital basis; it is not presented as a shared
+  account.
+- Duration comes only from the sealed start and admitted store cutoff. Undefined
+  and insufficient metrics remain explicit; there is no annualization or
+  favorable extrapolation.
+- `INSUFFICIENT_DATA` is descriptive sample state only. P10-006 does not issue
+  PASS/FAIL, upgrade strategy evidence, or unlock P11.
+- Mocked CI has no real network or real forward evidence.
+- No dependency or `uv.lock` change.
+- P10-007 remains closed until exact Final-HEAD Actions and explicit merge.
