@@ -18,6 +18,7 @@ from yatl.notifications.audit import (
     _accepted_fixture,
     _audit_delivery_replay,
     _audit_evidence_records,
+    _audit_delivery_replay,
     _audit_identity_set,
     _audit_policy_hashes,
     _audit_source_safety,
@@ -145,6 +146,30 @@ class P9IndependentAuditTests(unittest.TestCase):
         changed["BTCUSDT"]["delivery_id"] = "a" * 64
         with self.assertRaises(P9AuditError):
             _audit_delivery_replay(changed)
+
+    def test_delivery_replay_is_independent_frozen_and_duplicate_safe(self):
+        replay, replay_set_sha = _audit_delivery_replay(self.fixtures)
+        self.assertEqual(replay, EXPECTED_DELIVERY_REPLAY)
+        self.assertEqual(
+            replay_set_sha,
+            EXPECTED_DELIVERY_REPLAY_SET_SHA256,
+        )
+        self.assertEqual(
+            self.result.delivery_replay_set_sha256,
+            EXPECTED_DELIVERY_REPLAY_SET_SHA256,
+        )
+        for symbol in SYMBOLS:
+            with self.subTest(symbol=symbol):
+                self.assertEqual(
+                    replay[symbol]["telegram_message_id"],
+                    9101 if symbol == "BTCUSDT" else 9102,
+                )
+                self.assertEqual(len(replay[symbol]["receipt_sha256"]), 64)
+                self.assertEqual(len(replay[symbol]["state_sha256"]), 64)
+
+    def test_delivery_replay_rejects_incomplete_fixture_set(self):
+        with self.assertRaises(P9AuditError):
+            _audit_delivery_replay({"BTCUSDT": self.fixtures["BTCUSDT"]})
 
     def test_adversarial_index_sha_is_frozen(self):
         self.assertEqual(self.result.index_sha256, EXPECTED_INDEX_SHA256)
@@ -329,6 +354,13 @@ class P9IndependentAuditTests(unittest.TestCase):
     def test_audit_result_rejects_wrong_identity_set(self):
         with self.assertRaises(P9AuditError):
             replace(self.result, identity_set_sha256="a" * 64)
+
+    def test_audit_result_rejects_wrong_delivery_replay_set(self):
+        with self.assertRaises(P9AuditError):
+            replace(
+                self.result,
+                delivery_replay_set_sha256="a" * 64,
+            )
 
     def test_audit_result_rejects_wrong_index(self):
         with self.assertRaises(P9AuditError):
