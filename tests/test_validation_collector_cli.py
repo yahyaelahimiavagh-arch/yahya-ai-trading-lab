@@ -1,4 +1,7 @@
-import fcntl
+try:
+    import fcntl
+except ImportError:
+    fcntl = None
 import io
 import json
 import os
@@ -177,6 +180,7 @@ class CollectorTests(unittest.TestCase):
             )
         self.assertIs(caught.exception.code, CollectorCode.SOURCE_REJECTED)
 
+    @unittest.skipIf(fcntl is None, "collector advisory lock is Linux-only")
     def test_lock_blocks_overlapping_collector(self):
         lock_path = self.root / ".snapshot.json.lock"
         fd = os.open(lock_path, os.O_CREAT | os.O_RDWR, 0o600)
