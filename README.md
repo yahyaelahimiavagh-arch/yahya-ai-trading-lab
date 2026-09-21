@@ -7,12 +7,12 @@ P0 تا P8 با شواهد runtime پذیرفته و روی `main` بسته شد
 squash-merge شد و checkpoint نهایی P8 روی `main` برابر است با
 `fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e`.
 
-P9 و P10-001 تا P10-009 runtime accepted و merge شده‌اند. checkpoint فعلی
-`main` برابر `7baf3c7000bb66d406fa8348692f73d9907d3f15` است. مرحله جاری
-P10-010 است: independent final economic audit کل زنجیره
-candidate/gates/window/provenance/Paper/economics/gate/adversarial evidence را
-مستقل بازسازی می‌کند و disposition نهایی P10 را بدون ایجاد Live authority ثبت
-می‌کند. P11 همچنان قفل است. برنامه P10 در
+P9 و P10-001 تا P10-010 از نظر مهندسی runtime accepted و merge شده‌اند.
+checkpoint فعلی `main` برابر
+`ed7e7e705dc71dfc6a67d5b052d6facc08ee5e86` است. نتیجه CI/mock نهایی P10
+همچنان `INSUFFICIENT_DATA` است؛ بنابراین P11 قفل است. مرحله جاری عملیاتی است:
+استقرار collector واقعی forward Paper روی VPS، فقط با Binance Spot public data،
+بدون credential/order/Live authority. برنامه P10 در
 `docs/P10-IMPLEMENTATION-PLAN.md` ثبت شده است.
 
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
@@ -51,13 +51,13 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 ## مسیر بعدی
 
 مرجع ترتیب اجرا: [نقشه پروژه](docs/MASTER-PLAN.md).
-وضعیت جاری **P0 تا P9 و P10-001 تا P10-009 runtime accepted و merge‌شده روی
-main** است. checkpoint فعلی برابر
-`7baf3c7000bb66d406fa8348692f73d9907d3f15` است و مرحله جاری
-**P10-010 — Independent final economic audit** روی branch
-`p10-010-independent-final-audit` است. پایان مهندسی P10 به‌تنهایی به معنی
-پذیرش اقتصادی نیست؛ P11 فقط پس از disposition واقعی `PASS_CANDIDATE` می‌تواند
-برای بررسی جداگانه مطرح شود و هیچ‌گاه خودکار unlock نمی‌شود.
+وضعیت جاری **P0 تا P9 و P10-001 تا P10-010 مهندسی runtime accepted و merge‌شده
+روی main** است. checkpoint فعلی
+`ed7e7e705dc71dfc6a67d5b052d6facc08ee5e86` است. مرحله جاری
+**P10 Operations — Real Forward Collector** روی branch
+`ops/p10-forward-collector` است. P11 همچنان قفل است؛ engineering completion
+با economic acceptance یکی نیست. runbook عملیاتی در
+`docs/P10-OPERATIONS.md` ثبت شده است.
 
 P9 برای رسیدن سریع‌تر به P10 عمداً محدود است: status/alertهای accepted و sanitized
 را به notificationهای information-only تبدیل می‌کند. transport واقعی Telegram

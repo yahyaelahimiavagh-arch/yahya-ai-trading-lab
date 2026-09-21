@@ -1,0 +1,11 @@
+[Unit]
+Description=Run YATL P10 forward collector hourly
+
+[Timer]
+OnCalendar=*-*-* *:05:00
+Persistent=true
+AccuracySec=1min
+Unit=yatl-p10-forward-collector.service
+
+[Install]
+WantedBy=timers.target

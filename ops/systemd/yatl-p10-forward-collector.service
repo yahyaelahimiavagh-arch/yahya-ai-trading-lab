@@ -1,0 +1,28 @@
+[Unit]
+Description=YATL P10 forward market-data collector
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=yatl
+Group=yatl
+WorkingDirectory=/opt/yatl/app
+ExecStart=/opt/yatl/app/.venv/bin/python -m yatl.validation.collector_cli --database /var/lib/yatl/p10/p10-forward.sqlite3 --snapshot /var/lib/yatl/p10/snapshot.json
+SuccessExitStatus=40 44
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+RestrictNamespaces=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths=/var/lib/yatl/p10

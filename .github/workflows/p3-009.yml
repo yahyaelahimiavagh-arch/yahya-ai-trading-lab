@@ -131,6 +131,8 @@ jobs:
         run: uv run --locked python -m unittest discover -s tests -p 'test_validation_scenarios.py' -v
       - name: P10 independent final economic audit focused gate
         run: uv run --locked python -m unittest discover -s tests -p 'test_validation_audit.py' -v
+      - name: P10 operational forward collector focused gate
+        run: uv run --locked python -m unittest discover -s tests -p 'test_validation_collector_cli.py' -v
       - name: Compile and whitespace gates
         run: |
           uv run --locked python -m compileall -q yatl
@@ -210,6 +212,7 @@ jobs:
           assert_absent 'collect_forward_snapshot|BinancePublicRestClient|write_many\(|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|urllib|http\.client|requests|httpx|aiohttp|websockets|socket|os\.environ|os\.getenv|dotenv|API_KEY|API_SECRET|openai|anthropic|api/v3/(order|orderList)|/fapi|/dapi|withdraw\(|time\.time|time\.monotonic|datetime\.now|subprocess|input\(|eval\(|exec\(' yatl/validation/cli.py
           assert_absent 'BinancePublicRestClient|collect_forward_snapshot|write_many\(|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|urllib|http\.client|requests|httpx|aiohttp|websockets|socket|os\.environ|os\.getenv|dotenv|API_KEY|API_SECRET|openai|anthropic|api/v3/(order|orderList)|/fapi|/dapi|withdraw\(|time\.time|time\.monotonic|datetime\.now|subprocess|input\(|eval\(|exec\(' yatl/validation/scenarios.py
           assert_absent 'BinancePublicRestClient|collect_forward_snapshot|write_many\(|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|urllib|http\.client|requests|httpx|aiohttp|websockets|socket|os\.environ|os\.getenv|dotenv|API_KEY|API_SECRET|openai|anthropic|api/v3/(order|orderList)|/fapi|/dapi|withdraw\(|time\.time|time\.monotonic|datetime\.now|subprocess|input\(|eval\(|exec\(' yatl/validation/audit.py
+          assert_absent 'from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|requests|httpx|aiohttp|websockets|socket|os\.environ|os\.getenv|dotenv|API_KEY|API_SECRET|openai|anthropic|api/v3/(order|orderList)|/fapi|/dapi|withdraw\(|subprocess|input\(|eval\(|exec\(' yatl/validation/collector_cli.py
       - name: P4 risk contract runtime
         run: uv run --locked python -m yatl risk-contract-check
       - name: P4 exact sizing runtime
@@ -377,6 +380,8 @@ jobs:
       - name: P10 independent final economic audit runtime
         run: |
           uv run --locked python -m yatl.validation.audit_runtime --evidence data/p10/p10-009-evidence | tee data/p10/p10-010-final-audit.json
+      - name: P10 operational forward collector mocked runtime
+        run: uv run --locked python -m yatl.validation.collector_runtime
       - name: Publish P5-009 adversarial evidence
         uses: actions/upload-artifact@v4
         with:

@@ -1,6 +1,6 @@
 # P10 — Forward / Paper Validation implementation plan
 
-Status: **P10-006 RUNTIME ACCEPTED / MERGED — P10-007 CURRENT CANDIDATE**
+Status: **P10-001 THROUGH P10-010 ENGINEERING RUNTIME ACCEPTED / MERGED — ECONOMIC VERDICT STILL INSUFFICIENT_DATA**
 
 Entry baseline: P9 runtime accepted and merged at checkpoint
 `60d7e267fdd878f513afb2a8febb30d509b61314`. Final P9-006 candidate HEAD
@@ -545,3 +545,26 @@ P11 remains **LOCKED** for all P10 checkpoints before P10-010 acceptance.
 Engineering completion is not economic acceptance. P10 exists specifically to
 allow the answer to be "no edge demonstrated" without weakening the evidence
 standard.
+
+
+## P10-010 final acceptance evidence
+
+- PR #77 exact final candidate HEAD:
+  `5943265e22a8a3ddbec97c3a924d7febf7f5c2da`;
+- matching GitHub Actions run: `35639615088`, both jobs PASS;
+- complete suite: **1502/1502 PASS**;
+- focused P10-010: **26/26 PASS**;
+- final mocked disposition: `INSUFFICIENT_DATA`;
+- data quality independently recomputed: true;
+- P10-009 evidence verified: true;
+- no-write/source-safe checks: true;
+- `p11_unlocked=false`;
+- `live_authorized=false`;
+- PR #77 squash-merged at checkpoint
+  `ed7e7e705dc71dfc6a67d5b052d6facc08ee5e86`.
+
+P10 engineering completion does **not** mean the frozen strategy has passed the
+economic gate. The project now enters operational real-forward collection under
+the already sealed P10 window. P11 remains locked until real evidence eventually
+produces a separately audited `PASS_CANDIDATE`. See
+`docs/P10-OPERATIONS.md`.

@@ -311,3 +311,18 @@ __all__ += [
     "P10AuditResult",
     "audit_p10",
 ]
+
+
+from .collector_cli import (
+    COLLECTOR_SCHEMA_VERSION,
+    CollectorCode,
+    CollectorError,
+    collect_once,
+)
+
+__all__ += [
+    "COLLECTOR_SCHEMA_VERSION",
+    "CollectorCode",
+    "CollectorError",
+    "collect_once",
+]
