@@ -39,9 +39,10 @@ def file_sha(path):
 
 def family_sha(path):
     values = {"database": file_sha(path)}
-    wal = Path(str(path) + "-wal")
-    if wal.exists():
-        values["wal"] = file_sha(wal)
+    for suffix in ("-wal", "-shm"):
+        sidecar = Path(str(path) + suffix)
+        if sidecar.exists():
+            values[suffix] = file_sha(sidecar)
     return values
 
 
