@@ -75,6 +75,7 @@ def main(argv=None):
         output = {
             "schema_version": 1,
             "disposition": result.disposition,
+            "database_snapshot_sha256": result.database_snapshot_sha256,
             "candidate_sha256": result.candidate_sha256,
             "gate_registry_sha256": result.gate_registry_sha256,
             "window_sha256": result.window_sha256,
@@ -91,6 +92,7 @@ def main(argv=None):
             "exact_outcomes": result.exact_outcomes,
             "replay_equal": result.replay_equal,
             "chain_recomputed": result.chain_recomputed,
+            "data_quality_recomputed": result.data_quality_recomputed,
             "adversarial_recomputed": result.adversarial_recomputed,
             "evidence_verified": result.evidence_verified,
             "candidate_unchanged": result.candidate_unchanged,
