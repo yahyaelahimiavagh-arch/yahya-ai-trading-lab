@@ -75,7 +75,12 @@ def _json(value):
 
 
 def _sha256(value):
-    payload = value.encode("utf-8") if isinstance(value, str) else value
+    if isinstance(value, str):
+        payload = value.encode("utf-8")
+    elif isinstance(value, bytes):
+        payload = value
+    else:
+        payload = _compact(value).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
 
 
