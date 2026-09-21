@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P8 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P9-003 OUTBOUND-ONLY TELEGRAM TRANSPORT — CANDIDATE**
+قدم جاری: **P9-004 DELIVERY GUARD / DEDUPE / BOUNDED RETRY — CANDIDATE**
 
 ## منشأ و حدود سند
 
@@ -779,3 +779,26 @@ CI P9-003 فقط mocked transport را اجرا می‌کند؛ real Telegram se
 acceptance evidence این checkpoint نیست. inbound command/update/webhook/polling
 و هر execution/live/trade authority همچنان ممنوع است. P9-004 تا merge مستقل این
 checkpoint بسته می‌ماند.
+
+
+## P9-003 acceptance / P9-004 candidate — 2026-09-21
+
+P9-003 با PR #64 و matching Actions `35553060397`، **1194/1194** تست کامل و
+**19/19** تست focused پذیرفته و در checkpoint
+`0d29710f320cec2dde6b7f585b8f62e496daae1e` روی `main` squash-merge شد.
+transport policy SHA-256 برابر
+`26428411750db1d2290e9d54fc60b831f5497077822e3e26be63a60acf9cc9d4`
+فریز است. acceptance آن فقط با mock انجام شد و هیچ credential یا network call
+واقعی وارد evidence نشد.
+
+P9-004 روی branch `p9-004-delivery-guard` delivery identity، duplicate
+suppression و retry محدود را اضافه می‌کند. حداکثر سه attempt وجود دارد؛ network
+backoff ثابت 1 و 2 ثانیه است و 429 فقط با `retry_after` عددی معتبر و در bound
+پذیرفته می‌شود. HTTP/provider/schema/config failureهای دیگر retry نمی‌شوند.
+
+state تحویل immutable، canonical و strict-reconstructable است؛ duplicate با state
+قبلی قبل از network متوقف می‌شود. persistence فایل/دیتابیس در این checkpoint
+عمداً وجود ندارد و snapshot به caller واگذار می‌شود تا P9-005 مالک runner/
+persistence boundary را مشخص کند. هیچ upstream mutation یا control loop ساخته
+نمی‌شود و محدودیت‌های PAPER ONLY، LIVE lock، no trade/order و no AI direct
+execution بدون تغییرند.
