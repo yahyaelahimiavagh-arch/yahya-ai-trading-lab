@@ -105,6 +105,10 @@ jobs:
         run: uv run --locked python -m unittest discover -s tests -p 'test_telegram_transport.py' -v
       - name: P9 delivery guard dedupe retry focused gate
         run: uv run --locked python -m unittest discover -s tests -p 'test_delivery_guard.py' -v
+      - name: P9 guarded notifier runner focused gate
+        run: uv run --locked python -m unittest discover -s tests -p 'test_notification_runner.py' -v
+      - name: P9 adversarial notification matrix focused gate
+        run: uv run --locked python -m unittest discover -s tests -p 'test_notification_scenarios.py' -v
       - name: Compile and whitespace gates
         run: |
           uv run --locked python -m compileall -q yatl
@@ -170,6 +174,8 @@ jobs:
           test "$transport_capability_files" = "yatl/notifications/transport.py"
           assert_absent 'http\.client|urllib|requests|httpx|aiohttp|websockets|socket|ssl\.|os\.environ|os\.getenv|pathlib|sqlite3|open\(|write_text|write_bytes|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|openai|anthropic' yatl/notifications/delivery.py
           assert_absent 'while[[:space:]]' yatl/notifications/delivery.py
+          assert_absent 'http\.client|urllib|requests|httpx|aiohttp|websockets|socket|ssl\.|os\.environ|os\.getenv|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|openai|anthropic|add_subparsers|input\(|eval\(|exec\(|getUpdates|setWebhook|answerCallbackQuery' yatl/notifications/runner.py
+          assert_absent 'http\.client|urllib|requests|httpx|aiohttp|websockets|socket|ssl\.|os\.environ|os\.getenv|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|openai|anthropic' yatl/notifications/scenarios.py
       - name: P4 risk contract runtime
         run: uv run --locked python -m yatl risk-contract-check
       - name: P4 exact sizing runtime
@@ -300,6 +306,15 @@ jobs:
         run: uv run --locked python -m yatl.notifications.transport_runtime
       - name: P9 delivery guard dedupe retry runtime
         run: uv run --locked python -m yatl.notifications.delivery_runtime
+      - name: P9 guarded notifier runner runtime
+        run: uv run --locked python -m yatl.notifications.runner_runtime
+      - name: P9 adversarial notification matrix twice
+        run: |
+          mkdir -p data/p9
+          uv run --locked python -m yatl.notifications.scenarios_runtime --output data/p9/p9-005-evidence
+          uv run --locked python -m yatl.notifications.scenarios_runtime --output data/p9/p9-005-evidence-replay
+          diff -r data/p9/p9-005-evidence data/p9/p9-005-evidence-replay
+          sha256sum data/p9/p9-005-evidence/p9-005-index.json
       - name: Publish P5-009 adversarial evidence
         uses: actions/upload-artifact@v4
         with:
@@ -326,6 +341,13 @@ jobs:
         with:
           name: p8-009-evidence
           path: data/p8/p8-009-evidence/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Publish P9-005 adversarial notification evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: p9-005-evidence
+          path: data/p9/p9-005-evidence/
           if-no-files-found: error
           retention-days: 30
 
