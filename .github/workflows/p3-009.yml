@@ -15,7 +15,7 @@ concurrency:
 jobs:
   unit-and-safety:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -123,6 +123,8 @@ jobs:
         run: uv run --locked python -m unittest discover -s tests -p 'test_validation_paper_runner.py' -v
       - name: P10 reconciled forward economics focused gate
         run: uv run --locked python -m unittest discover -s tests -p 'test_validation_economics.py' -v
+      - name: P10 forward validation gate focused gate
+        run: uv run --locked python -m unittest discover -s tests -p 'test_validation_gate.py' -v
       - name: Compile and whitespace gates
         run: |
           uv run --locked python -m compileall -q yatl
@@ -351,6 +353,8 @@ jobs:
         run: uv run --locked python -m yatl.validation.paper_runner_runtime
       - name: P10 mocked reconciled forward economics runtime
         run: uv run --locked python -m yatl.validation.economics_runtime
+      - name: P10 mocked forward validation gate runtime
+        run: uv run --locked python -m yatl.validation.gate_runtime
       - name: Publish P5-009 adversarial evidence
         uses: actions/upload-artifact@v4
         with:
