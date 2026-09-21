@@ -183,7 +183,7 @@ class EntrySafetyVeto:
 def assess_fixed_quantity_entry(decision, risk_state, policy=None):
     """Veto the frozen P3 research quantity using the accepted P4 numeric envelope.
 
-    This function never approves a new quantity and never creates RiskAuthorization.
+    This function never approves a new quantity and never creates a P4 authorization object.
     """
     if policy is None:
         policy = RiskPolicy()
