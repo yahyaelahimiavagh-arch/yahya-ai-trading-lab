@@ -850,7 +850,9 @@ byte-identical replay شد. PR #66 squash-merge و checkpoint accepted جدید 
 P9-006 روی branch `p9-006-independent-final-audit` فقط ممیزی مستقل نهایی است.
 این checkpoint سه policy digest، هویت source/message/batch/formatter/delivery
 برای BTCUSDT و ETHUSDT، identity-set SHA، ماتریس P9-005 و source-safety را
-مستقل recompute می‌کند. authority شبکه/environment باید فقط در
+مستقل recompute می‌کند. delivery برای هر دو symbol با sender mock دوباره اجرا
+می‌شود و باید `DELIVERED -> DUPLICATE_SUPPRESSED` با دقیقاً یک send و receipt/
+state identity ثابت بدهد. authority شبکه/environment باید فقط در
 `transport.py` باقی بماند.
 
 P9-006 هیچ capability جدید Telegram، command surface، state authority،
