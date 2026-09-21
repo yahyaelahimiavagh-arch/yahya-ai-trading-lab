@@ -44,6 +44,7 @@ EXIT_CONFIG = 23
 EXIT_DELIVERY = 24
 EXIT_STORAGE = 25
 EXIT_OUTPUT = 26
+EXIT_INTERNAL = 27
 
 _HEX = frozenset("0123456789abcdef")
 
@@ -59,6 +60,7 @@ class NotifierRunnerCode(str, Enum):
     DELIVERY_REJECTED = "DELIVERY_REJECTED"
     STORAGE_ERROR = "STORAGE_ERROR"
     OUTPUT_TOO_LARGE = "OUTPUT_TOO_LARGE"
+    INTERNAL_ERROR = "INTERNAL_ERROR"
 
 
 class NotifierRunnerError(RuntimeError):
@@ -407,6 +409,8 @@ def _exit_code(record):
         return EXIT_DELIVERY
     if code == NotifierRunnerCode.STORAGE_ERROR.value:
         return EXIT_STORAGE
+    if code == NotifierRunnerCode.INTERNAL_ERROR.value:
+        return EXIT_INTERNAL
     return EXIT_OUTPUT
 
 
@@ -459,6 +463,10 @@ def main(
             code = NotifierRunnerCode.OUTPUT_TOO_LARGE
             record = _compact_error(code)
             output = _json(record)
+    except Exception:
+        code = NotifierRunnerCode.INTERNAL_ERROR
+        record = _compact_error(code)
+        output = _json(record)
     print(output, end="")
     return _exit_code(record)
 
