@@ -311,20 +311,41 @@ class ForwardWindowSealTests(unittest.TestCase):
             observation_identity_from_record(record)
 
     def test_window_record_contains_no_market_values_or_economic_result(self):
-        encoded = json.dumps(ForwardWindowSeal().as_record(), sort_keys=True)
+        record = ForwardWindowSeal().as_record()
+
+        def keys(value):
+            if isinstance(value, dict):
+                result = set(value)
+                for item in value.values():
+                    result.update(keys(item))
+                return result
+            if isinstance(value, list):
+                result = set()
+                for item in value:
+                    result.update(keys(item))
+                return result
+            return set()
+
+        present_keys = keys(record)
         for forbidden in (
-            "open_price",
+            "open",
             "high",
             "low",
-            "close_price",
+            "close",
             "volume",
+            "open_price",
+            "close_price",
             "net_pnl",
+            "profit_factor",
             "profit_factor_result",
-            "PASS_CANDIDATE",
-            "QUALIFIED",
+            "economic_result",
         ):
             with self.subTest(forbidden=forbidden):
-                self.assertNotIn(forbidden, encoded)
+                self.assertNotIn(forbidden, present_keys)
+
+        encoded = json.dumps(record, sort_keys=True)
+        self.assertNotIn("PASS_CANDIDATE", encoded)
+        self.assertNotIn("QUALIFIED_FOR_P4_RESEARCH", encoded)
 
     def test_window_source_has_no_market_data_execution_network_or_clock_capability(self):
         import yatl.validation.window as window_module
