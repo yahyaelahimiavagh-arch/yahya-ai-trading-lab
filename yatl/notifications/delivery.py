@@ -336,6 +336,7 @@ def _guard_error_for_transport(error):
         raise TypeError("Transport error is invalid")
     if error.code in (
         TelegramTransportErrorCode.HTTP_STATUS,
+        TelegramTransportErrorCode.NETWORK_AMBIGUOUS,
         TelegramTransportErrorCode.RESPONSE_TOO_LARGE,
         TelegramTransportErrorCode.RESPONSE_INVALID,
         TelegramTransportErrorCode.API_REJECTED,
