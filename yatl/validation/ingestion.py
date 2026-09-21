@@ -55,9 +55,6 @@ class ForwardDatasetEvidence:
     requested_start_time_ms: int
     requested_end_time_ms: int
     server_time_ms: int
-    pages: int
-    new_rows: int
-    skipped_known_rows: int
     total_rows: int
     first_open_time_ms: int
     last_open_time_ms: int
@@ -80,17 +77,10 @@ class ForwardDatasetEvidence:
             or self.requested_start_time_ms % duration
             or self.requested_end_time_ms % duration
             or self.server_time_ms < self.requested_end_time_ms
-            or type(self.pages) is not int
-            or self.pages < 1
-            or type(self.new_rows) is not int
-            or self.new_rows < 0
-            or type(self.skipped_known_rows) is not int
-            or self.skipped_known_rows < 0
             or type(self.total_rows) is not int
             or self.total_rows
             != (self.requested_end_time_ms - self.requested_start_time_ms)
             // duration
-            or self.new_rows + self.skipped_known_rows != self.total_rows
             or self.first_open_time_ms != self.requested_start_time_ms
             or self.last_open_time_ms
             != self.requested_end_time_ms - duration
@@ -335,9 +325,6 @@ def collect_forward_snapshot(store, client):
                     requested_start_time_ms=start,
                     requested_end_time_ms=end,
                     server_time_ms=server_time,
-                    pages=batch.pages,
-                    new_rows=len(candles),
-                    skipped_known_rows=batch.skipped_known_rows,
                     total_rows=len(stored),
                     first_open_time_ms=stored[0].open_time_ms,
                     last_open_time_ms=stored[-1].open_time_ms,
