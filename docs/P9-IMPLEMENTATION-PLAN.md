@@ -197,11 +197,14 @@ canonical formatted text and transport ID. A successful acknowledgement creates
 one bounded secret-free `DeliveryRecord`; the same delivery identity is then
 suppressed before network access.
 
-Retry is finite and conservative: at most three total attempts, fixed network
-backoff of 1 then 2 seconds, retry only for stable network failure or validated
-Telegram HTTP 429 `retry_after`, per-wait rate-limit bound of 30 seconds and
-total wait bound of 60 seconds. HTTP status, provider rejection, malformed/
-oversized response, invalid request and credential errors are never retried.
+Retry is finite and conservative: at most three total attempts. Only a connection
+failure that occurs before any Telegram request is issued receives fixed backoff
+of 1 then 2 seconds. A request/response-stage network failure is classified
+`TELEGRAM_NETWORK_AMBIGUOUS` and is never retried because Telegram may already
+have accepted the message. Validated Telegram HTTP 429 `retry_after` may be
+retried within a per-wait bound of 30 seconds and total wait bound of 60 seconds.
+HTTP status, provider rejection, malformed/oversized response, invalid request,
+credential errors and ambiguous network state are never retried.
 
 P9-003 transport now recognizes only the safe numeric `retry_after` field from a
 bounded 429 JSON response and converts it to a redacted `TELEGRAM_RATE_LIMITED`
