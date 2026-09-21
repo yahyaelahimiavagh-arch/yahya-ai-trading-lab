@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P8 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P9-005 GUARDED NOTIFIER / ADVERSARIAL MATRIX — CANDIDATE**
+قدم جاری: **P9-006 INDEPENDENT FINAL AUDIT — CANDIDATE**
 
 ## منشأ و حدود سند
 
@@ -833,3 +833,27 @@ transport-response corruption. جمعاً ۱۶ run و ۱۷ evidence file canonic
 RiskAuthorization mutation، quantity authority، trade permission، order endpoint
 یا AI direct execution اضافه نمی‌شود. P9-006 تا merge مستقل این checkpoint
 بسته می‌ماند.
+
+
+## P9-005 acceptance / P9-006 candidate — 2026-09-21
+
+P9-005 با PR #66، Final HEAD
+`da9d347b50d09d823b3b1bed9791ebc8ba7ec5f2` و matching Actions
+`35555391256` پذیرفته شد: **1241/1241** full suite، **13/13** focused runner
+و **10/10** focused adversarial matrix. ماتریس ثابت ۸ سناریو × ۲ symbol =
+۱۶ run / ۱۷ evidence file با SHA
+`30a2c7ff705e9ecc3e83d5fa6b7ec38f9e432a6f6cd9a7f9ae531ca8b040c063`
+byte-identical replay شد. PR #66 squash-merge و checkpoint accepted جدید روی
+`main` برابر
+`8614758fa8229c12ed297d75cf79adc86353c8e7` است.
+
+P9-006 روی branch `p9-006-independent-final-audit` فقط ممیزی مستقل نهایی است.
+این checkpoint سه policy digest، هویت source/message/batch/formatter/delivery
+برای BTCUSDT و ETHUSDT، identity-set SHA، ماتریس P9-005 و source-safety را
+مستقل recompute می‌کند. authority شبکه/environment باید فقط در
+`transport.py` باقی بماند.
+
+P9-006 هیچ capability جدید Telegram، command surface، state authority،
+execution/live control، RiskAuthorization mutation، quantity authority،
+trade permission، order endpoint یا AI direct execution اضافه نمی‌کند. P10 فقط
+پس از PASS شدن exact Final HEAD و merge صریح این ممیزی می‌تواند باز شود.
