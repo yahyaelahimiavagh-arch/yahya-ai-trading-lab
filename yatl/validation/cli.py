@@ -279,6 +279,13 @@ def _copy_database_family(database_path, directory):
         raise ValidationCliError(ValidationCliCode.INVALID_REQUEST)
     source = Path(database_path)
     target = Path(directory) / "p10-forward.sqlite3"
+    try:
+        if source.is_symlink() or not source.exists() or not source.is_file():
+            raise ValidationCliError(ValidationCliCode.SOURCE_REJECTED)
+    except ValidationCliError:
+        raise
+    except OSError:
+        raise ValidationCliError(ValidationCliCode.SOURCE_REJECTED) from None
 
     # A live WAL/SHM means the evidence may still be changing. P10-008 never
     # tries to reconstruct across a concurrent writer; the operator must retry
