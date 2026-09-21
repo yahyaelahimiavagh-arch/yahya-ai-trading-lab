@@ -7,11 +7,12 @@ P0 تا P8 با شواهد runtime پذیرفته و روی `main` بسته شد
 squash-merge شد و checkpoint نهایی P8 روی `main` برابر است با
 `fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e`.
 
-P9 و P10-001 تا P10-003 runtime accepted و merge شده‌اند. checkpoint فعلی
-`main` برابر `179d0bed3a1191dee21a654eb965a3b108328b90` است. مرحله جاری
-P10-004 است: collector read-only داده جدید با stack پذیرفته‌شده P1 و SQLite
-مستقل P10 ساخته می‌شود. forward start همچنان **2026-09-22 00:00 UTC** است و
-هیچ داده قبل از آن admissible نیست. برنامه P10 در
+P9 و P10-001 تا P10-004 runtime accepted و merge شده‌اند. checkpoint فعلی
+`main` برابر `41c5e315a9b0595423d9d20186cc9a038b3e6630` است. مرحله جاری
+P10-005 است: frozen baseline روی forward evidence به‌صورت deterministic
+replay-from-start در Paper اجرا می‌شود. forward data از 2026-09-22 00:00 UTC
+جمع می‌شود، اما به‌دلیل warm-up 51×4h اولین decision قانونی زودتر از
+2026-09-30 12:00 UTC نیست. برنامه P10 در
 `docs/P10-IMPLEMENTATION-PLAN.md` ثبت شده است.
 
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
@@ -50,11 +51,11 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 ## مسیر بعدی
 
 مرجع ترتیب اجرا: [نقشه پروژه](docs/MASTER-PLAN.md).
-وضعیت جاری **P0 تا P9 و P10-001/P10-002/P10-003 runtime accepted و merge‌شده
-روی main** است. checkpoint فعلی برابر
-`179d0bed3a1191dee21a654eb965a3b108328b90` است و مرحله جاری
-**P10-004 — Read-only forward market-data ingestion and quality gate** روی branch
-`p10-004-forward-ingestion-quality` است. P11 تا پذیرش کامل P10 قفل می‌ماند.
+وضعیت جاری **P0 تا P9 و P10-001 تا P10-004 runtime accepted و merge‌شده روی
+main** است. checkpoint فعلی برابر
+`41c5e315a9b0595423d9d20186cc9a038b3e6630` است و مرحله جاری
+**P10-005 — Frozen baseline forward Paper runner** روی branch
+`p10-005-frozen-forward-paper-runner` است. P11 تا پذیرش کامل P10 قفل می‌ماند.
 
 P9 برای رسیدن سریع‌تر به P10 عمداً محدود است: status/alertهای accepted و sanitized
 را به notificationهای information-only تبدیل می‌کند. transport واقعی Telegram

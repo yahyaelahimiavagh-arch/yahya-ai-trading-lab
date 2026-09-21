@@ -119,6 +119,8 @@ jobs:
         run: uv run --locked python -m unittest discover -s tests -p 'test_validation_window.py' -v
       - name: P10 forward ingestion and quality focused gate
         run: uv run --locked python -m unittest discover -s tests -p 'test_validation_ingestion.py' -v
+      - name: P10 frozen forward Paper runner focused gate
+        run: uv run --locked python -m unittest discover -s tests -p 'test_validation_paper_runner.py' -v
       - name: Compile and whitespace gates
         run: |
           uv run --locked python -m compileall -q yatl
@@ -192,6 +194,7 @@ jobs:
           assert_absent 'from yatl\.data|import yatl\.data|from yatl\.strategy|import yatl\.strategy|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|from yatl\.analytics|import yatl\.analytics|urllib|http\.client|requests|httpx|aiohttp|websockets|socket|ssl\.|os\.environ|os\.getenv|sqlite3|pathlib|subprocess|open\(|time\.time|time\.monotonic|datetime|openai|anthropic|api/v3/(order|orderList)|/fapi|/dapi|withdraw\(' yatl/validation/window.py
           assert_absent 'from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|from yatl\.analyst|import yatl\.analyst|from yatl\.notifications|import yatl\.notifications|os\.environ|os\.getenv|dotenv|API_KEY|API_SECRET|openai|anthropic|api/v3/(order|orderList)|/fapi|/dapi|withdraw\(|time\.time|time\.monotonic|datetime' yatl/validation/ingestion.py
           assert_absent 'urllib|http\.client|requests|httpx|aiohttp|websockets|socket|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|openai|anthropic|api/v3/(order|orderList)|/fapi|/dapi|withdraw\(' yatl/validation/forward_store.py
+          assert_absent 'QUALIFIED_FOR_P4_RESEARCH|RiskAuthorization|authorize_paper_request|RiskManagedPaperAdapter|size_entry\(|assess_entry_limits\(|assess_protective_entry\(|urllib|http\.client|requests|httpx|aiohttp|websockets|socket|os\.environ|os\.getenv|dotenv|API_KEY|API_SECRET|openai|anthropic|api/v3/(order|orderList)|/fapi|/dapi|withdraw\(|time\.time|time\.monotonic|datetime\.now' yatl/validation/paper_runner.py
       - name: P4 risk contract runtime
         run: uv run --locked python -m yatl risk-contract-check
       - name: P4 exact sizing runtime
@@ -341,6 +344,8 @@ jobs:
         run: uv run --locked python -m yatl.validation.window_runtime
       - name: P10 mocked forward ingestion runtime
         run: uv run --locked python -m yatl.validation.ingestion_runtime
+      - name: P10 mocked frozen forward Paper runner runtime
+        run: uv run --locked python -m yatl.validation.paper_runner_runtime
       - name: Publish P5-009 adversarial evidence
         uses: actions/upload-artifact@v4
         with:

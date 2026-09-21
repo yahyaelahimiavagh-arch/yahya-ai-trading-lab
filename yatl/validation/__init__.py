@@ -170,3 +170,34 @@ __all__ += [
     "collect_forward_snapshot",
     "snapshot_from_record",
 ]
+
+
+from .paper_runner import (
+    FORWARD_PAPER_RUNNER_ID,
+    P3_RESEARCH_ADAPTER_GIT_BLOB_SHA1,
+    REGIME_WARMUP_BARS,
+    RUNNER_QUANTITY,
+    EntrySafetyVeto,
+    EntryVetoReason,
+    ForwardPaperRunResult,
+    ForwardPaperRunnerError,
+    ForwardPaperSymbolResult,
+    ValidationRiskState,
+    assess_fixed_quantity_entry,
+    run_forward_paper,
+)
+
+__all__ += [
+    "FORWARD_PAPER_RUNNER_ID",
+    "P3_RESEARCH_ADAPTER_GIT_BLOB_SHA1",
+    "REGIME_WARMUP_BARS",
+    "RUNNER_QUANTITY",
+    "EntrySafetyVeto",
+    "EntryVetoReason",
+    "ForwardPaperRunResult",
+    "ForwardPaperRunnerError",
+    "ForwardPaperSymbolResult",
+    "ValidationRiskState",
+    "assess_fixed_quantity_entry",
+    "run_forward_paper",
+]

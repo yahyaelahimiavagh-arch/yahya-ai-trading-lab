@@ -2639,3 +2639,53 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
   before the sealed start on 2026-09-22 00:00 UTC.
 - No dependency or `uv.lock` change.
 - P10-005 remains closed until exact Final-HEAD Actions and explicit merge.
+
+
+## P10-004 accepted implementation — 2026-09-21
+
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `41c5e315`**.
+
+- PR #71 exact final candidate HEAD:
+  `11860e3d72473ba938ec17bccc8b209ac57e39aa`.
+- Matching GitHub Actions: `35578517306` — both jobs PASS.
+- Complete suite: **1365/1365 PASS**.
+- Focused P10-004: **24/24 PASS**.
+- Mocked ingestion snapshot SHA-256:
+  `f990b0286030331fe9283682342fb7b531f652a6851478409eb419ae57b6c822`.
+- PR #71 squash-merged; accepted checkpoint:
+  `41c5e315a9b0595423d9d20186cc9a038b3e6630`.
+- No real network / real forward data was part of acceptance.
+
+## P10-005 current candidate — 2026-09-21
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry checkpoint: accepted P10-004 at
+  `41c5e315a9b0595423d9d20186cc9a038b3e6630`.
+- Branch: `p10-005-frozen-forward-paper-runner`.
+- Full replay from sealed forward start on every run; no dependence on ambient
+  in-memory state.
+- Frozen strategy remains `TREND_PULLBACK/1.0.0`.
+- Frozen Paper quantity is inherited from accepted P3 adapter:
+  `0.001`; adapter Git blob:
+  `53500425684a9e0b4078a047eedbad4ae8176460`.
+- Uses accepted P2 next-primary-open fill engine + exact P2 fee/slippage costs and
+  accepted P5 local-Paper safety policy identity.
+- Does not fabricate `QUALIFIED_FOR_P4_RESEARCH`.
+- Does not create or mutate P4 RiskAuthorization.
+- Does not create quantity authority: P4 numeric controls are entry vetoes only.
+- P4-equivalent safety vetoes cover 1% planned-loss budget, 25% position/gross
+  exposure, cash, 2% session loss, 10% drawdown, 3 consecutive losses and
+  protective post-cost reward/levels.
+- Safety stop latches on session/drawdown/loss-streak breach and never auto-resets.
+- Forward-only warm-up requires 51 closed 4h bars = 204 hours.
+- Earliest legal strategy decision:
+  `2026-09-30T12:00:00Z` / 15:00 Europe/Istanbul.
+- Before warm-up completion, runner fails closed while P10-004 may continue data
+  collection.
+- Mocked runtime fixture exercises entry + hold + scripted exit using only
+  post-window synthetic candles.
+- Economic evaluation remains forbidden; strategy evidence remains
+  `INSUFFICIENT_EVIDENCE`; P11 remains locked.
+- No dependency or `uv.lock` change.
+- P10-006 remains closed until exact Final-HEAD Actions and explicit merge.

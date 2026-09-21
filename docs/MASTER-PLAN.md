@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P9 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P10-004 FORWARD INGESTION / QUALITY GATE — CANDIDATE**
+قدم جاری: **P10-005 FROZEN FORWARD PAPER RUNNER — CANDIDATE**
 
 ## منشأ و حدود سند
 
@@ -83,7 +83,7 @@ Dashboard به‌تنهایی معیار موفقیت اقتصادی نیستن�
 | P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | **RUNTIME ACCEPTED — checkpoint `93b9d87`** |
 | P8 Dashboard | نمایش وضعیت، معاملات، عملکرد و خطاها | **RUNTIME ACCEPTED — checkpoint `fe973e8`** |
 | P9 Telegram | هشدار و notification محدود طبق قواعد امنیتی | **RUNTIME ACCEPTED — checkpoint `60d7e267`** |
-| P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | **P10-004 CURRENT CANDIDATE** |
+| P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | **P10-005 CURRENT CANDIDATE** |
 | P11 Tiny Live Candidate | فقط پس از پذیرش P10، ممیزی امنیت، الزامات حساب و تأیید صریح | LOCKED |
 
 ## نمای پیشرفت فعلی — 2026-09-20
@@ -963,3 +963,31 @@ Acceptance CI این checkpoint با transport mock است، زیرا forward wi
 P10 به evidence اضافه نمی‌شود. پس از merge، deployment عملی collector روی VPS
 می‌تواند برای شروع window آماده شود؛ economic evaluation هنوز ممنوع و P11 قفل
 است.
+
+
+## P10-004 acceptance / P10-005 candidate — 2026-09-21
+
+P10-004 با PR #71، Final HEAD
+`11860e3d72473ba938ec17bccc8b209ac57e39aa` و matching Actions
+`35578517306` پذیرفته شد: **1365/1365** full suite و **24/24** focused.
+PR #71 squash-merge و checkpoint جدید `main` برابر
+`41c5e315a9b0595423d9d20186cc9a038b3e6630` شد.
+
+P10-005 runner از ابتدای forward prefix در هر run کاملاً replay می‌شود تا
+restart یا crash نتیجه را تغییر ندهد. strategy/candidate تغییر نمی‌کند،
+quantity جدید محاسبه نمی‌شود و مقدار research پذیرفته‌شده P3 یعنی `0.001`
+ثابت است. P4 numeric policy فقط veto است و اجازه افزایش quantity ندارد.
+
+به‌دلیل اینکه P4 RiskAuthorization برای entry به historical P3 qualification
+وابسته است، P10 آن label را جعل نمی‌کند و RiskAuthorization جدید نمی‌سازد.
+strategy evidence تا P10-010 همچنان `INSUFFICIENT_EVIDENCE` است.
+
+هیچ historical warm-up قبل از window به runner داده نمی‌شود. 51 کندل بسته 4h
+لازم است؛ بنابراین اولین decision قانونی زودتر از
+**2026-09-30 12:00 UTC / 15:00 Istanbul** نیست. تا آن زمان collector می‌تواند
+داده واقعی را جمع و quality-gate کند ولی runner باید warm-up ناکافی را fail-closed
+گزارش دهد.
+
+P10-005 همچنان Paper-only و بدون network/order/credential/AI execution است.
+P10-006 بعد از merge صریح این checkpoint، economics را از evidence همین runner
+محاسبه خواهد کرد. P11 قفل است.
