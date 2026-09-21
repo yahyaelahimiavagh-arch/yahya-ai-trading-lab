@@ -7,6 +7,7 @@ from pathlib import Path
 
 from yatl.notifications.audit import (
     EXPECTED_DELIVERY_POLICY_SHA256,
+    EXPECTED_DELIVERY_RESULTS,
     EXPECTED_IDENTITIES,
     EXPECTED_IDENTITY_SET_SHA256,
     EXPECTED_INDEX_SHA256,
@@ -15,6 +16,7 @@ from yatl.notifications.audit import (
     P9AuditError,
     P9AuditResult,
     _accepted_fixture,
+    _audit_delivery_replay,
     _audit_evidence_records,
     _audit_identity_set,
     _audit_policy_hashes,
@@ -113,6 +115,36 @@ class P9IndependentAuditTests(unittest.TestCase):
     def test_unsupported_fixture_symbol_is_rejected(self):
         with self.assertRaises(P9AuditError):
             _accepted_fixture("SOLUSDT")
+
+    def test_delivery_boundary_is_recomputed_with_restart_dedupe(self):
+        results = _audit_delivery_replay(self.identities)
+        self.assertEqual(set(results), set(SYMBOLS))
+        for symbol in SYMBOLS:
+            with self.subTest(symbol=symbol):
+                self.assertEqual(
+                    results[symbol]["delivery_id"],
+                    EXPECTED_IDENTITIES[symbol]["delivery_id"],
+                )
+                self.assertEqual(
+                    results[symbol]["receipt_sha256"],
+                    EXPECTED_DELIVERY_RESULTS[symbol]["receipt_sha256"],
+                )
+                self.assertEqual(
+                    results[symbol]["state_sha256"],
+                    EXPECTED_DELIVERY_RESULTS[symbol]["state_sha256"],
+                )
+                self.assertEqual(results[symbol]["sender_calls"], 1)
+                self.assertEqual(results[symbol]["first_status"], "DELIVERED")
+                self.assertEqual(
+                    results[symbol]["restart_status"],
+                    "DUPLICATE_SUPPRESSED",
+                )
+
+    def test_delivery_boundary_rejects_unknown_identity_set(self):
+        changed = json.loads(json.dumps(self.identities))
+        changed["BTCUSDT"]["delivery_id"] = "a" * 64
+        with self.assertRaises(P9AuditError):
+            _audit_delivery_replay(changed)
 
     def test_adversarial_index_sha_is_frozen(self):
         self.assertEqual(self.result.index_sha256, EXPECTED_INDEX_SHA256)
