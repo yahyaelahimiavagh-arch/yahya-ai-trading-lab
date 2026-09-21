@@ -42,8 +42,6 @@ from .transport import (
     TELEGRAM_TRANSPORT_ID,
     TelegramCredentials,
     TelegramDeliveryReceipt,
-    TelegramCredentials,
-    TelegramDeliveryReceipt,
     TelegramTransportError,
     TelegramTransportPolicy,
 )
@@ -81,20 +79,6 @@ EXPECTED_DELIVERY_REPLAY = {
         "state_sha256":
             "9f60be0e7f53f13203191734eb0f3f4e706529d10801b42f5bbe2f837323eb13",
         "telegram_message_id": 9102,
-    },
-}
-EXPECTED_DELIVERY_RESULTS = {
-    "BTCUSDT": {
-        "receipt_sha256":
-            "3227c782954cd702f37ee47c20afb84a8f70995a0ffba9ff390b74e962e9d39c",
-        "state_sha256":
-            "bde63ec6a33bcfb24c6873e09897a01d5c3da54317a8a169e9d2ec76c6f9b2ee",
-    },
-    "ETHUSDT": {
-        "receipt_sha256":
-            "caac64faa4a4ef313d1e1a8903ad966f9c14f444a023bd990a73c7c7282e9517",
-        "state_sha256":
-            "9f60be0e7f53f13203191734eb0f3f4e706529d10801b42f5bbe2f837323eb13",
     },
 }
 EXPECTED_IDENTITIES = {
@@ -349,99 +333,6 @@ def _audit_identity_set():
     ):
         raise P9AuditError("P9 accepted identity set changed")
     return fixtures, identities, identity_set_sha
-
-
-def _audit_delivery_replay(identities):
-    """Recompute delivery acknowledgement and restart dedupe with no real network."""
-
-    if identities != EXPECTED_IDENTITIES:
-        raise P9AuditError("P9 delivery replay received unknown identities")
-
-    credentials = TelegramCredentials(
-        "".join(("123456789", ":", "A" * 30)),
-        "".join(("-", "100", "1234567890")),
-    )
-    transport_policy = TelegramTransportPolicy()
-    results = {}
-
-    for offset, symbol in enumerate(SYMBOLS, start=1):
-        fixture, observed = _accepted_fixture(symbol)
-        batch = notification_batch_from_record(
-            json.loads(fixture.canonical_batch_json)
-        )
-        message = batch.notifications[0]
-        rendered = format_notification(message)
-        calls = []
-
-        def sender(
-            supplied_message,
-            supplied_rendered,
-            supplied_credentials,
-            *,
-            expected_message=message,
-            expected_rendered=rendered,
-        ):
-            if (
-                supplied_message != expected_message
-                or supplied_rendered != expected_rendered
-                or supplied_credentials is not credentials
-            ):
-                raise P9AuditError("P9 delivery sender binding changed")
-            calls.append(supplied_message.message_sha256)
-            return TelegramDeliveryReceipt(
-                notification_sha256=supplied_message.message_sha256,
-                formatted_sha256=supplied_rendered.formatted_sha256,
-                telegram_message_id=9_100 + offset,
-                policy_sha256=transport_policy.policy_sha256,
-            )
-
-        def no_sleep(seconds):
-            raise P9AuditError("P9 accepted delivery unexpectedly retried")
-
-        first = guarded_send(
-            message,
-            rendered,
-            credentials,
-            state=DeliveryState(),
-            sender=sender,
-            sleep_fn=no_sleep,
-        )
-        second = guarded_send(
-            message,
-            rendered,
-            credentials,
-            state=first.state,
-            sender=sender,
-            sleep_fn=no_sleep,
-        )
-        expected_delivery = EXPECTED_DELIVERY_RESULTS[symbol]
-        if (
-            observed != identities[symbol]
-            or first.status is not DeliveryStatus.DELIVERED
-            or second.status is not DeliveryStatus.DUPLICATE_SUPPRESSED
-            or first.delivery_id != identities[symbol]["delivery_id"]
-            or second.delivery_id != first.delivery_id
-            or first.receipt_sha256 != expected_delivery["receipt_sha256"]
-            or second.receipt_sha256 != first.receipt_sha256
-            or first.state.state_sha256 != expected_delivery["state_sha256"]
-            or second.state != first.state
-            or first.attempts != 1
-            or first.wait_seconds != ()
-            or second.attempts != 0
-            or second.wait_seconds != ()
-            or len(calls) != 1
-        ):
-            raise P9AuditError("P9 delivery or restart dedupe boundary changed")
-
-        results[symbol] = {
-            "delivery_id": first.delivery_id,
-            "receipt_sha256": first.receipt_sha256,
-            "state_sha256": first.state.state_sha256,
-            "sender_calls": len(calls),
-            "first_status": first.status.value,
-            "restart_status": second.status.value,
-        }
-    return results
 
 
 def _audit_delivery_replay(fixtures):
@@ -849,13 +740,7 @@ def audit_p9(evidence_dir):
         ) = _audit_policy_hashes()
         source_safe = _audit_source_safety()
         fixtures, identities, identity_set_sha = _audit_identity_set()
-        delivery_results = _audit_delivery_replay(identities)
-        if any(
-            delivery_results[symbol]["delivery_id"]
-            != identities[symbol]["delivery_id"]
-            for symbol in SYMBOLS
-        ):
-            raise P9AuditError("P9 delivery identity replay changed")
+        delivery_replay, delivery_replay_set_sha = _audit_delivery_replay(fixtures)
 
         replay = run_adversarial_notification_matrix(fixtures)
         replay_again = run_adversarial_notification_matrix(fixtures)
