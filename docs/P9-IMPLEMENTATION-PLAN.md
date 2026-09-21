@@ -299,7 +299,10 @@ The audit freezes and independently recomputes:
 - frozen P9-005 matrix index SHA-256:
   `30a2c7ff705e9ecc3e83d5fa6b7ec38f9e432a6f6cd9a7f9ae531ca8b040c063`;
 - source-safety confinement of network/environment authority to the accepted
-  `transport.py` boundary.
+  `transport.py` boundary;
+- an independent mocked delivery replay for both approved symbols that must produce
+  `DELIVERED -> DUPLICATE_SUPPRESSED`, exactly one sender call, frozen
+  delivery/receipt/state identities and zero retry sleeps.
 
 P9-006 adds no notification semantics, no transport capability, no runner command,
 no state mutation authority and no new dependency. Acceptance remains offline and
