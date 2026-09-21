@@ -42,6 +42,8 @@ from .transport import (
     TELEGRAM_TRANSPORT_ID,
     TelegramCredentials,
     TelegramDeliveryReceipt,
+    TelegramCredentials,
+    TelegramDeliveryReceipt,
     TelegramTransportError,
     TelegramTransportPolicy,
 )
@@ -62,6 +64,25 @@ EXPECTED_INDEX_SHA256 = (
 EXPECTED_IDENTITY_SET_SHA256 = (
     "37531b4283d3e7da22040b28eb5c73dfb76d7281938b9170e6d6d31a238206e1"
 )
+EXPECTED_DELIVERY_REPLAY_SET_SHA256 = (
+    "b0fe40c76b57034eb84568f9ee95bdd36558f8eae665c4f71fee14fd0a12ba30"
+)
+EXPECTED_DELIVERY_REPLAY = {
+    "BTCUSDT": {
+        "receipt_sha256":
+            "3227c782954cd702f37ee47c20afb84a8f70995a0ffba9ff390b74e962e9d39c",
+        "state_sha256":
+            "bde63ec6a33bcfb24c6873e09897a01d5c3da54317a8a169e9d2ec76c6f9b2ee",
+        "telegram_message_id": 9101,
+    },
+    "ETHUSDT": {
+        "receipt_sha256":
+            "caac64faa4a4ef313d1e1a8903ad966f9c14f444a023bd990a73c7c7282e9517",
+        "state_sha256":
+            "9f60be0e7f53f13203191734eb0f3f4e706529d10801b42f5bbe2f837323eb13",
+        "telegram_message_id": 9102,
+    },
+}
 EXPECTED_DELIVERY_RESULTS = {
     "BTCUSDT": {
         "receipt_sha256":
@@ -423,6 +444,105 @@ def _audit_delivery_replay(identities):
     return results
 
 
+def _audit_delivery_replay(fixtures):
+    if (
+        not isinstance(fixtures, dict)
+        or set(fixtures) != set(SYMBOLS)
+        or any(
+            not isinstance(fixtures[symbol], NotificationAcceptedFixture)
+            for symbol in SYMBOLS
+        )
+    ):
+        raise P9AuditError("P9 delivery replay fixture set is invalid")
+
+    replay = {}
+    for symbol in SYMBOLS:
+        fixture = fixtures[symbol]
+        batch = notification_batch_from_record(
+            json.loads(fixture.canonical_batch_json)
+        )
+        if len(batch.notifications) != 1:
+            raise P9AuditError("P9 delivery replay batch is invalid")
+        message = batch.notifications[0]
+        formatted = format_notification(message)
+        expected = EXPECTED_DELIVERY_REPLAY[symbol]
+        calls = []
+        sleeps = []
+
+        credentials = TelegramCredentials(
+            "".join(("123456789", ":", "A" * 30)),
+            "".join(("-", "100", "1234567890")),
+        )
+
+        def sender(candidate, rendered, supplied_credentials):
+            if (
+                candidate != message
+                or rendered != formatted
+                or supplied_credentials != credentials
+            ):
+                raise P9AuditError("P9 mocked delivery replay input changed")
+            calls.append(candidate.message_sha256)
+            return TelegramDeliveryReceipt(
+                notification_sha256=candidate.message_sha256,
+                formatted_sha256=rendered.formatted_sha256,
+                telegram_message_id=expected["telegram_message_id"],
+                policy_sha256=TelegramTransportPolicy().policy_sha256,
+            )
+
+        def sleep_fn(seconds):
+            sleeps.append(seconds)
+
+        first = guarded_send(
+            message,
+            formatted,
+            credentials,
+            sender=sender,
+            sleep_fn=sleep_fn,
+        )
+        second = guarded_send(
+            message,
+            formatted,
+            credentials,
+            state=first.state,
+            sender=sender,
+            sleep_fn=sleep_fn,
+        )
+
+        observed = {
+            "receipt_sha256": first.receipt_sha256,
+            "state_sha256": first.state.state_sha256,
+            "telegram_message_id": first.telegram_message_id,
+        }
+        if (
+            first.status is not DeliveryStatus.DELIVERED
+            or second.status is not DeliveryStatus.DUPLICATE_SUPPRESSED
+            or first.delivery_id != EXPECTED_IDENTITIES[symbol]["delivery_id"]
+            or second.delivery_id != first.delivery_id
+            or first.notification_sha256
+            != EXPECTED_IDENTITIES[symbol]["message_sha256"]
+            or first.formatted_sha256
+            != EXPECTED_IDENTITIES[symbol]["formatted_sha256"]
+            or first.attempts != 1
+            or first.wait_seconds != ()
+            or second.attempts != 0
+            or second.wait_seconds != ()
+            or second.state != first.state
+            or observed != expected
+            or calls != [message.message_sha256]
+            or sleeps
+        ):
+            raise P9AuditError("P9 independent delivery replay changed")
+        replay[symbol] = observed
+
+    replay_set_sha = _sha256(_compact_json(replay))
+    if (
+        replay != EXPECTED_DELIVERY_REPLAY
+        or replay_set_sha != EXPECTED_DELIVERY_REPLAY_SET_SHA256
+    ):
+        raise P9AuditError("P9 delivery replay identity set changed")
+    return replay, replay_set_sha
+
+
 def _filename(symbol, scenario):
     return f"{symbol.lower()}-{scenario.lower().replace('_', '-')}.json"
 
@@ -683,6 +803,7 @@ class P9AuditResult:
     transport_policy_sha256: str
     delivery_policy_sha256: str
     identity_set_sha256: str
+    delivery_replay_set_sha256: str
     index_sha256: str
     exact_outcomes: bool
     replay_equal: bool
@@ -702,6 +823,8 @@ class P9AuditResult:
             or self.transport_policy_sha256 != EXPECTED_TRANSPORT_POLICY_SHA256
             or self.delivery_policy_sha256 != EXPECTED_DELIVERY_POLICY_SHA256
             or self.identity_set_sha256 != EXPECTED_IDENTITY_SET_SHA256
+            or self.delivery_replay_set_sha256
+            != EXPECTED_DELIVERY_REPLAY_SET_SHA256
             or self.index_sha256 != EXPECTED_INDEX_SHA256
             or self.exact_outcomes is not True
             or self.replay_equal is not True
@@ -751,6 +874,8 @@ def audit_p9(evidence_dir):
 
         if identities != EXPECTED_IDENTITIES:
             raise P9AuditError("P9 accepted notification identities changed")
+        if delivery_replay != EXPECTED_DELIVERY_REPLAY:
+            raise P9AuditError("P9 accepted delivery replay changed")
 
         return P9AuditResult(
             symbols=len(SYMBOLS),
@@ -761,6 +886,7 @@ def audit_p9(evidence_dir):
             transport_policy_sha256=transport_policy_sha,
             delivery_policy_sha256=delivery_policy_sha,
             identity_set_sha256=identity_set_sha,
+            delivery_replay_set_sha256=delivery_replay_set_sha,
             index_sha256=_sha256(evidence["p9-005-index.json"]),
             exact_outcomes=True,
             replay_equal=True,
