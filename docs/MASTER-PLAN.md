@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P9 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P10-006 COST- AND RISK-AWARE FORWARD ECONOMICS — CANDIDATE**
+قدم جاری: **P10-007 CONSISTENCY / REGIME / FAILURE-RECOVERY GATE — CANDIDATE**
 
 ## منشأ و حدود سند
 
@@ -83,7 +83,7 @@ Dashboard به‌تنهایی معیار موفقیت اقتصادی نیستن�
 | P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | **RUNTIME ACCEPTED — checkpoint `93b9d87`** |
 | P8 Dashboard | نمایش وضعیت، معاملات، عملکرد و خطاها | **RUNTIME ACCEPTED — checkpoint `fe973e8`** |
 | P9 Telegram | هشدار و notification محدود طبق قواعد امنیتی | **RUNTIME ACCEPTED — checkpoint `60d7e267`** |
-| P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | **P10-006 CURRENT CANDIDATE** |
+| P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | **P10-007 CURRENT CANDIDATE** |
 | P11 Tiny Live Candidate | فقط پس از پذیرش P10، ممیزی امنیت، الزامات حساب و تأیید صریح | LOCKED |
 
 ## نمای پیشرفت فعلی — 2026-09-20
@@ -1009,3 +1009,24 @@ portfolio نهایی، fee، slippage، realized/unrealized PnL و trade lifecyc
 گزارش ادعای shared account ندارد. P10-006 هیچ verdict نهایی PASS/FAIL صادر
 نمی‌کند، evidence را ارتقا نمی‌دهد و P11 را باز نمی‌کند. داده CI ساختگی است و
 real forward evidence محسوب نمی‌شود.
+
+
+## P10-006 acceptance / P10-007 candidate — 2026-09-21
+
+P10-006 با PR #73 و exact Final HEAD
+`21b904d2b025396784c5f86a7602c8be7c411b75` روی matching Actions
+`35612692034` پذیرفته شد؛ هر دو job PASS، full suite برابر **1403/1403**،
+focused P10-005 برابر **12/12** و focused P10-006 برابر **26/26** بود.
+mocked economics report SHA-256:
+`36f3e1dcb35d002b286c81b1b192056789e8294777ecc49f5d03d9affe469c4e`.
+PR #73 با همان expected HEAD به روش squash merge شد و checkpoint جدید `main`
+برابر `846be6190ce936425e546ecca7528fed979aab7f` است.
+
+P10-007 threshold جدیدی تعریف نمی‌کند. همان هفت criterion ثبت‌شده در P10-002
+را دقیقاً یک‌بار ارزیابی می‌کند. gateهای sample-dependent تا رسیدن به حداقل sample
+`INSUFFICIENT_DATA` می‌مانند؛ breach قطعی drawdown، out-of-regime entry،
+failure/recovery یا risk-control می‌تواند زودتر `FAIL` شود. سه segment زمانی
+بدون cherry-pick محاسبه می‌شوند، regime از همان point-in-time forward store
+بازسازی می‌شود و هر Kill Switch latch بدون clear + manual-reset evidence unresolved
+است. `PASS_CANDIDATE` همچنان Paper-only است، evidence را ارتقا نمی‌دهد و P11
+را باز نمی‌کند.
