@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P9 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P10-005 FROZEN FORWARD PAPER RUNNER — CANDIDATE**
+قدم جاری: **P10-006 COST- AND RISK-AWARE FORWARD ECONOMICS — CANDIDATE**
 
 ## منشأ و حدود سند
 
@@ -83,7 +83,7 @@ Dashboard به‌تنهایی معیار موفقیت اقتصادی نیستن�
 | P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | **RUNTIME ACCEPTED — checkpoint `93b9d87`** |
 | P8 Dashboard | نمایش وضعیت، معاملات، عملکرد و خطاها | **RUNTIME ACCEPTED — checkpoint `fe973e8`** |
 | P9 Telegram | هشدار و notification محدود طبق قواعد امنیتی | **RUNTIME ACCEPTED — checkpoint `60d7e267`** |
-| P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | **P10-005 CURRENT CANDIDATE** |
+| P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | **P10-006 CURRENT CANDIDATE** |
 | P11 Tiny Live Candidate | فقط پس از پذیرش P10، ممیزی امنیت، الزامات حساب و تأیید صریح | LOCKED |
 
 ## نمای پیشرفت فعلی — 2026-09-20
@@ -991,3 +991,21 @@ strategy evidence تا P10-010 همچنان `INSUFFICIENT_EVIDENCE` است.
 P10-005 همچنان Paper-only و بدون network/order/credential/AI execution است.
 P10-006 بعد از merge صریح این checkpoint، economics را از evidence همین runner
 محاسبه خواهد کرد. P11 قفل است.
+
+## P10-005 acceptance / P10-006 candidate — 2026-09-21
+
+P10-005 با PR #72، Final HEAD
+`747a7b91b32147aeb809cb669a3bd98fc76c56a7` و matching Actions
+`35580837803` پذیرفته شد؛ هر دو job PASS شدند. PR #72 با همان HEAD به روش
+squash merge شد و checkpoint جدید `main` برابر
+`62c55b675a8efb55c18d4a420a17d2b4a62d65ac` است.
+
+P10-006 فقط economics توصیفی را از exact P10-005 evidence تولید می‌کند. قبل از
+محاسبه، همان store/snapshot دوباره replay و تمام fillها با P2 recost می‌شوند؛
+portfolio نهایی، fee، slippage، realized/unrealized PnL و trade lifecycle باید
+دقیقاً reconcile شوند. مقدارهای undefined و sample ناکافی صریح باقی می‌مانند.
+
+تجمیع BTC/ETH بر پایه جمع دو portfolio مستقل 10,000 quote انجام می‌شود؛ این
+گزارش ادعای shared account ندارد. P10-006 هیچ verdict نهایی PASS/FAIL صادر
+نمی‌کند، evidence را ارتقا نمی‌دهد و P11 را باز نمی‌کند. داده CI ساختگی است و
+real forward evidence محسوب نمی‌شود.
