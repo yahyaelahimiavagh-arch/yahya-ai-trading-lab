@@ -18,6 +18,7 @@ from .delivery import (
     DeliveryGuardError,
     DeliveryState,
     DeliveryStatus,
+    delivery_identity,
     delivery_state_from_record,
     guarded_send,
 )
@@ -270,6 +271,37 @@ def notifier_run(
     state = load_delivery_state(state_path)
     message = batch.notifications[0]
     formatted = format_notification(message)
+    identity = delivery_identity(message, formatted)
+    existing = state.find(identity)
+
+    if existing is not None:
+        if not _source_unchanged(input_path, source_before):
+            raise NotifierRunnerError(NotifierRunnerCode.SOURCE_MUTATED)
+        return {
+            "schema_version": RUNNER_SCHEMA_VERSION,
+            "runner_id": RUNNER_ID,
+            "ok": True,
+            "code": NotifierRunnerCode.DUPLICATE_SUPPRESSED.value,
+            "symbol": symbol,
+            "source_file_sha256": _sha256_bytes(source_before),
+            "batch_sha256": batch.batch_sha256,
+            "notification_sha256": existing.notification_sha256,
+            "formatted_sha256": existing.formatted_sha256,
+            "delivery_id": existing.delivery_id,
+            "delivery_state_sha256": state.state_sha256,
+            "receipt_sha256": existing.receipt_sha256,
+            "telegram_message_id": existing.telegram_message_id,
+            "attempts": 0,
+            "wait_seconds": [],
+            "duplicate_suppressed": True,
+            "source_unchanged": True,
+            "paper_only": True,
+            "live_master_lock": "OFF",
+            "strategy_evidence": "INSUFFICIENT_EVIDENCE",
+            "trade_permission": False,
+            "order_endpoint": False,
+            "ai_direct_execution": False,
+        }
 
     if credentials is None:
         try:
@@ -296,16 +328,11 @@ def notifier_run(
     if not source_unchanged:
         raise NotifierRunnerError(NotifierRunnerCode.SOURCE_MUTATED)
 
-    code = (
-        NotifierRunnerCode.DELIVERED
-        if result.status is DeliveryStatus.DELIVERED
-        else NotifierRunnerCode.DUPLICATE_SUPPRESSED
-    )
     return {
         "schema_version": RUNNER_SCHEMA_VERSION,
         "runner_id": RUNNER_ID,
         "ok": True,
-        "code": code.value,
+        "code": NotifierRunnerCode.DELIVERED.value,
         "symbol": symbol,
         "source_file_sha256": _sha256_bytes(source_before),
         "batch_sha256": batch.batch_sha256,
@@ -317,8 +344,7 @@ def notifier_run(
         "telegram_message_id": result.telegram_message_id,
         "attempts": result.attempts,
         "wait_seconds": list(result.wait_seconds),
-        "duplicate_suppressed":
-            result.status is DeliveryStatus.DUPLICATE_SUPPRESSED,
+        "duplicate_suppressed": False,
         "source_unchanged": True,
         "paper_only": True,
         "live_master_lock": "OFF",
