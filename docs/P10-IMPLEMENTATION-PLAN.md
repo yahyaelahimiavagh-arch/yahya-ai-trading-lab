@@ -1,6 +1,6 @@
 # P10 — Forward / Paper Validation implementation plan
 
-Status: **P9 RUNTIME ACCEPTED / MERGED — P10-001 CURRENT CANDIDATE**
+Status: **P10-001 RUNTIME ACCEPTED / MERGED — P10-002 CURRENT CANDIDATE**
 
 Entry baseline: P9 runtime accepted and merged at checkpoint
 `60d7e267fdd878f513afb2a8febb30d509b61314`. Final P9-006 candidate HEAD
@@ -96,8 +96,15 @@ reconstruction, schema-smuggling rejection, direct comparison with accepted P4
 risk limits, no PASS/Live-ready disposition, and source scan proving no
 data/execution/account/risk/network/provider capability.
 
-Current candidate: branch `p10-001-validation-policy-contracts` from accepted
-P9 checkpoint `60d7e267fdd878f513afb2a8febb30d509b61314`.
+Accepted: PR #68 exact final candidate HEAD
+`ea6532c617b7c78137fc3c396055bc314e70e464` passed matching Actions run
+`35573516304` with both jobs PASS, **1296/1296** complete tests and **21/21**
+focused P10-001 tests. Frozen policy SHA-256:
+`a85981d7ec835b584907bc89f3cff62b662a11d46c163900101ad46a213aa2c2`.
+Frozen preregistration charter SHA-256:
+`9d44d28de13445fcacbf5dad85ec0257ae65d198cf75ec26fb95c81fb1dffa71`.
+PR #68 was squash-merged on `main` at checkpoint
+`326bc85b0c7cf2b456f4a51ad648330b8a9845a0`.
 
 ### P10-002 — Candidate freeze and pre-registered economic gates
 
@@ -117,6 +124,44 @@ No threshold may be inferred from or optimized against future P10 observations.
 Acceptance: frozen candidate/config digest, frozen gate-registry digest,
 P10-001 criterion coverage, no missing/duplicate gate and proof that no forward
 data was consumed before registration.
+
+Current candidate: branch `p10-002-candidate-economic-gates` from accepted
+P10-001 checkpoint `326bc85b0c7cf2b456f4a51ad648330b8a9845a0`.
+
+The single baseline is `TREND_PULLBACK/1.0.0` with configuration SHA-256
+`98301c6ee14e9ee01ffdbb1ca68cdce4c0ea0db6a504fc6e4e280bd9f027e20a`.
+Selection is based only on accepted sample feasibility (31 P3 trades versus
+4 for RANGE_BREAKOUT); both historical candidates remain
+`INSUFFICIENT_EVIDENCE`, and historical return is explicitly not used to
+select the P10 baseline.
+
+Frozen economics and execution context:
+- BTCUSDT + ETHUSDT;
+- 1h primary / 15m context / 4h regime;
+- next-primary-open execution policy;
+- initial Paper equity 10,000 quote units;
+- 10 bps fee + 5 bps adverse slippage;
+- accepted P4 risk policy unchanged.
+
+Pre-registered gates:
+- at least **90 calendar days**;
+- at least **60 completed trades pooled**;
+- at least **20 completed trades per symbol**;
+- net return after fee/slippage at least **+2%**;
+- profit factor after costs at least **1.10**;
+- maximum validation drawdown **8%**;
+- 3 equal validation segments, at least **2 positive**;
+- no segment loss worse than **-4%**;
+- each symbol must have positive net PnL after costs;
+- at least **2 distinct market regimes observed** in the decision stream;
+- entries are allowed only in `TREND_UP`; out-of-regime entries allowed: **0**;
+- unresolved data-quality/reconciliation failures: **0**;
+- safety breaches and entries while Kill Switch is active: **0**;
+- recovery requires a valid clear observation and manual reset;
+- risk-policy violations/order-endpoint/AI-execution events: **0**.
+
+Candidate and gate identities are immutable before P10-003. The validation window,
+forward data and economic evaluation remain unopened.
 
 ### P10-003 — New-data window seal and no-peek boundary
 
