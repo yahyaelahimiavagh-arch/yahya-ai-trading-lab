@@ -2191,3 +2191,59 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
 - No dependency or `uv.lock` change.
 - P9-003 remains closed until exact final-head Actions pass and explicit merge
   approval is received.
+
+
+## P9-002 accepted implementation — 2026-09-21
+
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `7158fbc`**.
+
+- PR #63 exact final candidate HEAD:
+  `7214fcf29ea6a0e295d7f338ef9f9a305c4eb94d`.
+- Matching GitHub Actions: `35536906561` — both jobs PASS.
+- Complete suite: **1175/1175 PASS**.
+- Focused P9-002: **15/15 PASS**.
+- Existing focused P9-001: **21/21 PASS**.
+- PR #63 squash-merged; accepted checkpoint:
+  `7158fbc84287b9327116581d6877f17a68a294a4`.
+- System-status projection preserved `open_trade_count=UNKNOWN` and
+  `snapshot_freshness=UNKNOWN`.
+- Formatter remained `PLAIN_TEXT_NO_PARSE_MODE`.
+- No dependency or `uv.lock` change.
+- No Telegram network call, credentials, inbound command/control, TRADE
+  permission, order endpoint or AI direct execution was introduced.
+
+## P9-003 current candidate — 2026-09-21
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry checkpoint: accepted P9-002 at
+  `7158fbc84287b9327116581d6877f17a68a294a4`.
+- Branch: `p9-003-outbound-telegram-transport`.
+- Adds separate frozen transport policy `P9_TELEGRAM_SEND_MESSAGE_V1`; the
+  P9-001 notification contract policy remains unchanged.
+- Exact transport allowlist:
+  - host `api.telegram.org`;
+  - port `443`;
+  - HTTPS/TLS required with certificate and hostname verification;
+  - method `POST`;
+  - only `/bot<token>/sendMessage`;
+  - JSON body contains only destination `chat_id` and canonical P9 text.
+- Dedicated credential variables:
+  `YATL_TELEGRAM_BOT_TOKEN` and `YATL_TELEGRAM_CHAT_ID`.
+- Token/destination are hidden from repr, errors and delivery receipt material.
+- Timeout is fixed at 10 seconds; request and response sizes are bounded.
+- Redirects are rejected; no proxy mechanism exists.
+- Provider error bodies/descriptions are never surfaced in exceptions.
+- Transport accepts only canonical P9-002 formatted output bound to the matching
+  immutable notification message.
+- Success receipt is secret-free and carries notification SHA, formatted SHA,
+  transport-policy SHA and Telegram message ID only.
+- CI/runtime use a mocked connection; no real credential or external Telegram
+  request is used for acceptance.
+- No inbound updates, commands, callbacks, webhook receiver, polling receiver,
+  execution/live control, account/risk import, RiskAuthorization/quantity
+  authority, strategy optimizer, TRADE permission, order endpoint or AI direct
+  execution is added.
+- No dependency or `uv.lock` change.
+- P9-004 remains closed until exact final-head Actions pass and explicit merge
+  approval is received.

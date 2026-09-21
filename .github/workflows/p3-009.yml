@@ -101,6 +101,8 @@ jobs:
         run: uv run --locked python -m unittest discover -s tests -p 'test_notification_contracts.py' -v
       - name: P9 upstream projection and formatter focused gate
         run: uv run --locked python -m unittest discover -s tests -p 'test_notification_projection.py' -v
+      - name: P9 outbound-only Telegram transport focused gate
+        run: uv run --locked python -m unittest discover -s tests -p 'test_telegram_transport.py' -v
       - name: Compile and whitespace gates
         run: |
           uv run --locked python -m compileall -q yatl
@@ -157,9 +159,13 @@ jobs:
           assert_absent 'from yatl\.analytics|import yatl\.analytics|sqlite3|local_paper|analyst_journal|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|urllib|http\.client|websockets|socket|requests|httpx|aiohttp|openai|anthropic|os\.getenv|os\.environ' yatl/dashboard/scenarios.py
           assert_absent 'from yatl\.analytics|import yatl\.analytics|sqlite3|local_paper|analyst_journal|from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|urllib|http\.client|websockets|socket|requests|httpx|aiohttp|openai|anthropic|os\.getenv|os\.environ' yatl/dashboard/audit.py
           assert_absent 'api/v3/(order|orderList)|/fapi|/dapi|withdraw\(' yatl/notifications
-          assert_absent 'from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|urllib|http\.client|websockets|socket|requests|httpx|aiohttp' yatl/notifications
-          assert_absent 'os\.getenv|os\.environ|dotenv|API_KEY|API_SECRET|openai|anthropic' yatl/notifications
+          assert_absent 'from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk' yatl/notifications
+          assert_absent 'dotenv|API_KEY|API_SECRET|openai|anthropic' yatl/notifications
           assert_absent 'from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|urllib|http\.client|websockets|socket|requests|httpx|aiohttp|os\.getenv|os\.environ|openai|anthropic' yatl/notifications/projection.py yatl/notifications/formatter.py
+          assert_absent 'from yatl\.execution|import yatl\.execution|from yatl\.account|import yatl\.account|from yatl\.risk|import yatl\.risk|urllib|websockets|socket|requests|httpx|aiohttp|openai|anthropic|input\(|eval\(|exec\(' yatl/notifications/transport.py
+          assert_absent 'getUpdates|setWebhook|deleteWebhook|answerCallbackQuery|editMessageText|sendPhoto|sendDocument|forwardMessage' yatl/notifications/transport.py
+          transport_capability_files="$(git grep -lE 'http\.client|os\.environ|ssl\.create_default_context' -- yatl/notifications || true)"
+          test "$transport_capability_files" = "yatl/notifications/transport.py"
       - name: P4 risk contract runtime
         run: uv run --locked python -m yatl risk-contract-check
       - name: P4 exact sizing runtime
@@ -286,6 +292,8 @@ jobs:
         run: uv run --locked python -m yatl.notifications.contract_runtime
       - name: P9 upstream projection and formatter runtime
         run: uv run --locked python -m yatl.notifications.projection_runtime
+      - name: P9 outbound-only Telegram transport runtime
+        run: uv run --locked python -m yatl.notifications.transport_runtime
       - name: Publish P5-009 adversarial evidence
         uses: actions/upload-artifact@v4
         with:
