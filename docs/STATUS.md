@@ -2429,3 +2429,54 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
 - No dependency or `uv.lock` change.
 - P10 remains closed until this exact final audit passes matching Final-HEAD
   Actions and explicit merge approval.
+
+
+## P9-006 accepted / P9 closed — 2026-09-21
+
+Status: **RUNTIME ACCEPTED AND MERGED — P9 CLOSED**.
+
+- PR #67 exact final candidate HEAD:
+  `f7ff546d7310876fd969f03c4f2d153137889de1`.
+- Matching GitHub Actions:
+  `35566103007` — both jobs PASS.
+- Complete suite: **1275/1275 PASS**.
+- Focused P9-006 independent final audit: **34/34 PASS**.
+- Frozen notification policy SHA-256:
+  `e5274de931300114fccffc772c971c99b5ba140a2632d98f897687e591be0a35`.
+- Frozen transport policy SHA-256:
+  `26428411750db1d2290e9d54fc60b831f5497077822e3e26be63a60acf9cc9d4`.
+- Frozen delivery policy SHA-256:
+  `6d180d548e5294cb7974ce4023ddff2f83bbbe2b707beb25cfdb76f81bb87533`.
+- Accepted notification identity-set SHA-256:
+  `37531b4283d3e7da22040b28eb5c73dfb76d7281938b9170e6d6d31a238206e1`.
+- Independent delivery-replay-set SHA-256:
+  `b0fe40c76b57034eb84568f9ee95bdd36558f8eae665c4f71fee14fd0a12ba30`.
+- P9-005 adversarial matrix index SHA-256:
+  `30a2c7ff705e9ecc3e83d5fa6b7ec38f9e432a6f6cd9a7f9ae531ca8b040c063`.
+- No real Telegram credential/network request was part of acceptance.
+- PR #67 squash-merged; final P9 checkpoint:
+  `60d7e267fdd878f513afb2a8febb30d509b61314`.
+
+## P10-001 current candidate — 2026-09-21
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry baseline: final P9 checkpoint
+  `60d7e267fdd878f513afb2a8febb30d509b61314`.
+- Branch: `p10-001-validation-policy-contracts`.
+- Adds frozen `P10_VALIDATION_V1` preregistration-only policy.
+- Freezes seven evaluation dimensions:
+  Net PnL after costs, max drawdown, sample size, consistency, regime stability,
+  failure/recovery and risk controls.
+- Net PnL is explicitly after fee/slippage.
+- Point-in-time, no-lookahead and no-post-open-tuning semantics are mandatory.
+- Inherits accepted P4 limits unchanged:
+  risk/trade 1%, session loss 2%, drawdown 10%, consecutive losses 3.
+- Numeric P10 economic thresholds are intentionally **not registered in P10-001**;
+  they belong to P10-002 and must be frozen before the forward window opens.
+- Candidate remains unfrozen; validation window remains closed; new forward data
+  collection/economic evaluation remain unauthorized.
+- Strategy evidence remains `INSUFFICIENT_EVIDENCE`.
+- No execution/account/risk/network/provider capability, credential, trade
+  permission, order endpoint, Live candidate or AI direct execution is added.
+- P10-002 remains closed until exact Final-HEAD CI and explicit merge approval.
