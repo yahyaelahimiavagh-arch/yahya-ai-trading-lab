@@ -11,7 +11,7 @@ import os
 import tempfile
 from pathlib import Path
 
-from yatl.notifications import SYMBOLS
+from yatl.notifications.contracts import SYMBOLS
 from yatl.notifications.runner import NotifierRunnerError, notifier_run
 
 from .cli import ValidationCliError, validation_summary
