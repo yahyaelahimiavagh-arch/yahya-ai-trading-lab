@@ -2979,3 +2979,33 @@ This section supersedes the preceding P10 operational monitoring candidate statu
 - Next operational action: deploy the accepted monitoring units on the VPS,
   verify the local Dashboard and one outbound Telegram delivery, then keep the
   real P10 forward collector running unchanged.
+
+## P10 VPS monitoring runtime acceptance — 2026-09-22
+
+Status: **RUNTIME ACCEPTED — DASHBOARD + TELEGRAM DEPLOYED — P11 LOCKED**.
+
+- Deployment base on VPS was current `main` checkpoint
+  `2c244e38c29d938b824400882151cb1bcb4ea05f`, including PR #81's persistent
+  loopback HTTP service install target.
+- Dashboard builder produced the real P10 warm-up page from the accepted validation
+  summary. The HTTP service is enabled and active, binds only to `127.0.0.1:8765`,
+  and returned `HTTP/1.0 200 OK` on the VPS. Operator access was verified through
+  an SSH tunnel; the page showed `NOT READY`,
+  `FORWARD_WARMUP_NOT_COMPLETE`, `INSUFFICIENT_EVIDENCE` and `P11 LOCKED`.
+- The outbound-only Telegram monitor completed a real delivery at 2026-09-22
+  09:16 UTC: BTCUSDT and ETHUSDT both returned `DELIVERED` under the accepted
+  P9 guarded transport, with overall `DELIVERY_COMPLETE`.
+- Immediate replay at 09:18 UTC returned `DUPLICATE_SUPPRESSED` with
+  `duplicate_suppressed=true` for both symbols and produced no duplicate messages.
+- The Telegram timer is enabled and active; its registered schedule is daily
+  `05:10 UTC / 08:10 Istanbul`. The first scheduled trigger after acceptance is
+  2026-09-23 05:10 UTC.
+- Telegram credentials remain outside Git in the root-owned VPS environment file;
+  no secret value is recorded in repository documentation. The runtime file was
+  verified as group-readable only for `yatl` with mode `0640`.
+- Monitoring remains information-only and does not modify candidate, gates, forward
+  evidence, account state, risk authority or exchange execution. PAPER ONLY and
+  `LIVE_MASTER_LOCK=OFF` remain enforced; P11 remains locked.
+- Operational next step is only continued real forward observation. The earliest
+  legal Paper decision remains 2026-09-30 12:00 UTC / 15:00 Istanbul, while the
+  registered 90-day economic gate cannot mature before 2026-12-21 00:00 UTC.
