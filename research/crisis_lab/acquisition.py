@@ -118,6 +118,9 @@ class ArchiveEvidence:
     downloaded_zip_sha256: str
     extracted_csv_sha256: str
     rows_selected: int
+    checksum_transport: dict[str, object]
+    archive_transport: dict[str, object]
+    archive_cache_hit: bool
     raw_zip_relative_path: str
     checksum_relative_path: str
     extracted_csv_relative_path: str
@@ -133,6 +136,9 @@ class ArchiveEvidence:
             "downloaded_zip_sha256": self.downloaded_zip_sha256,
             "extracted_csv_sha256": self.extracted_csv_sha256,
             "rows_selected": self.rows_selected,
+            "checksum_transport": self.checksum_transport,
+            "archive_transport": self.archive_transport,
+            "archive_cache_hit": self.archive_cache_hit,
             "raw_zip_relative_path": self.raw_zip_relative_path,
             "checksum_relative_path": self.checksum_relative_path,
             "extracted_csv_relative_path": self.extracted_csv_relative_path,
@@ -168,6 +174,42 @@ class HttpsFetcher:
             _NoRedirect(),
             urllib.request.HTTPSHandler(context=ssl.create_default_context()),
         )
+        self._transport_history: dict[str, list[dict[str, object]]] = {}
+
+    def _record_transport(
+        self,
+        url: str,
+        *,
+        attempt: int,
+        outcome: str,
+        status: int | None = None,
+        error_class: str | None = None,
+    ) -> None:
+        event: dict[str, object] = {
+            "attempt": attempt,
+            "outcome": outcome,
+        }
+        if status is not None:
+            event["http_status"] = status
+        if error_class is not None:
+            event["error_class"] = error_class
+        self._transport_history.setdefault(url, []).append(event)
+
+    def transport_summary(self, url: str) -> dict[str, object]:
+        events = tuple(self._transport_history.get(url, ()))
+        return {
+            "attempts": len(events),
+            "failures": [
+                dict(item)
+                for item in events
+                if item.get("outcome") != "SUCCESS"
+            ],
+            "final_outcome": (
+                events[-1]["outcome"]
+                if events
+                else "NOT_ATTEMPTED"
+            ),
+        }
 
     def fetch(self, url: str, *, max_bytes: int) -> bytes:
         _validate_https_url(url, self._allowed_hosts)
@@ -207,15 +249,34 @@ class HttpsFetcher:
                         raise AcquisitionError(
                             "response exceeds configured size limit"
                         )
+                    self._record_transport(
+                        url,
+                        attempt=attempt,
+                        outcome="SUCCESS",
+                        status=status,
+                    )
                     return payload
             except urllib.error.HTTPError as exc:
                 last_error = exc
+                self._record_transport(
+                    url,
+                    attempt=attempt,
+                    outcome="HTTP_ERROR",
+                    status=exc.code,
+                    error_class=exc.__class__.__name__,
+                )
                 if exc.code == 404:
                     break
                 if exc.code != 429 and not (500 <= exc.code <= 599):
                     break
             except (urllib.error.URLError, TimeoutError, OSError) as exc:
                 last_error = exc
+                self._record_transport(
+                    url,
+                    attempt=attempt,
+                    outcome="TRANSPORT_ERROR",
+                    error_class=exc.__class__.__name__,
+                )
             if attempt < self._attempts:
                 self._sleeper(float(attempt))
         if isinstance(last_error, urllib.error.HTTPError):
@@ -699,23 +760,76 @@ def _canonical_csv(rows: Sequence[CanonicalRow]) -> bytes:
     return output.getvalue().encode("utf-8")
 
 
+def _raw_base(archive: ArchiveObject) -> Path:
+    return (
+        Path("raw") / "binance-vision" / "spot" / archive.cadence
+        / "klines" / archive.symbol / archive.interval
+    )
+
+
+def _raw_zip_relative_path(
+    archive: ArchiveObject,
+    zip_sha256: str,
+) -> Path:
+    stem = archive.member_name[:-4]
+    return _raw_base(archive) / f"{stem}-{zip_sha256[:16]}.zip"
+
+
 def _raw_relative_paths(
     archive: ArchiveObject,
     zip_sha256: str,
     csv_sha256: str,
 ) -> tuple[Path, Path, Path]:
-    base = (
-        Path("raw") / "binance-vision" / "spot" / archive.cadence
-        / "klines" / archive.symbol / archive.interval
-    )
+    base = _raw_base(archive)
     stem = archive.member_name[:-4]
-    zip_path = base / f"{stem}-{zip_sha256[:16]}.zip"
+    zip_path = _raw_zip_relative_path(archive, zip_sha256)
     checksum_path = base / f"{stem}-{zip_sha256[:16]}.CHECKSUM"
     extracted_path = (
         Path("extracted") / "binance-vision" / archive.symbol
         / archive.interval / f"{stem}-{csv_sha256[:16]}.csv"
     )
     return zip_path, checksum_path, extracted_path
+
+
+def _read_cached_zip(
+    runtime_root: Path,
+    relative_path: Path,
+    expected_sha256: str,
+) -> bytes | None:
+    root = _ensure_runtime_root(runtime_root)
+    target = assert_safe_runtime_path(root / relative_path)
+    try:
+        target.relative_to(root)
+    except ValueError:
+        raise AcquisitionError(
+            "cached archive escaped the research root"
+        ) from None
+    if not target.exists():
+        return None
+    if target.is_symlink():
+        raise AcquisitionError("cached archive symlink is forbidden")
+    try:
+        payload = target.read_bytes()
+    except OSError:
+        raise AcquisitionError("cannot read cached archive") from None
+    if _sha256(payload) != expected_sha256:
+        raise AcquisitionError(
+            "cached archive SHA-256 conflicts with official checksum"
+        )
+    return payload
+
+
+def _transport_summary(fetcher, url: str) -> dict[str, object]:
+    method = getattr(fetcher, "transport_summary", None)
+    if callable(method):
+        summary = method(url)
+        if isinstance(summary, dict):
+            return summary
+    return {
+        "attempts": None,
+        "failures": [],
+        "final_outcome": "UNINSTRUMENTED_TEST_DOUBLE",
+    }
 
 
 def _acquire_archive_object(
@@ -728,11 +842,19 @@ def _acquire_archive_object(
     checksum_payload = fetcher.fetch(
         archive.checksum_url, max_bytes=_MAX_CHECKSUM_BYTES
     )
-    zip_payload = fetcher.fetch(
-        archive.url, max_bytes=_MAX_ARCHIVE_BYTES
-    )
     filename = Path(urllib.parse.urlsplit(archive.url).path).name
     expected_sha = parse_checksum(checksum_payload, filename)
+    cached_relative = _raw_zip_relative_path(archive, expected_sha)
+    zip_payload = _read_cached_zip(
+        runtime_root,
+        cached_relative,
+        expected_sha,
+    )
+    archive_cache_hit = zip_payload is not None
+    if zip_payload is None:
+        zip_payload = fetcher.fetch(
+            archive.url, max_bytes=_MAX_ARCHIVE_BYTES
+        )
     actual_sha = _sha256(zip_payload)
     if actual_sha != expected_sha:
         raise AcquisitionError(
@@ -762,6 +884,19 @@ def _acquire_archive_object(
         downloaded_zip_sha256=actual_sha,
         extracted_csv_sha256=csv_sha,
         rows_selected=len(rows),
+        checksum_transport=_transport_summary(
+            fetcher, archive.checksum_url
+        ),
+        archive_transport=(
+            {
+                "attempts": 0,
+                "failures": [],
+                "final_outcome": "CACHE_HIT",
+            }
+            if archive_cache_hit
+            else _transport_summary(fetcher, archive.url)
+        ),
+        archive_cache_hit=archive_cache_hit,
         raw_zip_relative_path=raw_rel,
         checksum_relative_path=checksum_rel,
         extracted_csv_relative_path=extracted_rel,
@@ -819,14 +954,27 @@ def verify_rest_boundaries(
     fetcher,
 ) -> dict[str, object]:
     if not rows:
-        return {"enabled": True, "status": "NO_ROWS", "checked_points": 0}
+        return {
+            "enabled": True,
+            "status": "NO_ROWS",
+            "checked_points": 0,
+            "transport": [],
+        }
     targets = [rows[0]]
     if rows[-1].open_time_ms != rows[0].open_time_ms:
         targets.append(rows[-1])
+    transport: list[dict[str, object]] = []
     for target in targets:
+        url = _rest_kline_url(symbol, interval, target.open_time_ms)
         payload = fetcher.fetch(
-            _rest_kline_url(symbol, interval, target.open_time_ms),
+            url,
             max_bytes=_MAX_REST_BYTES,
+        )
+        transport.append(
+            {
+                "open_time_ms": target.open_time_ms,
+                "transport": _transport_summary(fetcher, url),
+            }
         )
         try:
             body = json.loads(payload.decode("utf-8"))
@@ -847,11 +995,13 @@ def verify_rest_boundaries(
                 "enabled": True,
                 "status": "MISMATCH",
                 "checked_points": len(targets),
+                "transport": transport,
             }
     return {
         "enabled": True,
         "status": "MATCH",
         "checked_points": len(targets),
+        "transport": transport,
     }
 
 
@@ -929,6 +1079,7 @@ def acquire_dataset(
             "enabled": False,
             "status": "NOT_RUN",
             "checked_points": 0,
+            "transport": [],
         }
     else:
         rest_verification = verify_rest_boundaries(
