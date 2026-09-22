@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh YATL P10 monitoring dashboard after hourly collection
+
+[Timer]
+OnCalendar=*-*-* *:07:00
+Persistent=true
+AccuracySec=1min
+Unit=yatl-p10-monitor-dashboard.service
+
+[Install]
+WantedBy=timers.target
