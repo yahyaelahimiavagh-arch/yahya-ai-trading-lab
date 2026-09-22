@@ -598,3 +598,26 @@ The optional operational monitoring extension is defined in
 read-only Dashboard plus the already accepted P9 outbound-only Telegram delivery
 boundary. Monitoring may be disabled independently and cannot mutate P10 source
 evidence or create execution authority.
+
+
+## P10 operational monitoring acceptance — 2026-09-22
+
+- Entry checkpoint:
+  `73815feb71947cf49f6d6ddace50b6ad49a4088b`.
+- PR #80 exact Final HEAD:
+  `d27d2d06db2717a9be4bfd36a3f7c2a1a55b5651`.
+- Matching Actions:
+  `35702529008`; both jobs PASS.
+- Complete suite: **1529/1529 PASS**.
+- Focused monitor: **8/8 PASS**.
+- Focused monitor-notifier: **4/4 PASS**.
+- P9/P10 notification projection regression: **18/18 PASS**.
+- Compile/whitespace, safety scan, P10 final economic audit regression,
+  operational collector runtime and deterministic monitoring runtime all PASS.
+- PR #80 squash-merged at:
+  `a6f032f1ac00a67fe70d8748924f5bbd05104782`.
+- No dependency or `uv.lock` change.
+- P11 remains locked; monitoring adds no account, trade, order, sizing, Live or
+  AI execution authority.
+- Remaining action is operational deployment of the accepted Dashboard/Telegram
+  units on the VPS while real P10 forward observation continues unchanged.

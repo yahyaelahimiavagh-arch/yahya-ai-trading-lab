@@ -1,8 +1,8 @@
 # YATL — نقشه مرجع اجرا و وضعیت پروژه
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
-وضعیت جاری: **P0 تا P9 RUNTIME ACCEPTED AND MERGED**
-قدم جاری: **P10 OPERATIONS — REAL FORWARD COLLECTOR CANDIDATE**
+وضعیت جاری: **P0 تا P10 ENGINEERING / OPERATIONS ACCEPTED — REAL FORWARD EVIDENCE COLLECTING — P11 LOCKED**
+قدم جاری: **P10 REAL FORWARD OBSERVATION + VPS MONITORING DEPLOYMENT**
 
 ## منشأ و حدود سند
 
@@ -83,8 +83,51 @@ Dashboard به‌تنهایی معیار موفقیت اقتصادی نیستن�
 | P7 Journal / Analytics | دفتر معاملات و گزارش عملکرد قابل ممیزی | **RUNTIME ACCEPTED — checkpoint `93b9d87`** |
 | P8 Dashboard | نمایش وضعیت، معاملات، عملکرد و خطاها | **RUNTIME ACCEPTED — checkpoint `fe973e8`** |
 | P9 Telegram | هشدار و notification محدود طبق قواعد امنیتی | **RUNTIME ACCEPTED — checkpoint `60d7e267`** |
-| P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | **ENGINEERING ACCEPTED / REAL FORWARD DATA COLLECTION NEXT** |
+| P10 Forward/Paper Validation | ارزیابی روی داده جدید، هزینه‌ها، افت سرمایه و تست خطا/توقف | **ENGINEERING + COLLECTOR + MONITORING ACCEPTED / REAL FORWARD EVIDENCE IN PROGRESS** |
 | P11 Tiny Live Candidate | فقط پس از پذیرش P10، ممیزی امنیت، الزامات حساب و تأیید صریح | LOCKED |
+
+
+## وضعیت authoritative فعلی — 2026-09-22
+
+این بخش وضعیت جاری را supersede می‌کند؛ بخش «نمای پیشرفت فعلی — 2026-09-20»
+در ادامه برای سابقه تاریخی نگه داشته شده است.
+
+- P0 تا P9 runtime accepted و merge شده‌اند.
+- P10-001 تا P10-010 engineering runtime accepted و merge شده‌اند.
+- P10 production forward collector با PR #78، Final HEAD
+  `6b11a363d117e81a69db5a3929cb871072e46145` و Actions
+  `35645158177` پذیرفته شد؛ full suite **1514/1514** و focused collector
+  **12/12** PASS بود.
+- PR #78 در checkpoint
+  `eab1599d633b019a3d10f7af277bb5b5011a0753` merge شد و PR #79
+  اصلاح CWD runbook را در
+  `73815feb71947cf49f6d6ddace50b6ad49a4088b` بست.
+- اولین real forward `COLLECTED` در VPS:
+  **2026-09-22 04:05 UTC / 07:05 Istanbul**.
+- real forward collection به‌صورت hourly ادامه دارد و در observed checkpoint
+  شش dataset BTCUSDT/ETHUSDT × 15m/1h/4h با `store_count=72` و quality PASS
+  ثبت شده بود.
+- قبل از 51×4h warm-up، وضعیت درست
+  `NOT_READY/FORWARD_WARMUP_NOT_COMPLETE` است؛ اولین decision قانونی زودتر از
+  **2026-09-30 12:00 UTC / 15:00 Istanbul** نیست.
+- لایه read-only Dashboard + outbound-only Telegram با PR #80، exact Final HEAD
+  `d27d2d06db2717a9be4bfd36a3f7c2a1a55b5651` و Actions
+  `35702529008` پذیرفته شد؛ هر دو job PASS و full suite **1529/1529** بود.
+- focused monitor **8/8**، monitor-notifier **4/4** و notification projection
+  regression **18/18** PASS شدند؛ safety scan و deterministic mocked monitoring
+  runtime نیز PASS شدند.
+- PR #80 در checkpoint
+  `a6f032f1ac00a67fe70d8748924f5bbd05104782` squash-merge شد.
+- current docs closeout checkpoint روی `main`:
+  `ddc388ad8026652b4358aa46bab320a56722f167`.
+- Monitoring هیچ candidate/gate/window/evidence را تغییر نمی‌دهد؛ Dashboard فقط
+  local/read-only است و Telegram فقط outbound-only از transport پذیرفته‌شده P9
+  استفاده می‌کند.
+- قدم عملی بعدی: deploy unitهای پذیرفته‌شده monitoring روی VPS، verify کردن
+  Dashboard محلی و یک outbound Telegram delivery، سپس ادامه real forward
+  observation بدون تغییر candidate/gates.
+- P11 همچنان **LOCKED** است. حتی engineering completion یا monitoring acceptance
+  به معنی economic acceptance، Live authorization یا سوددهی اثبات‌شده نیست.
 
 ## نمای پیشرفت فعلی — 2026-09-20
 
