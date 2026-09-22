@@ -14,6 +14,7 @@ from yatl.dashboard import (
 from yatl.notifications import (
     NotificationCategory,
     NotificationSeverity,
+    NotificationSourcePhase,
 )
 from yatl.notifications.formatter import (
     FORMAT_MODE,
@@ -24,6 +25,7 @@ from yatl.notifications.formatter import (
 from yatl.notifications.projection import (
     NotificationProjectionError,
     project_data_quality_alert,
+    project_p10_validation_status,
     project_system_status,
 )
 
@@ -128,6 +130,77 @@ def failed_quality():
     )
 
 
+def p10_not_ready():
+    return {
+        "schema_version": 1,
+        "command": "summary",
+        "ok": False,
+        "code": "NOT_READY",
+        "reason": "FORWARD_WARMUP_NOT_COMPLETE",
+        "ingestion_snapshot_sha256": "1" * 64,
+        "generated_at_ms": OBSERVED_AT_MS,
+        "database_snapshot_sha256": "2" * 64,
+        "paper_only": True,
+        "live_master_lock": "OFF",
+        "strategy_evidence": "INSUFFICIENT_EVIDENCE",
+        "p11_unlocked": False,
+    }
+
+
+def p10_ready(disposition="INSUFFICIENT_DATA"):
+    criteria = {
+        "NET_PNL_AFTER_COSTS": "INSUFFICIENT_DATA",
+        "MAX_DRAWDOWN": "PASS",
+        "SAMPLE_SIZE": "INSUFFICIENT_DATA",
+        "CONSISTENCY": "INSUFFICIENT_DATA",
+        "REGIME_STABILITY": "INSUFFICIENT_DATA",
+        "FAILURE_RECOVERY": "PASS",
+        "RISK_CONTROLS": "PASS",
+    }
+    return {
+        "schema_version": 1,
+        "command": "summary",
+        "ok": True,
+        "code": "SUMMARY_READY",
+        "ingestion_snapshot_sha256": "3" * 64,
+        "database_snapshot_sha256": "4" * 64,
+        "paper_run_sha256": "5" * 64,
+        "economics_sha256": "6" * 64,
+        "gate_sha256": "7" * 64,
+        "sample_status": "INSUFFICIENT_DATA",
+        "disposition": disposition,
+        "paper_only": True,
+        "live_master_lock": "OFF",
+        "strategy_evidence": "INSUFFICIENT_EVIDENCE",
+        "p11_unlocked": False,
+        "observed_days": "12.5",
+        "observation_start_ms": OBSERVED_AT_MS - 1_000_000,
+        "observation_end_ms": OBSERVED_AT_MS,
+        "completed_trades": 4,
+        "net_pnl_after_costs_quote": "12.34",
+        "net_return_after_costs": "0.000617",
+        "profit_factor_after_costs": "1.12",
+        "maximum_validation_drawdown_fraction": "0.01",
+        "criteria": criteria,
+        "symbols": [
+            {
+                "symbol": "BTCUSDT",
+                "completed_trades": 2,
+                "net_pnl_after_costs_quote": "8.00",
+                "net_return_after_costs": "0.0008",
+                "open_positions": 0,
+            },
+            {
+                "symbol": "ETHUSDT",
+                "completed_trades": 2,
+                "net_pnl_after_costs_quote": "4.34",
+                "net_return_after_costs": "0.000434",
+                "open_positions": 1,
+            },
+        ],
+    }
+
+
 class NotificationProjectionFormatterTests(unittest.TestCase):
     def test_system_status_preserves_p8_provenance_and_unknowns(self):
         item = project_system_status(overview())
@@ -206,6 +279,46 @@ class NotificationProjectionFormatterTests(unittest.TestCase):
         second = project_data_quality_alert(failed_quality())
         self.assertEqual(first, second)
         self.assertEqual(first.message_sha256, second.message_sha256)
+
+
+    def test_p10_warmup_projection_is_information_only_and_provenance_bound(self):
+        item = project_p10_validation_status(p10_not_ready(), "BTCUSDT")
+        self.assertEqual(item.category, NotificationCategory.P10_VALIDATION_STATUS)
+        self.assertEqual(item.severity, NotificationSeverity.INFO)
+        self.assertEqual(
+            item.source.source_phase,
+            NotificationSourcePhase.P10_FORWARD_VALIDATION,
+        )
+        self.assertEqual(item.event_time_ms, OBSERVED_AT_MS)
+        self.assertEqual(item.symbol, "BTCUSDT")
+        self.assertIn("warm-up is not complete", item.body)
+        self.assertIn("P11 remains locked", item.body)
+
+    def test_p10_ready_projection_preserves_summary_and_fail_severity(self):
+        normal = project_p10_validation_status(p10_ready(), "ETHUSDT")
+        failed = project_p10_validation_status(p10_ready("FAIL"), "ETHUSDT")
+        self.assertIn("completed Paper trades 2", normal.body)
+        self.assertIn("net return after costs 0.000434", normal.body)
+        self.assertEqual(normal.severity, NotificationSeverity.INFO)
+        self.assertEqual(failed.severity, NotificationSeverity.ERROR)
+        self.assertEqual(
+            normal.message_sha256,
+            project_p10_validation_status(p10_ready(), "ETHUSDT").message_sha256,
+        )
+
+    def test_p10_projection_rejects_unlock_schema_smuggling_and_cross_symbol(self):
+        unlocked = p10_not_ready()
+        unlocked["p11_unlocked"] = True
+        with self.assertRaises(NotificationProjectionError):
+            project_p10_validation_status(unlocked, "BTCUSDT")
+
+        smuggled = p10_not_ready()
+        smuggled["extra"] = "field"
+        with self.assertRaises(NotificationProjectionError):
+            project_p10_validation_status(smuggled, "BTCUSDT")
+
+        with self.assertRaises(NotificationProjectionError):
+            project_p10_validation_status(p10_not_ready(), "BNBUSDT")
 
     def test_formatter_is_deterministic_bounded_and_plain_text(self):
         message = project_system_status(overview())

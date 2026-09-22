@@ -568,3 +568,33 @@ economic gate. The project now enters operational real-forward collection under
 the already sealed P10 window. P11 remains locked until real evidence eventually
 produces a separately audited `PASS_CANDIDATE`. See
 `docs/P10-OPERATIONS.md`.
+
+
+## Operational collector and monitoring continuation — 2026-09-22
+
+The engineering phase remains closed; this section records operational evidence
+without changing any frozen P10 candidate, gate, window or threshold.
+
+- Production collector PR #78 final HEAD:
+  `6b11a363d117e81a69db5a3929cb871072e46145`.
+- Matching Actions run `35645158177`: both jobs PASS,
+  **1514/1514** complete tests and **12/12** focused collector tests.
+- PR #78 squash-merged at `eab1599d633b019a3d10f7af277bb5b5011a0753`.
+- PR #79 corrected manual CWD instructions and squash-merged at
+  `73815feb71947cf49f6d6ddace50b6ad49a4088b`.
+- First real admissible forward collection:
+  **2026-09-22 04:05 UTC / 07:05 Istanbul**.
+- Real collections continued hourly through the observed 07:05 UTC run.
+- Latest observed real ingestion snapshot SHA-256:
+  `1aaeb5bc9ef4dfdf55dddaa4366940777eaeb2f90c0908d49ff8344d03f9fbf6`;
+  six datasets, `store_count=72`, quality PASS.
+- Validation status correctly remains
+  `NOT_READY/FORWARD_WARMUP_NOT_COMPLETE` before 51×4h warm-up.
+- P11 remains locked and strategy evidence remains
+  `INSUFFICIENT_EVIDENCE`.
+
+The optional operational monitoring extension is defined in
+`docs/P10-MONITORING.md`. It is presentation/notification only: a local
+read-only Dashboard plus the already accepted P9 outbound-only Telegram delivery
+boundary. Monitoring may be disabled independently and cannot mutate P10 source
+evidence or create execution authority.

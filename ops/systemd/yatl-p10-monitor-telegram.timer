@@ -1,0 +1,11 @@
+[Unit]
+Description=Send daily YATL P10 Telegram monitoring summary
+
+[Timer]
+OnCalendar=*-*-* 05:10:00 UTC
+Persistent=true
+AccuracySec=1min
+Unit=yatl-p10-monitor-telegram.service
+
+[Install]
+WantedBy=timers.target

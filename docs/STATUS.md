@@ -2859,3 +2859,82 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
 - Runbook: `docs/P10-OPERATIONS.md`.
 - No dependency or `uv.lock` change.
 
+
+
+## P10 operational collector acceptance / real forward evidence — 2026-09-22
+
+Status: **OPERATIONAL ACCEPTED — REAL FORWARD COLLECTION ACTIVE — P11 LOCKED**.
+
+This section supersedes the preceding P10 Operations candidate status.
+
+- PR #78 exact final candidate HEAD:
+  `6b11a363d117e81a69db5a3929cb871072e46145`.
+- Matching GitHub Actions run:
+  `35645158177`; both jobs PASS.
+- Complete suite: **1514/1514 PASS**; focused operational collector:
+  **12/12 PASS**.
+- PR #78 squash-merged on `main` at:
+  `eab1599d633b019a3d10f7af277bb5b5011a0753`.
+- PR #79 fixed manual P10 runbook commands to use the repository working
+  directory and squash-merged at:
+  `73815feb71947cf49f6d6ddace50b6ad49a4088b`.
+- VPS real-forward evidence from 2026-09-22:
+  - first real `COLLECTED`: **04:05 UTC / 07:05 Istanbul**;
+  - subsequent hourly collections at 05:05, 06:05 and 07:05 UTC also
+    returned `COLLECTED`;
+  - latest observed dataset count: **6**;
+  - latest observed store count: **72**;
+  - latest ingestion snapshot SHA-256:
+    `1aaeb5bc9ef4dfdf55dddaa4366940777eaeb2f90c0908d49ff8344d03f9fbf6`;
+  - latest database snapshot SHA-256 from validation status:
+    `801fd6a84136b68c99d8c08d15e8e0a011b8133a10b5f7f7cdbb833b85c3a35f`;
+  - data quality remained true.
+- Real validation status currently returns
+  `NOT_READY/FORWARD_WARMUP_NOT_COMPLETE`, which is expected before the
+  frozen 51×4h warm-up completes.
+- Runtime safety remained:
+  `paper_only=true`, `LIVE_MASTER_LOCK=OFF`,
+  `strategy_evidence=INSUFFICIENT_EVIDENCE`,
+  `trade_permission=false`, `order_endpoint=false`,
+  `ai_direct_execution=false`, `p11_unlocked=false`.
+- Earliest legal forward Paper decision remains
+  **2026-09-30 12:00 UTC / 15:00 Istanbul**.
+- Earliest registered 90-calendar-day economic evaluation date remains
+  **2026-12-21 00:00 UTC**, and the pooled/per-symbol trade-count gates still
+  apply.
+- No real Telegram credential, account credential or execution authority is
+  part of this acceptance.
+
+## P10 operational monitoring current candidate — 2026-09-22
+
+Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
+
+- Entry checkpoint:
+  `73815feb71947cf49f6d6ddace50b6ad49a4088b`.
+- Branch: `ops/p10-monitoring`.
+- Adds a strict P10 summary → P9 notification projection using the already
+  frozen `P10_VALIDATION_STATUS` category and
+  `P10_FORWARD_VALIDATION` source phase.
+- Adds a self-contained read-only operational Dashboard generated only from the
+  accepted P10 validation summary.
+- Warm-up is represented explicitly; it never fabricates a strategy result.
+- After warm-up, the Dashboard presents registered descriptive P10 fields:
+  observed days, completed trades, Net PnL/return after costs, profit factor,
+  drawdown, seven gate statuses and per-symbol summaries.
+- Dashboard publication is monitor-owned and atomic. Its builder has no network,
+  credential, account, execution, risk-authority or order capability.
+- A loopback-only HTTP service binds to `127.0.0.1:8765`; operator access is
+  through an SSH tunnel. TCP/8765 must not be exposed publicly.
+- Telegram reuses the accepted P9 outbound-only transport, delivery guard,
+  bounded retry and restart-safe duplicate suppression.
+- The P10 Telegram wrapper adds no provider transport of its own and no inbound
+  command, callback, polling, webhook, BUY/SELL or control surface.
+- Telegram credentials remain environment-only in
+  `/etc/yatl/p10-telegram.env` on the VPS and are not stored in Git.
+- Dashboard refresh timer: hourly at minute `:07`, after collector `:05`.
+- Telegram summary timer: daily at **05:10 UTC / 08:10 Istanbul**.
+- Hardened systemd units are under `ops/systemd/`.
+- Deployment runbook: `docs/P10-MONITORING.md`.
+- No dependency or `uv.lock` change.
+- P11 remains locked; this monitoring layer cannot change the P10 candidate,
+  thresholds, window, source evidence or economic disposition.

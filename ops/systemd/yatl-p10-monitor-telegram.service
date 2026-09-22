@@ -1,0 +1,28 @@
+[Unit]
+Description=YATL P10 outbound-only Telegram monitoring summary
+Wants=network-online.target
+After=network-online.target yatl-p10-forward-collector.service
+
+[Service]
+Type=oneshot
+User=yatl
+Group=yatl
+WorkingDirectory=/opt/yatl/app
+EnvironmentFile=/etc/yatl/p10-telegram.env
+ExecStart=/opt/yatl/app/.venv/bin/python -m yatl.validation.monitor_notify --database /var/lib/yatl/p10/p10-forward.sqlite3 --snapshot /var/lib/yatl/p10/snapshot.json --state-dir /var/lib/yatl/p10/monitor/state
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+RestrictNamespaces=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths=/var/lib/yatl/p10/monitor/state

@@ -8,12 +8,15 @@ squash-merge شد و checkpoint نهایی P8 روی `main` برابر است ب
 `fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e`.
 
 P9 و P10-001 تا P10-010 از نظر مهندسی runtime accepted و merge شده‌اند.
-checkpoint فعلی `main` برابر
-`ed7e7e705dc71dfc6a67d5b052d6facc08ee5e86` است. نتیجه CI/mock نهایی P10
-همچنان `INSUFFICIENT_DATA` است؛ بنابراین P11 قفل است. مرحله جاری عملیاتی است:
-استقرار collector واقعی forward Paper روی VPS، فقط با Binance Spot public data،
-بدون credential/order/Live authority. برنامه P10 در
-`docs/P10-IMPLEMENTATION-PLAN.md` ثبت شده است.
+collector عملیاتی P10 نیز با PR #78 پذیرفته و روی VPS فعال شده است. checkpoint
+فعلی `main` پس از اصلاح runbook برابر
+`73815feb71947cf49f6d6ddace50b6ad49a4088b` است. از
+**2026-09-22 04:05 UTC** real forward collection با `COLLECTED` آغاز شده و
+evidence واقعی P10 در حال انباشته‌شدن است. تا پایان 51×4h warm-up، وضعیت
+`FORWARD_WARMUP_NOT_COMPLETE` مورد انتظار است و P11 قفل می‌ماند.
+مرحله جاری، monitoring فقط‌خواندنی Dashboard + Telegram روی branch
+`ops/p10-monitoring` است. runbookها:
+`docs/P10-OPERATIONS.md` و `docs/P10-MONITORING.md`.
 
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
 صحیح پروتکل WebSocket است و نسخه آن در `uv.lock` ثابت شده است.
@@ -52,12 +55,13 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 
 مرجع ترتیب اجرا: [نقشه پروژه](docs/MASTER-PLAN.md).
 وضعیت جاری **P0 تا P9 و P10-001 تا P10-010 مهندسی runtime accepted و merge‌شده
-روی main** است. checkpoint فعلی
-`ed7e7e705dc71dfc6a67d5b052d6facc08ee5e86` است. مرحله جاری
-**P10 Operations — Real Forward Collector** روی branch
-`ops/p10-forward-collector` است. P11 همچنان قفل است؛ engineering completion
-با economic acceptance یکی نیست. runbook عملیاتی در
-`docs/P10-OPERATIONS.md` ثبت شده است.
+روی main** است. collector واقعی P10 هم operational accepted و فعال است؛ checkpoint
+فعلی `73815feb71947cf49f6d6ddace50b6ad49a4088b` است. مرحله جاری
+**P10 Operations Monitoring — Dashboard + outbound-only Telegram** روی branch
+`ops/p10-monitoring` است. این لایه فقط evidence پذیرفته‌شده P10 را نمایش/ارسال
+می‌کند و collector را تغییر نمی‌دهد. P11 همچنان قفل است؛ engineering completion
+با economic acceptance یکی نیست. runbook مانیتورینگ در
+`docs/P10-MONITORING.md` ثبت شده است.
 
 P9 برای رسیدن سریع‌تر به P10 عمداً محدود است: status/alertهای accepted و sanitized
 را به notificationهای information-only تبدیل می‌کند. transport واقعی Telegram
