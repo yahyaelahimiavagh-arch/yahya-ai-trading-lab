@@ -1,6 +1,6 @@
 # CRL-002 — Data Acquisition & Provenance
 
-Status: **ACQUISITION SPEC v0.1.0 REGISTERED — RUNTIME DATA NOT YET ACQUIRED**
+Status: **ACQUISITION IMPLEMENTATION v0.1.0 READY — REAL VPS DATA PENDING**
 
 Goal: collect bounded historical BTCUSDT/ETHUSDT data for the registered Crisis
 Lab windows without creating any write path into active P10 evidence.
@@ -211,8 +211,25 @@ Implementation target:
 - deterministic filenames and manifests;
 - one event/symbol/interval failure does not silently pass the batch.
 
-A future research-only implementation belongs under `research/crisis_lab/`.
-Production YATL modules must never import it.
+The research-only implementation now lives under `research/crisis_lab/` and is
+invoked with `python -m research.crisis_lab`. Production YATL modules do not import
+it. It uses only Python standard-library transport/parsing and adds no dependency.
+
+Implemented v0.1 safeguards:
+- exact HTTPS host allowlists for `data.binance.vision` and
+  `data-api.binance.vision`;
+- ambient proxies and redirects disabled;
+- bounded response sizes/retries;
+- official `.CHECKSUM` verification before archive extraction;
+- immutable content-addressed raw/extracted/canonical runtime files;
+- daily/monthly archive planning with full-month optimization;
+- exact millisecond/microsecond boundary validation;
+- semantic-vs-transport range separation;
+- source-conflict quarantine instead of overwrite;
+- sanitized Holdout/event CLI summaries;
+- hard path rejection for `/var/lib/yatl/p10/`.
+
+Operator procedure: `CRL-002-VPS-RUNBOOK.md`.
 
 ## CRL-002 exit status
 
@@ -220,6 +237,8 @@ Production YATL modules must never import it.
 - machine-readable acquisition registration — **PASS**;
 - holdout visibility policy — **PASS**;
 - P10 no-write specification — **PASS**;
+- research-only downloader/provenance implementation — **IMPLEMENTED / CI PENDING**;
+- mocked isolation/provenance tests — **IMPLEMENTED / FINAL-HEAD CI PENDING**;
 - live/bulk acquisition on VPS — **PENDING**;
 - provenance manifests from real downloaded files — **PENDING**;
 - before/after no-P10-write runtime proof — **PENDING**.
