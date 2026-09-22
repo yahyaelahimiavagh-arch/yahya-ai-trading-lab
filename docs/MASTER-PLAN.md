@@ -147,6 +147,41 @@ Dashboard به‌تنهایی معیار موفقیت اقتصادی نیستن�
 **2026-09-23** با research، ساخت Event Catalog و جمع‌آوری داده شروع می‌شود و می‌تواند
 همزمان با real-forward P10 ادامه پیدا کند.
 
+### ساختار رسمی Research Track
+
+مرجع اجرایی جزئی Crisis Lab از این پس در
+[`docs/research/crisis-lab/`](research/crisis-lab/README.md) نگه‌داری می‌شود.
+Master Plan فقط ترتیب Gateها و رابطه این مسیر با P10/P11 را نگه می‌دارد تا جزئیات
+پژوهش در یک پوشه مستقل، قابل‌ممیزی و قابل‌گسترش باقی بمانند.
+
+ترتیب رسمی checkpointها:
+
+| Checkpoint | هدف | شرط عبور |
+|---|---|---|
+| CRL-000 | Charter / isolation | مرز RESEARCH_ONLY و عدم تغییر P10 فریز شود |
+| CRL-001 | Event Catalog | schema، timestamps، sources و holdout designation ثبت شود |
+| CRL-002 | Data Acquisition | acquisition/provenance reproducible و P10 read-only باشد |
+| CRL-003 | Data Quality / Manifest | هر dataset دارای health PASS و SHA canonical باشد |
+| CRL-004 | Historical Replay | point-in-time deterministic replay روی crisis data اجرا شود |
+| CRL-005 | Controls / Baselines | pre/event/aftermath/calm + CASH + Buy-and-Hold مقایسه شوند |
+| CRL-006 | Synthetic Stress | ماتریس shockهای مصنوعی ثابت و قابل‌تکرار اجرا شود |
+| CRL-007 | Severity / Random Windows | S1–S5 و random-window registry بدون outcome tuning فریز شود |
+| CRL-008 | Shadow Challenger | protocol challenger/ablation بدون آلودگی P10 پذیرفته شود |
+| CRL-009 | Survival Certificate | artifact فنی immutable و reconstructable تعریف شود |
+| CRL-010 | Independent Audit | کل evidence chain مستقل recompute و audit شود |
+
+پوشه‌بندی استاندارد research:
+
+- documentation/specs: `docs/research/crisis-lab/`;
+- future research-only code/scripts: `research/crisis_lab/`;
+- bulk runtime data: `data/research/crisis-lab/` و خارج از Git؛
+- generated research artifacts: `artifacts/research/crisis-lab/` با انتشار فقط
+  subsetهای bounded/canonical.
+
+هیچ checkpoint بعدی پیش از بستن Gate قبلی «accepted» تلقی نمی‌شود. برای سرعت،
+desk research می‌تواند موازی انجام شود، اما evidence نهایی باید همین ترتیب و مرزهای
+داده را رعایت کند.
+
 ### قانون جداسازی از P10
 
 - P10 Track A بدون هیچ تغییر ادامه می‌یابد: candidate، configuration، gate registry،
