@@ -219,8 +219,9 @@ Implemented v0.1 safeguards:
 - exact HTTPS host allowlists for `data.binance.vision` and
   `data-api.binance.vision`;
 - ambient proxies and redirects disabled;
-- bounded response sizes/retries;
+- bounded response sizes/retries with sanitized per-URL retry/failure provenance;
 - official `.CHECKSUM` verification before archive extraction;
+- verified content-addressed ZIP cache reuse on repeated/resumed acquisition;
 - immutable content-addressed raw/extracted/canonical runtime files;
 - daily/monthly archive planning with full-month optimization;
 - exact millisecond/microsecond boundary validation;
