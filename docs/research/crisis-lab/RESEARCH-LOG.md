@@ -78,3 +78,6 @@ Append-only decision/evidence log.
 - Added `CRL-002-VPS-RUNBOOK.md`. Real VPS acquisition and external before/after
   P10 no-write proof remain pending, so CRL-002 is still **IN PROGRESS** and
   CRL-003 is not open.
+- Pre-merge boundary review found and closed one gap: custom `--register` input
+  paths now pass the same protected-path guard as runtime outputs, so Crisis Lab
+  cannot be pointed at a registration file under `/var/lib/yatl/p10/`.
