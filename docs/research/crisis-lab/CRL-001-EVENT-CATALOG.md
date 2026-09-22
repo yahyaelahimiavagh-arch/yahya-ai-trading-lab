@@ -75,6 +75,7 @@ research metadata only in v0.1. They are not Strategy inputs.
 | CRL-E006 | Terra stress — Binance LUNA/UST withdrawal suspension | crypto/stablecoin stress | 2022-05-10 02:20 | SOLVENCY | Development | eligible; May-7 precursor retained |
 | CRL-E007 | Alameda balance-sheet disclosure preceding FTX crisis | crypto/solvency stress | 2022-11-02 14:44 | SOLVENCY | Development | eligible |
 | CRL-E008 | Silicon Valley Bank closure | banking/liquidity stress | 2023-03-10 16:15 | POINT | Development | eligible |
+| CRL-E016 | 17 Aug 2023 sudden BTC/ETH price dislocation | crypto flash/deleveraging shock | 2023-08-17 21:30 | POINT | Development | eligible; price-defined |
 | CRL-E009 | Binance Spot trading halt | exchange outage | 2023-03-24 11:27 | OUTAGE | Blind holdout | eligible |
 | CRL-E010 | 7 October Israel-Gaza regional shock | geopolitical shock | 2023-10-07 03:29 derived from 06:29 local | POINT | Blind holdout | timestamp conflict quarantine |
 | CRL-E011 | Iran direct UAV launch toward Israel publicly confirmed | geopolitical shock | 2024-04-13 20:12 | POINT | Blind holdout | eligible |
@@ -88,7 +89,7 @@ uncertainty and leakage notes for every row.
 
 ## Development vs blind holdout
 
-Initial split: **8 Development / 7 Blind Holdout**.
+Initial split: **9 Development / 7 Blind Holdout**.
 
 Development events are intentionally diverse: health/global risk, energy
 dislocation, crypto selloff/outage, geopolitical shock, monetary-policy regime
@@ -118,6 +119,10 @@ selection bias.
   May 7, but without an exact intraday timestamp in the retained source. v0.1
   therefore does not invent one; the exact Binance suspension at 02:20 UTC on
   May 10 is the replay anchor.
+- 17 August 2023 sudden price dislocation: the onset is deliberately price-defined
+  from a contemporaneous minute-level market report and is therefore Development
+  only. It may stress reaction latency, but may never be used as a Blind Holdout
+  or as evidence that an ex-ante event detector predicted the move.
 - 7 October 2023: retained Reuters material conflicts internally: later Reuters
   anniversary coverage identifies 06:29 local as the attack time, while an older
   Reuters graphic prints 06:30 local with 04:30 GMT. Because the UTC mapping is
