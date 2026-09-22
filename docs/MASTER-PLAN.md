@@ -2,7 +2,7 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P10 ENGINEERING / OPERATIONS ACCEPTED — REAL FORWARD EVIDENCE COLLECTING — P11 LOCKED**
-قدم جاری: **P10 REAL FORWARD OBSERVATION + VPS MONITORING DEPLOYMENT**
+قدم جاری: **P10 REAL FORWARD OBSERVATION — VPS MONITORING RUNTIME ACCEPTED — P11 LOCKED**
 
 ## منشأ و حدود سند
 
@@ -118,14 +118,24 @@ Dashboard به‌تنهایی معیار موفقیت اقتصادی نیستن�
   runtime نیز PASS شدند.
 - PR #80 در checkpoint
   `a6f032f1ac00a67fe70d8748924f5bbd05104782` squash-merge شد.
-- current docs closeout checkpoint روی `main`:
-  `ddc388ad8026652b4358aa46bab320a56722f167`.
+- docs closeout پیش از deployment در
+  `51a266ea2c2ebe37bee8fc8072c06117406aabf1` ثبت شد و PR #81 persistence سرویس
+  loopback HTTP را در checkpoint `2c244e38c29d938b824400882151cb1bcb4ea05f`
+  بست.
+- VPS Dashboard در 2026-09-22 runtime-verified شد: builder موفق بود، HTTP service
+  enabled/active و فقط روی `127.0.0.1:8765` بود و تست محلی `HTTP 200` گرفت. صفحه
+  واقعی وضعیت `NOT_READY/FORWARD_WARMUP_NOT_COMPLETE`,
+  `INSUFFICIENT_EVIDENCE` و `P11 LOCKED` را نشان داد.
+- outbound-only Telegram نیز runtime-verified شد: در 09:16 UTC هر دو پیام
+  BTCUSDT/ETHUSDT با `DELIVERED` و overall `DELIVERY_COMPLETE` ارسال شدند؛ replay
+  فوری در 09:18 UTC برای هر دو `DUPLICATE_SUPPRESSED=true` ثبت کرد.
+- timer Telegram enabled/active است و روزانه در `05:10 UTC / 08:10 Istanbul`
+  اجرا می‌شود؛ monitoring credentialها خارج از Git باقی می‌مانند.
 - Monitoring هیچ candidate/gate/window/evidence را تغییر نمی‌دهد؛ Dashboard فقط
   local/read-only است و Telegram فقط outbound-only از transport پذیرفته‌شده P9
   استفاده می‌کند.
-- قدم عملی بعدی: deploy unitهای پذیرفته‌شده monitoring روی VPS، verify کردن
-  Dashboard محلی و یک outbound Telegram delivery، سپس ادامه real forward
-  observation بدون تغییر candidate/gates.
+- قدم عملی بعدی: فقط ادامه real forward observation بدون تغییر candidate/gates؛
+  deploy/verification monitoring بسته شده و هیچ کدنویسی P11 مجاز نیست.
 - P11 همچنان **LOCKED** است. حتی engineering completion یا monitoring acceptance
   به معنی economic acceptance، Live authorization یا سوددهی اثبات‌شده نیست.
 
