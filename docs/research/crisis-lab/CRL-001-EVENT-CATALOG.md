@@ -70,7 +70,7 @@ research metadata only in v0.1. They are not Strategy inputs.
 | CRL-E001 | U.S. COVID-19 travel-restriction escalation address | global-risk shock | 2020-03-12 01:02 | POINT | Development | eligible |
 | CRL-E002 | WTI May-2020 contract first trades below zero | energy/market dislocation | 2020-04-20 18:08 | POINT | Development | eligible |
 | CRL-E003 | Coinbase connectivity outage during May-19 crypto selloff | crypto/outage dislocation | 2021-05-19 12:50 | OUTAGE | Development | eligible |
-| CRL-E004 | Russian televised announcement of full-scale military operation against Ukraine | geopolitical shock | 2022-02-24 02:30 | POINT | Development | eligible with timestamp note |
+| CRL-E004 | Russian televised announcement preceding invasion of Ukraine | geopolitical shock | 2022-02-24 02:30 | POINT | Development | eligible with timestamp note |
 | CRL-E005 | Federal Reserve first rate increase of 2022 tightening cycle | regime transition | 2022-03-16 18:00 | REGIME | Development | eligible; overlapping context |
 | CRL-E006 | Terra stress — Binance LUNA/UST withdrawal suspension | crypto/stablecoin stress | 2022-05-10 02:20 | SOLVENCY | Development | eligible; May-7 precursor retained |
 | CRL-E007 | Alameda balance-sheet disclosure preceding FTX crisis | crypto/solvency stress | 2022-11-02 14:44 | SOLVENCY | Development | eligible |
@@ -113,8 +113,9 @@ selection bias.
   below-zero trade. The later 2:29 p.m. intraday low is explicitly forbidden as
   an anchor because that would be outcome selection.
 - Russia/Ukraine: the official Russian address is preserved as the primary event
-  record; the retained broadcast-time evidence places the televised address at
-  05:30 Moscow time (02:30 UTC). Source timing uncertainty is retained.
+  record; independent timestamp research places the televised address at 05:30
+  Moscow time (02:30 UTC). Contemporaneous reporting rounds the announcement to
+  shortly before 03:00 GMT, so the source difference remains explicit.
 - Terra: Richmond Fed documents publicly visible Curve liquidity withdrawal on
   May 7, but without an exact intraday timestamp in the retained source. v0.1
   therefore does not invent one; the exact Binance suspension at 02:20 UTC on
