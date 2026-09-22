@@ -193,6 +193,12 @@ class CrisisLabAcquisitionTests(unittest.TestCase):
                 with self.assertRaises(acq.AcquisitionError):
                     acq.assert_safe_runtime_path(candidate)
 
+    def test_register_input_cannot_point_into_p10_runtime(self):
+        with self.assertRaises(acq.AcquisitionError):
+            acq.load_acquisition_register(
+                Path("/var/lib/yatl/p10/snapshot.json")
+            )
+
     def test_unrelated_runtime_path_is_allowed(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "crisis"
