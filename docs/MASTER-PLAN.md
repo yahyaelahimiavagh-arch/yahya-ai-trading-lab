@@ -3,6 +3,7 @@
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P10 ENGINEERING / OPERATIONS ACCEPTED — REAL FORWARD EVIDENCE COLLECTING — P11 LOCKED**
 قدم جاری: **P10 REAL FORWARD OBSERVATION — VPS MONITORING RUNTIME ACCEPTED — P11 LOCKED**
+مسیر تحقیقاتی موازی از **2026-09-23**: **CRISIS & REGIME STRESS LAB — RESEARCH ONLY — P10 UNTOUCHED**
 
 ## منشأ و حدود سند
 
@@ -138,6 +139,126 @@ Dashboard به‌تنهایی معیار موفقیت اقتصادی نیستن�
   deploy/verification monitoring بسته شده و هیچ کدنویسی P11 مجاز نیست.
 - P11 همچنان **LOCKED** است. حتی engineering completion یا monitoring acceptance
   به معنی economic acceptance، Live authorization یا سوددهی اثبات‌شده نیست.
+
+## مسیر تحقیقاتی موازی — Crisis & Regime Stress Lab — شروع 2026-09-23
+
+هدف این مسیر، **شکنجه‌کردن پژوهشی Strategy و Risk Stack در دوره‌های تاریخی بحرانی
+و شوک‌های مصنوعی** است؛ نه جایگزین‌کردن P10 و نه تولید مجوز Live. این مسیر از
+**2026-09-23** با research، ساخت Event Catalog و جمع‌آوری داده شروع می‌شود و می‌تواند
+همزمان با real-forward P10 ادامه پیدا کند.
+
+### قانون جداسازی از P10
+
+- P10 Track A بدون هیچ تغییر ادامه می‌یابد: candidate، configuration، gate registry،
+  sealed window، fee/slippage، risk limits و evidence فعلی **نباید** تحت تأثیر نتایج
+  Crisis Lab تغییر کنند.
+- Crisis Lab Track B کاملاً **RESEARCH_ONLY** است و نتیجه آن حق upgrade کردن
+  `INSUFFICIENT_EVIDENCE`، بازکردن P11، ایجاد RiskAuthorization، quantity authority،
+  TRADE permission، order endpoint یا AI direct execution را ندارد.
+- هر weakness یا ایده‌ای که در Crisis Lab کشف شود فقط برای **نسل بعدی candidate /
+  policy / research iteration** ثبت می‌شود؛ P10 جاری retune نمی‌شود.
+- اگر نتیجه Crisis Lab ناخوشایند باشد، آن نتیجه پنهان یا cherry-pick نمی‌شود؛
+  evidence منفی نیز دارایی پژوهشی پروژه است.
+
+### فاز اول — Research و Data Acquisition
+
+از 2026-09-23:
+
+1. ساخت یک **Versioned Crisis Event Catalog** با timestamp دقیق و بازه
+   pre-event / event / aftermath، بدون استفاده از headline یا برچسبی که در لحظه
+   تصمیم هنوز در دسترس نبوده است.
+2. جمع‌آوری و manifest کردن داده تاریخی BTCUSDT و ETHUSDT با همان semantics
+   point-in-time پذیرفته‌شده YATL؛ شروع با 15m / 1h / 4h و در صورت نیاز پژوهشی
+   resolution دقیق‌تر در یک مسیر جدا.
+3. ثبت provenance، source، timezone، range، completeness، gaps و SHA-256 برای هر
+   dataset؛ هیچ فایل بحران بدون data-quality gate وارد evidence نمی‌شود.
+4. پوشش چند نوع regime و crisis، نه فقط یک جنگ یا crash خاص: volatility shock،
+   liquidity stress، trend reversal، gap-like move، prolonged drawdown، exchange/data
+   outage و recovery.
+5. دوره‌های تاریخی باید به research/development و **blind holdout** تقسیم شوند تا
+   خود Crisis Lab به منبع overfitting تبدیل نشود.
+
+### Crisis Museum اولیه
+
+Catalog اولیه می‌تواند شامل دوره‌های بزرگی مانند COVID crash 2020، Terra/LUNA،
+FTX، جنگ روسیه–اوکراین، بحران‌های بانکی، شوک‌های ژئوپولیتیکی خاورمیانه و دوره‌های
+شدید انرژی/نفت باشد. تاریخ و window هر event فقط بعد از research منبع‌محور قطعی
+می‌شود؛ نام یک رویداد به‌تنهایی evidence نیست.
+
+### دو نوع آزمون
+
+**A. Historical point-in-time replay**
+- Strategy دقیقاً مانند زمان واقعی candle به candle جلو می‌رود.
+- candle آینده، نتیجه بعدی event و label نهایی بحران برای decision engine نامرئی است.
+- fee/slippage و risk controls حذف نمی‌شوند.
+
+**B. Synthetic adversarial stress**
+- gap / jump stress؛
+- چندبرابرشدن slippage و spread؛
+- liquidity degradation؛
+- missing/stale data؛
+- latency/disconnect/restart؛
+- price shock در حالت open position؛
+- repeated shock / whipsaw؛
+- delayed regime recognition.
+
+Synthetic stress برای سنجش robustness است و نباید به‌عنوان historical PnL واقعی
+معرفی شود.
+
+### خروجی اجباری هر Crisis Run
+
+حداقل این metrics/evidence باید تولید شود:
+- Net PnL after costs؛
+- maximum drawdown و worst equity excursion؛
+- capital survival / ruin flag؛
+- peak exposure؛
+- entryهای انجام‌شده در شرایط shock؛
+- Kill Switch trigger و time-to-protection؛
+- time-to-zero-exposure در صورت نیاز؛
+- slippage sensitivity؛
+- regime-classification lag / unknown duration؛
+- false re-entry count پس از shock؛
+- recovery time؛
+- deterministic replay identity و canonical evidence digest.
+
+### اصل Survival before Profit
+
+در Crisis Lab موفقیت فقط «سودکردن در بحران» نیست. ترتیب اولویت:
+
+1. **Survive** — نابودی سرمایه یا breach ایمنی رخ ندهد.
+2. **Preserve Capital** — drawdown و exposure در محدوده قابل‌قبول باقی بماند.
+3. **Recover Safely** — سیستم بدون حدس، state corruption یا ورود عجولانه بازیابی شود.
+4. **Exploit Opportunity** — فقط پس از سه مورد بالا، سودآوری بحران ارزش ارزیابی دارد.
+
+### Backlog پژوهشی وابسته به evidence
+
+موارد زیر از پیش production requirement محسوب نمی‌شوند و فقط در صورت اثبات نیاز
+در Crisis Lab بررسی می‌شوند:
+- Market Shock Detector مستقل از Strategy با stateهای
+  `NORMAL / ELEVATED / SHOCK / DISLOCATION`؛
+- volatility/liquidity anomaly detection؛
+- strategy-health / edge-decay monitoring؛
+- capacity / market-impact model؛
+- order-book / spread-aware stress data؛
+- event-aware یا news/macro context فقط اگر point-in-time، قابل‌ممیزی و دارای
+  incremental OOS value نسبت به baseline باشد.
+
+**قانون:** هیچ feature بالا صرفاً به‌خاطر جذاب‌بودن یا یک failure منفرد وارد
+production path نمی‌شود. ابتدا باید baseline comparison / ablation / holdout
+evidence نشان دهد ارزش افزوده دارد.
+
+### رابطه با مسیر اصلی
+
+`P10 Real Forward` پاسخ می‌دهد: **آیا baseline روی آینده‌ای که هنگام طراحی وجود
+نداشت edge دارد؟**
+
+`Crisis & Regime Stress Lab` پاسخ می‌دهد: **وقتی بازار از شرایط معمول خارج می‌شود،
+آیا سیستم زنده می‌ماند و رفتار fail-safe دارد؟**
+
+`P11 Tiny Live` در صورت بازشدن جداگانه پاسخ می‌دهد: **آیا assumptions اجرا با
+fill، latency، reconciliation و پول واقعی برقرار می‌مانند؟**
+
+هیچ‌کدام جای دیگری را نمی‌گیرد.
 
 ## نمای پیشرفت فعلی — 2026-09-20
 
