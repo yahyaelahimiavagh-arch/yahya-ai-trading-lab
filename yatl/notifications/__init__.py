@@ -42,6 +42,7 @@ __all__ = [
 from .projection import (
     NotificationProjectionError,
     project_data_quality_alert,
+    project_p10_validation_status,
     project_system_status,
 )
 from .formatter import (
@@ -56,6 +57,7 @@ from .formatter import (
 __all__ += [
     "NotificationProjectionError",
     "project_data_quality_alert",
+    "project_p10_validation_status",
     "project_system_status",
     "FORMAT_MODE",
     "FORMAT_SCHEMA_VERSION",
