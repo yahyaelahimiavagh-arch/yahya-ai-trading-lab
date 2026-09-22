@@ -136,3 +136,10 @@ candidate, thresholds, gates, symbols, or window.
 - P11 remains locked throughout collection.
 - A later `PASS_CANDIDATE` from real evidence can only allow separate P11
   consideration; it does not authorize Live execution by itself.
+
+
+## Optional operator monitoring
+
+The read-only Dashboard and outbound-only Telegram operational layer is documented
+in [P10-MONITORING.md](P10-MONITORING.md). Monitoring is separate from collection:
+it may be disabled without stopping or mutating the real P10 forward collector.
