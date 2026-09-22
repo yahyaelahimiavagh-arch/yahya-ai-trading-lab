@@ -52,3 +52,29 @@ Append-only decision/evidence log.
 - Git compare against entry checkpoint `8f47fef...` shows every changed path is
   under `docs/research/crisis-lab/`. `docs/P10-OPERATIONS.md` retained blob
   SHA `cf3868cc8f3fc9178e8511d7a567fb090c50a61f` on both `main` and the research branch.
+
+- CRL-002 implementation branch opened from accepted research checkpoint
+  `80bb590a8fdac29ee2e12f6f42f6951c697966b5`.
+- Added research-only package `research/crisis_lab/`; production `yatl` imports
+  were not changed.
+- Implemented event/dataset planning, official Binance Public Data archive
+  acquisition, sibling CHECKSUM verification, immutable content-addressed runtime
+  storage, millisecond/microsecond normalization, exact UTC-grid checks and
+  credential-free REST boundary verification.
+- Network transport is HTTPS-only with exact host allowlists, redirects and
+  ambient proxies disabled, bounded response sizes and at most three attempts.
+- Runtime path resolution rejects `/var/lib/yatl/p10/` and descendants before
+  opening an output target. Crisis Lab does not read P10 runtime evidence.
+- Blind Holdout CLI/manifests expose structural provenance only; no return, PnL,
+  direction, drawdown, volatility rank, trade result or price summary is emitted.
+- Added focused CRL-002 tests covering register consistency, P10 path rejection,
+  monthly/daily archive planning, 2025 timestamp-unit transition, checksum
+  identity, microsecond boundary failure, immutable replay, source-conflict
+  quarantine, exact six-dataset event scope, Holdout redaction and capability
+  source scan.
+- Local isolated execution of the focused CRL-002 test module before GitHub write:
+  **18/18 PASS**. This is development evidence only; matching Final-HEAD GitHub
+  Actions remains required before merge.
+- Added `CRL-002-VPS-RUNBOOK.md`. Real VPS acquisition and external before/after
+  P10 no-write proof remain pending, so CRL-002 is still **IN PROGRESS** and
+  CRL-003 is not open.
