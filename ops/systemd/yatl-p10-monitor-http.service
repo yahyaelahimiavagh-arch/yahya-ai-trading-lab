@@ -1,0 +1,27 @@
+[Unit]
+Description=Serve YATL P10 monitoring dashboard on loopback
+After=network.target yatl-p10-monitor-dashboard.service
+
+[Service]
+Type=simple
+User=yatl
+Group=yatl
+WorkingDirectory=/var/lib/yatl/p10/monitor/public
+ExecStart=/opt/yatl/app/.venv/bin/python -m http.server 8765 --bind 127.0.0.1 --directory /var/lib/yatl/p10/monitor/public
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+RestrictNamespaces=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
