@@ -15,7 +15,11 @@ HEAD `d27d2d06db2717a9be4bfd36a3f7c2a1a55b5651` و Actions
 بود. checkpoint پذیرفته‌شده monitoring روی `main`:
 `a6f032f1ac00a67fe70d8748924f5bbd05104782`. real forward collection از
 **2026-09-22 04:05 UTC** فعال است و تا پایان 51×4h warm-up،
-`FORWARD_WARMUP_NOT_COMPLETE` مورد انتظار و P11 قفل است. runbookها:
+`FORWARD_WARMUP_NOT_COMPLETE` مورد انتظار و P11 قفل است. VPS monitoring در
+**2026-09-22** نیز runtime-verified شد: Dashboard روی loopback با HTTP 200 پاسخ داد،
+Telegram برای BTCUSDT و ETHUSDT تحویل واقعی موفق داشت، duplicate suppression برای
+هر دو نماد تأیید شد و timer روزانه فعال است. اصلاح persistence سرویس HTTP در PR #81
+روی checkpoint `2c244e38c29d938b824400882151cb1bcb4ea05f` merge شد. runbookها:
 `docs/P10-OPERATIONS.md` و `docs/P10-MONITORING.md`.
 
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
@@ -57,9 +61,10 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 وضعیت جاری **P0 تا P9 و P10-001 تا P10-010 مهندسی runtime accepted و merge‌شده
 روی main** است. collector واقعی و monitoring Dashboard + outbound-only Telegram
 نیز operational accepted هستند؛ checkpoint monitoring برابر
-`a6f032f1ac00a67fe70d8748924f5bbd05104782` است. مرحله بعدی کدنویسی P11
-نیست: ابتدا unitهای پذیرفته‌شده monitoring روی VPS deploy می‌شوند و real forward
-evidence بدون تغییر candidate/gates ادامه پیدا می‌کند. P11 همچنان قفل است و
+`a6f032f1ac00a67fe70d8748924f5bbd05104782` است و deployment واقعی VPS نیز
+runtime-verified شده است. مرحله بعدی کدنویسی P11 نیست: real forward evidence باید
+بدون تغییر candidate/gates ادامه پیدا کند تا warm-up و gateهای از پیش ثبت‌شده
+به‌صورت واقعی ارزیابی شوند. P11 همچنان قفل است و
 engineering completion با economic acceptance یکی نیست. runbook:
 `docs/P10-MONITORING.md`.
 
