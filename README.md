@@ -8,14 +8,14 @@ squash-merge شد و checkpoint نهایی P8 روی `main` برابر است ب
 `fe973e8f55f0fb1d7a76015a0e3d0d043e278f2e`.
 
 P9 و P10-001 تا P10-010 از نظر مهندسی runtime accepted و merge شده‌اند.
-collector عملیاتی P10 نیز با PR #78 پذیرفته و روی VPS فعال شده است. checkpoint
-فعلی `main` پس از اصلاح runbook برابر
-`73815feb71947cf49f6d6ddace50b6ad49a4088b` است. از
-**2026-09-22 04:05 UTC** real forward collection با `COLLECTED` آغاز شده و
-evidence واقعی P10 در حال انباشته‌شدن است. تا پایان 51×4h warm-up، وضعیت
-`FORWARD_WARMUP_NOT_COMPLETE` مورد انتظار است و P11 قفل می‌ماند.
-مرحله جاری، monitoring فقط‌خواندنی Dashboard + Telegram روی branch
-`ops/p10-monitoring` است. runbookها:
+collector واقعی P10 و لایه monitoring فقط‌خواندنی Dashboard + Telegram نیز
+operational accepted و روی `main` merge شده‌اند. monitoring با PR #80، Final
+HEAD `d27d2d06db2717a9be4bfd36a3f7c2a1a55b5651` و Actions
+`35702529008` پذیرفته شد؛ هر دو job PASS و full suite برابر **1529/1529**
+بود. checkpoint پذیرفته‌شده monitoring روی `main`:
+`a6f032f1ac00a67fe70d8748924f5bbd05104782`. real forward collection از
+**2026-09-22 04:05 UTC** فعال است و تا پایان 51×4h warm-up،
+`FORWARD_WARMUP_NOT_COMPLETE` مورد انتظار و P11 قفل است. runbookها:
 `docs/P10-OPERATIONS.md` و `docs/P10-MONITORING.md`.
 
 Python پروژه **3.12.14** است. تنها وابستگی خارجی، `websockets==17.1` برای اجرای
@@ -55,13 +55,13 @@ uv run --locked python -m yatl --environment public candles --symbol BTCUSDT --i
 
 مرجع ترتیب اجرا: [نقشه پروژه](docs/MASTER-PLAN.md).
 وضعیت جاری **P0 تا P9 و P10-001 تا P10-010 مهندسی runtime accepted و merge‌شده
-روی main** است. collector واقعی P10 هم operational accepted و فعال است؛ checkpoint
-فعلی `73815feb71947cf49f6d6ddace50b6ad49a4088b` است. مرحله جاری
-**P10 Operations Monitoring — Dashboard + outbound-only Telegram** روی branch
-`ops/p10-monitoring` است. این لایه فقط evidence پذیرفته‌شده P10 را نمایش/ارسال
-می‌کند و collector را تغییر نمی‌دهد. P11 همچنان قفل است؛ engineering completion
-با economic acceptance یکی نیست. runbook مانیتورینگ در
-`docs/P10-MONITORING.md` ثبت شده است.
+روی main** است. collector واقعی و monitoring Dashboard + outbound-only Telegram
+نیز operational accepted هستند؛ checkpoint monitoring برابر
+`a6f032f1ac00a67fe70d8748924f5bbd05104782` است. مرحله بعدی کدنویسی P11
+نیست: ابتدا unitهای پذیرفته‌شده monitoring روی VPS deploy می‌شوند و real forward
+evidence بدون تغییر candidate/gates ادامه پیدا می‌کند. P11 همچنان قفل است و
+engineering completion با economic acceptance یکی نیست. runbook:
+`docs/P10-MONITORING.md`.
 
 P9 برای رسیدن سریع‌تر به P10 عمداً محدود است: status/alertهای accepted و sanitized
 را به notificationهای information-only تبدیل می‌کند. transport واقعی Telegram

@@ -2938,3 +2938,44 @@ Status: **IMPLEMENTED — FINAL-HEAD CI / MERGE ACCEPTANCE PENDING**.
 - No dependency or `uv.lock` change.
 - P11 remains locked; this monitoring layer cannot change the P10 candidate,
   thresholds, window, source evidence or economic disposition.
+
+
+## P10 operational monitoring accepted — 2026-09-22
+
+Status: **RUNTIME ACCEPTED AND MERGED — CHECKPOINT `a6f032f1` — P11 LOCKED**.
+
+This section supersedes the preceding P10 operational monitoring candidate status.
+
+- Entry checkpoint:
+  `73815feb71947cf49f6d6ddace50b6ad49a4088b`.
+- Branch: `ops/p10-monitoring`.
+- PR #80 exact Final HEAD:
+  `d27d2d06db2717a9be4bfd36a3f7c2a1a55b5651`.
+- Matching GitHub Actions run:
+  `35702529008`; both jobs PASS.
+- Complete suite: **1529/1529 PASS**.
+- Focused P10 monitor tests: **8/8 PASS**.
+- Focused P10 monitor-notifier tests: **4/4 PASS**.
+- P9/P10 notification-projection focused regression: **18/18 PASS**.
+- Compile/whitespace gates PASS.
+- Safety boundary scan PASS.
+- P10 independent final economic audit runtime PASS.
+- P10 operational collector mocked runtime PASS.
+- P10 operational monitoring mocked runtime PASS.
+- Accepted-public-data reconstruction, deterministic replays and independent
+  P3/P4 audits PASS.
+- PR #80 squash-merged at:
+  `a6f032f1ac00a67fe70d8748924f5bbd05104782`.
+- Dashboard remains local/read-only and HTTP binds only to
+  `127.0.0.1:8765`.
+- Telegram remains outbound-only through the accepted P9 transport; no inbound
+  commands, callbacks, webhooks, polling or execution control were introduced.
+- No dependency or `uv.lock` change.
+- Runtime safety remains:
+  `paper_only=true`, `LIVE_MASTER_LOCK=OFF`,
+  `strategy_evidence=INSUFFICIENT_EVIDENCE`,
+  `trade_permission=false`, `order_endpoint=false`,
+  `ai_direct_execution=false`, `p11_unlocked=false`.
+- Next operational action: deploy the accepted monitoring units on the VPS,
+  verify the local Dashboard and one outbound Telegram delivery, then keep the
+  real P10 forward collector running unchanged.

@@ -1,6 +1,6 @@
 # P10 Operations Monitoring — Dashboard + Telegram
 
-Status: **OPERATIONAL CANDIDATE — READ ONLY — P11 LOCKED**
+Status: **OPERATIONAL ACCEPTED — READ ONLY — P11 LOCKED**
 
 This runbook adds operator visibility over the real P10 forward-validation
 evidence already collected by `yatl-p10-forward-collector`.
@@ -202,3 +202,25 @@ sudo systemctl disable --now yatl-p10-monitor-http.service
 ```
 
 This leaves `yatl-p10-forward-collector.timer` unchanged and running.
+
+
+## Acceptance evidence
+
+- PR #80 exact Final HEAD:
+  `d27d2d06db2717a9be4bfd36a3f7c2a1a55b5651`.
+- Matching Actions run:
+  `35702529008`; both jobs PASS.
+- Complete suite: **1529/1529 PASS**.
+- Focused monitor tests: **8/8 PASS**.
+- Focused monitor-notifier tests: **4/4 PASS**.
+- P9/P10 notification projection regression: **18/18 PASS**.
+- Compile/whitespace, safety boundary scan and deterministic mocked monitoring
+  runtime all PASS.
+- PR #80 squash-merged at:
+  `a6f032f1ac00a67fe70d8748924f5bbd05104782`.
+- No dependency or `uv.lock` change.
+- P11 remains locked and monitoring has no authority to change candidate, gates,
+  source evidence, account state or exchange execution.
+
+The code is accepted; the remaining work in this runbook is VPS deployment and
+operator verification of the accepted units.
