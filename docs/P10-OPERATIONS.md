@@ -1,6 +1,6 @@
 # P10 Operations — Real Forward Collection on VPS
 
-Status: **OPERATIONAL COLLECTOR CANDIDATE — P11 LOCKED**
+Status: **OPERATIONAL COLLECTOR ACCEPTED — REAL FORWARD COLLECTION ACTIVE — P11 LOCKED**
 
 This runbook deploys the completed P10 engineering stack for real forward Paper
 market-data collection. It does **not** enable Live trading, account access,
@@ -122,6 +122,29 @@ sudo -u yatl ./.venv/bin/python -m yatl.validation.cli status \
 Before the 51×4h warm-up completes, `NOT_READY` with
 `FORWARD_WARMUP_NOT_COMPLETE` is expected. This is not a reason to change the
 candidate, thresholds, gates, symbols, or window.
+
+## First real forward runtime evidence
+
+The production collector was accepted through PR #78 at merge checkpoint
+`eab1599d633b019a3d10f7af277bb5b5011a0753`. Matching Final-HEAD Actions
+run `35645158177` passed both jobs, the **1514/1514** complete suite and the
+**12/12** focused operational collector tests. PR #79 then corrected the manual
+working-directory examples and merged at
+`73815feb71947cf49f6d6ddace50b6ad49a4088b`.
+
+On 2026-09-22 the VPS produced the first admissible real forward collection at
+**04:05 UTC / 07:05 Istanbul**, followed by successful hourly collections at
+05:05, 06:05 and 07:05 UTC. The latest observed collection contained exactly
+six BTCUSDT/ETHUSDT × 15m/1h/4h datasets, `store_count=72`,
+`quality_pass=true` and ingestion snapshot SHA-256
+`1aaeb5bc9ef4dfdf55dddaa4366940777eaeb2f90c0908d49ff8344d03f9fbf6`.
+
+The read-only validation status over that evidence returned
+`NOT_READY/FORWARD_WARMUP_NOT_COMPLETE` with database snapshot SHA-256
+`801fd6a84136b68c99d8c08d15e8e0a011b8133a10b5f7f7cdbb833b85c3a35f`.
+That is the expected state before the frozen 51×4h warm-up completes. Safety
+remained Paper-only, `LIVE_MASTER_LOCK=OFF`, strategy evidence insufficient and
+P11 locked.
 
 ## Operational invariants
 
