@@ -81,3 +81,12 @@ Append-only decision/evidence log.
 - Pre-merge boundary review found and closed one gap: custom `--register` input
   paths now pass the same protected-path guard as runtime outputs, so Crisis Lab
   cannot be pointed at a registration file under `/var/lib/yatl/p10/`.
+
+- CRL-002 transport provenance was tightened before merge: real HTTPS fetches now
+  retain sanitized attempt/failure summaries, and repeated acquisition reuses a
+  locally cached ZIP only after its full SHA-256 matches the freshly fetched
+  official CHECKSUM. A conflicting cache fails closed rather than redownloading
+  over it.
+- Focused tests were extended for bounded retry provenance and verified archive
+  cache reuse. Final acceptance remains tied to the latest GitHub Actions HEAD,
+  not the earlier superseded runs.
