@@ -15,10 +15,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from yatl.notifications import (
-    SYMBOLS,
     build_notification_batch,
     project_p10_validation_status,
 )
+from yatl.notifications.contracts import SYMBOLS
 
 from .cli import ValidationCliError, validation_summary
 
