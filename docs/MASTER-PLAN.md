@@ -247,6 +247,150 @@ Synthetic stress برای سنجش robustness است و نباید به‌عنو
 production path نمی‌شود. ابتدا باید baseline comparison / ablation / holdout
 evidence نشان دهد ارزش افزوده دارد.
 
+### طراحی پژوهش تکمیلی و Anti-Overfitting Rules
+
+#### Control Windows
+
+هر Crisis Event باید همراه با windowهای کنترل ارزیابی شود؛ خود بحران به‌تنهایی
+کافی نیست. حداقل مجموعه مقایسه:
+
+- pre-event window؛
+- crisis/event window؛
+- aftermath/recovery window؛
+- یک یا چند calm control window با طول مشابه؛
+- در صورت امکان random windows هم‌طول از همان market era.
+
+هدف این است که مشخص شود ضعف یا قوت مشاهده‌شده واقعاً به crisis/regime مربوط است
+یا رفتار عمومی Strategy است. Control windowها قبل از دیدن نتیجه run نهایی انتخاب
+و ثبت می‌شوند تا cherry-picking کاهش یابد.
+
+#### Baseline comparison
+
+هر Crisis Run باید دست‌کم با دو baseline مقایسه شود:
+
+1. **NO-TRADE / CASH baseline** — اگر هیچ معامله‌ای انجام نمی‌شد چه می‌شد؛
+2. **BUY-AND-HOLD research baseline** — برای context، نه به‌عنوان target اجباری.
+
+در صورت نیاز baselineهای ساده دیگر فقط با preregistration اضافه می‌شوند. سودکردن
+YATL به‌تنهایی کافی نیست؛ باید معلوم باشد آیا همان سود با ریسک کمتر، drawdown کمتر
+یا رفتار ایمن‌تر نسبت به baseline به دست آمده است. در بعضی crisisها نتیجه مطلوب
+ممکن است عمداً **NO_TRADE / capital preservation** باشد.
+
+#### Shock Severity Model
+
+Crisisها فقط با نام خبری دسته‌بندی نمی‌شوند. یک severity model پژوهشی باید بر
+اساس داده بازار تعریف شود تا شدت stress قابل مقایسه باشد. نسخه اولیه می‌تواند
+سطوح `S1..S5` را از ترکیبی از معیارهای از پیش تعریف‌شده بسازد، مانند:
+
+- magnitude و سرعت return shock؛
+- realized volatility؛
+- gap/jump behavior؛
+- volume anomaly؛
+- spread/liquidity degradation در صورت وجود داده معتبر؛
+- cross-asset/correlation dislocation در صورت اضافه‌شدن داده پژوهشی.
+
+Thresholdهای severity باید نسخه‌دار و قبل از استفاده تحلیلی فریز شوند. label خبری
+به‌تنهایی severity evidence محسوب نمی‌شود.
+
+#### Random Stress / Random Historical Windows
+
+برای جلوگیری از selection bias، فقط crisisهای مشهور انتخاب نمی‌شوند. تعداد معناداری
+random historical windows نیز با seed/selection rule ثبت‌شده replay می‌شوند.
+
+هدف:
+- مقایسه Crisis performance با توزیع رفتار عادی Strategy؛
+- کشف failureهایی که به eventهای معروف وابسته نیستند؛
+- جلوگیری از ساختن نتیجه دلخواه با انتخاب دستی چند بازه خاص.
+
+Random-window selection، seed و window length باید canonical evidence داشته باشند.
+
+#### Market Shock Detector — research gate before implementation
+
+Market Shock Detector در شروع Crisis Lab **ساخته نمی‌شود**. ابتدا باید replayها
+نشان دهند که baseline فعلی در shockها failure یا reaction lag معنادار دارد.
+
+فقط در صورت وجود evidence روشن، یک detector مستقل از Strategy برای research باز
+می‌شود، با stateهای پیشنهادی:
+
+`NORMAL / ELEVATED / SHOCK / DISLOCATION`
+
+این detector در نسخه پژوهشی اول حق BUY/SELL، quantity، RiskAuthorization یا
+execution ندارد. حداکثر نقش قابل بررسی آن یک risk veto / new-entry block است و
+ارزش افزوده‌اش باید با ablation و blind holdout ثابت شود.
+
+#### News / Macro / AI deferral
+
+نسخه اول Crisis Lab از price/volume/volatility و داده بازار معتبر شروع می‌کند.
+News، geopolitical labels، macro feeds یا AI به‌طور پیش‌فرض وارد decision path
+نمی‌شوند.
+
+اضافه‌شدن آن‌ها فقط وقتی مجاز به research است که:
+- timestamp point-in-time معتبر داشته باشند؛
+- publication/availability lag معلوم باشد؛
+- leakage از نتیجه نهایی event نداشته باشند؛
+- baseline بدون آن‌ها موجود باشد؛
+- incremental OOS/holdout value قابل اندازه‌گیری باشد.
+
+AI همچنان analysis-only است و قانون `NO AI DIRECT EXECUTION` تغییر نمی‌کند.
+
+#### Shadow Challenger Track
+
+Crisis Lab می‌تواند یک **Shadow Challenger Track** برای نسل‌های آینده Strategy
+داشته باشد. challengerها فقط در research اجرا می‌شوند و هیچ اثر روی P10 جاری ندارند.
+
+برای هر challenger:
+- strategy/version/config قبل از evaluation فریز می‌شود؛
+- historical development، holdout، crisis و random-window evidence جدا می‌ماند؛
+- نتیجه با baseline فعلی و NO-TRADE/BUY-AND-HOLD مقایسه می‌شود؛
+- هزینه، drawdown، sample size، crisis survival و robustness گزارش می‌شوند؛
+- فقط candidateهایی که به‌صورت تکرارپذیر و خارج از نمونه ارزش افزوده نشان دهند
+  می‌توانند وارد یک **future forward-validation registration** شوند.
+
+هیچ challenger با نتیجه تاریخی خوب حق ورود مستقیم به P10 جاری یا P11 ندارد.
+
+#### YATL Survival Certificate — internal technical artifact
+
+پس از تثبیت Crisis Lab، برای هر نسخه واجد شرایط یک artifact داخلی و قابل‌ممیزی
+با عنوان موقت **YATL Survival Certificate** تولید می‌شود. این گواهی تبلیغاتی یا
+تضمین سود نیست؛ خلاصه فنی شواهد همان نسخه است.
+
+حداقل محتوای certificate:
+- YATL version / strategy version / risk-policy version؛
+- dataset/event-catalog identities و SHA-256؛
+- تعداد crisis windows، control windows و random windows؛
+- تعداد synthetic stress scenarios؛
+- severity coverage؛
+- worst maximum drawdown؛
+- worst equity excursion؛
+- capital-ruin/survival result؛
+- Kill Switch trigger count و reaction latency؛
+- worst slippage stress survived؛
+- false re-entry / out-of-regime violations؛
+- recovery-time distribution یا summary؛
+- baseline comparisons؛
+- exact evidence index / canonical digest؛
+- limitations و untested regimes.
+
+Certificate فقط زمانی `PASS` یا مشابه آن می‌گیرد که معیارهایش قبل از run نهایی
+ثبت شده باشند. هیچ certificate نباید profitability guarantee، Live authorization
+یا investment claim تلقی شود.
+
+### معیارهای پژوهشی برای نتیجه‌گیری
+
+برای جلوگیری از اینکه Crisis Lab به مجموعه‌ای از نمودارهای جذاب تبدیل شود:
+
+- هر claim باید به event/window/scenario evidence مشخص متصل باشد.
+- نتیجه منفی حذف نمی‌شود.
+- historical و synthetic evidence با هم مخلوط نمی‌شوند.
+- development و blind holdout از هم جدا می‌مانند.
+- تعداد crisisهای پاس‌شده به‌تنهایی معیار قدرت نیست؛ severity، drawdown، exposure،
+  failure behavior و baseline comparison نیز لازم‌اند.
+- یک Strategy که در crisis سود نمی‌کند اما سرمایه را حفظ می‌کند ممکن است بهتر از
+  Strategy سودده با tail-risk شدید باشد.
+- تغییر Strategy/Risk بعد از مشاهده failure باید نسخه جدید بسازد؛ نتیجه نسخه قدیم
+  بازنویسی نمی‌شود.
+- Crisis Lab برای **research acceleration** است، نه shortcut برای forward/live proof.
+
 ### رابطه با مسیر اصلی
 
 `P10 Real Forward` پاسخ می‌دهد: **آیا baseline روی آینده‌ای که هنگام طراحی وجود
