@@ -48,10 +48,15 @@ After deploying the accepted operational collector commit:
 
 ```bash
 sudo install -d -o yatl -g yatl -m 0700 /var/lib/yatl/p10
-sudo -u yatl /opt/yatl/app/.venv/bin/python -m yatl.validation.collector_cli \
+cd /opt/yatl/app
+sudo -u yatl ./.venv/bin/python -m yatl.validation.collector_cli \
   --database /var/lib/yatl/p10/p10-forward.sqlite3 \
   --snapshot /var/lib/yatl/p10/snapshot.json
 ```
+
+The repository uses a non-installed local package layout, so manual module
+commands must run with `/opt/yatl/app` as the working directory. The systemd
+service already enforces the same directory with `WorkingDirectory=/opt/yatl/app`.
 
 Successful collection returns JSON with `code=COLLECTED`,
 `quality_pass=true`, `paper_only=true`, `live_master_lock=OFF`,
@@ -108,13 +113,15 @@ sudo journalctl -u yatl-p10-forward-collector.service -n 50 --no-pager
 After a successful collection and after the collector process has exited:
 
 ```bash
-sudo -u yatl /opt/yatl/app/.venv/bin/python -m yatl.validation.cli status \
+cd /opt/yatl/app
+sudo -u yatl ./.venv/bin/python -m yatl.validation.cli status \
   --database /var/lib/yatl/p10/p10-forward.sqlite3 \
   --snapshot /var/lib/yatl/p10/snapshot.json
 ```
 
-Before the 51×4h warm-up completes, `NOT_READY` is expected. This is not a
-reason to change the candidate, thresholds, gates, symbols, or window.
+Before the 51×4h warm-up completes, `NOT_READY` with
+`FORWARD_WARMUP_NOT_COMPLETE` is expected. This is not a reason to change the
+candidate, thresholds, gates, symbols, or window.
 
 ## Operational invariants
 
