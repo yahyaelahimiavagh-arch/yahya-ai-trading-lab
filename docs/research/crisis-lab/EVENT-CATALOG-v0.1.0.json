@@ -253,7 +253,7 @@
     {
       "event_id": "CRL-E004",
       "version": "1",
-      "neutral_name": "Russian televised announcement of military operation against Ukraine",
+      "neutral_name": "Russian televised announcement preceding invasion of Ukraine",
       "category": "GEOPOLITICAL_SHOCK",
       "designation": "DEVELOPMENT",
       "shock_types": [
@@ -267,7 +267,7 @@
         "timestamp_utc": "2022-02-24T02:30:00Z",
         "precision": "minute",
         "confidence": "medium_high",
-        "uncertainty": "Retained contemporaneous coverage rounds the announcement to shortly before 03:00 GMT; official-institution timing gives 05:30 Moscow. Keep source difference visible."
+        "uncertainty": "Independent timestamp research gives 05:30 Moscow (02:30 UTC); retained contemporaneous coverage rounds the announcement to shortly before 03:00 GMT. Keep the difference visible."
       },
       "window_template": "POINT_SHOCK_V1",
       "windows": {
@@ -308,12 +308,12 @@
         {
           "type": "primary",
           "url": "https://en.kremlin.ru/events/president/news/67843/videos",
-          "note": "Official recording of the presidential address."
+          "note": "Official recording of the presidential address; primary event record."
         },
         {
-          "type": "institutional_secondary",
-          "url": "https://eng.navalmuseum.ru/exposition?id=63",
-          "note": "Russian Central Naval Museum records state-TV broadcast start at 05:30 Moscow time."
+          "type": "institutional_research",
+          "url": "https://www.atlanticcouncil.org/in-depth-research-reports/report/narrative-warfare/",
+          "note": "DFRLab/Atlantic Council research records the speech start at 05:30 Moscow time."
         },
         {
           "type": "contemporaneous_report",
