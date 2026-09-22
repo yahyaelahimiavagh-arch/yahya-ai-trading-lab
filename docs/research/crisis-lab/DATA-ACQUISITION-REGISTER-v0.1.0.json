@@ -1,0 +1,272 @@
+{
+  "schema": "YATL_CRL_DATA_ACQUISITION_REGISTER",
+  "version": "0.1.0",
+  "registered_date_utc": "2026-09-22",
+  "status": "SPEC_REGISTERED_RUNTIME_PENDING",
+  "research_only": true,
+  "p10_untouched": true,
+  "p11_locked": true,
+  "catalog": {
+    "path": "docs/research/crisis-lab/EVENT-CATALOG-v0.1.0.json",
+    "version": "0.1.0"
+  },
+  "primary_source": {
+    "family": "BINANCE_PUBLIC_DATA_DAILY_SPOT_KLINES",
+    "base_url": "https://data.binance.vision/data/spot/daily/klines",
+    "checksum_suffix": ".CHECKSUM",
+    "archive_policy": "retain_raw_zip_and_checksum",
+    "note": "Official Binance public-data archive; archived files may later be updated."
+  },
+  "verification_source": {
+    "family": "BINANCE_MARKET_DATA_ONLY_REST",
+    "base_url": "https://data-api.binance.vision",
+    "endpoint": "/api/v3/klines",
+    "authentication": false,
+    "max_rows_per_page": 1000,
+    "timezone": "UTC",
+    "policy": "verification_or_fallback_only; mismatch quarantines instead of silently overwriting"
+  },
+  "timestamp_policy": {
+    "archive_before_2025_01_01": "MILLISECOND",
+    "archive_from_2025_01_01": "MICROSECOND",
+    "normalization": "exact integer normalization to canonical UTC milliseconds while preserving raw source digests",
+    "mismatch": "FAIL_CLOSED"
+  },
+  "runtime_root": "data/research/crisis-lab/",
+  "protected_runtime_prefixes": [
+    "/var/lib/yatl/p10/"
+  ],
+  "intervals": [
+    "15m",
+    "1h",
+    "4h"
+  ],
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT"
+  ],
+  "optional_extensions": {
+    "1m": {
+      "enabled": false,
+      "name": "EXTENSION_1M_V1",
+      "activation_rule": "separately versioned research question only; never changes P10 or primary scorecard"
+    }
+  },
+  "holdout_policy": {
+    "automated_acquisition": true,
+    "automated_structural_quality": true,
+    "manual_outcome_inspection_before_final_evaluation": false,
+    "allowed_report_fields": [
+      "identity",
+      "row_count",
+      "timestamp_bounds",
+      "gaps",
+      "duplicates",
+      "source_checksums",
+      "canonical_digest",
+      "structural_status"
+    ],
+    "forbidden_pre_evaluation_fields": [
+      "returns",
+      "direction",
+      "drawdown",
+      "volatility_rank",
+      "plots",
+      "YATL_trade_metrics"
+    ]
+  },
+  "events": [
+    {
+      "event_id": "CRL-E001",
+      "designation": "DEVELOPMENT",
+      "replay_eligible": true,
+      "semantic_range": {
+        "start_utc": "2020-02-20T01:02:00Z",
+        "end_utc": "2020-03-29T01:02:00Z"
+      },
+      "transport_alignment": "round outward per timeframe to full UTC candle boundaries; archive download may round outward to UTC day files; canonical trim preserves semantic range",
+      "inspection_mode": "DEVELOPMENT_ALLOWED",
+      "source_conflict_quarantine": false
+    },
+    {
+      "event_id": "CRL-E002",
+      "designation": "DEVELOPMENT",
+      "replay_eligible": true,
+      "semantic_range": {
+        "start_utc": "2020-03-30T18:08:00Z",
+        "end_utc": "2020-05-07T18:08:00Z"
+      },
+      "transport_alignment": "round outward per timeframe to full UTC candle boundaries; archive download may round outward to UTC day files; canonical trim preserves semantic range",
+      "inspection_mode": "DEVELOPMENT_ALLOWED",
+      "source_conflict_quarantine": false
+    },
+    {
+      "event_id": "CRL-E003",
+      "designation": "DEVELOPMENT",
+      "replay_eligible": true,
+      "semantic_range": {
+        "start_utc": "2021-05-04T12:50:00Z",
+        "end_utc": "2021-05-23T12:50:00Z"
+      },
+      "transport_alignment": "round outward per timeframe to full UTC candle boundaries; archive download may round outward to UTC day files; canonical trim preserves semantic range",
+      "inspection_mode": "DEVELOPMENT_ALLOWED",
+      "source_conflict_quarantine": false
+    },
+    {
+      "event_id": "CRL-E004",
+      "designation": "DEVELOPMENT",
+      "replay_eligible": true,
+      "semantic_range": {
+        "start_utc": "2022-02-03T02:30:00Z",
+        "end_utc": "2022-03-13T02:30:00Z"
+      },
+      "transport_alignment": "round outward per timeframe to full UTC candle boundaries; archive download may round outward to UTC day files; canonical trim preserves semantic range",
+      "inspection_mode": "DEVELOPMENT_ALLOWED",
+      "source_conflict_quarantine": false
+    },
+    {
+      "event_id": "CRL-E005",
+      "designation": "DEVELOPMENT",
+      "replay_eligible": true,
+      "semantic_range": {
+        "start_utc": "2022-01-31T18:00:00Z",
+        "end_utc": "2022-10-12T18:00:00Z"
+      },
+      "transport_alignment": "round outward per timeframe to full UTC candle boundaries; archive download may round outward to UTC day files; canonical trim preserves semantic range",
+      "inspection_mode": "DEVELOPMENT_ALLOWED",
+      "source_conflict_quarantine": false
+    },
+    {
+      "event_id": "CRL-E006",
+      "designation": "DEVELOPMENT",
+      "replay_eligible": true,
+      "semantic_range": {
+        "start_utc": "2022-04-19T02:20:00Z",
+        "end_utc": "2022-06-19T02:20:00Z"
+      },
+      "transport_alignment": "round outward per timeframe to full UTC candle boundaries; archive download may round outward to UTC day files; canonical trim preserves semantic range",
+      "inspection_mode": "DEVELOPMENT_ALLOWED",
+      "source_conflict_quarantine": false
+    },
+    {
+      "event_id": "CRL-E007",
+      "designation": "DEVELOPMENT",
+      "replay_eligible": true,
+      "semantic_range": {
+        "start_utc": "2022-10-12T14:44:00Z",
+        "end_utc": "2022-12-12T14:44:00Z"
+      },
+      "transport_alignment": "round outward per timeframe to full UTC candle boundaries; archive download may round outward to UTC day files; canonical trim preserves semantic range",
+      "inspection_mode": "DEVELOPMENT_ALLOWED",
+      "source_conflict_quarantine": false
+    },
+    {
+      "event_id": "CRL-E008",
+      "designation": "DEVELOPMENT",
+      "replay_eligible": true,
+      "semantic_range": {
+        "start_utc": "2023-02-17T16:15:00Z",
+        "end_utc": "2023-03-27T16:15:00Z"
+      },
+      "transport_alignment": "round outward per timeframe to full UTC candle boundaries; archive download may round outward to UTC day files; canonical trim preserves semantic range",
+      "inspection_mode": "DEVELOPMENT_ALLOWED",
+      "source_conflict_quarantine": false
+    },
+    {
+      "event_id": "CRL-E016",
+      "designation": "DEVELOPMENT",
+      "replay_eligible": true,
+      "semantic_range": {
+        "start_utc": "2023-07-27T21:30:00Z",
+        "end_utc": "2023-09-03T21:30:00Z"
+      },
+      "transport_alignment": "round outward per timeframe to full UTC candle boundaries; archive download may round outward to UTC day files; canonical trim preserves semantic range",
+      "inspection_mode": "DEVELOPMENT_ALLOWED",
+      "source_conflict_quarantine": false
+    },
+    {
+      "event_id": "CRL-E009",
+      "designation": "BLIND_HOLDOUT",
+      "replay_eligible": true,
+      "semantic_range": {
+        "start_utc": "2023-03-09T11:27:00Z",
+        "end_utc": "2023-03-28T11:27:00Z"
+      },
+      "transport_alignment": "round outward per timeframe to full UTC candle boundaries; archive download may round outward to UTC day files; canonical trim preserves semantic range",
+      "inspection_mode": "STRUCTURAL_ONLY_BEFORE_FINAL_EVALUATION",
+      "source_conflict_quarantine": false
+    },
+    {
+      "event_id": "CRL-E010",
+      "designation": "BLIND_HOLDOUT",
+      "replay_eligible": false,
+      "semantic_range": {
+        "start_utc": "2023-09-16T03:29:00Z",
+        "end_utc": "2023-10-24T03:29:00Z"
+      },
+      "transport_alignment": "round outward per timeframe to full UTC candle boundaries; archive download may round outward to UTC day files; canonical trim preserves semantic range",
+      "inspection_mode": "STRUCTURAL_ONLY_BEFORE_FINAL_EVALUATION",
+      "source_conflict_quarantine": true
+    },
+    {
+      "event_id": "CRL-E011",
+      "designation": "BLIND_HOLDOUT",
+      "replay_eligible": true,
+      "semantic_range": {
+        "start_utc": "2024-03-23T20:12:00Z",
+        "end_utc": "2024-04-30T20:12:00Z"
+      },
+      "transport_alignment": "round outward per timeframe to full UTC candle boundaries; archive download may round outward to UTC day files; canonical trim preserves semantic range",
+      "inspection_mode": "STRUCTURAL_ONLY_BEFORE_FINAL_EVALUATION",
+      "source_conflict_quarantine": false
+    },
+    {
+      "event_id": "CRL-E012",
+      "designation": "BLIND_HOLDOUT",
+      "replay_eligible": true,
+      "semantic_range": {
+        "start_utc": "2025-05-23T00:26:00Z",
+        "end_utc": "2025-06-30T00:26:00Z"
+      },
+      "transport_alignment": "round outward per timeframe to full UTC candle boundaries; archive download may round outward to UTC day files; canonical trim preserves semantic range",
+      "inspection_mode": "STRUCTURAL_ONLY_BEFORE_FINAL_EVALUATION",
+      "source_conflict_quarantine": false
+    },
+    {
+      "event_id": "CRL-E013",
+      "designation": "BLIND_HOLDOUT",
+      "replay_eligible": true,
+      "semantic_range": {
+        "start_utc": "2025-05-31T23:46:00Z",
+        "end_utc": "2025-07-08T23:46:00Z"
+      },
+      "transport_alignment": "round outward per timeframe to full UTC candle boundaries; archive download may round outward to UTC day files; canonical trim preserves semantic range",
+      "inspection_mode": "STRUCTURAL_ONLY_BEFORE_FINAL_EVALUATION",
+      "source_conflict_quarantine": false
+    },
+    {
+      "event_id": "CRL-E014",
+      "designation": "BLIND_HOLDOUT",
+      "replay_eligible": true,
+      "semantic_range": {
+        "start_utc": "2026-02-07T06:15:00Z",
+        "end_utc": "2026-03-17T06:15:00Z"
+      },
+      "transport_alignment": "round outward per timeframe to full UTC candle boundaries; archive download may round outward to UTC day files; canonical trim preserves semantic range",
+      "inspection_mode": "STRUCTURAL_ONLY_BEFORE_FINAL_EVALUATION",
+      "source_conflict_quarantine": false
+    },
+    {
+      "event_id": "CRL-E015",
+      "designation": "BLIND_HOLDOUT",
+      "replay_eligible": false,
+      "semantic_range": {
+        "start_utc": "2026-02-07T14:39:00Z",
+        "end_utc": "2026-03-17T14:39:00Z"
+      },
+      "transport_alignment": "round outward per timeframe to full UTC candle boundaries; archive download may round outward to UTC day files; canonical trim preserves semantic range",
+      "inspection_mode": "STRUCTURAL_ONLY_BEFORE_FINAL_EVALUATION",
+      "source_conflict_quarantine": true
+    }
+  ]
+}
