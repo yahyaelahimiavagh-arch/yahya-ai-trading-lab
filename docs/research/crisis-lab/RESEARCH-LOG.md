@@ -43,3 +43,12 @@ Append-only decision/evidence log.
   and an explicit before/after no-P10-write proof exist.
 - No historical profitability, robustness PASS, economic acceptance or Live
   readiness conclusion has been produced. P10 and P11 status are unchanged.
+- Pre-PR structural validation PASS: catalog JSON parses; 16 event IDs are unique;
+  split is 9 Development / 7 Blind Holdout; every event has source metadata;
+  CRL-E010 and CRL-E015 are the only replay-quarantined records; all registered
+  events retain BTCUSDT/ETHUSDT × 15m/1h/4h primary scope.
+- Acquisition register IDs match the catalog exactly and retain
+  `/var/lib/yatl/p10/` as a protected runtime prefix with P11 locked.
+- Git compare against entry checkpoint `8f47fef...` shows every changed path is
+  under `docs/research/crisis-lab/`. `docs/P10-OPERATIONS.md` retained blob
+  SHA `cf3868cc8f3fc9178e8511d7a567fb090c50a61f` on both `main` and the research branch.
