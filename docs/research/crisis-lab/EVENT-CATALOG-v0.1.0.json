@@ -1,0 +1,1120 @@
+{
+  "schema": "YATL_CRL_EVENT_CATALOG",
+  "catalog_version": "0.1.0",
+  "registered_date_utc": "2026-09-22",
+  "status": "REGISTERED_FOR_ACQUISITION",
+  "research_only": true,
+  "p10_untouched": true,
+  "p11_locked": true,
+  "market_data_profiles": {
+    "CRYPTO_CORE_V1": {
+      "profile": "CRYPTO_CORE_V1",
+      "symbols": [
+        "BTCUSDT",
+        "ETHUSDT"
+      ],
+      "intervals": [
+        "15m",
+        "1h",
+        "4h"
+      ],
+      "warmup_before_pre_event_days": 14
+    }
+  },
+  "window_templates": {
+    "POINT_SHOCK_V1": {
+      "pre_ms": 604800000,
+      "core_ms": 259200000,
+      "aftermath_ms": 1209600000
+    },
+    "OUTAGE_V1": {
+      "pre_ms": 86400000,
+      "core_ms": 86400000,
+      "aftermath_ms": 259200000
+    },
+    "SOLVENCY_V1": {
+      "pre_ms": 604800000,
+      "core_ms": 864000000,
+      "aftermath_ms": 2592000000
+    },
+    "REGIME_180D_V1": {
+      "pre_ms": 2592000000,
+      "core_ms": 15552000000,
+      "aftermath_ms": 2592000000
+    }
+  },
+  "holdout_policy": {
+    "named_holdout_definition": "Event identity/source metadata visible; BTCUSDT/ETHUSDT outcomes and YATL replay results inaccessible to design before final evaluation.",
+    "structural_quality_only_before_final_evaluation": true,
+    "no_price_summary_or_plot": true,
+    "no_parameter_tuning": true,
+    "stronger_sealed_random_holdout_due_in": "CRL-007"
+  },
+  "source_timestamp_policy": {
+    "definition": "Earliest retained source-verifiable timestamp for the exact named event/milestone.",
+    "no_invented_precision": true,
+    "conflicts_are_quarantined": true,
+    "later_postmortems_metadata_only": true,
+    "event_labels_not_strategy_inputs": true
+  },
+  "events": [
+    {
+      "event_id": "CRL-E001",
+      "version": "1",
+      "neutral_name": "U.S. COVID-19 travel-restriction escalation address",
+      "category": "GLOBAL_RISK_SHOCK",
+      "designation": "DEVELOPMENT",
+      "shock_types": [
+        "risk_off",
+        "volatility_spike",
+        "liquidity_stress"
+      ],
+      "public_knowability": {
+        "original_time": "2020-03-11 21:02",
+        "original_timezone": "America/New_York (EDT, UTC-04:00)",
+        "timestamp_utc": "2020-03-12T01:02:00Z",
+        "precision": "minute",
+        "confidence": "high",
+        "uncertainty": "No material uncertainty for the named address milestone."
+      },
+      "window_template": "POINT_SHOCK_V1",
+      "windows": {
+        "pre_event": {
+          "start_utc": "2020-03-05T01:02:00Z",
+          "end_utc": "2020-03-12T01:02:00Z"
+        },
+        "core_crisis": {
+          "start_utc": "2020-03-12T01:02:00Z",
+          "end_utc": "2020-03-15T01:02:00Z"
+        },
+        "aftermath_recovery": {
+          "start_utc": "2020-03-15T01:02:00Z",
+          "end_utc": "2020-03-29T01:02:00Z"
+        }
+      },
+      "window_reason": "Exact public address start; fixed point-shock template. WHO pandemic declaration is context only and does not move endpoints.",
+      "required_market_data": {
+        "profile": "CRYPTO_CORE_V1",
+        "symbols": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "intervals": [
+          "15m",
+          "1h",
+          "4h"
+        ],
+        "warmup_before_pre_event_days": 14
+      },
+      "contextual_data": [
+        "WHO pandemic-declaration timestamp",
+        "optional broad risk-asset context; not a v0.1 decision input"
+      ],
+      "cluster_id": null,
+      "replay_eligible": true,
+      "sources": [
+        {
+          "type": "primary",
+          "url": "https://trumpwhitehouse.archives.gov/briefings-statements/remarks-president-trump-address-nation/",
+          "note": "Archived White House transcript records Oval Office start at 9:02 P.M. EDT."
+        },
+        {
+          "type": "institutional",
+          "url": "https://www.who.int/news-room/speeches/item/who-director-general-s-opening-remarks-at-the-media-briefing-on-covid-19---11-march-2020",
+          "note": "WHO pandemic characterization on March 11; contextual precursor."
+        }
+      ],
+      "leakage_note": "Do not shift anchor to the later BTC/ETH crash low or any market extremum."
+    },
+    {
+      "event_id": "CRL-E002",
+      "version": "1",
+      "neutral_name": "WTI May-2020 contract first trades below zero",
+      "category": "ENERGY_MARKET_DISLOCATION",
+      "designation": "DEVELOPMENT",
+      "shock_types": [
+        "cross_asset_dislocation",
+        "liquidity_stress",
+        "energy_shock"
+      ],
+      "public_knowability": {
+        "original_time": "2020-04-20 14:08",
+        "original_timezone": "America/New_York (EDT, UTC-04:00)",
+        "timestamp_utc": "2020-04-20T18:08:00Z",
+        "precision": "minute",
+        "confidence": "high",
+        "uncertainty": "CFTC wording is approximately 2:08 p.m. ET; one-minute catalog precision retained."
+      },
+      "window_template": "POINT_SHOCK_V1",
+      "windows": {
+        "pre_event": {
+          "start_utc": "2020-04-13T18:08:00Z",
+          "end_utc": "2020-04-20T18:08:00Z"
+        },
+        "core_crisis": {
+          "start_utc": "2020-04-20T18:08:00Z",
+          "end_utc": "2020-04-23T18:08:00Z"
+        },
+        "aftermath_recovery": {
+          "start_utc": "2020-04-23T18:08:00Z",
+          "end_utc": "2020-05-07T18:08:00Z"
+        }
+      },
+      "window_reason": "CFTC identifies approximately 2:08 p.m. ET as first below-zero trading; fixed window ignores later price low.",
+      "required_market_data": {
+        "profile": "CRYPTO_CORE_V1",
+        "symbols": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "intervals": [
+          "15m",
+          "1h",
+          "4h"
+        ],
+        "warmup_before_pre_event_days": 14
+      },
+      "contextual_data": [
+        "NYMEX WTI May-2020 contract event metadata; not a v0.1 decision input"
+      ],
+      "cluster_id": null,
+      "replay_eligible": true,
+      "sources": [
+        {
+          "type": "regulator",
+          "url": "https://www.cftc.gov/PressRoom/SpeechesTestimony/berkovitzstatement112320",
+          "note": "CFTC statement cites 2:08 p.m. ET first negative trading and distinguishes later 2:29 p.m. low."
+        }
+      ],
+      "leakage_note": "The 2:29 p.m. intraday low and settlement price must never define the window."
+    },
+    {
+      "event_id": "CRL-E003",
+      "version": "1",
+      "neutral_name": "Coinbase connectivity outage during May-19 crypto selloff",
+      "category": "CRYPTO_EXCHANGE_DISLOCATION",
+      "designation": "DEVELOPMENT",
+      "shock_types": [
+        "crypto_price_shock",
+        "exchange_outage",
+        "access_liquidity_stress"
+      ],
+      "public_knowability": {
+        "original_time": "2021-05-19 05:50",
+        "original_timezone": "America/Los_Angeles (PDT, UTC-07:00)",
+        "timestamp_utc": "2021-05-19T12:50:00Z",
+        "precision": "minute",
+        "confidence": "high",
+        "uncertainty": "Post-mortem was published later; timestamp is historical incident metadata, not contemporaneous decision input."
+      },
+      "window_template": "OUTAGE_V1",
+      "windows": {
+        "pre_event": {
+          "start_utc": "2021-05-18T12:50:00Z",
+          "end_utc": "2021-05-19T12:50:00Z"
+        },
+        "core_crisis": {
+          "start_utc": "2021-05-19T12:50:00Z",
+          "end_utc": "2021-05-20T12:50:00Z"
+        },
+        "aftermath_recovery": {
+          "start_utc": "2021-05-20T12:50:00Z",
+          "end_utc": "2021-05-23T12:50:00Z"
+        }
+      },
+      "window_reason": "Official incident post-mortem provides exact connectivity-issue onset; outage template is fixed 24h regardless of recovery.",
+      "required_market_data": {
+        "profile": "CRYPTO_CORE_V1",
+        "symbols": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "intervals": [
+          "15m",
+          "1h",
+          "4h"
+        ],
+        "warmup_before_pre_event_days": 14
+      },
+      "contextual_data": [
+        "Coinbase incident interval 05:50-07:38 PT"
+      ],
+      "cluster_id": null,
+      "replay_eligible": true,
+      "sources": [
+        {
+          "type": "exchange",
+          "url": "https://www.coinbase.com/blog/incident-post-mortem-may-19-2021",
+          "note": "Official post-mortem states connectivity issues began 05:50 PT and ended 07:38 PT."
+        }
+      ],
+      "leakage_note": "The selloff preceding 05:50 PT belongs to the pre-event window; do not move anchor to largest BTC/ETH candle."
+    },
+    {
+      "event_id": "CRL-E004",
+      "version": "1",
+      "neutral_name": "Russian televised announcement preceding invasion of Ukraine",
+      "category": "GEOPOLITICAL_SHOCK",
+      "designation": "DEVELOPMENT",
+      "shock_types": [
+        "geopolitical_shock",
+        "risk_off",
+        "energy_risk"
+      ],
+      "public_knowability": {
+        "original_time": "2022-02-24 05:30",
+        "original_timezone": "Europe/Moscow (MSK, UTC+03:00)",
+        "timestamp_utc": "2022-02-24T02:30:00Z",
+        "precision": "minute",
+        "confidence": "medium_high",
+        "uncertainty": "Independent timestamp research gives 05:30 Moscow (02:30 UTC); retained contemporaneous coverage rounds the announcement to shortly before 03:00 GMT. Keep the difference visible."
+      },
+      "window_template": "POINT_SHOCK_V1",
+      "windows": {
+        "pre_event": {
+          "start_utc": "2022-02-17T02:30:00Z",
+          "end_utc": "2022-02-24T02:30:00Z"
+        },
+        "core_crisis": {
+          "start_utc": "2022-02-24T02:30:00Z",
+          "end_utc": "2022-02-27T02:30:00Z"
+        },
+        "aftermath_recovery": {
+          "start_utc": "2022-02-27T02:30:00Z",
+          "end_utc": "2022-03-13T02:30:00Z"
+        }
+      },
+      "window_reason": "Broadcast-start milestone; fixed point-shock window. The event record is descriptive and does not adopt parties' characterizations.",
+      "required_market_data": {
+        "profile": "CRYPTO_CORE_V1",
+        "symbols": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "intervals": [
+          "15m",
+          "1h",
+          "4h"
+        ],
+        "warmup_before_pre_event_days": 14
+      },
+      "contextual_data": [
+        "official address",
+        "contemporaneous wire/live-report timing"
+      ],
+      "cluster_id": null,
+      "replay_eligible": true,
+      "sources": [
+        {
+          "type": "primary",
+          "url": "https://en.kremlin.ru/events/president/news/67843/videos",
+          "note": "Official recording of the presidential address; primary event record."
+        },
+        {
+          "type": "institutional_research",
+          "url": "https://www.atlanticcouncil.org/in-depth-research-reports/report/narrative-warfare/",
+          "note": "DFRLab/Atlantic Council research records the speech start at 05:30 Moscow time."
+        },
+        {
+          "type": "contemporaneous_report",
+          "url": "https://www.aljazeera.com/news/2022/2/23/ukraine-declares-state-of-emergency-amid-fears-of-invasion-liveblog",
+          "note": "Live coverage recorded the announcement shortly before 03:00 GMT."
+        }
+      ],
+      "leakage_note": "No battlefield outcome, later escalation or market reaction is used to move the anchor."
+    },
+    {
+      "event_id": "CRL-E005",
+      "version": "1",
+      "neutral_name": "Federal Reserve first rate increase of 2022 tightening cycle",
+      "category": "REGIME_TRANSITION",
+      "designation": "DEVELOPMENT",
+      "shock_types": [
+        "macro_regime_transition",
+        "rates_tightening",
+        "prolonged_risk_repricing"
+      ],
+      "public_knowability": {
+        "original_time": "2022-03-16 14:00",
+        "original_timezone": "America/New_York (EDT, UTC-04:00)",
+        "timestamp_utc": "2022-03-16T18:00:00Z",
+        "precision": "minute",
+        "confidence": "high",
+        "uncertainty": "None material for release timestamp."
+      },
+      "window_template": "REGIME_180D_V1",
+      "windows": {
+        "pre_event": {
+          "start_utc": "2022-02-14T18:00:00Z",
+          "end_utc": "2022-03-16T18:00:00Z"
+        },
+        "core_crisis": {
+          "start_utc": "2022-03-16T18:00:00Z",
+          "end_utc": "2022-09-12T18:00:00Z"
+        },
+        "aftermath_recovery": {
+          "start_utc": "2022-09-12T18:00:00Z",
+          "end_utc": "2022-10-12T18:00:00Z"
+        }
+      },
+      "window_reason": "Scheduled FOMC release is exact and known without reference to later crypto troughs; fixed 180-day context period.",
+      "required_market_data": {
+        "profile": "CRYPTO_CORE_V1",
+        "symbols": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "intervals": [
+          "15m",
+          "1h",
+          "4h"
+        ],
+        "warmup_before_pre_event_days": 14
+      },
+      "contextual_data": [
+        "FOMC policy-release metadata only"
+      ],
+      "cluster_id": "CRL-CLUSTER-2022-MACRO-CRYPTO",
+      "replay_eligible": true,
+      "sources": [
+        {
+          "type": "central_bank",
+          "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20220316a.htm",
+          "note": "FOMC statement released at 2:00 p.m. EDT and raised target range."
+        }
+      ],
+      "leakage_note": "This is a regime-context episode, not an independent causal sample from overlapping 2022 crises; never end it at the eventual bear-market low."
+    },
+    {
+      "event_id": "CRL-E006",
+      "version": "1",
+      "neutral_name": "Terra stress — Binance LUNA/UST withdrawal suspension",
+      "category": "CRYPTO_STABLECOIN_STRESS",
+      "designation": "DEVELOPMENT",
+      "shock_types": [
+        "stablecoin_depeg",
+        "liquidity_stress",
+        "network_congestion",
+        "crypto_contagion"
+      ],
+      "public_knowability": {
+        "original_time": "2022-05-10 02:20",
+        "original_timezone": "UTC",
+        "timestamp_utc": "2022-05-10T02:20:00Z",
+        "precision": "minute",
+        "confidence": "high",
+        "uncertainty": "The broader Terra crisis began before the exact anchor; May-7 precursor is date-level in retained source and is not assigned invented intraday precision."
+      },
+      "window_template": "SOLVENCY_V1",
+      "windows": {
+        "pre_event": {
+          "start_utc": "2022-05-03T02:20:00Z",
+          "end_utc": "2022-05-10T02:20:00Z"
+        },
+        "core_crisis": {
+          "start_utc": "2022-05-10T02:20:00Z",
+          "end_utc": "2022-05-20T02:20:00Z"
+        },
+        "aftermath_recovery": {
+          "start_utc": "2022-05-20T02:20:00Z",
+          "end_utc": "2022-06-19T02:20:00Z"
+        }
+      },
+      "window_reason": "Exact exchange operational milestone is used because retained evidence for the earlier May-7 public Curve-liquidity signal lacks a trustworthy intraday timestamp.",
+      "required_market_data": {
+        "profile": "CRYPTO_CORE_V1",
+        "symbols": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "intervals": [
+          "15m",
+          "1h",
+          "4h"
+        ],
+        "warmup_before_pre_event_days": 14
+      },
+      "contextual_data": [
+        "May-7 publicly visible Curve liquidity withdrawal",
+        "UST/LUNA exchange operational status"
+      ],
+      "cluster_id": "CRL-CLUSTER-2022-MACRO-CRYPTO",
+      "replay_eligible": true,
+      "sources": [
+        {
+          "type": "institutional_research",
+          "url": "https://www.richmondfed.org/publications/research/economic_brief/2022/eb_22-24",
+          "note": "Documents public Curve liquidity withdrawal beginning May 7 and subsequent depeg sequence."
+        },
+        {
+          "type": "exchange",
+          "url": "https://www.binance.com/en/support/announcement/detail/dc02bedd65be40f7b10022f26bc06879",
+          "note": "Binance records LUNA/UST withdrawal suspension at 02:20 UTC May 10."
+        }
+      ],
+      "leakage_note": "Do not back-date using the largest depeg/price move. The named event is the exact Binance operational milestone."
+    },
+    {
+      "event_id": "CRL-E007",
+      "version": "1",
+      "neutral_name": "Alameda balance-sheet disclosure preceding FTX crisis",
+      "category": "CRYPTO_EXCHANGE_SOLVENCY_STRESS",
+      "designation": "DEVELOPMENT",
+      "shock_types": [
+        "solvency_concern",
+        "liquidity_run",
+        "crypto_contagion"
+      ],
+      "public_knowability": {
+        "original_time": "2022-11-02 10:44",
+        "original_timezone": "America/New_York (EDT, UTC-04:00)",
+        "timestamp_utc": "2022-11-02T14:44:00Z",
+        "precision": "minute",
+        "confidence": "high",
+        "uncertainty": "Article was later updated; original publication time is preserved."
+      },
+      "window_template": "SOLVENCY_V1",
+      "windows": {
+        "pre_event": {
+          "start_utc": "2022-10-26T14:44:00Z",
+          "end_utc": "2022-11-02T14:44:00Z"
+        },
+        "core_crisis": {
+          "start_utc": "2022-11-02T14:44:00Z",
+          "end_utc": "2022-11-12T14:44:00Z"
+        },
+        "aftermath_recovery": {
+          "start_utc": "2022-11-12T14:44:00Z",
+          "end_utc": "2022-12-12T14:44:00Z"
+        }
+      },
+      "window_reason": "Uses the first retained publication timestamp of the balance-sheet report rather than later bankruptcy or price-collapse milestones.",
+      "required_market_data": {
+        "profile": "CRYPTO_CORE_V1",
+        "symbols": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "intervals": [
+          "15m",
+          "1h",
+          "4h"
+        ],
+        "warmup_before_pre_event_days": 14
+      },
+      "contextual_data": [
+        "FTX/Alameda public disclosure timeline"
+      ],
+      "cluster_id": null,
+      "replay_eligible": true,
+      "sources": [
+        {
+          "type": "financial_press",
+          "url": "https://www.coindesk.com/business/2022/11/02/divisions-in-sam-bankman-frieds-crypto-empire-blur-on-his-trading-titan-alamedas-balance-sheet",
+          "note": "Published Nov 2, 2022 10:44 a.m. EDT."
+        }
+      ],
+      "leakage_note": "Bankruptcy, withdrawals halt and subsequent market lows are later events and cannot redefine this anchor."
+    },
+    {
+      "event_id": "CRL-E008",
+      "version": "1",
+      "neutral_name": "Silicon Valley Bank closure",
+      "category": "BANKING_LIQUIDITY_STRESS",
+      "designation": "DEVELOPMENT",
+      "shock_types": [
+        "bank_run",
+        "liquidity_stress",
+        "stablecoin_contagion_risk"
+      ],
+      "public_knowability": {
+        "original_time": "2023-03-10 11:15",
+        "original_timezone": "America/New_York (EST, UTC-05:00)",
+        "timestamp_utc": "2023-03-10T16:15:00Z",
+        "precision": "minute",
+        "confidence": "high",
+        "uncertainty": "None material for closure timestamp."
+      },
+      "window_template": "POINT_SHOCK_V1",
+      "windows": {
+        "pre_event": {
+          "start_utc": "2023-03-03T16:15:00Z",
+          "end_utc": "2023-03-10T16:15:00Z"
+        },
+        "core_crisis": {
+          "start_utc": "2023-03-10T16:15:00Z",
+          "end_utc": "2023-03-13T16:15:00Z"
+        },
+        "aftermath_recovery": {
+          "start_utc": "2023-03-13T16:15:00Z",
+          "end_utc": "2023-03-27T16:15:00Z"
+        }
+      },
+      "window_reason": "Official regulator testimony gives exact closure time; fixed point-shock window spans the following weekend without tuning to crypto outcomes.",
+      "required_market_data": {
+        "profile": "CRYPTO_CORE_V1",
+        "symbols": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "intervals": [
+          "15m",
+          "1h",
+          "4h"
+        ],
+        "warmup_before_pre_event_days": 14
+      },
+      "contextual_data": [
+        "FDIC closure metadata",
+        "optional stablecoin context; not decision input"
+      ],
+      "cluster_id": null,
+      "replay_eligible": true,
+      "sources": [
+        {
+          "type": "regulator",
+          "url": "https://www.fdic.gov/news/speeches/2023/spmar2923.html",
+          "note": "FDIC testimony states SVB was closed at 11:15 a.m. EST March 10."
+        },
+        {
+          "type": "regulator",
+          "url": "https://www.fdic.gov/resources/resolutions/bank-failures/failed-bank-list/silicon-valley.html",
+          "note": "FDIC failed-bank record confirms March 10 closure."
+        }
+      ],
+      "leakage_note": "Earlier bank-run information belongs in pre-event context; later USDC recovery does not determine aftermath endpoint."
+    },
+    {
+      "event_id": "CRL-E016",
+      "version": "1",
+      "neutral_name": "17 Aug 2023 sudden BTC/ETH price dislocation",
+      "category": "CRYPTO_FLASH_DELEVERAGING_SHOCK",
+      "designation": "DEVELOPMENT",
+      "shock_types": [
+        "rapid_price_dislocation",
+        "volatility_spike",
+        "deleveraging",
+        "liquidity_stress"
+      ],
+      "public_knowability": {
+        "original_time": "2023-08-17 21:30",
+        "original_timezone": "UTC",
+        "timestamp_utc": "2023-08-17T21:30:00Z",
+        "precision": "minute",
+        "confidence": "medium_high",
+        "uncertainty": "Contemporaneous reporting places BTC near its pre-drop level at 21:30 UTC before an approximately eight-percent move over the following minutes; this is a price-defined onset, not an external-news timestamp."
+      },
+      "window_template": "POINT_SHOCK_V1",
+      "windows": {
+        "pre_event": {
+          "start_utc": "2023-08-10T21:30:00Z",
+          "end_utc": "2023-08-17T21:30:00Z"
+        },
+        "core_crisis": {
+          "start_utc": "2023-08-17T21:30:00Z",
+          "end_utc": "2023-08-20T21:30:00Z"
+        },
+        "aftermath_recovery": {
+          "start_utc": "2023-08-20T21:30:00Z",
+          "end_utc": "2023-09-03T21:30:00Z"
+        }
+      },
+      "window_reason": "Minute-level public market onset from contemporaneous reporting; fixed POINT_SHOCK_V1 endpoints. Because selection is based on known historical price action, this event is Development-only.",
+      "required_market_data": {
+        "profile": "CRYPTO_CORE_V1",
+        "symbols": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "intervals": [
+          "15m",
+          "1h",
+          "4h"
+        ],
+        "warmup_before_pre_event_days": 14
+      },
+      "contextual_data": [
+        "contemporaneous public price report; cause narratives are metadata only"
+      ],
+      "cluster_id": null,
+      "replay_eligible": true,
+      "sources": [
+        {
+          "type": "contemporaneous_market_press",
+          "url": "https://cointelegraph.com/news/bitcoin-price-falls-below-26k-in-two-month-lows-for-btc",
+          "note": "Reports BTC around 27,677 at 21:30 UTC before an approximately 8% ten-minute drop."
+        },
+        {
+          "type": "contemporaneous_market_press",
+          "url": "https://www.theblock.co/post/246121/bitcoin-price-drops-to-25200-in-sudden-crash-before-rebounding",
+          "note": "Contemporaneous report of BTC and ETH falling sharply within minutes on Aug. 17, 2023."
+        }
+      ],
+      "leakage_note": "Outcome-selected historical stress case: Development only. Do not present it as an ex-ante prediction event or promote it to Blind Holdout."
+    },
+    {
+      "event_id": "CRL-E009",
+      "version": "1",
+      "neutral_name": "Binance Spot trading halt",
+      "category": "CRYPTO_EXCHANGE_OUTAGE",
+      "designation": "BLIND_HOLDOUT",
+      "shock_types": [
+        "exchange_outage",
+        "price_discovery_impairment",
+        "liquidity_dislocation"
+      ],
+      "public_knowability": {
+        "original_time": "2023-03-24 11:27",
+        "original_timezone": "UTC",
+        "timestamp_utc": "2023-03-24T11:27:00Z",
+        "precision": "minute",
+        "confidence": "high",
+        "uncertainty": "None material for outage onset."
+      },
+      "window_template": "OUTAGE_V1",
+      "windows": {
+        "pre_event": {
+          "start_utc": "2023-03-23T11:27:00Z",
+          "end_utc": "2023-03-24T11:27:00Z"
+        },
+        "core_crisis": {
+          "start_utc": "2023-03-24T11:27:00Z",
+          "end_utc": "2023-03-25T11:27:00Z"
+        },
+        "aftermath_recovery": {
+          "start_utc": "2023-03-25T11:27:00Z",
+          "end_utc": "2023-03-28T11:27:00Z"
+        }
+      },
+      "window_reason": "Official Binance post-mortem gives exact disable time; fixed outage window ignores the known recovery time for endpoint selection.",
+      "required_market_data": {
+        "profile": "CRYPTO_CORE_V1",
+        "symbols": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "intervals": [
+          "15m",
+          "1h",
+          "4h"
+        ],
+        "warmup_before_pre_event_days": 14
+      },
+      "contextual_data": [
+        "Binance incident metadata; service resumed 14:00 UTC as context only"
+      ],
+      "cluster_id": null,
+      "replay_eligible": true,
+      "sources": [
+        {
+          "type": "exchange",
+          "url": "https://www.binance.com/en/blog/from-our-ceo/6789340645608890113",
+          "note": "Official post-mortem states Spot trading was disabled at 11:27 UTC."
+        },
+        {
+          "type": "exchange",
+          "url": "https://www.binance.com/en/support/announcement/detail/813a31506e9f478ea8c1058b425df87a",
+          "note": "Maintenance completion notice says trading resumed at 14:00 UTC."
+        }
+      ],
+      "leakage_note": "Holdout: no BTC/ETH returns, plots or YATL replay results may be inspected before final evaluation."
+    },
+    {
+      "event_id": "CRL-E010",
+      "version": "1",
+      "neutral_name": "7 October Israel-Gaza regional shock",
+      "category": "GEOPOLITICAL_SHOCK",
+      "designation": "BLIND_HOLDOUT",
+      "shock_types": [
+        "geopolitical_shock",
+        "weekend_risk",
+        "energy_risk"
+      ],
+      "public_knowability": {
+        "original_time": "2023-10-07 06:29",
+        "original_timezone": "Asia/Jerusalem (IDT, UTC+03:00)",
+        "timestamp_utc": "2023-10-07T03:29:00Z",
+        "precision": "minute",
+        "confidence": "medium",
+        "uncertainty": "Source conflict in UTC conversion. Preserve 06:29 local and quarantine replay until independently resolved."
+      },
+      "window_template": "POINT_SHOCK_V1",
+      "windows": {
+        "pre_event": {
+          "start_utc": "2023-09-30T03:29:00Z",
+          "end_utc": "2023-10-07T03:29:00Z"
+        },
+        "core_crisis": {
+          "start_utc": "2023-10-07T03:29:00Z",
+          "end_utc": "2023-10-10T03:29:00Z"
+        },
+        "aftermath_recovery": {
+          "start_utc": "2023-10-10T03:29:00Z",
+          "end_utc": "2023-10-24T03:29:00Z"
+        }
+      },
+      "window_reason": "Later Reuters anniversary coverage identifies 06:29 local as the exact attack time. UTC normalization uses the IANA local offset, but a retained 2023 Reuters graphic contains a conflicting GMT conversion, so replay is quarantined.",
+      "required_market_data": {
+        "profile": "CRYPTO_CORE_V1",
+        "symbols": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "intervals": [
+          "15m",
+          "1h",
+          "4h"
+        ],
+        "warmup_before_pre_event_days": 14
+      },
+      "contextual_data": [
+        "Reuters event chronology"
+      ],
+      "cluster_id": null,
+      "replay_eligible": false,
+      "sources": [
+        {
+          "type": "wire",
+          "url": "https://www.reuters.com/world/middle-east/how-world-is-marking-oct-7-attack-israel-start-gaza-war-2024-10-07/",
+          "note": "Reuters anniversary coverage says ceremonies began at 06:29 a.m., the exact time of the initial attack."
+        },
+        {
+          "type": "wire",
+          "url": "https://graphics.thomsonreuters.com/testfiles/2023/2l8DAdBeRUh1/2023-10-09/how-the-surprise-attack-on-israel-unfolded/",
+          "note": "Older Reuters graphic prints about 06:30 local with 0430 GMT, conflicting with IANA offset/other reports."
+        }
+      ],
+      "leakage_note": "Holdout and timestamp quarantine. No market outcomes may be inspected to choose between timestamp variants."
+    },
+    {
+      "event_id": "CRL-E011",
+      "version": "1",
+      "neutral_name": "Iran direct UAV launch toward Israel publicly confirmed",
+      "category": "GEOPOLITICAL_SHOCK",
+      "designation": "BLIND_HOLDOUT",
+      "shock_types": [
+        "direct_state_to_state_shock",
+        "weekend_risk",
+        "energy_risk"
+      ],
+      "public_knowability": {
+        "original_time": "2024-04-13 23:12",
+        "original_timezone": "Asia/Jerusalem (IDT, UTC+03:00)",
+        "timestamp_utc": "2024-04-13T20:12:00Z",
+        "precision": "minute",
+        "confidence": "high",
+        "uncertainty": "Launch physically preceded the announcement; anchor is public confirmation, not inferred launch time."
+      },
+      "window_template": "POINT_SHOCK_V1",
+      "windows": {
+        "pre_event": {
+          "start_utc": "2024-04-06T20:12:00Z",
+          "end_utc": "2024-04-13T20:12:00Z"
+        },
+        "core_crisis": {
+          "start_utc": "2024-04-13T20:12:00Z",
+          "end_utc": "2024-04-16T20:12:00Z"
+        },
+        "aftermath_recovery": {
+          "start_utc": "2024-04-16T20:12:00Z",
+          "end_utc": "2024-04-30T20:12:00Z"
+        }
+      },
+      "window_reason": "Official real-time update provides an exact public confirmation timestamp; fixed point-shock window.",
+      "required_market_data": {
+        "profile": "CRYPTO_CORE_V1",
+        "symbols": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "intervals": [
+          "15m",
+          "1h",
+          "4h"
+        ],
+        "warmup_before_pre_event_days": 14
+      },
+      "contextual_data": [
+        "IDF real-time public update"
+      ],
+      "cluster_id": null,
+      "replay_eligible": true,
+      "sources": [
+        {
+          "type": "primary",
+          "url": "https://www.idf.il/en/mini-sites/the-iranian-attack-real-time-updates/",
+          "note": "At 23:12 local IDF publicly stated that Iran had launched UAVs toward Israel."
+        }
+      ],
+      "leakage_note": "Holdout: later interception outcomes or crypto reaction cannot alter the anchor/window."
+    },
+    {
+      "event_id": "CRL-E012",
+      "version": "1",
+      "neutral_name": "Israel begins strikes on Iran — first retained Reuters report",
+      "category": "GEOPOLITICAL_ENERGY_RISK",
+      "designation": "BLIND_HOLDOUT",
+      "shock_types": [
+        "direct_state_to_state_shock",
+        "energy_risk",
+        "volatility_spike"
+      ],
+      "public_knowability": {
+        "original_time": "2025-06-13 00:26",
+        "original_timezone": "UTC (wire publication)",
+        "timestamp_utc": "2025-06-13T00:26:00Z",
+        "precision": "minute",
+        "confidence": "high",
+        "uncertainty": "Physical strikes may precede the first retained wire timestamp; catalog anchor is conservative public knowability."
+      },
+      "window_template": "POINT_SHOCK_V1",
+      "windows": {
+        "pre_event": {
+          "start_utc": "2025-06-06T00:26:00Z",
+          "end_utc": "2025-06-13T00:26:00Z"
+        },
+        "core_crisis": {
+          "start_utc": "2025-06-13T00:26:00Z",
+          "end_utc": "2025-06-16T00:26:00Z"
+        },
+        "aftermath_recovery": {
+          "start_utc": "2025-06-16T00:26:00Z",
+          "end_utc": "2025-06-30T00:26:00Z"
+        }
+      },
+      "window_reason": "Uses the retained Reuters wire publication time rather than later damage assessment or market extrema.",
+      "required_market_data": {
+        "profile": "CRYPTO_CORE_V1",
+        "symbols": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "intervals": [
+          "15m",
+          "1h",
+          "4h"
+        ],
+        "warmup_before_pre_event_days": 14
+      },
+      "contextual_data": [
+        "Reuters first report",
+        "optional oil context; not decision input"
+      ],
+      "cluster_id": "CRL-CLUSTER-2025-IRAN",
+      "replay_eligible": true,
+      "sources": [
+        {
+          "type": "wire_republish",
+          "url": "https://www.yahoo.com/news/israel-strikes-iran-no-us-002623230.html",
+          "note": "Reuters report timestamped June 13, 2025 00:26 UTC."
+        },
+        {
+          "type": "wire",
+          "url": "https://www.reuters.com/world/middle-east/view-stocks-oil-sell-off-israel-strikes-iran-2025-06-13/",
+          "note": "Reuters market-context follow-up; not used to set endpoints."
+        }
+      ],
+      "leakage_note": "Holdout: do not use later oil/FX/equity or BTC/ETH reaction to move the window."
+    },
+    {
+      "event_id": "CRL-E013",
+      "version": "1",
+      "neutral_name": "U.S. strike on Iranian nuclear sites — first retained public announcement",
+      "category": "GEOPOLITICAL_US_IRAN_SHOCK",
+      "designation": "BLIND_HOLDOUT",
+      "shock_types": [
+        "direct_us_iran_shock",
+        "energy_risk",
+        "weekend_gap_risk"
+      ],
+      "public_knowability": {
+        "original_time": "2025-06-21 19:46",
+        "original_timezone": "America/New_York (EDT, UTC-04:00)",
+        "timestamp_utc": "2025-06-21T23:46:00Z",
+        "precision": "minute",
+        "confidence": "medium_high",
+        "uncertainty": "Exact social-post timestamp comes from retained secondary reporting; preserve confidence below 'high'."
+      },
+      "window_template": "POINT_SHOCK_V1",
+      "windows": {
+        "pre_event": {
+          "start_utc": "2025-06-14T23:46:00Z",
+          "end_utc": "2025-06-21T23:46:00Z"
+        },
+        "core_crisis": {
+          "start_utc": "2025-06-21T23:46:00Z",
+          "end_utc": "2025-06-24T23:46:00Z"
+        },
+        "aftermath_recovery": {
+          "start_utc": "2025-06-24T23:46:00Z",
+          "end_utc": "2025-07-08T23:46:00Z"
+        }
+      },
+      "window_reason": "Uses the retained timestamp of the initial public Truth Social announcement, corroborated by Reuters coverage of the strikes.",
+      "required_market_data": {
+        "profile": "CRYPTO_CORE_V1",
+        "symbols": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "intervals": [
+          "15m",
+          "1h",
+          "4h"
+        ],
+        "warmup_before_pre_event_days": 14
+      },
+      "contextual_data": [
+        "public presidential announcement",
+        "Reuters strike coverage"
+      ],
+      "cluster_id": "CRL-CLUSTER-2025-IRAN",
+      "replay_eligible": true,
+      "sources": [
+        {
+          "type": "timestamp_secondary",
+          "url": "https://www.wired.com/story/truth-social-crashes-as-trump-live-posts-bombing-iran/",
+          "note": "Reports initial announcement posted at 7:46 p.m. ET."
+        },
+        {
+          "type": "wire",
+          "url": "https://www.reuters.com/world/us/strikes-iran-mark-trumps-biggest-riskiest-foreign-policy-gamble-2025-06-22/",
+          "note": "Reuters corroborates U.S. strikes on Iranian nuclear facilities."
+        }
+      ],
+      "leakage_note": "Holdout; overlaps E012 and is not an independent sample in pooled inference."
+    },
+    {
+      "event_id": "CRL-E014",
+      "version": "1",
+      "neutral_name": "2026 U.S.-Israel/Iran conflict onset — first retained official public alert",
+      "category": "GEOPOLITICAL_US_IRAN_SHOCK",
+      "designation": "BLIND_HOLDOUT",
+      "shock_types": [
+        "direct_state_to_state_shock",
+        "direct_us_iran_shock",
+        "energy_risk",
+        "shipping_risk"
+      ],
+      "public_knowability": {
+        "original_time": "2026-02-28 08:15",
+        "original_timezone": "Asia/Jerusalem (IST, UTC+02:00)",
+        "timestamp_utc": "2026-02-28T06:15:00Z",
+        "precision": "minute",
+        "confidence": "high_for_retained_alert",
+        "uncertainty": "An operation can begin before public alert; this is earliest exact retained public timestamp found, not a claim about first weapon release."
+      },
+      "window_template": "POINT_SHOCK_V1",
+      "windows": {
+        "pre_event": {
+          "start_utc": "2026-02-21T06:15:00Z",
+          "end_utc": "2026-02-28T06:15:00Z"
+        },
+        "core_crisis": {
+          "start_utc": "2026-02-28T06:15:00Z",
+          "end_utc": "2026-03-03T06:15:00Z"
+        },
+        "aftermath_recovery": {
+          "start_utc": "2026-03-03T06:15:00Z",
+          "end_utc": "2026-03-17T06:15:00Z"
+        }
+      },
+      "window_reason": "Uses earliest exact official alert retained in the researched IDF live log; Reuters published confirmation at 06:34 UTC.",
+      "required_market_data": {
+        "profile": "CRYPTO_CORE_V1",
+        "symbols": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "intervals": [
+          "15m",
+          "1h",
+          "4h"
+        ],
+        "warmup_before_pre_event_days": 14
+      },
+      "contextual_data": [
+        "official alert",
+        "Reuters confirmation"
+      ],
+      "cluster_id": "CRL-CLUSTER-2026-IRAN-HORMUZ",
+      "replay_eligible": true,
+      "sources": [
+        {
+          "type": "primary",
+          "url": "https://www.idf.il/en/mini-sites/iran-israel-war-2026/live-updates-iran-israel-war-2026/february-28-2026-iran-israel-war-2026-live-updates/",
+          "note": "Earliest exact retained log entry at 08:15 local; later entries describe joint operation."
+        },
+        {
+          "type": "wire",
+          "url": "https://www.reuters.com/world/middle-east/israel-says-it-launched-pre-emptive-attack-against-iran-2026-02-28/",
+          "note": "Reuters page timestamped 06:34 UTC and reports U.S.-Israel attacks underway."
+        }
+      ],
+      "leakage_note": "Holdout and recent event; no BTC/ETH holdout outcomes may enter research design."
+    },
+    {
+      "event_id": "CRL-E015",
+      "version": "1",
+      "neutral_name": "Hormuz shipping suspensions after Iranian closure claim",
+      "category": "ENERGY_SHIPPING_DISLOCATION",
+      "designation": "BLIND_HOLDOUT",
+      "shock_types": [
+        "shipping_dislocation",
+        "energy_supply_risk",
+        "liquidity_risk"
+      ],
+      "public_knowability": {
+        "original_time": "2026-02-28 14:39",
+        "original_timezone": "UTC (Reuters publication)",
+        "timestamp_utc": "2026-02-28T14:39:00Z",
+        "precision": "minute",
+        "confidence": "high_for_confirmation_low_for_first_signal",
+        "uncertainty": "Exact earliest publicly knowable VHF/closure-warning timestamp not yet established. 14:39 UTC is conservative confirmation only."
+      },
+      "window_template": "POINT_SHOCK_V1",
+      "windows": {
+        "pre_event": {
+          "start_utc": "2026-02-21T14:39:00Z",
+          "end_utc": "2026-02-28T14:39:00Z"
+        },
+        "core_crisis": {
+          "start_utc": "2026-02-28T14:39:00Z",
+          "end_utc": "2026-03-03T14:39:00Z"
+        },
+        "aftermath_recovery": {
+          "start_utc": "2026-03-03T14:39:00Z",
+          "end_utc": "2026-03-17T14:39:00Z"
+        }
+      },
+      "window_reason": "Reuters publication is an exact conservative confirmation, but the report states that VHF closure warnings and shipping suspensions already existed. First-signal timing is unresolved.",
+      "required_market_data": {
+        "profile": "CRYPTO_CORE_V1",
+        "symbols": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "intervals": [
+          "15m",
+          "1h",
+          "4h"
+        ],
+        "warmup_before_pre_event_days": 14
+      },
+      "contextual_data": [
+        "shipping/VHF incident metadata",
+        "optional oil context; not decision input"
+      ],
+      "cluster_id": "CRL-CLUSTER-2026-IRAN-HORMUZ",
+      "replay_eligible": false,
+      "sources": [
+        {
+          "type": "wire",
+          "url": "https://www.reuters.com/business/energy/oil-gas-majors-traders-suspend-shipments-via-hormuz-us-attacks-iran-sources-say-2026-02-28/",
+          "note": "Reuters page timestamped 14:39 UTC; reports suspensions and earlier VHF warnings."
+        }
+      ],
+      "leakage_note": "Do not replay until the first-signal timestamp is resolved or a separately preregistered conservative-anchor protocol is approved."
+    }
+  ]
+}
