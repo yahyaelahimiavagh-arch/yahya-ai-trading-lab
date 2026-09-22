@@ -3,6 +3,7 @@ import io
 import json
 import tempfile
 import unittest
+import urllib.error
 import urllib.parse
 import zipfile
 from datetime import date, datetime, timezone
@@ -420,8 +421,18 @@ class CrisisLabAcquisitionTests(unittest.TestCase):
                 retrieved_at_utc="2026-09-22T21:00:00Z",
             )
             self.assertEqual(
-                result["manifest_file_sha256"],
-                repeated["manifest_file_sha256"],
+                result["canonical"]["sha256"],
+                repeated["canonical"]["sha256"],
+            )
+            self.assertEqual(
+                result["canonical"]["relative_path"],
+                repeated["canonical"]["relative_path"],
+            )
+            self.assertFalse(
+                result["source_objects"][0]["archive_cache_hit"]
+            )
+            self.assertTrue(
+                repeated["source_objects"][0]["archive_cache_hit"]
             )
             self.assertEqual(
                 canonical.read_bytes(),
@@ -563,6 +574,56 @@ class CrisisLabAcquisitionTests(unittest.TestCase):
         self.assertEqual(
             len(plan["datasets"]),
             6,
+        )
+
+    def test_https_fetcher_records_bounded_retry_provenance(self):
+        class Response:
+            status = 200
+            headers = {}
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return False
+
+            def read(self, size):
+                return b"ok"
+
+        class Opener:
+            def __init__(self):
+                self.calls = 0
+
+            def open(self, request, timeout):
+                self.calls += 1
+                if self.calls == 1:
+                    raise urllib.error.HTTPError(
+                        request.full_url,
+                        500,
+                        "server error",
+                        {},
+                        None,
+                    )
+                return Response()
+
+        fetcher = acq.HttpsFetcher(
+            (acq.ARCHIVE_HOST,),
+            attempts=2,
+            sleeper=lambda _: None,
+        )
+        fetcher._opener = Opener()
+        url = "https://data.binance.vision/test"
+        self.assertEqual(
+            fetcher.fetch(url, max_bytes=10),
+            b"ok",
+        )
+        summary = fetcher.transport_summary(url)
+        self.assertEqual(summary["attempts"], 2)
+        self.assertEqual(summary["final_outcome"], "SUCCESS")
+        self.assertEqual(len(summary["failures"]), 1)
+        self.assertEqual(
+            summary["failures"][0]["http_status"],
+            500,
         )
 
     def test_https_guard_rejects_wrong_sources(self):
