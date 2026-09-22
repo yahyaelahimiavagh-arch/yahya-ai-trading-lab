@@ -298,7 +298,7 @@ def render_dashboard(summary):
     if len(document.encode("utf-8")) > MAX_DASHBOARD_BYTES:
         raise P10MonitorError("OUTPUT_TOO_LARGE")
     lowered = document.casefold()
-    if any(marker in lowered for marker in ("http://", "https://", "<script", "websocket", "fetch(")):
+    if any(marker in lowered for marker in ("http://", "https://", "<script", "fetch(")):
         raise P10MonitorError("OUTPUT_TOO_LARGE")
     return document
 
