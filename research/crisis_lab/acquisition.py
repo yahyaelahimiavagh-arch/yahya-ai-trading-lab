@@ -363,6 +363,7 @@ def build_archive_objects(
 def load_acquisition_register(
     path: Path = DEFAULT_REGISTER_PATH,
 ) -> dict[str, object]:
+    path = assert_safe_runtime_path(path)
     try:
         record = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
