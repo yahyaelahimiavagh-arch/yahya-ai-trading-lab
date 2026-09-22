@@ -585,6 +585,74 @@
       "leakage_note": "Earlier bank-run information belongs in pre-event context; later USDC recovery does not determine aftermath endpoint."
     },
     {
+      "event_id": "CRL-E016",
+      "version": "1",
+      "neutral_name": "17 Aug 2023 sudden BTC/ETH price dislocation",
+      "category": "CRYPTO_FLASH_DELEVERAGING_SHOCK",
+      "designation": "DEVELOPMENT",
+      "shock_types": [
+        "rapid_price_dislocation",
+        "volatility_spike",
+        "deleveraging",
+        "liquidity_stress"
+      ],
+      "public_knowability": {
+        "original_time": "2023-08-17 21:30",
+        "original_timezone": "UTC",
+        "timestamp_utc": "2023-08-17T21:30:00Z",
+        "precision": "minute",
+        "confidence": "medium_high",
+        "uncertainty": "Contemporaneous reporting places BTC near its pre-drop level at 21:30 UTC before an approximately eight-percent move over the following minutes; this is a price-defined onset, not an external-news timestamp."
+      },
+      "window_template": "POINT_SHOCK_V1",
+      "windows": {
+        "pre_event": {
+          "start_utc": "2023-08-10T21:30:00Z",
+          "end_utc": "2023-08-17T21:30:00Z"
+        },
+        "core_crisis": {
+          "start_utc": "2023-08-17T21:30:00Z",
+          "end_utc": "2023-08-20T21:30:00Z"
+        },
+        "aftermath_recovery": {
+          "start_utc": "2023-08-20T21:30:00Z",
+          "end_utc": "2023-09-03T21:30:00Z"
+        }
+      },
+      "window_reason": "Minute-level public market onset from contemporaneous reporting; fixed POINT_SHOCK_V1 endpoints. Because selection is based on known historical price action, this event is Development-only.",
+      "required_market_data": {
+        "profile": "CRYPTO_CORE_V1",
+        "symbols": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "intervals": [
+          "15m",
+          "1h",
+          "4h"
+        ],
+        "warmup_before_pre_event_days": 14
+      },
+      "contextual_data": [
+        "contemporaneous public price report; cause narratives are metadata only"
+      ],
+      "cluster_id": null,
+      "replay_eligible": true,
+      "sources": [
+        {
+          "type": "contemporaneous_market_press",
+          "url": "https://cointelegraph.com/news/bitcoin-price-falls-below-26k-in-two-month-lows-for-btc",
+          "note": "Reports BTC around 27,677 at 21:30 UTC before an approximately 8% ten-minute drop."
+        },
+        {
+          "type": "contemporaneous_market_press",
+          "url": "https://www.theblock.co/post/246121/bitcoin-price-drops-to-25200-in-sudden-crash-before-rebounding",
+          "note": "Contemporaneous report of BTC and ETH falling sharply within minutes on Aug. 17, 2023."
+        }
+      ],
+      "leakage_note": "Outcome-selected historical stress case: Development only. Do not present it as an ex-ante prediction event or promote it to Blind Holdout."
+    },
+    {
       "event_id": "CRL-E009",
       "version": "1",
       "neutral_name": "Binance Spot trading halt",
