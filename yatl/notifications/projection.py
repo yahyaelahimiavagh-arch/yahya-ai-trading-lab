@@ -1,4 +1,7 @@
-"""P9-002 accepted upstream projection into immutable notification contracts."""
+"""P9 accepted upstream projection into immutable notification contracts."""
+
+import hashlib
+import json
 
 from yatl.dashboard import (
     DashboardOverviewProjection,
@@ -11,6 +14,7 @@ from .contracts import (
     NotificationSeverity,
     NotificationSourceIdentity,
     NotificationSourcePhase,
+    SYMBOLS,
 )
 
 
@@ -133,4 +137,192 @@ def project_data_quality_alert(quality):
         source=source,
         event_time_ms=quality.snapshot_time_ms,
         symbol=None,
+    )
+
+
+_P10_NOT_READY_KEYS = {
+    "schema_version",
+    "command",
+    "ok",
+    "code",
+    "reason",
+    "ingestion_snapshot_sha256",
+    "generated_at_ms",
+    "database_snapshot_sha256",
+    "paper_only",
+    "live_master_lock",
+    "strategy_evidence",
+    "p11_unlocked",
+}
+
+_P10_READY_KEYS = {
+    "schema_version",
+    "command",
+    "ok",
+    "code",
+    "ingestion_snapshot_sha256",
+    "database_snapshot_sha256",
+    "paper_run_sha256",
+    "economics_sha256",
+    "gate_sha256",
+    "sample_status",
+    "disposition",
+    "paper_only",
+    "live_master_lock",
+    "strategy_evidence",
+    "p11_unlocked",
+    "observed_days",
+    "observation_start_ms",
+    "observation_end_ms",
+    "completed_trades",
+    "net_pnl_after_costs_quote",
+    "net_return_after_costs",
+    "profit_factor_after_costs",
+    "maximum_validation_drawdown_fraction",
+    "criteria",
+    "symbols",
+}
+
+_P10_SYMBOL_KEYS = {
+    "symbol",
+    "completed_trades",
+    "net_pnl_after_costs_quote",
+    "net_return_after_costs",
+    "open_positions",
+}
+
+_P10_CRITERIA = {
+    "NET_PNL_AFTER_COSTS",
+    "MAX_DRAWDOWN",
+    "SAMPLE_SIZE",
+    "CONSISTENCY",
+    "REGIME_STABILITY",
+    "FAILURE_RECOVERY",
+    "RISK_CONTROLS",
+}
+
+_HEX = frozenset("0123456789abcdef")
+
+
+def _valid_sha(value):
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and all(character in _HEX for character in value)
+    )
+
+
+def _record_sha256(record):
+    material = json.dumps(
+        record,
+        ensure_ascii=True,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(material).hexdigest()
+
+
+def _p10_common(summary):
+    if (
+        not isinstance(summary, dict)
+        or summary.get("schema_version") != 1
+        or summary.get("command") != "summary"
+        or summary.get("paper_only") is not True
+        or summary.get("live_master_lock") != "OFF"
+        or summary.get("strategy_evidence") != "INSUFFICIENT_EVIDENCE"
+        or summary.get("p11_unlocked") is not False
+        or not _valid_sha(summary.get("ingestion_snapshot_sha256"))
+        or not _valid_sha(summary.get("database_snapshot_sha256"))
+    ):
+        raise NotificationProjectionError("P10 validation summary safety/provenance changed")
+
+
+def project_p10_validation_status(summary, symbol):
+    """Project one symbol-scoped P10 status message from accepted validation summary."""
+
+    if symbol not in SYMBOLS:
+        raise NotificationProjectionError("P10 notification symbol is unsupported")
+    _p10_common(summary)
+    code = summary.get("code")
+    if code == "NOT_READY":
+        if (
+            set(summary) != _P10_NOT_READY_KEYS
+            or summary.get("ok") is not False
+            or summary.get("reason") != "FORWARD_WARMUP_NOT_COMPLETE"
+            or type(summary.get("generated_at_ms")) is not int
+            or summary["generated_at_ms"] < 0
+        ):
+            raise NotificationProjectionError("P10 warm-up status is invalid")
+        observed_at_ms = summary["generated_at_ms"]
+        severity = NotificationSeverity.INFO
+        body = (
+            f"P10 forward warm-up is not complete for {symbol}; "
+            "strategy evidence remains insufficient; P11 remains locked."
+        )
+    elif code == "SUMMARY_READY":
+        if (
+            set(summary) != _P10_READY_KEYS
+            or summary.get("ok") is not True
+            or summary.get("sample_status")
+            not in {"INSUFFICIENT_DATA", "MINIMUM_SAMPLE_MET_ONLY"}
+            or summary.get("disposition")
+            not in {"INSUFFICIENT_DATA", "FAIL", "PASS_CANDIDATE"}
+            or type(summary.get("observation_end_ms")) is not int
+            or summary["observation_end_ms"] < 0
+            or not isinstance(summary.get("criteria"), dict)
+            or set(summary["criteria"]) != _P10_CRITERIA
+            or not isinstance(summary.get("symbols"), list)
+            or len(summary["symbols"]) != len(SYMBOLS)
+        ):
+            raise NotificationProjectionError("P10 ready summary is invalid")
+        by_symbol = {}
+        for item in summary["symbols"]:
+            if (
+                not isinstance(item, dict)
+                or set(item) != _P10_SYMBOL_KEYS
+                or item.get("symbol") not in SYMBOLS
+                or type(item.get("completed_trades")) is not int
+                or item["completed_trades"] < 0
+                or type(item.get("open_positions")) is not int
+                or item["open_positions"] < 0
+                or not isinstance(item.get("net_pnl_after_costs_quote"), str)
+                or not isinstance(item.get("net_return_after_costs"), str)
+            ):
+                raise NotificationProjectionError("P10 symbol summary is invalid")
+            by_symbol[item["symbol"]] = item
+        if set(by_symbol) != set(SYMBOLS):
+            raise NotificationProjectionError("P10 symbol summary coverage changed")
+        item = by_symbol[symbol]
+        observed_at_ms = summary["observation_end_ms"]
+        severity = (
+            NotificationSeverity.ERROR
+            if summary["disposition"] == "FAIL"
+            else NotificationSeverity.INFO
+        )
+        body = (
+            f"P10 disposition {summary['disposition']}; {symbol} completed Paper trades "
+            f"{item['completed_trades']}; net return after costs "
+            f"{item['net_return_after_costs']}; pooled sample {summary['sample_status']}; "
+            "P11 remains locked."
+        )
+    else:
+        raise NotificationProjectionError("P10 validation summary code is unsupported")
+
+    digest = _record_sha256(summary)
+    source = NotificationSourceIdentity(
+        source_id=f"P10_VALIDATION_{symbol}",
+        source_phase=NotificationSourcePhase.P10_FORWARD_VALIDATION,
+        observed_at_ms=observed_at_ms,
+        payload_sha256=digest,
+        symbol=symbol,
+    )
+    return NotificationMessage(
+        notification_id=f"NOTICE_P10_{symbol}_{digest[:12].upper()}",
+        category=NotificationCategory.P10_VALIDATION_STATUS,
+        severity=severity,
+        title=f"YATL P10 validation {symbol}",
+        body=body,
+        source=source,
+        event_time_ms=observed_at_ms,
+        symbol=symbol,
     )
