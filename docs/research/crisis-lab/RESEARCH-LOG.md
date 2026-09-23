@@ -90,3 +90,26 @@ Append-only decision/evidence log.
 - Focused tests were extended for bounded retry provenance and verified archive
   cache reuse. Final acceptance remains tied to the latest GitHub Actions HEAD,
   not the earlier superseded runs.
+
+
+## 2026-09-23
+
+- CRL-002 implementation PR #86 Final candidate HEAD
+  `e3b3e12cd54ef4b612d211473680c40421f0ddf5` completed matching GitHub Actions
+  run `35783881556` successfully and was squash-merged to `main` at
+  `2b58280af5afb5ef895487565bbe951d78feb3fd`.
+- Real VPS pilot acquisition executed for Development event `CRL-E003`.
+  Event-level status was `COMPLETE`: 6/6 BTCUSDT/ETHUSDT × 15m/1h/4h datasets,
+  zero failures, exact expected row counts, zero gaps, zero duplicates and REST
+  boundary verification `MATCH` for every dataset.
+- Event acquisition manifest file SHA-256:
+  `bb2986d87cb672eb91e2dccfbc7e593ea05c12b6f9a49d0d1ffd762b01b995cb`;
+  retrieval timestamp `2026-09-23T12:12:57Z`.
+- External P10 no-write evidence PASS. Before/after SHA-256 values were identical:
+  P10 SQLite `577fc15d3a8966c3f947166376b11945f93de0a32a57cdc4ec2958f7c2fad2f2`;
+  snapshot `4fd18e0d3de9dca0978c9766867364313960db9c11f13583b49a793f03340687`.
+  Hash-file diff was empty; repository working tree remained clean.
+- CRL-002 is ACCEPTED as the reproducible acquisition/provenance mechanism.
+  This does not pre-admit the remaining corpus; CRL-003 now owns dataset quality
+  admission and replay remains closed pending CRL-003 PASS manifests.
+- P10 candidate/config/gates/window/evidence remain unchanged. P11 remains locked.
