@@ -11,6 +11,7 @@ docs/research/crisis-lab/
   EVENT-CATALOG-v0.1.0.json
   CRL-002-DATA-ACQUISITION.md
   DATA-ACQUISITION-REGISTER-v0.1.0.json
+  CRL-002-VPS-RUNBOOK.md
   CRL-003-DATA-QUALITY-MANIFEST.md
   CRL-004-HISTORICAL-REPLAY.md
   CRL-005-CONTROLS-BASELINES.md
@@ -22,7 +23,7 @@ docs/research/crisis-lab/
   RESEARCH-LOG.md
   RESULTS-INDEX.md
 
-research/crisis_lab/            # future research-only code/scripts
+research/crisis_lab/            # active CRL-002+ research-only code; never imported by production yatl
 data/research/crisis-lab/       # local/VPS runtime data; ignored by Git
 artifacts/research/crisis-lab/  # generated evidence; publish only bounded/canonical subsets
 ```

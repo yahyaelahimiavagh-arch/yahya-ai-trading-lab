@@ -10,7 +10,7 @@ This file indexes bounded/canonical research evidence only.
 |---|---|---|---|
 | CRL-000 isolation | ACCEPTED 2026-09-22 | `CRL-000-CHARTER.md` | P10 no-write boundary frozen |
 | CRL-001 Event Catalog | v0.1.0 REGISTERED | `EVENT-CATALOG-v0.1.0.json` | 16 events; 9 Development / 7 Blind Holdout; E010/E015 quarantined from replay |
-| CRL-002 acquisition | v0.1.0 SPEC REGISTERED / RUNTIME PENDING | `DATA-ACQUISITION-REGISTER-v0.1.0.json` | official Binance bulk + public REST verification; no market corpus in Git |
+| CRL-002 acquisition | v0.1.0 IMPLEMENTATION READY / REAL DATA PENDING | `DATA-ACQUISITION-REGISTER-v0.1.0.json`, `CRL-002-VPS-RUNBOOK.md` | research-only downloader + provenance implemented; real VPS manifests and no-P10-write proof still pending |
 
 ## Not yet produced
 

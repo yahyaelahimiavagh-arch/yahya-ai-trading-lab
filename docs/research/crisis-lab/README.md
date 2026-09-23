@@ -8,7 +8,7 @@ Current checkpoint status (2026-09-22):
 |---|---|---|
 | CRL-000 | **ACCEPTED** | research/P10 isolation audit closed |
 | CRL-001 | **REGISTERED v0.1.0** | 16-event source-backed catalog; 9 Development / 7 Blind Holdout |
-| CRL-002 | **IN PROGRESS** | acquisition spec/register complete; runtime bulk acquisition pending |
+| CRL-002 | **IN PROGRESS** | downloader/provenance implementation ready; real VPS acquisition + no-P10-write proof pending |
 | CRL-003..010 | NOT STARTED / SPEC ONLY | ordered downstream gates remain closed |
 
 Purpose: stress the accepted YATL strategy/risk architecture against historical
@@ -34,6 +34,7 @@ integrity of the active P10 real-forward experiment.
 Supporting files:
 - `EVENT-CATALOG-v0.1.0.json` — canonical CRL-001 machine-readable event registry.
 - `DATA-ACQUISITION-REGISTER-v0.1.0.json` — canonical CRL-002 range/source registration.
+- `CRL-002-VPS-RUNBOOK.md` — operator procedure for real acquisition without stopping or mutating P10.
 - `DIRECTORY-LAYOUT.md` — canonical repository/runtime layout.
 - `RESEARCH-LOG.md` — append-only research decisions and evidence notes.
 - `RESULTS-INDEX.md` — accepted research output index.
