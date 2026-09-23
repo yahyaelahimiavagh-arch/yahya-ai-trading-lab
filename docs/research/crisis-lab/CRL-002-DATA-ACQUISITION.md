@@ -1,6 +1,6 @@
 # CRL-002 — Data Acquisition & Provenance
 
-Status: **ACQUISITION IMPLEMENTATION v0.1.0 READY — REAL VPS DATA PENDING**
+Status: **ACCEPTED — 2026-09-23 — CRL-003 OPEN**
 
 Goal: collect bounded historical BTCUSDT/ETHUSDT data for the registered Crisis
 Lab windows without creating any write path into active P10 evidence.
@@ -232,17 +232,52 @@ Implemented v0.1 safeguards:
 
 Operator procedure: `CRL-002-VPS-RUNBOOK.md`.
 
+## Runtime acceptance evidence — 2026-09-23
+
+Accepted pilot event: `CRL-E003` (Development).
+
+Real VPS acquisition produced exactly six BTCUSDT/ETHUSDT × 15m/1h/4h dataset
+manifests with event-level status `COMPLETE`, zero failures, exact expected row
+counts, zero gaps, zero duplicates and `rest_verification_status=MATCH` for all
+six datasets.
+
+Event acquisition manifest:
+- file SHA-256: `bb2986d87cb672eb91e2dccfbc7e593ea05c12b6f9a49d0d1ffd762b01b995cb`;
+- runtime relative path:
+  `manifests/event-catalog-v0.1.0/CRL-E003/event-acquisition-bb2986d87cb672eb91e2dccf.json`;
+- retrieval timestamp: `2026-09-23T12:12:57Z`;
+- market outcomes exposed: false;
+- quality gate: `PENDING_CRL003`.
+
+External P10 no-write proof was recorded immediately around the acquisition.
+Before and after SHA-256 identities were identical:
+
+- `/var/lib/yatl/p10/p10-forward.sqlite3`:
+  `577fc15d3a8966c3f947166376b11945f93de0a32a57cdc4ec2958f7c2fad2f2`;
+- `/var/lib/yatl/p10/snapshot.json`:
+  `4fd18e0d3de9dca0978c9766867364313960db9c11f13583b49a793f03340687`.
+
+The external `diff` of the before/after hash files was empty. The repository
+checkout remained clean on `main...origin/main`.
+
+This accepts the CRL-002 acquisition mechanism; it does **not** claim that the
+entire 16-event corpus has already been admitted. Additional registered events
+may be acquired incrementally through this accepted mechanism and are not
+replay-admitted until CRL-003 issues a quality PASS manifest.
+
 ## CRL-002 exit status
 
 - reproducible source/range design — **PASS**;
 - machine-readable acquisition registration — **PASS**;
 - holdout visibility policy — **PASS**;
 - P10 no-write specification — **PASS**;
-- research-only downloader/provenance implementation — **IMPLEMENTED / CI PENDING**;
-- mocked isolation/provenance tests — **IMPLEMENTED / FINAL-HEAD CI PENDING**;
-- live/bulk acquisition on VPS — **PENDING**;
-- provenance manifests from real downloaded files — **PENDING**;
-- before/after no-P10-write runtime proof — **PENDING**.
+- research-only downloader/provenance implementation — **PASS**;
+- matching Final-HEAD CI for implementation PR #86 / run `35783881556` — **PASS**;
+- real VPS acquisition path — **PASS**;
+- real immutable provenance manifests — **PASS**;
+- archive-vs-REST boundary verification — **PASS**;
+- external before/after no-P10-write runtime proof — **PASS**.
 
-Therefore CRL-002 is **IN PROGRESS**. Planning/registration is complete, but the
-checkpoint is not accepted until real acquisition evidence exists.
+Therefore CRL-002 is **ACCEPTED**. CRL-003 is the active checkpoint. No CRL-002
+result is profitability evidence, strategy acceptance, P10 modification or Live
+authorization.
