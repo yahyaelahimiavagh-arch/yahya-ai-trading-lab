@@ -403,7 +403,9 @@ class CrisisLabQualityTests(unittest.TestCase):
                 "0",
             ]
             out = io.StringIO(newline="")
-            acq.csv.writer(out, lineterminator="\n").writerow(row)
+            writer = acq.csv.writer(out, lineterminator="\n")
+            writer.writerow(acq.CANONICAL_COLUMNS)
+            writer.writerow(row)
             canonical_payload = out.getvalue().encode("utf-8")
             canonical_sha = hashlib.sha256(
                 canonical_payload
