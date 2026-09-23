@@ -2,14 +2,15 @@
 
 Status: **RESEARCH ONLY — P10 UNTOUCHED — P11 LOCKED**
 
-Current checkpoint status (2026-09-22):
+Current checkpoint status (2026-09-23):
 
 | ID | Status | Evidence |
 |---|---|---|
 | CRL-000 | **ACCEPTED** | research/P10 isolation audit closed |
 | CRL-001 | **REGISTERED v0.1.0** | 16-event source-backed catalog; 9 Development / 7 Blind Holdout |
-| CRL-002 | **IN PROGRESS** | downloader/provenance implementation ready; real VPS acquisition + no-P10-write proof pending |
-| CRL-003..010 | NOT STARTED / SPEC ONLY | ordered downstream gates remain closed |
+| CRL-002 | **ACCEPTED 2026-09-23** | real VPS pilot complete; provenance + REST verification + external no-P10-write proof accepted |
+| CRL-003 | **ACTIVE** | data-quality/canonical-manifest gate opened after CRL-002 acceptance |
+| CRL-004..010 | NOT STARTED / SPEC ONLY | ordered downstream gates remain closed |
 
 Purpose: stress the accepted YATL strategy/risk architecture against historical
 crises, control windows, random windows and synthetic shocks while preserving the
