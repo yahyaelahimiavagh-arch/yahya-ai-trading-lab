@@ -229,6 +229,9 @@ def _inspect_canonical(
     if duplicate_manifest != 0:
         failures.append("ACQUISITION_RECORDED_DUPLICATES")
 
+    if Path(canonical_rel).name != f"dataset-{expected_sha}.csv":
+        failures.append("CANONICAL_CONTENT_ADDRESS_MISMATCH")
+
     payload = _read_bytes(runtime_root, canonical_rel)
     actual_sha = _sha256(payload)
     if actual_sha != expected_sha:
@@ -494,6 +497,13 @@ def validate_dataset(
         dataset_ref.get("manifest_file_sha256"),
         "dataset manifest SHA-256",
     )
+    manifest_name = Path(manifest_rel).name
+    expected_manifest_name = (
+        f"acquisition-{expected_manifest_sha[:24]}.json"
+    )
+    if manifest_name != expected_manifest_name:
+        failures.append("DATASET_MANIFEST_CONTENT_ADDRESS_MISMATCH")
+
     dataset_payload = _read_bytes(runtime_root, manifest_rel)
     actual_manifest_sha = _sha256(dataset_payload)
     if actual_manifest_sha != expected_manifest_sha:
@@ -658,6 +668,13 @@ def validate_event(
     expected_event_sha = _require_sha(
         event_manifest_sha256, "event acquisition manifest SHA-256"
     )
+    if (
+        Path(event_manifest_relative_path).name
+        != f"event-acquisition-{expected_event_sha[:24]}.json"
+    ):
+        raise QualityError(
+            "event acquisition manifest content-address identity mismatch"
+        )
     event_payload = _read_bytes(
         runtime_root, event_manifest_relative_path
     )
