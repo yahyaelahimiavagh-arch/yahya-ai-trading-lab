@@ -21,6 +21,7 @@
     "research_safety_invariants",
     "source_zip_checksum_identity",
     "canonical_sha256",
+    "canonical_header_exact",
     "semantic_range_inside_transport_range",
     "transport_grid_alignment",
     "row_count_exact",
