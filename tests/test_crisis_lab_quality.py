@@ -201,7 +201,11 @@ class CrisisLabQualityTests(unittest.TestCase):
                     "manifest_file_sha256"
                 ],
             )
-            self.assertEqual(result["overall_status"], "PASS")
+            self.assertEqual(
+                result["overall_status"],
+                "PASS",
+                msg=json.dumps(result, sort_keys=True),
+            )
             self.assertEqual(result["dataset_count"], 6)
             self.assertEqual(result["pass_count"], 6)
             self.assertEqual(result["fail_count"], 0)
@@ -332,7 +336,11 @@ class CrisisLabQualityTests(unittest.TestCase):
                     "manifest_file_sha256"
                 ],
             )
-            self.assertEqual(result["overall_status"], "PASS")
+            self.assertEqual(
+                result["overall_status"],
+                "PASS",
+                msg=json.dumps(result, sort_keys=True),
+            )
             self.assertFalse(result["replay_admitted"])
             self.assertEqual(
                 result["admission_reason"],
