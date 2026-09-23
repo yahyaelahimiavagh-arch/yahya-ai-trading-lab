@@ -1,0 +1,64 @@
+{
+  "schema": "YATL_CRL_QUALITY_MANIFEST_SPEC",
+  "version": "0.1.0",
+  "status": "REGISTERED_BEFORE_REAL_CRL003_VALIDATION",
+  "research_only": true,
+  "p10_untouched": true,
+  "p11_locked": true,
+  "implementation_id": "CRL-003/0.1.0",
+  "input_contract": {
+    "event_schema": "YATL_CRL_EVENT_ACQUISITION_PROVENANCE",
+    "dataset_schema": "YATL_CRL_DATASET_ACQUISITION_PROVENANCE",
+    "acquisition_schema_version": "0.1.0",
+    "required_event_status": "COMPLETE",
+    "required_dataset_status": "ACQUIRED_NEEDS_CRL003",
+    "required_rest_verification": "MATCH"
+  },
+  "dataset_checks": [
+    "dataset_manifest_sha256",
+    "content_address_identity",
+    "event_symbol_interval_identity",
+    "research_safety_invariants",
+    "source_zip_checksum_identity",
+    "canonical_sha256",
+    "canonical_header_exact",
+    "semantic_range_inside_transport_range",
+    "transport_grid_alignment",
+    "row_count_exact",
+    "timestamp_monotonicity",
+    "timestamp_contiguity",
+    "timestamp_uniqueness",
+    "open_time_grid_alignment",
+    "close_time_interval_semantics",
+    "closed_candles_only",
+    "finite_decimal_ohlcv",
+    "positive_prices",
+    "ohlc_relations",
+    "nonnegative_volume_and_trade_count",
+    "taker_volume_not_above_total"
+  ],
+  "quality_status": [
+    "PASS",
+    "FAIL"
+  ],
+  "replay_admission_rule": "quality_status=PASS AND catalog replay_eligible=true",
+  "replay_ineligible_rule": "quality may PASS structurally but replay_admitted remains false",
+  "failure_policy": "failures are immutable evidence; no silent repair",
+  "holdout_policy": {
+    "automated_structural_validation": true,
+    "market_values_in_output": false,
+    "forbidden_output_fields": [
+      "price",
+      "return",
+      "direction",
+      "drawdown",
+      "volatility_rank",
+      "pnl",
+      "YATL_trade_metrics",
+      "plots"
+    ]
+  },
+  "deterministic_output": true,
+  "quality_runtime_root": "data/research/crisis-lab/quality/",
+  "production_import_forbidden": true
+}

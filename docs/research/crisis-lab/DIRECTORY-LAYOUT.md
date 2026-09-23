@@ -13,6 +13,7 @@ docs/research/crisis-lab/
   DATA-ACQUISITION-REGISTER-v0.1.0.json
   CRL-002-VPS-RUNBOOK.md
   CRL-003-DATA-QUALITY-MANIFEST.md
+  QUALITY-MANIFEST-SPEC-v0.1.0.json
   CRL-004-HISTORICAL-REPLAY.md
   CRL-005-CONTROLS-BASELINES.md
   CRL-006-SYNTHETIC-STRESS.md
@@ -34,3 +35,5 @@ Rules:
 - only bounded manifests, indexes and intentionally published evidence enter Git;
 - one event/window/scenario identity must be stable across replay;
 - any future code directory is opened only by its own CRL checkpoint.
+
+Runtime CRL-003 quality artifacts live under `data/research/crisis-lab/quality/` and remain outside Git.

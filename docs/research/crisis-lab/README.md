@@ -9,7 +9,7 @@ Current checkpoint status (2026-09-23):
 | CRL-000 | **ACCEPTED** | research/P10 isolation audit closed |
 | CRL-001 | **REGISTERED v0.1.0** | 16-event source-backed catalog; 9 Development / 7 Blind Holdout |
 | CRL-002 | **ACCEPTED 2026-09-23** | real VPS pilot complete; provenance + REST verification + external no-P10-write proof accepted |
-| CRL-003 | **ACTIVE** | data-quality/canonical-manifest gate opened after CRL-002 acceptance |
+| CRL-003 | **ACTIVE** | v0.1.0 quality contract + deterministic validator implemented; CI/real E003 validation pending |
 | CRL-004..010 | NOT STARTED / SPEC ONLY | ordered downstream gates remain closed |
 
 Purpose: stress the accepted YATL strategy/risk architecture against historical
@@ -36,6 +36,7 @@ Supporting files:
 - `EVENT-CATALOG-v0.1.0.json` — canonical CRL-001 machine-readable event registry.
 - `DATA-ACQUISITION-REGISTER-v0.1.0.json` — canonical CRL-002 range/source registration.
 - `CRL-002-VPS-RUNBOOK.md` — operator procedure for real acquisition without stopping or mutating P10.
+- `QUALITY-MANIFEST-SPEC-v0.1.0.json` — frozen CRL-003 structural quality/admission contract.
 - `DIRECTORY-LAYOUT.md` — canonical repository/runtime layout.
 - `RESEARCH-LOG.md` — append-only research decisions and evidence notes.
 - `RESULTS-INDEX.md` — accepted research output index.
