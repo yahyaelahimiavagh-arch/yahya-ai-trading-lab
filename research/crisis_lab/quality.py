@@ -308,12 +308,25 @@ def _inspect_canonical(
         }
 
     reader = csv.reader(io.StringIO(text, newline=""))
+    try:
+        header = next(reader)
+    except StopIteration:
+        return {
+            "status": "FAIL",
+            "failures": ["CANONICAL_HEADER_MISSING", "EMPTY_CANONICAL_DATASET"],
+            "canonical_sha256": expected_sha,
+            "row_count": 0,
+            "expected_row_count": expected_rows,
+        }
+    if tuple(header) != acq.CANONICAL_COLUMNS:
+        failures.append("CANONICAL_HEADER_INVALID")
+
     row_count = 0
     first_open: int | None = None
     last_open: int | None = None
     previous_open: int | None = None
 
-    for row_number, row in enumerate(reader, start=1):
+    for row_number, row in enumerate(reader, start=2):
         row_count += 1
         if len(row) != len(acq.CANONICAL_COLUMNS):
             failures.append("COLUMN_COUNT_INVALID")
