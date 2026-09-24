@@ -146,6 +146,40 @@ class MockArchiveFetcher:
             ).encode("utf-8")
         return self._zip_for(url)
 
+class CloseBoundaryArchiveFetcher(MockArchiveFetcher):
+    def _zip_for(self, url):
+        if url in self._zips:
+            return self._zips[url]
+        name = urllib.parse.urlsplit(url).path.rsplit("/", 1)[-1]
+        stem = name[:-4]
+        parts = stem.split("-")
+        interval = parts[1]
+        period = "-".join(parts[2:])
+        period_day = date.fromisoformat(
+            period + "-01" if len(period) == 7 else period
+        )
+        unit = acq.source_timestamp_unit_for_day(period_day)
+        payload = source_csv(period, interval, unit)
+        rows = list(acq.csv.reader(io.StringIO(payload.decode("utf-8"))))
+        if rows:
+            if unit == "MICROSECOND":
+                rows[0][6] = str(int(rows[0][6]) - 1_000_000)
+            else:
+                rows[0][6] = str(int(rows[0][6]) - 1_000)
+        output = io.StringIO(newline="")
+        writer = acq.csv.writer(output, lineterminator="\n")
+        writer.writerows(rows)
+        out = io.BytesIO()
+        with zipfile.ZipFile(
+            out,
+            "w",
+            compression=zipfile.ZIP_DEFLATED,
+        ) as bundle:
+            bundle.writestr(stem + ".csv", output.getvalue().encode("utf-8"))
+        self._zips[url] = out.getvalue()
+        return self._zips[url]
+
+
 
 class MockRestFetcher:
     def __init__(self, *, mismatch=False):
@@ -366,6 +400,68 @@ class CrisisLabAcquisitionTests(unittest.TestCase):
                 archive,
                 plan,
             )
+
+    def test_close_boundary_anomaly_is_rest_verified_and_normalized(self):
+        plan = acq.plan_dataset(
+            minimal_registration(),
+            "CRL-T001",
+            "BTCUSDT",
+            "1h",
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "crl"
+            result = acq.acquire_dataset(
+                plan,
+                runtime_root=root,
+                archive_fetcher=CloseBoundaryArchiveFetcher(),
+                rest_fetcher=MockRestFetcher(),
+                retrieved_at_utc="2026-09-24T18:00:00Z",
+            )
+            self.assertEqual(
+                result["acquisition_status"],
+                "ACQUIRED_NEEDS_CRL003",
+            )
+            self.assertEqual(
+                result["canonical"][
+                    "close_boundary_normalization_count"
+                ],
+                1,
+            )
+            self.assertEqual(
+                result["canonical"][
+                    "close_boundary_rest_verified_count"
+                ],
+                1,
+            )
+            source = result["source_objects"][0]
+            self.assertEqual(
+                source["close_boundary_normalization_count"],
+                1,
+            )
+            self.assertEqual(
+                source["close_boundary_rest_verified_count"],
+                1,
+            )
+
+    def test_close_boundary_anomaly_fails_on_rest_field_conflict(self):
+        plan = acq.plan_dataset(
+            minimal_registration(),
+            "CRL-T001",
+            "BTCUSDT",
+            "1h",
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaisesRegex(
+                acq.AcquisitionError,
+                "close-boundary anomaly conflicts with REST",
+            ):
+                acq.acquire_dataset(
+                    plan,
+                    runtime_root=Path(directory) / "crl",
+                    archive_fetcher=CloseBoundaryArchiveFetcher(),
+                    rest_fetcher=MockRestFetcher(mismatch=True),
+                    retrieved_at_utc="2026-09-24T18:00:00Z",
+                )
 
     def test_dataset_acquisition_is_immutable_and_structural_only(self):
         plan = acq.plan_dataset(
