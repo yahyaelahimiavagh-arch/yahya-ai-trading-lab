@@ -138,3 +138,19 @@ Append-only decision/evidence log.
   remaining registered corpus; no unadmitted dataset may enter replay.
 - No historical market outcome, PnL, return, drawdown or strategy result was
   exposed by this validation. P10 remains authoritative and P11 remains locked.
+
+- CRL-004 implementation PR #90 passed matching Final-HEAD CI on
+  `90f71ae3c6d6233818ad9f0a34ce7d0c04488848` and was squash-merged to
+  `main` at `1d482c9905553c960cf37433b312bd199ca3b304`.
+- Real CRL-E003 historical point-in-time replay completed on the VPS from the
+  accepted quality manifest. Canonical replay manifest SHA-256:
+  `2ff9fade48a8607a03725b89849617fe2dbfe3e8427476d2a6745cf8cc71b6d4`.
+- BTCUSDT: 120 decisions, 116 `TREND_DOWN`, 4 `UNKNOWN`; strategy reasons
+  116 `REGIME_BLOCKED` + 4 `REGIME_UNKNOWN`; 0 entries, 0 fills, 0 exposure,
+  0 net PnL, 0 sampled drawdown, Kill Switch not latched.
+- ETHUSDT: 120 decisions, 120 `TREND_DOWN`; strategy reason
+  120 `REGIME_BLOCKED`; 0 entries, 0 fills, 0 exposure, 0 net PnL,
+  0 sampled drawdown, Kill Switch not latched.
+- Interpretation is limited to observed behavior: the frozen long-only candidate
+  stayed out of the registered crisis window. This is not a profitability PASS
+  and does not upgrade P10 or unlock P11.

@@ -1,6 +1,6 @@
 # CRL-004 — Historical point-in-time replay
 
-Status: **ACTIVE — v0.1.0 CORE REPLAY IMPLEMENTED / CI + REAL CRL-E003 RUN PENDING**
+Status: **ACTIVE — v0.1.0 CORE REPLAY ACCEPTED / REAL CRL-E003 RUN COMPLETE / DERIVED CRISIS METRICS PENDING**
 
 Entry gate:
 - CRL-003 deterministic validator accepted in CI and merged to `main`;
@@ -83,7 +83,7 @@ remains open until the required derived measures are frozen and emitted.
   `9db76653f252ac16e44fdd701f606bcd1e177609cb4e342e4564dc8d9bd77451`;
 - output remains under `data/research/crisis-lab/replay/`;
 - `/var/lib/yatl/p10/` remains a forbidden read/write target;
-- real CRL-E003 run occurs only after matching Final-HEAD CI acceptance.
+- real CRL-E003 run completed after matching Final-HEAD CI acceptance.
 
 CLI:
 
@@ -97,3 +97,51 @@ uv run --locked python -m research.crisis_lab.replay \
 
 Exit gate: deterministic replay plus the frozen derived crisis measures work
 across the first accepted crisis dataset set.
+
+
+## Real CRL-E003 replay evidence — 2026-09-24
+
+Implementation PR #90 passed matching Final-HEAD GitHub Actions on
+`90f71ae3c6d6233818ad9f0a34ce7d0c04488848` and was squash-merged to
+`main` at `1d482c9905553c960cf37433b312bd199ca3b304`.
+
+The real VPS replay consumed only CRL-003-admitted Development evidence and
+produced canonical replay manifest SHA-256
+`2ff9fade48a8607a03725b89849617fe2dbfe3e8427476d2a6745cf8cc71b6d4`
+at
+`replay/event-catalog-v0.1.0/CRL-E003/event-replay-2ff9fade48a8607a03725b89.json`.
+
+Registered replay window:
+- aligned first decision: `1621342800000`;
+- event anchor: `1621428600000`;
+- aligned end exclusive: `1621774800000`;
+- warm-up is explicitly excluded from replay economics;
+- **120 hourly decision events per symbol**.
+
+Observed frozen-candidate behavior:
+
+| Symbol | Decisions | Regime path | Entry signals | Fills | Net PnL | Max drawdown | Kill Switch |
+|---|---:|---|---:|---:|---:|---:|---|
+| BTCUSDT | 120 | 116 TREND_DOWN / 4 UNKNOWN | 0 | 0 | 0 | 0 | not latched |
+| ETHUSDT | 120 | 120 TREND_DOWN | 0 | 0 | 0 | 0 | not latched |
+
+Decision-reason breakdown:
+- BTCUSDT: 116 `REGIME_BLOCKED`, 4 `REGIME_UNKNOWN`;
+- ETHUSDT: 120 `REGIME_BLOCKED`.
+
+No entry reached the risk-veto stage because the frozen long-only Trend Pullback
+candidate produced no entry signal in the registered crisis window. Therefore the
+observed zero PnL and zero drawdown are a **no-exposure outcome**, not evidence of
+profitable crisis trading.
+
+Replay integrity:
+- deterministic replay verified;
+- point-in-time visibility verified;
+- future data visible to Strategy: false;
+- post-event label visible to Strategy: false;
+- P10 read/write/evidence effect: none;
+- P11 remains locked.
+
+CRL-004 core replay is now demonstrated on real admitted data. The checkpoint exit
+gate remains open until crisis-relative derived measures are frozen before any
+cross-event scoring and emitted consistently.
