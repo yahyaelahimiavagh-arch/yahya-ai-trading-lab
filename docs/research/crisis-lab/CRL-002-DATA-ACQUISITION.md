@@ -76,6 +76,15 @@ Every source file must therefore record:
 Unit normalization must be exact integer arithmetic. Magnitude/unit disagreement
 fails closed; it is never repaired by guessing.
 
+Historical Spot archives can contain an inconsistent kline `close_time` even
+when the registered interval and `open_time` are valid. CRL-002 treats this as
+a narrow source-metadata anomaly, never as permission to trust the row blindly:
+the canonical close boundary is derived from `open_time + interval - 1`, the
+raw ZIP/CSV and checksums remain immutable, and the entire normalized row must
+exactly match the public Spot REST kline at that open time. Any OHLCV/trade-field
+difference or missing REST verification fails closed. Counts of normalized and
+REST-verified close-boundary anomalies are recorded in provenance.
+
 REST responses are normalized under the current official Spot API timestamp
 contract and the requested time unit is recorded in provenance.
 
