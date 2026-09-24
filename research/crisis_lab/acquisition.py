@@ -1006,18 +1006,20 @@ def _rest_kline_url(
     symbol: str,
     interval: str,
     open_time_ms: int,
+    *,
+    exact_end: bool = True,
 ) -> str:
-    duration = INTERVAL_MILLISECONDS[interval]
-    query = urllib.parse.urlencode(
-        {
-            "symbol": symbol,
-            "interval": interval,
-            "startTime": str(open_time_ms),
-            "endTime": str(open_time_ms + duration - 1),
-            "limit": "1",
-            "timeZone": "0",
-        }
-    )
+    params = {
+        "symbol": symbol,
+        "interval": interval,
+        "startTime": str(open_time_ms),
+        "limit": "1",
+        "timeZone": "0",
+    }
+    if exact_end:
+        duration = INTERVAL_MILLISECONDS[interval]
+        params["endTime"] = str(open_time_ms + duration - 1)
+    query = urllib.parse.urlencode(params)
     return f"{REST_BASE}/api/v3/klines?{query}"
 
 
@@ -1032,18 +1034,41 @@ def _verify_exact_rest_rows(
     for target in rows:
         url = _rest_kline_url(symbol, interval, target.open_time_ms)
         payload = fetcher.fetch(url, max_bytes=_MAX_REST_BYTES)
-        transport.append(
-            {
-                "open_time_ms": target.open_time_ms,
-                "transport": _transport_summary(fetcher, url),
-            }
-        )
+        entry: dict[str, object] = {
+            "open_time_ms": target.open_time_ms,
+            "transport": _transport_summary(fetcher, url),
+            "start_only_fallback_used": False,
+        }
+        transport.append(entry)
         try:
             body = json.loads(payload.decode("utf-8"))
         except (UnicodeDecodeError, json.JSONDecodeError):
             raise AcquisitionError(
                 "REST verification response is invalid JSON"
             ) from None
+
+        if body == []:
+            fallback_url = _rest_kline_url(
+                symbol,
+                interval,
+                target.open_time_ms,
+                exact_end=False,
+            )
+            fallback_payload = fetcher.fetch(
+                fallback_url,
+                max_bytes=_MAX_REST_BYTES,
+            )
+            entry["start_only_fallback_used"] = True
+            entry["fallback_transport"] = _transport_summary(
+                fetcher, fallback_url
+            )
+            try:
+                body = json.loads(fallback_payload.decode("utf-8"))
+            except (UnicodeDecodeError, json.JSONDecodeError):
+                raise AcquisitionError(
+                    "REST fallback response is invalid JSON"
+                ) from None
+
         if (
             not isinstance(body, list)
             or len(body) != 1
@@ -1070,6 +1095,10 @@ def _verify_exact_rest_rows(
                     bool(item.get("close_boundary_normalized"))
                     for item in transport
                 ),
+                "start_only_fallback_count": sum(
+                    bool(item.get("start_only_fallback_used"))
+                    for item in transport
+                ),
                 "transport": transport,
             }
     return {
@@ -1077,6 +1106,10 @@ def _verify_exact_rest_rows(
         "checked_points": len(rows),
         "close_boundary_normalization_count": sum(
             bool(item.get("close_boundary_normalized"))
+            for item in transport
+        ),
+        "start_only_fallback_count": sum(
+            bool(item.get("start_only_fallback_used"))
             for item in transport
         ),
         "transport": transport,

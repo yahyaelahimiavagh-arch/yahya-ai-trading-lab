@@ -182,9 +182,16 @@ class CloseBoundaryArchiveFetcher(MockArchiveFetcher):
 
 
 class MockRestFetcher:
-    def __init__(self, *, mismatch=False, close_boundary_anomaly=False):
+    def __init__(
+        self,
+        *,
+        mismatch=False,
+        close_boundary_anomaly=False,
+        empty_exact_window=False,
+    ):
         self.mismatch = mismatch
         self.close_boundary_anomaly = close_boundary_anomaly
+        self.empty_exact_window = empty_exact_window
 
     def fetch(self, url, *, max_bytes):
         query = urllib.parse.parse_qs(
@@ -192,6 +199,8 @@ class MockRestFetcher:
         )
         interval = query["interval"][0]
         open_ms = int(query["startTime"][0])
+        if self.empty_exact_window and "endTime" in query:
+            return b"[]"
         row = source_row(
             open_ms,
             interval,
@@ -445,6 +454,20 @@ class CrisisLabAcquisitionTests(unittest.TestCase):
                 source["close_boundary_rest_verified_count"],
                 1,
             )
+
+    def test_empty_exact_rest_window_retries_by_open_time(self):
+        start = ms("2024-01-01T00:00:00Z")
+        target = acq.CanonicalRow(
+            tuple(source_row(start, "1h"))
+        )
+        result = acq._verify_exact_rest_rows(
+            [target],
+            symbol="BTCUSDT",
+            interval="1h",
+            fetcher=MockRestFetcher(empty_exact_window=True),
+        )
+        self.assertEqual(result["status"], "MATCH")
+        self.assertEqual(result["start_only_fallback_count"], 1)
 
     def test_rest_close_boundary_anomaly_is_canonicalized_for_exact_match(self):
         start = ms("2024-01-01T00:00:00Z")

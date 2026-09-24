@@ -89,6 +89,13 @@ REST verification fails closed. REST-side close-boundary normalization is
 explicitly counted in verification evidence; raw source responses remain
 unchanged.
 
+If an exact `startTime` + `endTime` kline query returns an empty list, CRL-002
+may retry once with the same `startTime`, `limit=1`, and no `endTime`.
+This follows the Spot REST contract that a start-time query returns the oldest
+kline from that point. The returned row must still normalize to the exact target
+open time and match all required fields. Non-empty malformed responses never
+trigger this fallback, and fallback use is counted in evidence.
+
 REST responses are normalized under the current official Spot API timestamp
 contract and the requested time unit is recorded in provenance.
 
