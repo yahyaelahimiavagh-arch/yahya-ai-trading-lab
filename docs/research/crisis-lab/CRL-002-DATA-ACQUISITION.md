@@ -99,6 +99,21 @@ trigger this fallback, and fallback use is counted in evidence.
 REST responses are normalized under the current official Spot API timestamp
 contract and the requested time unit is recorded in provenance.
 
+## Known Binance monthly archive divergences
+
+A reproducible Binance Public Data issue documents Spot monthly kline rows that
+disagree with both the corresponding daily archives and the current Spot API.
+The affected scope includes BTCUSDT and ETHUSDT on 15m/1h for 2020-12-21, and
+additional monthly-vs-daily discrepancies on 2021-09-29.
+
+CRL-002 therefore uses a deterministic source override for the registered
+dates 2020-12-21 and 2021-09-29: rows for those UTC dates are excluded from
+monthly archive objects and replaced by the checksum-verified daily archive
+objects. Raw monthly and daily source files remain immutable and separately
+provenanced. This is a source-selection rule, not a value repair.
+
+Reference: binance/binance-public-data issue #475.
+
 ## Exact range semantics
 
 The catalog's event timestamps remain exact and may be off the 15m/1h/4h candle
