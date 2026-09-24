@@ -1,6 +1,6 @@
 # CRL-005 — Control windows and baselines
 
-Status: **ORDINARY CONTROL REPLAY IMPLEMENTED — FINAL-HEAD CI + REAL CORPUS VALIDATION PENDING**
+Status: **ORDINARY CONTROL REPLAY ACCEPTED / STRATEGY-ACTIVE DIAGNOSTIC IMPLEMENTED — FINAL-HEAD CI PENDING**
 
 Every crisis result must be interpreted against:
 - pre-event window;
