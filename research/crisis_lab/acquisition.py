@@ -960,28 +960,46 @@ def _acquire_archive_object(
     )
 
 
-def _normalize_rest_row(
+def _normalize_rest_row_with_evidence(
     row: Sequence[object],
     interval: str,
-) -> CanonicalRow:
+    *,
+    allow_close_boundary_normalization: bool,
+) -> tuple[CanonicalRow, bool]:
     if len(row) < 12:
         raise AcquisitionError("REST kline row has wrong field count")
     converted = [str(item) for item in row[:12]]
     duration = INTERVAL_MILLISECONDS[interval]
     try:
         open_ms = int(converted[0])
-        close_ms = int(converted[6])
+        source_close_ms = int(converted[6])
         trade_count = int(converted[8])
     except ValueError:
         raise AcquisitionError("REST kline integer field is invalid") from None
-    if open_ms % duration != 0 or close_ms != open_ms + duration - 1:
+    if open_ms % duration != 0:
+        raise AcquisitionError("REST kline open boundary is invalid")
+    canonical_close_ms = open_ms + duration - 1
+    close_boundary_normalized = source_close_ms != canonical_close_ms
+    if close_boundary_normalized and not allow_close_boundary_normalization:
         raise AcquisitionError("REST kline boundary is invalid")
     for index in (1, 2, 3, 4, 5, 7, 9, 10):
         _validate_decimal(converted[index])
     converted[0] = str(open_ms)
-    converted[6] = str(close_ms)
+    converted[6] = str(canonical_close_ms)
     converted[8] = str(trade_count)
-    return CanonicalRow(tuple(converted))
+    return CanonicalRow(tuple(converted)), close_boundary_normalized
+
+
+def _normalize_rest_row(
+    row: Sequence[object],
+    interval: str,
+) -> CanonicalRow:
+    normalized, _ = _normalize_rest_row_with_evidence(
+        row,
+        interval,
+        allow_close_boundary_normalization=False,
+    )
+    return normalized
 
 
 def _rest_kline_url(
@@ -1034,15 +1052,33 @@ def _verify_exact_rest_rows(
             raise AcquisitionError(
                 "REST verification did not return exactly one kline"
             )
-        if _normalize_rest_row(body[0], interval).values != target.values:
+        normalized, close_boundary_normalized = (
+            _normalize_rest_row_with_evidence(
+                body[0],
+                interval,
+                allow_close_boundary_normalization=True,
+            )
+        )
+        transport[-1]["close_boundary_normalized"] = (
+            close_boundary_normalized
+        )
+        if normalized.values != target.values:
             return {
                 "status": "MISMATCH",
                 "checked_points": len(transport),
+                "close_boundary_normalization_count": sum(
+                    bool(item.get("close_boundary_normalized"))
+                    for item in transport
+                ),
                 "transport": transport,
             }
     return {
         "status": "MATCH",
         "checked_points": len(rows),
+        "close_boundary_normalization_count": sum(
+            bool(item.get("close_boundary_normalized"))
+            for item in transport
+        ),
         "transport": transport,
     }
 
