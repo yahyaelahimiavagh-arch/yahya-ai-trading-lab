@@ -72,6 +72,7 @@ def _load_campaign(path: Path) -> tuple[dict[str, object], str]:
         raise AtriaCampaignError("campaign identity or task count is invalid")
 
     task_ids = []
+    task_signatures = []
     total_budget = 0
     for task in tasks:
         if not isinstance(task, dict) or set(task) != {
@@ -98,6 +99,7 @@ def _load_campaign(path: Path) -> tuple[dict[str, object], str]:
         ):
             raise AtriaCampaignError("campaign task values are invalid")
         task_ids.append(task_id)
+        task_signatures.append((objective, tuple(artifacts)))
         total_budget += max_tokens
 
     if (
@@ -106,6 +108,10 @@ def _load_campaign(path: Path) -> tuple[dict[str, object], str]:
     ):
         raise AtriaCampaignError(
             "campaign task ids must be unique and sorted"
+        )
+    if len(set(task_signatures)) != len(task_signatures):
+        raise AtriaCampaignError(
+            "campaign contains duplicate objective/artifact work"
         )
     if total_budget > MAX_CAMPAIGN_OUTPUT_TOKENS:
         raise AtriaCampaignError(
