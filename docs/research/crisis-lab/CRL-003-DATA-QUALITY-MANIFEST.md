@@ -16,6 +16,8 @@ Required checks:
 - no duplicates;
 - no gaps unless explicitly classified and quarantined;
 - monotonic timestamps;
+- any CRL-002 historical close-boundary normalization has a one-for-one exact
+  REST verification count; incomplete fallback evidence is a quality failure;
 - valid decimal OHLCV;
 - symbol/interval identity;
 - bounded event window;
