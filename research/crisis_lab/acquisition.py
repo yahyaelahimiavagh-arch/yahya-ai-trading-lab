@@ -1075,6 +1075,17 @@ def verify_rest_boundaries(
         **result,
     }
 
+def _dataset_manifest_relative_path(
+    plan: DatasetPlan,
+    digest: str,
+) -> Path:
+    return (
+        Path("manifests") / f"event-catalog-v{CATALOG_VERSION}"
+        / plan.event_id / plan.symbol / plan.interval
+        / f"acquisition-{digest[:24]}.json"
+    )
+
+
 def acquire_dataset(
     plan: DatasetPlan,
     *,
@@ -1092,6 +1103,7 @@ def acquire_dataset(
             archive,
             runtime_root=runtime_root,
             fetcher=archive_fetcher,
+            rest_fetcher=rest_fetcher,
         )
         all_rows.extend(rows)
         sources.append(evidence)
