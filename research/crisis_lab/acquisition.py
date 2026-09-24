@@ -41,6 +41,17 @@ REST_BASE = f"https://{REST_HOST}"
 
 ALLOWED_SYMBOLS = ("BTCUSDT", "ETHUSDT")
 ALLOWED_INTERVALS = ("15m", "1h", "4h")
+
+# Reproducible Binance Public Data monthly-vs-daily divergences.
+# Daily archives match Spot REST/API for these dates; monthly rows are excluded
+# and replaced with checksum-verified daily archives.
+MONTHLY_DAILY_OVERRIDE_DATES = frozenset(
+    {
+        date(2020, 12, 21),
+        date(2021, 9, 29),
+    }
+)
+
 INTERVAL_MILLISECONDS = {
     "15m": 15 * 60 * 1000,
     "1h": 60 * 60 * 1000,
@@ -419,6 +430,17 @@ def build_archive_objects(
             objects.append(
                 _archive_object("monthly", symbol, interval, period, cursor)
             )
+            for override_day in sorted(MONTHLY_DAILY_OVERRIDE_DATES):
+                if cursor <= override_day <= month_end:
+                    objects.append(
+                        _archive_object(
+                            "daily",
+                            symbol,
+                            interval,
+                            override_day.isoformat(),
+                            override_day,
+                        )
+                    )
             cursor = _next_month(cursor)
         else:
             period = cursor.isoformat()
@@ -753,6 +775,14 @@ def _normalize_archive_csv_with_evidence(
             raise AcquisitionError("source trade count is invalid") from None
         if trade_count < 0:
             raise AcquisitionError("source trade count is negative")
+
+        if (
+            archive.cadence == "monthly"
+            and datetime.fromtimestamp(
+                open_ms / 1000, timezone.utc
+            ).date() in MONTHLY_DAILY_OVERRIDE_DATES
+        ):
+            continue
 
         if plan.transport_start_ms <= open_ms < plan.transport_end_ms:
             canonical = CanonicalRow(
@@ -1258,6 +1288,23 @@ def acquire_dataset(
         },
         "retrieved_at_utc": retrieved_at_utc,
         "primary_source": "BINANCE_PUBLIC_DATA",
+        "monthly_daily_override_dates": [
+            override_day.isoformat()
+            for override_day in sorted(MONTHLY_DAILY_OVERRIDE_DATES)
+            if (
+                plan.transport_start_ms
+                <= int(
+                    datetime(
+                        override_day.year,
+                        override_day.month,
+                        override_day.day,
+                        tzinfo=timezone.utc,
+                    ).timestamp()
+                    * 1000
+                )
+                < plan.transport_end_ms
+            )
+        ],
         "source_objects": [item.as_record() for item in sources],
         "canonical": {
             "relative_path": canonical_rel,

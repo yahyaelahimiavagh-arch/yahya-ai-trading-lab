@@ -278,6 +278,67 @@ class CrisisLabAcquisitionTests(unittest.TestCase):
         self.assertEqual(objects[0].cadence, "monthly")
         self.assertEqual(objects[0].period, "2024-02")
 
+    def test_archive_planner_adds_daily_override_for_known_bad_month(self):
+        start = ms("2020-12-01T00:00:00Z")
+        end = ms("2021-01-01T00:00:00Z")
+        objects = acq.build_archive_objects(
+            "BTCUSDT", "1h", start, end
+        )
+        self.assertEqual(
+            [
+                (item.cadence, item.period)
+                for item in objects
+            ],
+            [
+                ("monthly", "2020-12"),
+                ("daily", "2020-12-21"),
+            ],
+        )
+
+    def test_monthly_override_day_is_excluded_and_daily_is_used(self):
+        start = ms("2020-12-21T14:00:00Z")
+        plan = acq.DatasetPlan(
+            event_id="CRL-T001",
+            designation="DEVELOPMENT",
+            replay_eligible=True,
+            symbol="BTCUSDT",
+            interval="1h",
+            semantic_start_ms=start,
+            semantic_end_ms=start + 3_600_000,
+            transport_start_ms=start,
+            transport_end_ms=start + 3_600_000,
+            archive_objects=(),
+        )
+        monthly = acq._archive_object(
+            "monthly",
+            "BTCUSDT",
+            "1h",
+            "2020-12",
+            date(2020, 12, 1),
+        )
+        daily = acq._archive_object(
+            "daily",
+            "BTCUSDT",
+            "1h",
+            "2020-12-21",
+            date(2020, 12, 21),
+        )
+        output = io.StringIO(newline="")
+        acq.csv.writer(output, lineterminator="\n").writerow(
+            source_row(start, "1h")
+        )
+        payload = output.getvalue().encode("utf-8")
+
+        self.assertEqual(
+            acq.normalize_archive_csv(payload, monthly, plan),
+            (),
+        )
+        daily_rows = acq.normalize_archive_csv(
+            payload, daily, plan
+        )
+        self.assertEqual(len(daily_rows), 1)
+        self.assertEqual(daily_rows[0].open_time_ms, start)
+
     def test_archive_planner_uses_daily_edges_around_full_month(self):
         start = ms("2024-01-31T00:00:00Z")
         end = ms("2024-03-02T00:00:00Z")
