@@ -234,6 +234,8 @@ FTX، جنگ روسیه–اوکراین، بحران‌های بانکی، شو
 - missing/stale data؛
 - latency/disconnect/restart؛
 - price shock در حالت open position؛
+- برای open-position shock، state واقعی از یک Development entry مجاز گرفته می‌شود
+  و سپس ماتریس ثابت -5% / -10% / -20% gap با normal / 2x / 5x slippage اجرا می‌شود؛
 - repeated shock / whipsaw؛
 - delayed regime recognition.
 
@@ -292,8 +294,36 @@ evidence نشان دهد ارزش افزوده دارد.
 - pre-event window؛
 - crisis/event window؛
 - aftermath/recovery window؛
-- یک یا چند calm control window با طول مشابه؛
+- ordinary/unlabelled control windowهای از پیش ثبت‌شده؛
+- strategy-active ordinary diagnostic برای دیدن رفتار واقعی ورود/خروج؛
 - در صورت امکان random windows هم‌طول از همان market era.
+
+برای این کار یک Development corpus پیوسته و جدا از holdout ثبت می‌شود:
+BTCUSDT/ETHUSDT × 15m/1h/4h از **2019-12-18 تا 2023-01-01 UTC**؛ بازه
+تحلیلی unbiased از 2020-01-01 شروع می‌شود و 14 روز اول فقط warm-up است.
+این corpus شامل داده‌ی پیوسته بازار است، نه فقط بحران‌ها. انتخاب ordinary window
+با تقویم و exclusion rule انجام می‌شود و حق استفاده از return، volatility،
+trade count، PnL یا drawdown برای انتخاب window ندارد.
+
+پروتکل canonical:
+`docs/research/crisis-lab/CONTROL-WINDOW-PROTOCOL-v0.1.0.json`.
+
+هشت control window سی‌روزه با قانون first-Monday quarterly و guard هفت‌روزه
+اطراف تمام crisisهای ثبت‌شده، قبل از مشاهده outcome فریز می‌شوند. هیچ window به
+خاطر no-trade یا نتیجه بد حذف نمی‌شود.
+
+علاوه بر cohort unbiased، یک **strategy-active diagnostic** وجود دارد: خارج از
+crisis buffer، اولین 10 episode که frozen Strategy واقعاً ENTER_LONG می‌دهد
+به‌صورت chronological انتخاب می‌شوند. انتخاب فقط اجازه دیدن occurrence ورود را
+دارد و آینده/PnL/exit کیفیت ورودی انتخاب نیست. این cohort برای تشخیص رفتار
+position lifecycle است و evidence بازده unbiased محسوب نمی‌شود.
+
+همچنین historical replay از pre-event به crisis anchor بدون reset ادامه می‌یابد.
+اگر position قبل از بحران باز شده باشد، همان position باید داخل shock حمل شود و
+`position_at_event_anchor`، time-to-protection، time-to-zero-exposure،
+Kill Switch، false re-entry و recovery ثبت شوند. اگر position باز نباشد، historical
+entry جعل نمی‌شود؛ سناریوی کنترل‌شده‌ی «position باز سپس shock ناگهانی» در CRL-006
+به‌صورت SYNTHETIC جداگانه اجرا می‌شود.
 
 هدف این است که مشخص شود ضعف یا قوت مشاهده‌شده واقعاً به crisis/regime مربوط است
 یا رفتار عمومی Strategy است. Control windowها قبل از دیدن نتیجه run نهایی انتخاب

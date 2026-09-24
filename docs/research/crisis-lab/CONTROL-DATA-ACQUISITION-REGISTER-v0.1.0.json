@@ -1,0 +1,92 @@
+{
+  "schema": "YATL_CRL_DATA_ACQUISITION_REGISTER",
+  "version": "0.1.0",
+  "registered_date_utc": "2026-09-24",
+  "status": "SPEC_REGISTERED_RUNTIME_PENDING",
+  "research_only": true,
+  "p10_untouched": true,
+  "p11_locked": true,
+  "catalog": {
+    "path": "docs/research/crisis-lab/CONTROL-WINDOW-PROTOCOL-v0.1.0.json",
+    "version": "0.1.0"
+  },
+  "primary_source": {
+    "family": "BINANCE_PUBLIC_DATA_DAILY_SPOT_KLINES",
+    "base_url": "https://data.binance.vision/data/spot/daily/klines",
+    "checksum_suffix": ".CHECKSUM",
+    "archive_policy": "retain_raw_zip_and_checksum",
+    "note": "Same accepted CRL-002 source/provenance mechanism; this register acquires the continuous Development control corpus."
+  },
+  "verification_source": {
+    "family": "BINANCE_MARKET_DATA_ONLY_REST",
+    "base_url": "https://data-api.binance.vision",
+    "endpoint": "/api/v3/klines",
+    "authentication": false,
+    "max_rows_per_page": 1000,
+    "timezone": "UTC",
+    "policy": "verification_or_fallback_only; mismatch quarantines instead of silently overwriting"
+  },
+  "timestamp_policy": {
+    "archive_before_2025_01_01": "MILLISECOND",
+    "archive_from_2025_01_01": "MICROSECOND",
+    "normalization": "exact integer normalization to canonical UTC milliseconds while preserving raw source digests",
+    "mismatch": "FAIL_CLOSED"
+  },
+  "runtime_root": "data/research/crisis-lab/",
+  "protected_runtime_prefixes": [
+    "/var/lib/yatl/p10/"
+  ],
+  "intervals": [
+    "15m",
+    "1h",
+    "4h"
+  ],
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT"
+  ],
+  "optional_extensions": {
+    "1m": {
+      "enabled": false,
+      "name": "EXTENSION_1M_V1",
+      "activation_rule": "separately versioned research question only; never changes P10 or primary scorecard"
+    }
+  },
+  "holdout_policy": {
+    "automated_acquisition": true,
+    "automated_structural_quality": true,
+    "manual_outcome_inspection_before_final_evaluation": false,
+    "allowed_report_fields": [
+      "identity",
+      "row_count",
+      "timestamp_bounds",
+      "gaps",
+      "duplicates",
+      "source_checksums",
+      "canonical_digest",
+      "structural_status"
+    ],
+    "forbidden_pre_evaluation_fields": [
+      "returns",
+      "direction",
+      "drawdown",
+      "volatility_rank",
+      "plots",
+      "YATL_trade_metrics"
+    ]
+  },
+  "events": [
+    {
+      "event_id": "CRL-CONTROL-DEV-POOL-001",
+      "designation": "DEVELOPMENT",
+      "replay_eligible": true,
+      "semantic_range": {
+        "start_utc": "2019-12-18T00:00:00Z",
+        "end_utc": "2023-01-01T00:00:00Z"
+      },
+      "transport_alignment": "already aligned to 15m/1h/4h UTC boundaries; archive download may use monthly/daily files; canonical trim preserves exact continuous corpus",
+      "inspection_mode": "DEVELOPMENT_CONTROL_ALLOWED",
+      "source_conflict_quarantine": false
+    }
+  ]
+}
