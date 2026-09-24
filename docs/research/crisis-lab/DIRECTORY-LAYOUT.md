@@ -37,3 +37,4 @@ Rules:
 - any future code directory is opened only by its own CRL checkpoint.
 
 Runtime CRL-003 quality artifacts live under `data/research/crisis-lab/quality/` and remain outside Git.
+Runtime CRL-004 Development replay artifacts live under `data/research/crisis-lab/replay/` and remain outside Git.
