@@ -81,7 +81,6 @@ Append-only decision/evidence log.
 - Pre-merge boundary review found and closed one gap: custom `--register` input
   paths now pass the same protected-path guard as runtime outputs, so Crisis Lab
   cannot be pointed at a registration file under `/var/lib/yatl/p10/`.
-
 - CRL-002 transport provenance was tightened before merge: real HTTPS fetches now
   retain sanitized attempt/failure summaries, and repeated acquisition reuses a
   locally cached ZIP only after its full SHA-256 matches the freshly fetched
@@ -113,3 +112,29 @@ Append-only decision/evidence log.
   This does not pre-admit the remaining corpus; CRL-003 now owns dataset quality
   admission and replay remains closed pending CRL-003 PASS manifests.
 - P10 candidate/config/gates/window/evidence remain unchanged. P11 remains locked.
+
+
+## 2026-09-24
+
+- CRL-003 implementation PR #88 matching Final-HEAD GitHub Actions run
+  `35880834497` passed both `accepted-public-data` and `unit-and-safety` and
+  was squash-merged to `main` at
+  `90ff04eaaa7d15ff282ab06f48759db201d2debb`.
+- After a VPS reboot/recovery access event, repository `main` was updated to that
+  exact checkpoint; `systemctl --failed` reported zero failed units and all P10
+  forward/dashboard/Telegram timers were active. No Crisis Lab recovery action
+  modified P10 runtime evidence.
+- Real CRL-003 structural quality validation executed against the immutable
+  CRL-E003 acquisition manifest SHA-256
+  `bb2986d87cb672eb91e2dccfbc7e593ea05c12b6f9a49d0d1ffd762b01b995cb`.
+- Result: **PASS**, 6/6 datasets passed, 0 failed, admission reason
+  `QUALITY_PASS`, `replay_admitted=true`, `market_outcomes_exposed=false`,
+  `p10_write_allowed=false`, `p11_locked=true`.
+- Canonical real quality manifest:
+  `quality/event-catalog-v0.1.0/CRL-E003/event-quality-9db76653f252ac16e44fdd70.json`,
+  full SHA-256
+  `9db76653f252ac16e44fdd701f606bcd1e177609cb4e342e4564dc8d9bd77451`.
+- CRL-E003 is admitted for CRL-004 replay work. CRL-003 remains active for the
+  remaining registered corpus; no unadmitted dataset may enter replay.
+- No historical market outcome, PnL, return, drawdown or strategy result was
+  exposed by this validation. P10 remains authoritative and P11 remains locked.
