@@ -231,23 +231,61 @@ def build_runtime(root, *, designation="DEVELOPMENT"):
         / f"event-quality-{event_quality_sha[:24]}.json"
     )
     write_bound(root, event_quality_rel, event_quality_payload)
-    return event_quality_rel.as_posix(), event_quality_sha
+
+    pre_start = START_MS + 9 * 86_400_000
+    core_start = START_MS + 10 * 86_400_000
+    aftermath_start = START_MS + 11 * 86_400_000
+    aftermath_end = END_MS
+    catalog = {
+        "schema": "YATL_CRL_EVENT_CATALOG",
+        "catalog_version": "0.1.0",
+        "research_only": True,
+        "p10_untouched": True,
+        "p11_locked": True,
+        "events": [{
+            "event_id": "CRL-T004",
+            "designation": designation,
+            "replay_eligible": True,
+            "public_knowability": {
+                "timestamp_utc": acq._ms_to_iso(core_start),
+            },
+            "windows": {
+                "pre_event": {
+                    "start_utc": acq._ms_to_iso(pre_start),
+                    "end_utc": acq._ms_to_iso(core_start),
+                },
+                "core_crisis": {
+                    "start_utc": acq._ms_to_iso(core_start),
+                    "end_utc": acq._ms_to_iso(aftermath_start),
+                },
+                "aftermath_recovery": {
+                    "start_utc": acq._ms_to_iso(aftermath_start),
+                    "end_utc": acq._ms_to_iso(aftermath_end),
+                },
+            },
+        }],
+    }
+    catalog_path = root / "EVENT-CATALOG-v0.1.0.json"
+    catalog_path.write_bytes(canonical_json(catalog))
+    return event_quality_rel.as_posix(), event_quality_sha, catalog_path
 
 
 class CrisisLabReplayTests(unittest.TestCase):
     def test_admitted_development_event_replays_deterministically(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            relative, digest = build_runtime(root)
+            relative, digest, catalog = build_runtime(root)
             first = replay.replay_event(
                 runtime_root=root,
                 quality_manifest_relative_path=relative,
                 quality_manifest_file_sha256=digest,
+                event_catalog_path=catalog,
             )
             second = replay.replay_event(
                 runtime_root=root,
                 quality_manifest_relative_path=relative,
                 quality_manifest_file_sha256=digest,
+                event_catalog_path=catalog,
             )
             self.assertEqual(
                 first["replay_manifest_file_sha256"],
@@ -271,7 +309,11 @@ class CrisisLabReplayTests(unittest.TestCase):
                 ["BTCUSDT", "ETHUSDT"],
             )
             for item in first["symbols"]:
-                self.assertGreater(item["event_count"], 0)
+                self.assertEqual(item["event_count"], 72)
+                self.assertEqual(
+                    item["first_decision_time_ms"],
+                    START_MS + 9 * 86_400_000,
+                )
                 self.assertEqual(item["entries_blocked"], 0)
                 self.assertEqual(item["fills"], [])
                 self.assertEqual(
@@ -290,18 +332,19 @@ class CrisisLabReplayTests(unittest.TestCase):
     def test_quality_manifest_digest_tamper_fails_closed(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            relative, _ = build_runtime(root)
+            relative, _, catalog = build_runtime(root)
             with self.assertRaises(replay.ReplayError):
                 replay.replay_event(
                     runtime_root=root,
                     quality_manifest_relative_path=relative,
                     quality_manifest_file_sha256="0" * 64,
+                    event_catalog_path=catalog,
                 )
 
     def test_holdout_is_rejected_before_replay(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            relative, digest = build_runtime(
+            relative, digest, catalog = build_runtime(
                 root, designation="BLIND_HOLDOUT"
             )
             with self.assertRaises(replay.ReplayError):
@@ -309,6 +352,7 @@ class CrisisLabReplayTests(unittest.TestCase):
                     runtime_root=root,
                     quality_manifest_relative_path=relative,
                     quality_manifest_file_sha256=digest,
+                    event_catalog_path=catalog,
                 )
 
     def test_p10_runtime_root_is_forbidden(self):
@@ -325,11 +369,12 @@ class CrisisLabReplayTests(unittest.TestCase):
     def test_summary_is_bounded_and_records_no_p10_effect(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            relative, digest = build_runtime(root)
+            relative, digest, catalog = build_runtime(root)
             result = replay.replay_event(
                 runtime_root=root,
                 quality_manifest_relative_path=relative,
                 quality_manifest_file_sha256=digest,
+                event_catalog_path=catalog,
             )
             summary = replay.safe_summary(result)
             self.assertFalse(summary["p10_read"])
@@ -341,6 +386,26 @@ class CrisisLabReplayTests(unittest.TestCase):
             self.assertNotIn(
                 '"trace"', json.dumps(summary)
             )
+
+    def test_registered_window_excludes_warmup_from_economics(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative, digest, catalog = build_runtime(root)
+            result = replay.replay_event(
+                runtime_root=root,
+                quality_manifest_relative_path=relative,
+                quality_manifest_file_sha256=digest,
+                event_catalog_path=catalog,
+            )
+            window = result["registered_replay_window"]
+            self.assertTrue(window["warmup_excluded_from_economics"])
+            self.assertEqual(
+                window["aligned_first_decision_ms"],
+                START_MS + 9 * 86_400_000,
+            )
+            self.assertEqual(window["aligned_end_exclusive_ms"], END_MS)
+            for item in result["symbols"]:
+                self.assertEqual(item["event_count"], 72)
 
     def test_replay_source_has_no_network_or_execution_capability(self):
         import inspect
