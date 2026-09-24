@@ -295,6 +295,40 @@ class CrisisLabAcquisitionTests(unittest.TestCase):
             ],
         )
 
+    def test_2021_12_24_override_is_scoped_to_btc_15m_and_1h(self):
+        start = ms("2021-12-01T00:00:00Z")
+        end = ms("2022-01-01T00:00:00Z")
+
+        btc_15m = acq.build_archive_objects(
+            "BTCUSDT", "15m", start, end
+        )
+        btc_1h = acq.build_archive_objects(
+            "BTCUSDT", "1h", start, end
+        )
+        btc_4h = acq.build_archive_objects(
+            "BTCUSDT", "4h", start, end
+        )
+        eth_1h = acq.build_archive_objects(
+            "ETHUSDT", "1h", start, end
+        )
+
+        self.assertIn(
+            ("daily", "2021-12-24"),
+            [(item.cadence, item.period) for item in btc_15m],
+        )
+        self.assertIn(
+            ("daily", "2021-12-24"),
+            [(item.cadence, item.period) for item in btc_1h],
+        )
+        self.assertNotIn(
+            ("daily", "2021-12-24"),
+            [(item.cadence, item.period) for item in btc_4h],
+        )
+        self.assertNotIn(
+            ("daily", "2021-12-24"),
+            [(item.cadence, item.period) for item in eth_1h],
+        )
+
     def test_monthly_override_day_is_excluded_and_daily_is_used(self):
         start = ms("2020-12-21T14:00:00Z")
         plan = acq.DatasetPlan(
@@ -338,6 +372,62 @@ class CrisisLabAcquisitionTests(unittest.TestCase):
         )
         self.assertEqual(len(daily_rows), 1)
         self.assertEqual(daily_rows[0].open_time_ms, start)
+
+    def test_btc_2021_12_24_monthly_row_is_excluded_only_in_scope(self):
+        start = ms("2021-12-24T04:00:00Z")
+        output = io.StringIO(newline="")
+        acq.csv.writer(output, lineterminator="\n").writerow(
+            source_row(start, "1h")
+        )
+        payload = output.getvalue().encode("utf-8")
+
+        monthly = acq._archive_object(
+            "monthly",
+            "BTCUSDT",
+            "1h",
+            "2021-12",
+            date(2021, 12, 1),
+        )
+        btc_plan = acq.DatasetPlan(
+            event_id="CRL-T001",
+            designation="DEVELOPMENT",
+            replay_eligible=True,
+            symbol="BTCUSDT",
+            interval="1h",
+            semantic_start_ms=start,
+            semantic_end_ms=start + 3_600_000,
+            transport_start_ms=start,
+            transport_end_ms=start + 3_600_000,
+            archive_objects=(),
+        )
+        self.assertEqual(
+            acq.normalize_archive_csv(payload, monthly, btc_plan),
+            (),
+        )
+
+        eth_plan = acq.DatasetPlan(
+            event_id="CRL-T001",
+            designation="DEVELOPMENT",
+            replay_eligible=True,
+            symbol="ETHUSDT",
+            interval="1h",
+            semantic_start_ms=start,
+            semantic_end_ms=start + 3_600_000,
+            transport_start_ms=start,
+            transport_end_ms=start + 3_600_000,
+            archive_objects=(),
+        )
+        eth_monthly = acq._archive_object(
+            "monthly",
+            "ETHUSDT",
+            "1h",
+            "2021-12",
+            date(2021, 12, 1),
+        )
+        self.assertEqual(
+            len(acq.normalize_archive_csv(payload, eth_monthly, eth_plan)),
+            1,
+        )
 
     def test_archive_planner_uses_daily_edges_around_full_month(self):
         start = ms("2024-01-31T00:00:00Z")

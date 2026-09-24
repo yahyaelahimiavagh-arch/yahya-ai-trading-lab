@@ -106,11 +106,14 @@ disagree with both the corresponding daily archives and the current Spot API.
 The affected scope includes BTCUSDT and ETHUSDT on 15m/1h for 2020-12-21, and
 additional monthly-vs-daily discrepancies on 2021-09-29.
 
-CRL-002 therefore uses a deterministic source override for the registered
-dates 2020-12-21 and 2021-09-29: rows for those UTC dates are excluded from
-monthly archive objects and replaced by the checksum-verified daily archive
-objects. Raw monthly and daily source files remain immutable and separately
-provenanced. This is a source-selection rule, not a value repair.
+CRL-002 therefore uses deterministic source overrides where daily archives
+have been independently corroborated against Spot REST. The globally registered
+override dates are 2020-12-21 and 2021-09-29. In addition, BTCUSDT 15m/1h has a
+scoped override for 2021-12-24 after direct daily-vs-REST equality was observed
+at the conflicting candles. Rows in the affected scope are excluded from monthly
+archive objects and replaced by the checksum-verified daily archive objects.
+Raw monthly and daily source files remain immutable and separately provenanced.
+This is a source-selection rule, not a value repair.
 
 Reference: binance/binance-public-data issue #475.
 
