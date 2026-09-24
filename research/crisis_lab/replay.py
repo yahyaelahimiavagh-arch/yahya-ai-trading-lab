@@ -34,8 +34,10 @@ from yatl.strategy import (
     TREND_PULLBACK_IDENTITY,
     evaluate_trend_pullback,
 )
+from yatl.strategy.adapter import FIXED_RESEARCH_QUANTITY
 from yatl.strategy.regime import classify_regime
 from yatl.validation.paper_runner import (
+    P3_RESEARCH_ADAPTER_GIT_BLOB_SHA1,
     REGIME_WARMUP_BARS,
     RUNNER_QUANTITY,
     _RiskTracker,
@@ -442,6 +444,7 @@ def _dataset_for_symbol(
         or candidate.primary_interval != "1h"
         or candidate.context_interval != "15m"
         or candidate.regime_interval != "4h"
+        or RUNNER_QUANTITY != FIXED_RESEARCH_QUANTITY
     ):
         raise ReplayError("frozen candidate differs from CRL-004 replay contract")
     values = {
@@ -738,6 +741,9 @@ def _run_event(event: AdmittedEvent) -> dict[str, object]:
             "strategy_version": candidate.strategy_version,
             "configuration_sha256": candidate.configuration_sha256,
             "fixed_research_quantity": RUNNER_QUANTITY,
+            "p3_adapter_git_blob_sha1": (
+                P3_RESEARCH_ADAPTER_GIT_BLOB_SHA1
+            ),
             "initial_equity_quote_per_symbol": (
                 candidate.initial_equity_quote
             ),
