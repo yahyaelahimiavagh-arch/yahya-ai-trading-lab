@@ -223,3 +223,5 @@ to alternate hour-aligned chunk sizes. A dedicated regression fixture compares
 
 Real three-year control-corpus scanning is blocked until this scalability gate
 passes Final-HEAD CI.
+
+Current acceptance gate: **Final-HEAD CI on current main ancestry**.
