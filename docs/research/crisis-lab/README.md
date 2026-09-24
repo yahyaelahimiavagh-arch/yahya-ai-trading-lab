@@ -10,7 +10,7 @@ Current checkpoint status (2026-09-24):
 | CRL-001 | **REGISTERED v0.1.0** | 16-event source-backed catalog; 9 Development / 7 Blind Holdout |
 | CRL-002 | **ACCEPTED 2026-09-23** | real VPS pilot complete; provenance + REST verification + external P10 no-write proof accepted |
 | CRL-003 | **ACTIVE — E003 REAL QUALITY PASS ACCEPTED** | CRL-E003 6/6 datasets PASS; canonical quality manifest SHA-256 `9db76653f252ac16e44fdd701f606bcd1e177609cb4e342e4564dc8d9bd77451`; remaining registered datasets pending bounded admission |
-| CRL-004 | **ACTIVE — E003 PILOT OPEN** | historical point-in-time replay may be implemented/tested against admitted CRL-E003 only |
+| CRL-004 | **ACTIVE — E003 REAL REPLAY COMPLETE** | canonical E003 replay recorded; frozen candidate stayed out of the crisis window; derived crisis measures remain to be frozen/emitted before exit |
 | CRL-005..010 | NOT STARTED / SPEC ONLY | ordered downstream gates remain closed |
 
 Purpose: stress the accepted YATL strategy/risk architecture against historical
