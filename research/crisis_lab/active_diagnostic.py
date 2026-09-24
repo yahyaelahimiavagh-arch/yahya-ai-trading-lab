@@ -417,6 +417,11 @@ def _select_episodes(
             "exit_quality",
             "recovery",
             "future_price_path",
+            "later_pnl",
+            "later_drawdown",
+            "later_maximum_excursion",
+            "later_exit_quality",
+            "later_recovery",
         }
         if forbidden.intersection(item):
             raise DiagnosticError(
