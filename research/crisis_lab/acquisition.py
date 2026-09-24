@@ -26,7 +26,7 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Callable, Iterable, Mapping, Sequence
 
-ACQUISITION_IMPLEMENTATION_ID = "CRL-002/0.1.0"
+ACQUISITION_IMPLEMENTATION_ID = "CRL-002/0.1.1"
 CATALOG_VERSION = "0.1.0"
 DEFAULT_REGISTER_PATH = Path(
     "docs/research/crisis-lab/DATA-ACQUISITION-REGISTER-v0.1.0.json"
@@ -121,6 +121,8 @@ class ArchiveEvidence:
     checksum_transport: dict[str, object]
     archive_transport: dict[str, object]
     archive_cache_hit: bool
+    close_boundary_normalization_count: int
+    close_boundary_rest_verified_count: int
     raw_zip_relative_path: str
     checksum_relative_path: str
     extracted_csv_relative_path: str
@@ -139,6 +141,12 @@ class ArchiveEvidence:
             "checksum_transport": self.checksum_transport,
             "archive_transport": self.archive_transport,
             "archive_cache_hit": self.archive_cache_hit,
+            "close_boundary_normalization_count": (
+                self.close_boundary_normalization_count
+            ),
+            "close_boundary_rest_verified_count": (
+                self.close_boundary_rest_verified_count
+            ),
             "raw_zip_relative_path": self.raw_zip_relative_path,
             "checksum_relative_path": self.checksum_relative_path,
             "extracted_csv_relative_path": self.extracted_csv_relative_path,
@@ -688,17 +696,26 @@ def _validate_decimal(text: str) -> Decimal:
     return value
 
 
-def normalize_archive_csv(
+def _normalize_archive_csv_with_evidence(
     csv_payload: bytes,
     archive: ArchiveObject,
     plan: DatasetPlan,
-) -> tuple[CanonicalRow, ...]:
+) -> tuple[tuple[CanonicalRow, ...], tuple[CanonicalRow, ...]]:
+    """Normalize archive rows and surface bounded close-boundary anomalies.
+
+    Historical Binance Spot archives contain documented cases where the kline
+    close-time field is inconsistent even though the open-time grid and the
+    remaining row are usable. We never silently trust or discard such rows:
+    the canonical close time is derived from the registered interval and every
+    affected selected row is returned for exact REST verification.
+    """
     try:
         text = csv_payload.decode("utf-8")
     except UnicodeDecodeError:
         raise AcquisitionError("archive CSV is not UTF-8") from None
 
     selected: list[CanonicalRow] = []
+    close_boundary_anomalies: list[CanonicalRow] = []
     duration = INTERVAL_MILLISECONDS[plan.interval]
     for row_number, row in enumerate(csv.reader(io.StringIO(text)), start=1):
         if len(row) != 12:
@@ -708,15 +725,14 @@ def normalize_archive_csv(
         open_ms = _normalize_source_timestamp(
             row[0], archive.source_timestamp_unit, close_time=False
         )
-        close_ms = _normalize_source_timestamp(
+        source_close_ms = _normalize_source_timestamp(
             row[6], archive.source_timestamp_unit, close_time=True
         )
         if open_ms % duration != 0:
             raise AcquisitionError(
                 "source candle open is off the UTC interval grid"
             )
-        if close_ms != open_ms + duration - 1:
-            raise AcquisitionError("source candle close boundary is invalid")
+        canonical_close_ms = open_ms + duration - 1
 
         open_px = _validate_decimal(row[1])
         high_px = _validate_decimal(row[2])
@@ -739,17 +755,28 @@ def normalize_archive_csv(
             raise AcquisitionError("source trade count is negative")
 
         if plan.transport_start_ms <= open_ms < plan.transport_end_ms:
-            selected.append(
-                CanonicalRow(
-                    (
-                        str(open_ms), row[1], row[2], row[3], row[4], row[5],
-                        str(close_ms), row[7], str(trade_count), row[9],
-                        row[10], row[11],
-                    )
+            canonical = CanonicalRow(
+                (
+                    str(open_ms), row[1], row[2], row[3], row[4], row[5],
+                    str(canonical_close_ms), row[7], str(trade_count), row[9],
+                    row[10], row[11],
                 )
             )
-    return tuple(selected)
+            selected.append(canonical)
+            if source_close_ms != canonical_close_ms:
+                close_boundary_anomalies.append(canonical)
+    return tuple(selected), tuple(close_boundary_anomalies)
 
+
+def normalize_archive_csv(
+    csv_payload: bytes,
+    archive: ArchiveObject,
+    plan: DatasetPlan,
+) -> tuple[CanonicalRow, ...]:
+    rows, _ = _normalize_archive_csv_with_evidence(
+        csv_payload, archive, plan
+    )
+    return rows
 
 def _canonical_csv(rows: Sequence[CanonicalRow]) -> bytes:
     output = io.StringIO(newline="")
@@ -838,6 +865,7 @@ def _acquire_archive_object(
     *,
     runtime_root: Path,
     fetcher,
+    rest_fetcher=None,
 ) -> tuple[tuple[CanonicalRow, ...], ArchiveEvidence]:
     checksum_payload = fetcher.fetch(
         archive.checksum_url, max_bytes=_MAX_CHECKSUM_BYTES
@@ -862,7 +890,30 @@ def _acquire_archive_object(
         )
     csv_payload = _extract_archive(zip_payload, archive)
     csv_sha = _sha256(csv_payload)
-    rows = normalize_archive_csv(csv_payload, archive, plan)
+    rows, close_boundary_anomalies = (
+        _normalize_archive_csv_with_evidence(
+            csv_payload, archive, plan
+        )
+    )
+    close_boundary_rest_verified_count = 0
+    if close_boundary_anomalies:
+        if rest_fetcher is None:
+            raise AcquisitionError(
+                "source close-boundary anomaly requires REST verification"
+            )
+        anomaly_verification = _verify_exact_rest_rows(
+            close_boundary_anomalies,
+            symbol=plan.symbol,
+            interval=plan.interval,
+            fetcher=rest_fetcher,
+        )
+        if anomaly_verification["status"] != "MATCH":
+            raise AcquisitionError(
+                "source close-boundary anomaly conflicts with REST"
+            )
+        close_boundary_rest_verified_count = len(
+            close_boundary_anomalies
+        )
 
     raw_zip, checksum_path, extracted = _raw_relative_paths(
         archive, actual_sha, csv_sha
@@ -897,6 +948,12 @@ def _acquire_archive_object(
             else _transport_summary(fetcher, archive.url)
         ),
         archive_cache_hit=archive_cache_hit,
+        close_boundary_normalization_count=len(
+            close_boundary_anomalies
+        ),
+        close_boundary_rest_verified_count=(
+            close_boundary_rest_verified_count
+        ),
         raw_zip_relative_path=raw_rel,
         checksum_relative_path=checksum_rel,
         extracted_csv_relative_path=extracted_rel,
@@ -946,30 +1003,17 @@ def _rest_kline_url(
     return f"{REST_BASE}/api/v3/klines?{query}"
 
 
-def verify_rest_boundaries(
+def _verify_exact_rest_rows(
     rows: Sequence[CanonicalRow],
     *,
     symbol: str,
     interval: str,
     fetcher,
 ) -> dict[str, object]:
-    if not rows:
-        return {
-            "enabled": True,
-            "status": "NO_ROWS",
-            "checked_points": 0,
-            "transport": [],
-        }
-    targets = [rows[0]]
-    if rows[-1].open_time_ms != rows[0].open_time_ms:
-        targets.append(rows[-1])
     transport: list[dict[str, object]] = []
-    for target in targets:
+    for target in rows:
         url = _rest_kline_url(symbol, interval, target.open_time_ms)
-        payload = fetcher.fetch(
-            url,
-            max_bytes=_MAX_REST_BYTES,
-        )
+        payload = fetcher.fetch(url, max_bytes=_MAX_REST_BYTES)
         transport.append(
             {
                 "open_time_ms": target.open_time_ms,
@@ -992,18 +1036,44 @@ def verify_rest_boundaries(
             )
         if _normalize_rest_row(body[0], interval).values != target.values:
             return {
-                "enabled": True,
                 "status": "MISMATCH",
-                "checked_points": len(targets),
+                "checked_points": len(transport),
                 "transport": transport,
             }
     return {
-        "enabled": True,
         "status": "MATCH",
-        "checked_points": len(targets),
+        "checked_points": len(rows),
         "transport": transport,
     }
 
+
+def verify_rest_boundaries(
+    rows: Sequence[CanonicalRow],
+    *,
+    symbol: str,
+    interval: str,
+    fetcher,
+) -> dict[str, object]:
+    if not rows:
+        return {
+            "enabled": True,
+            "status": "NO_ROWS",
+            "checked_points": 0,
+            "transport": [],
+        }
+    targets = [rows[0]]
+    if rows[-1].open_time_ms != rows[0].open_time_ms:
+        targets.append(rows[-1])
+    result = _verify_exact_rest_rows(
+        targets,
+        symbol=symbol,
+        interval=interval,
+        fetcher=fetcher,
+    )
+    return {
+        "enabled": True,
+        **result,
+    }
 
 def _dataset_manifest_relative_path(
     plan: DatasetPlan,
@@ -1033,6 +1103,7 @@ def acquire_dataset(
             archive,
             runtime_root=runtime_root,
             fetcher=archive_fetcher,
+            rest_fetcher=rest_fetcher,
         )
         all_rows.extend(rows)
         sources.append(evidence)
@@ -1128,6 +1199,14 @@ def acquire_dataset(
             "last_open_time_ms": rows[-1].open_time_ms if rows else None,
             "gap_count": gap_count,
             "duplicate_count": duplicate_count,
+            "close_boundary_normalization_count": sum(
+                item.close_boundary_normalization_count
+                for item in sources
+            ),
+            "close_boundary_rest_verified_count": sum(
+                item.close_boundary_rest_verified_count
+                for item in sources
+            ),
         },
         "rest_verification": rest_verification,
         "acquisition_status": acquisition_status,
