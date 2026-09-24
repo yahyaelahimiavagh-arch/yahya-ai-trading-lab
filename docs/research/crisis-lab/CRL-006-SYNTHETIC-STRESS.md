@@ -1,4 +1,4 @@
-# CRL-006 — Synthetic adversarial stress matrix
+# CRL-006 — Synthetic adversarial stress matrix\n\nStatus: **OPEN-POSITION SHOCK MATRIX PREREGISTERED / 006A IMPLEMENTATION NEXT**
 
 Goal: test failure modes not sufficiently represented by historical candles.
 
@@ -42,3 +42,53 @@ diagnostic:
 
 The source entry episode may be selected from entry occurrence only. Its future
 PnL/path cannot be inspected before scenario construction.
+
+
+## Registered open-position matrix
+
+Canonical registry:
+`SYNTHETIC-SHOCK-REGISTRY-v0.1.0.json`.
+
+Before any synthetic outcome is inspected, the first open-position matrix is
+frozen to the exact Cartesian product:
+
+- adverse gap: 5%, 10%, 20%;
+- slippage sensitivity: 1x, 2x, 5x frozen candidate slippage;
+- frozen candidate fee remains unchanged;
+- total: 9 scenarios per selected CRL-005 source episode.
+
+### CRL-006A — Immediate open-position shock
+
+006A isolates the immediate mechanics of the shock.
+
+The source position must already be open after the entry candle has been fully
+processed. The last-known point-in-time anchor is that entry candle's close.
+The real next candle is **not** read to construct the synthetic gap.
+
+At the next primary decision:
+- the Strategy snapshot contains only source-corpus data through the processed
+  entry candle;
+- the active setup remains the exact source setup;
+- the Strategy does not receive scenario identity or shock magnitude;
+- synthetic open = entry-candle close × (1 - registered gap);
+- the synthetic stress bar is flat at that open
+  (open=high=low=close) to isolate the gap effect;
+- only slippage is multiplied by the registered 1x/2x/5x sensitivity;
+- outputs include immediate exit/protection response, equity excursion,
+  remaining exposure, costs and immediate time-to-zero exposure where applicable.
+
+Kill-switch observation, false re-entry and recovery are intentionally **not**
+fabricated from a single synthetic bar.
+
+### CRL-006B — Post-shock continuation
+
+006B continues from the exact 006A identity and source episode. It owns:
+- next-observation risk state;
+- Kill Switch behavior;
+- time-to-zero exposure when not immediate;
+- false re-entry;
+- whipsaw/repeated-shock continuation;
+- recovery.
+
+006B cannot reselect a more favorable source entry after 006A outcomes are
+known.

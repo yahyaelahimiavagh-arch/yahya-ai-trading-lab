@@ -1,0 +1,168 @@
+{
+  "schema": "YATL_CRL_SYNTHETIC_SHOCK_REGISTRY",
+  "schema_version": "0.1.0",
+  "track_id": "SYNTHETIC_OPEN_POSITION_SHOCK_V1",
+  "status": "PREREGISTERED_BEFORE_SYNTHETIC_OUTCOMES",
+  "source_state": {
+    "source": "CRL-005_STRATEGY_ACTIVE_SELECTED_EPISODE",
+    "confirmed_open_position_required": true,
+    "outcome_selected": false,
+    "required_fields": [
+      "decision_time_ms",
+      "fill_time_ms",
+      "symbol",
+      "active_setup",
+      "risk_state_before_entry",
+      "portfolio_before_entry",
+      "portfolio_after_entry",
+      "entry_fill",
+      "entry_candle",
+      "source_state_confirmed_at_ms"
+    ],
+    "shock_anchor_policy": "ENTRY_CANDLE_CLOSE_AFTER_SAME_CANDLE_PROTECTIVE_PROCESSING",
+    "future_next_candle_used_to_construct_shock": false
+  },
+  "phase_006a_immediate_shock": {
+    "purpose": "Isolate immediate gap and cost sensitivity while preserving the frozen strategy view through the fully processed entry candle.",
+    "decision_time_policy": "NEXT_PRIMARY_DECISION_AFTER_ENTRY_CANDLE",
+    "strategy_snapshot_policy": "SOURCE_CORPUS_ONLY_THROUGH_ENTRY_CANDLE",
+    "strategy_receives_scenario_label": false,
+    "active_setup_preserved": true,
+    "synthetic_open_formula": "entry_candle.close * (1 - adverse_gap_bps / 10000)",
+    "shock_bar_ohlc_policy": "open=high=low=close=synthetic_open",
+    "shock_bar_volume_policy": "COPY_ENTRY_CANDLE_VOLUME_AND_TRADE_COUNT_FIELDS",
+    "fee_policy": "FROZEN_CANDIDATE_FEE_BPS_UNCHANGED",
+    "slippage_policy": "FROZEN_CANDIDATE_SLIPPAGE_BPS_TIMES_REGISTERED_MULTIPLIER",
+    "immediate_outputs": [
+      "strategy_action_before_shock_fill",
+      "protective_exit_reason",
+      "synthetic_open_price",
+      "exit_execution_price_if_any",
+      "equity_before_shock",
+      "equity_after_shock",
+      "immediate_equity_excursion_fraction",
+      "position_quantity_after_shock",
+      "time_to_zero_exposure_ms_if_immediate",
+      "total_synthetic_cost_quote"
+    ],
+    "kill_switch_interpretation": "DEFER_POST_SHOCK_OBSERVATION_TO_CRL-006B",
+    "recovery_interpretation": "DEFER_TO_CRL-006B"
+  },
+  "phase_006b_continuation": {
+    "purpose": "Continue after the immediate shock to evaluate risk observation, kill-switch, zero-exposure timing, false re-entry, whipsaw and recovery.",
+    "status": "IMPLEMENTATION_AFTER_006A",
+    "must_preserve_006a_source_identity": true,
+    "must_not_reselect_source_episode": true
+  },
+  "matrix": {
+    "adverse_gap_bps": [
+      500,
+      1000,
+      2000
+    ],
+    "slippage_multipliers": [
+      1,
+      2,
+      5
+    ],
+    "scenario_count": 9,
+    "scenarios": [
+      {
+        "scenario_id": "OPS-G0500-S1X",
+        "adverse_gap_bps": 500,
+        "slippage_multiplier": 1,
+        "fee_multiplier": 1,
+        "shock_bar_policy": "FLAT_AT_SYNTHETIC_GAP_OPEN",
+        "continuation_phase": "CRL-006B"
+      },
+      {
+        "scenario_id": "OPS-G0500-S2X",
+        "adverse_gap_bps": 500,
+        "slippage_multiplier": 2,
+        "fee_multiplier": 1,
+        "shock_bar_policy": "FLAT_AT_SYNTHETIC_GAP_OPEN",
+        "continuation_phase": "CRL-006B"
+      },
+      {
+        "scenario_id": "OPS-G0500-S5X",
+        "adverse_gap_bps": 500,
+        "slippage_multiplier": 5,
+        "fee_multiplier": 1,
+        "shock_bar_policy": "FLAT_AT_SYNTHETIC_GAP_OPEN",
+        "continuation_phase": "CRL-006B"
+      },
+      {
+        "scenario_id": "OPS-G1000-S1X",
+        "adverse_gap_bps": 1000,
+        "slippage_multiplier": 1,
+        "fee_multiplier": 1,
+        "shock_bar_policy": "FLAT_AT_SYNTHETIC_GAP_OPEN",
+        "continuation_phase": "CRL-006B"
+      },
+      {
+        "scenario_id": "OPS-G1000-S2X",
+        "adverse_gap_bps": 1000,
+        "slippage_multiplier": 2,
+        "fee_multiplier": 1,
+        "shock_bar_policy": "FLAT_AT_SYNTHETIC_GAP_OPEN",
+        "continuation_phase": "CRL-006B"
+      },
+      {
+        "scenario_id": "OPS-G1000-S5X",
+        "adverse_gap_bps": 1000,
+        "slippage_multiplier": 5,
+        "fee_multiplier": 1,
+        "shock_bar_policy": "FLAT_AT_SYNTHETIC_GAP_OPEN",
+        "continuation_phase": "CRL-006B"
+      },
+      {
+        "scenario_id": "OPS-G2000-S1X",
+        "adverse_gap_bps": 2000,
+        "slippage_multiplier": 1,
+        "fee_multiplier": 1,
+        "shock_bar_policy": "FLAT_AT_SYNTHETIC_GAP_OPEN",
+        "continuation_phase": "CRL-006B"
+      },
+      {
+        "scenario_id": "OPS-G2000-S2X",
+        "adverse_gap_bps": 2000,
+        "slippage_multiplier": 2,
+        "fee_multiplier": 1,
+        "shock_bar_policy": "FLAT_AT_SYNTHETIC_GAP_OPEN",
+        "continuation_phase": "CRL-006B"
+      },
+      {
+        "scenario_id": "OPS-G2000-S5X",
+        "adverse_gap_bps": 2000,
+        "slippage_multiplier": 5,
+        "fee_multiplier": 1,
+        "shock_bar_policy": "FLAT_AT_SYNTHETIC_GAP_OPEN",
+        "continuation_phase": "CRL-006B"
+      }
+    ]
+  },
+  "evidence_policy": {
+    "label": "SYNTHETIC",
+    "pool_with_historical_returns": false,
+    "pool_with_p10_forward_evidence": false,
+    "negative_results_retained": true,
+    "deterministic_two_run_equality_required": true
+  },
+  "safety": {
+    "research_only": true,
+    "p10_read": false,
+    "p10_write_allowed": false,
+    "p10_evidence_effect": "NONE",
+    "paper_only": true,
+    "live_master_lock": "OFF",
+    "trade_permission": false,
+    "order_endpoint": false,
+    "quantity_authority": false,
+    "risk_authorization_mutation": false,
+    "ai_direct_execution": false,
+    "p11_locked": true
+  },
+  "research_only": true,
+  "p10_write_allowed": false,
+  "p11_locked": true
+}
