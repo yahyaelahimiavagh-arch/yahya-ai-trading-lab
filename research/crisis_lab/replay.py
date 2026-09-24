@@ -55,7 +55,11 @@ REPLAY_IMPLEMENTATION_ID = "CRL-004/0.1.0"
 REPLAY_SCHEMA_VERSION = "0.1.0"
 QUALITY_SCHEMA_VERSION = "0.1.0"
 ALLOWED_DESIGNATION = "DEVELOPMENT"
+DEFAULT_EVENT_CATALOG_PATH = Path(
+    "docs/research/crisis-lab/EVENT-CATALOG-v0.1.0.json"
+)
 MAX_REPLAY_MANIFEST_BYTES = 8 * 1024 * 1024
+MAX_EVENT_CATALOG_BYTES = 4 * 1024 * 1024
 
 
 class ReplayError(RuntimeError):
@@ -180,7 +184,89 @@ class AdmittedEvent:
     event_acquisition_manifest_relative_path: str
     event_acquisition_manifest_sha256: str
     retrieved_at_ms: int
+    event_catalog_sha256: str
+    replay_window_start_ms: int
+    replay_window_end_ms: int
+    replay_start_ms: int
+    replay_end_ms: int
+    event_anchor_ms: int
     datasets: dict[tuple[str, str], tuple[Candle, ...]]
+
+
+def _load_event_window(
+    event_catalog_path: Path, event_id: str
+) -> tuple[str, int, int, int, int, int]:
+    try:
+        target = acq.assert_safe_runtime_path(event_catalog_path)
+    except acq.AcquisitionError as exc:
+        raise ReplayError(str(exc)) from None
+    if target.is_symlink():
+        raise ReplayError("symlink event catalog is forbidden")
+    try:
+        payload = target.read_bytes()
+    except OSError:
+        raise ReplayError("cannot read registered event catalog") from None
+    if not payload or len(payload) > MAX_EVENT_CATALOG_BYTES:
+        raise ReplayError("registered event catalog size is invalid")
+    catalog = _load_json(payload, "event catalog")
+    if (
+        catalog.get("schema") != "YATL_CRL_EVENT_CATALOG"
+        or catalog.get("catalog_version") != acq.CATALOG_VERSION
+        or catalog.get("research_only") is not True
+        or catalog.get("p10_untouched") is not True
+        or catalog.get("p11_locked") is not True
+    ):
+        raise ReplayError("event catalog registration is invalid")
+    events = catalog.get("events")
+    if not isinstance(events, list):
+        raise ReplayError("event catalog events are invalid")
+    record = next(
+        (
+            item for item in events
+            if isinstance(item, dict) and item.get("event_id") == event_id
+        ),
+        None,
+    )
+    if (
+        record is None
+        or record.get("designation") != ALLOWED_DESIGNATION
+        or record.get("replay_eligible") is not True
+    ):
+        raise ReplayError("event catalog does not admit Development replay")
+    windows = record.get("windows")
+    public = record.get("public_knowability")
+    if not isinstance(windows, dict) or not isinstance(public, dict):
+        raise ReplayError("registered event windows are missing")
+    try:
+        pre = windows["pre_event"]
+        core = windows["core_crisis"]
+        aftermath = windows["aftermath_recovery"]
+        if not all(isinstance(item, dict) for item in (pre, core, aftermath)):
+            raise ReplayError("registered event window shape is invalid")
+        pre_start = acq._iso_to_ms(pre["start_utc"])
+        pre_end = acq._iso_to_ms(pre["end_utc"])
+        core_start = acq._iso_to_ms(core["start_utc"])
+        core_end = acq._iso_to_ms(core["end_utc"])
+        aftermath_start = acq._iso_to_ms(aftermath["start_utc"])
+        aftermath_end = acq._iso_to_ms(aftermath["end_utc"])
+        anchor = acq._iso_to_ms(public["timestamp_utc"])
+    except (KeyError, TypeError, acq.AcquisitionError):
+        raise ReplayError("registered event window timestamp is invalid") from None
+    if not (
+        pre_start < pre_end == core_start == anchor
+        and core_start < core_end == aftermath_start
+        and aftermath_start < aftermath_end
+    ):
+        raise ReplayError("registered event windows are not contiguous")
+    hour = INTERVAL_MILLISECONDS["1h"]
+    replay_start = ((pre_start + hour - 1) // hour) * hour
+    replay_end = ((aftermath_end + hour - 1) // hour) * hour
+    if replay_end <= replay_start:
+        raise ReplayError("aligned registered replay window is empty")
+    return (
+        _sha256_bytes(payload), pre_start, aftermath_end,
+        replay_start, replay_end, anchor,
+    )
 
 
 def _load_canonical_candles(
@@ -262,6 +348,7 @@ def load_admitted_event(
     runtime_root: Path,
     quality_manifest_relative_path: str,
     quality_manifest_file_sha256: str,
+    event_catalog_path: Path = DEFAULT_EVENT_CATALOG_PATH,
 ) -> AdmittedEvent:
     root = _safe_root(runtime_root)
     quality_event = _read_bound_json(
@@ -413,6 +500,10 @@ def load_admitted_event(
         )
     if set(loaded) != expected_pairs:
         raise ReplayError("admitted event dataset scope is incomplete")
+    (
+        catalog_sha, window_start, window_end,
+        replay_start, replay_end, event_anchor,
+    ) = _load_event_window(event_catalog_path, event_id)
     return AdmittedEvent(
         event_id=event_id,
         designation=ALLOWED_DESIGNATION,
@@ -421,6 +512,12 @@ def load_admitted_event(
         event_acquisition_manifest_relative_path=event_acq_rel,
         event_acquisition_manifest_sha256=event_acq_sha,
         retrieved_at_ms=retrieved_at_ms,
+        event_catalog_sha256=catalog_sha,
+        replay_window_start_ms=window_start,
+        replay_window_end_ms=window_end,
+        replay_start_ms=replay_start,
+        replay_end_ms=replay_end,
+        event_anchor_ms=event_anchor,
         datasets=loaded,
     )
 
@@ -451,7 +548,7 @@ def _dataset_for_symbol(
         interval: event.datasets[(symbol, interval)]
         for interval in acq.ALLOWED_INTERVALS
     }
-    first_decision = (
+    warmup_ready = (
         values["4h"][0].open_time_ms
         + REGIME_WARMUP_BARS * INTERVAL_MILLISECONDS["4h"]
     )
@@ -462,12 +559,14 @@ def _dataset_for_symbol(
     common_end = (
         common_end // INTERVAL_MILLISECONDS["1h"]
     ) * INTERVAL_MILLISECONDS["1h"]
-    if common_end <= first_decision:
-        raise ReplayError("admitted event lacks frozen strategy warmup")
+    if event.replay_start_ms < warmup_ready:
+        raise ReplayError("registered replay window lacks frozen strategy warmup")
+    if event.replay_end_ms > common_end:
+        raise ReplayError("admitted datasets do not cover the registered replay window")
     spec = BacktestSpec(
         symbol,
-        first_decision,
-        common_end,
+        event.replay_start_ms,
+        event.replay_end_ms,
         initial_cash=candidate.initial_equity_quote,
         fee_bps=candidate.fee_bps,
         slippage_bps=candidate.slippage_bps,
@@ -511,7 +610,10 @@ def _economics(
         risk = row.get("risk_state")
         if not isinstance(risk, dict):
             raise ReplayError("trace risk state is missing")
-        equities.append(Decimal(str(risk["equity_quote"])))
+        post_equity = row.get("post_equity_quote")
+        if post_equity is None:
+            raise ReplayError("trace post-fill equity is missing")
+        equities.append(Decimal(str(post_equity)))
     equities.append(final_equity)
     drawdown_quote, drawdown_fraction = _drawdown(equities)
     fee = Decimal(str(final_portfolio["total_fee_quote"]))
@@ -734,6 +836,15 @@ def _run_event(event: AdmittedEvent) -> dict[str, object]:
         "input_event_acquisition_manifest_sha256": (
             event.event_acquisition_manifest_sha256
         ),
+        "event_catalog_sha256": event.event_catalog_sha256,
+        "registered_replay_window": {
+            "start_ms": event.replay_window_start_ms,
+            "end_ms": event.replay_window_end_ms,
+            "aligned_first_decision_ms": event.replay_start_ms,
+            "aligned_end_exclusive_ms": event.replay_end_ms,
+            "event_anchor_ms": event.event_anchor_ms,
+            "warmup_excluded_from_economics": True,
+        },
         "candidate": {
             "candidate_id": candidate.candidate_id,
             "candidate_sha256": candidate.candidate_sha256,
@@ -797,6 +908,7 @@ def replay_event(
     runtime_root: Path,
     quality_manifest_relative_path: str,
     quality_manifest_file_sha256: str,
+    event_catalog_path: Path = DEFAULT_EVENT_CATALOG_PATH,
 ) -> dict[str, object]:
     event = load_admitted_event(
         runtime_root=runtime_root,
@@ -806,6 +918,7 @@ def replay_event(
         quality_manifest_file_sha256=(
             quality_manifest_file_sha256
         ),
+        event_catalog_path=event_catalog_path,
     )
     first = _run_event(event)
     second = _run_event(event)
@@ -835,6 +948,7 @@ def safe_summary(
         "designation": result["designation"],
         "candidate_id": candidate["candidate_id"],
         "candidate_sha256": candidate["candidate_sha256"],
+        "registered_replay_window": result["registered_replay_window"],
         "symbols": [
             {
                 "symbol": item["symbol"],
@@ -891,6 +1005,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--quality-manifest-sha256", required=True
     )
+    parser.add_argument(
+        "--event-catalog", type=Path, default=DEFAULT_EVENT_CATALOG_PATH
+    )
     return parser
 
 
@@ -902,6 +1019,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         quality_manifest_file_sha256=(
             args.quality_manifest_sha256
         ),
+        event_catalog_path=args.event_catalog,
     )
     print(_json(safe_summary(result)))
     return 0
