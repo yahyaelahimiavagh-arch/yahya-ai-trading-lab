@@ -1,6 +1,6 @@
 # CRL-005 — Control windows and baselines
 
-Status: **SPEC EXPANDED — ORDINARY-MARKET CORPUS + STATE-TRANSITION PROTOCOL REGISTERED / IMPLEMENTATION PENDING**
+Status: **ORDINARY CONTROL REPLAY IMPLEMENTED — FINAL-HEAD CI + REAL CORPUS VALIDATION PENDING**
 
 Every crisis result must be interpreted against:
 - pre-event window;
@@ -112,7 +112,48 @@ Every eligible comparison includes:
 1. **NO-TRADE / CASH**;
 2. **BUY-AND-HOLD research baseline**.
 
+The baseline semantics are frozen in
+`CONTROL-WINDOW-PROTOCOL-v0.1.0.json` before ordinary-market outcomes are
+replayed. CASH never enters the market. BUY-AND-HOLD uses the same frozen YATL
+research quantity, fee bps and adverse slippage bps; it buys at the first 1h open
+inside the analysis window, liquidates at the last 1h close, and leaves all
+unused quote balance as cash. This is a matched-size research comparator, not a
+production strategy.
+
 Additional baselines require separate preregistration.
+
+## Ordinary control replay runtime
+
+Research-only implementation:
+`research/crisis_lab/controls.py`.
+
+The runtime:
+- accepts only the CRL-003-admitted continuous Development control corpus;
+- verifies the full content-addressed quality/acquisition/canonical chain again;
+- slices each registered control from its frozen warm-up start through its
+  exclusive analysis end, so later corpus candles cannot enter the run;
+- executes decisions only inside the registered 30-day analysis interval;
+- reuses the frozen CRL-004 strategy, risk, Paper fill and cost semantics;
+- emits YATL, CASH and matched-size BUY-AND-HOLD evidence side by side;
+- writes immutable content-addressed per-window replay manifests;
+- has no network, account, credential, order, AI execution or P10 write
+  capability.
+
+CLI:
+
+```bash
+uv run --locked python -m research.crisis_lab.controls \
+  --runtime-root data/research/crisis-lab \
+  --quality-manifest <control-event-quality-relative-path> \
+  --quality-manifest-sha256 <full-sha256>
+```
+
+A subset may be replayed with repeated `--control CRL-C00X` arguments.
+
+The runtime index and per-window manifests remain **research evidence only**:
+they cannot upgrade P10 evidence, mutate the frozen candidate, or authorize P11.
+Real ordinary-market replay is performed only after this implementation passes
+its Final-HEAD deterministic CI gate.
 
 Research question:
 Did YATL survive/preserve/grow capital differently because of its architecture,
