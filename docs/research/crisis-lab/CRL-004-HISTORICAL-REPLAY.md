@@ -35,7 +35,7 @@ second historical strategy:
 - frozen P10 candidate: `P10_BASELINE_TREND_PULLBACK_V1`;
 - strategy: `TREND_PULLBACK/1.0.0`;
 - primary/context/regime: `1h / 15m / 4h`;
-- regime warm-up: **51 closed 4h candles**;
+- regime warm-up: **51 closed 4h candles**, used only as pre-window context and excluded from crisis economics;
 - quantity: accepted P3/P10 fixed research quantity `0.001`;
 - execution: accepted P2 `NEXT_PRIMARY_OPEN` Paper fill engine;
 - costs: `10 bps` fee + `5 bps` adverse slippage;
@@ -50,7 +50,10 @@ SHA-256 chain before a candle can reach Strategy. v0.1.0 is Development-only:
 Each decision is constructed by the accepted `BacktestClock` and
 `MarketSnapshot`. Every candle visible to Strategy must have
 `close_time_ms < decision_time_ms`. The event label/window is not supplied to
-`StrategyContext`.
+`StrategyContext`. The registered Event Catalog is independently hash-bound and
+sets the reporting interval from aligned `pre_event` start through the exclusive
+end of `aftermath_recovery`; earlier canonical candles are warm-up context only
+and cannot contribute to replay PnL, drawdown or trade counts.
 
 Core v0.1.0 output records:
 - every decision context digest, regime, strategy action/reason and effective intent;
@@ -88,7 +91,8 @@ CLI:
 uv run --locked python -m research.crisis_lab.replay \
   --runtime-root data/research/crisis-lab \
   --quality-manifest <event-quality-relative-path> \
-  --quality-manifest-sha256 <full-sha256>
+  --quality-manifest-sha256 <full-sha256> \
+  --event-catalog docs/research/crisis-lab/EVENT-CATALOG-v0.1.0.json
 ```
 
 Exit gate: deterministic replay plus the frozen derived crisis measures work
