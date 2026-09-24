@@ -98,7 +98,39 @@
     "purpose": "Inspect ordinary periods in which the frozen strategy actually opens a Paper position.",
     "selection_rule": "Scan chronologically; outside all crisis exclusion buffers, retain the first 10 permitted ENTER_LONG episodes separated by at least 7 days. Selection may use entry occurrence only and must not inspect later PnL, exit quality or maximum excursion.",
     "unbiased_performance_evidence": false,
-    "diagnostic_only": true
+    "diagnostic_only": true,
+    "selection_scope": "BTCUSDT_AND_ETHUSDT_COMBINED",
+    "entry_definition": "A risk-allowed ENTER_LONG that produces an actual Paper NEXT_PRIMARY_OPEN entry fill and remains open after same-candle protective processing.",
+    "ordering": "decision_time_ms ASC, then symbol lexical ASC",
+    "maximum_episodes": 10,
+    "minimum_separation_ms": 604800000,
+    "crisis_exclusion_guard_days": 7,
+    "forbidden_selection_fields": [
+      "future_price_path",
+      "later_pnl",
+      "later_drawdown",
+      "later_maximum_excursion",
+      "later_exit_quality",
+      "later_recovery"
+    ],
+    "required_source_state_fields": [
+      "decision_time_ms",
+      "fill_time_ms",
+      "symbol",
+      "context_sha256",
+      "regime",
+      "strategy_reason",
+      "active_setup",
+      "risk_state_before_entry",
+      "portfolio_before_entry",
+      "portfolio_after_entry",
+      "entry_fill",
+      "entry_candle"
+    ],
+    "confirmed_open_position_required": true,
+    "deterministic_tie_break": true,
+    "stop_after_ten_selected_episodes_allowed": true,
+    "shock_anchor_policy": "AFTER_ENTRY_CANDLE_PROCESSING_USE_ENTRY_CANDLE_CLOSE_AS_LAST_KNOWN_PRIMARY_MARK"
   },
   "historical_crisis_transition": {
     "cohort_id": "HISTORICAL_OPEN_POSITION_AT_ANCHOR_V1",
