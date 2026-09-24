@@ -19,7 +19,7 @@ from typing import Mapping, Sequence
 
 from . import acquisition as acq
 
-QUALITY_IMPLEMENTATION_ID = "CRL-003/0.1.0"
+QUALITY_IMPLEMENTATION_ID = "CRL-003/0.1.1"
 QUALITY_SCHEMA_VERSION = "0.1.0"
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _ALLOWED_DESIGNATIONS = frozenset({"DEVELOPMENT", "BLIND_HOLDOUT"})
@@ -153,6 +153,23 @@ def _check_source_objects(
             continue
         if expected != downloaded:
             failures.append(f"SOURCE_OBJECT_{index}_CHECKSUM_MISMATCH")
+        normalized = item.get("close_boundary_normalization_count", 0)
+        verified = item.get("close_boundary_rest_verified_count", 0)
+        if (
+            not isinstance(normalized, int)
+            or isinstance(normalized, bool)
+            or normalized < 0
+            or not isinstance(verified, int)
+            or isinstance(verified, bool)
+            or verified < 0
+        ):
+            failures.append(
+                f"SOURCE_OBJECT_{index}_CLOSE_BOUNDARY_EVIDENCE_INVALID"
+            )
+        elif normalized != verified:
+            failures.append(
+                f"SOURCE_OBJECT_{index}_CLOSE_BOUNDARY_REST_INCOMPLETE"
+            )
     return not failures, tuple(failures)
 
 
@@ -216,6 +233,18 @@ def _inspect_canonical(
             canonical.get("duplicate_count"),
             "canonical duplicate count",
         )
+        close_boundary_normalized = _require_int(
+            canonical.get(
+                "close_boundary_normalization_count", 0
+            ),
+            "canonical close-boundary normalization count",
+        )
+        close_boundary_verified = _require_int(
+            canonical.get(
+                "close_boundary_rest_verified_count", 0
+            ),
+            "canonical close-boundary REST verified count",
+        )
     except QualityError as exc:
         return {
             "status": "FAIL",
@@ -228,6 +257,10 @@ def _inspect_canonical(
         failures.append("ACQUISITION_RECORDED_GAPS")
     if duplicate_manifest != 0:
         failures.append("ACQUISITION_RECORDED_DUPLICATES")
+    if close_boundary_normalized < 0 or close_boundary_verified < 0:
+        failures.append("CLOSE_BOUNDARY_EVIDENCE_INVALID")
+    elif close_boundary_normalized != close_boundary_verified:
+        failures.append("CLOSE_BOUNDARY_REST_VERIFICATION_INCOMPLETE")
 
     if Path(canonical_rel).name != f"dataset-{expected_sha}.csv":
         failures.append("CANONICAL_CONTENT_ADDRESS_MISMATCH")
