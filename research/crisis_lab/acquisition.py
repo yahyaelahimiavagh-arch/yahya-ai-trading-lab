@@ -43,14 +43,51 @@ ALLOWED_SYMBOLS = ("BTCUSDT", "ETHUSDT")
 ALLOWED_INTERVALS = ("15m", "1h", "4h")
 
 # Reproducible Binance Public Data monthly-vs-daily divergences.
-# Daily archives match Spot REST/API for these dates; monthly rows are excluded
+# Daily archives match Spot REST/API for these scopes; monthly rows are excluded
 # and replaced with checksum-verified daily archives.
-MONTHLY_DAILY_OVERRIDE_DATES = frozenset(
-    {
+_MONTHLY_DAILY_OVERRIDE_RULES = (
+    (
         date(2020, 12, 21),
+        frozenset(ALLOWED_SYMBOLS),
+        frozenset(ALLOWED_INTERVALS),
+    ),
+    (
         date(2021, 9, 29),
-    }
+        frozenset(ALLOWED_SYMBOLS),
+        frozenset(ALLOWED_INTERVALS),
+    ),
+    (
+        date(2021, 12, 24),
+        frozenset({"BTCUSDT"}),
+        frozenset({"15m", "1h"}),
+    ),
 )
+
+
+def _monthly_daily_override_applies(
+    symbol: str,
+    interval: str,
+    day: date,
+) -> bool:
+    return any(
+        day == override_day
+        and symbol in symbols
+        and interval in intervals
+        for override_day, symbols, intervals
+        in _MONTHLY_DAILY_OVERRIDE_RULES
+    )
+
+
+def _monthly_daily_override_days(
+    symbol: str,
+    interval: str,
+) -> tuple[date, ...]:
+    return tuple(
+        override_day
+        for override_day, symbols, intervals
+        in _MONTHLY_DAILY_OVERRIDE_RULES
+        if symbol in symbols and interval in intervals
+    )
 
 INTERVAL_MILLISECONDS = {
     "15m": 15 * 60 * 1000,
@@ -430,7 +467,9 @@ def build_archive_objects(
             objects.append(
                 _archive_object("monthly", symbol, interval, period, cursor)
             )
-            for override_day in sorted(MONTHLY_DAILY_OVERRIDE_DATES):
+            for override_day in sorted(
+                _monthly_daily_override_days(symbol, interval)
+            ):
                 if cursor <= override_day <= month_end:
                     objects.append(
                         _archive_object(
@@ -778,9 +817,13 @@ def _normalize_archive_csv_with_evidence(
 
         if (
             archive.cadence == "monthly"
-            and datetime.fromtimestamp(
-                open_ms / 1000, timezone.utc
-            ).date() in MONTHLY_DAILY_OVERRIDE_DATES
+            and _monthly_daily_override_applies(
+                plan.symbol,
+                plan.interval,
+                datetime.fromtimestamp(
+                    open_ms / 1000, timezone.utc
+                ).date(),
+            )
         ):
             continue
 
@@ -1290,7 +1333,11 @@ def acquire_dataset(
         "primary_source": "BINANCE_PUBLIC_DATA",
         "monthly_daily_override_dates": [
             override_day.isoformat()
-            for override_day in sorted(MONTHLY_DAILY_OVERRIDE_DATES)
+            for override_day in sorted(
+                _monthly_daily_override_days(
+                    plan.symbol, plan.interval
+                )
+            )
             if (
                 plan.transport_start_ms
                 <= int(
