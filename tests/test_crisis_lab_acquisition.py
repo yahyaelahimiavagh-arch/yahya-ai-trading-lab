@@ -182,8 +182,9 @@ class CloseBoundaryArchiveFetcher(MockArchiveFetcher):
 
 
 class MockRestFetcher:
-    def __init__(self, *, mismatch=False):
+    def __init__(self, *, mismatch=False, close_boundary_anomaly=False):
         self.mismatch = mismatch
+        self.close_boundary_anomaly = close_boundary_anomaly
 
     def fetch(self, url, *, max_bytes):
         query = urllib.parse.parse_qs(
@@ -196,6 +197,8 @@ class MockRestFetcher:
             interval,
             close="100.5" if self.mismatch else "100",
         )
+        if self.close_boundary_anomaly:
+            row[6] = str(int(row[6]) - 1000)
         return json.dumps(
             [[
                 int(row[0]),
@@ -442,6 +445,23 @@ class CrisisLabAcquisitionTests(unittest.TestCase):
                 source["close_boundary_rest_verified_count"],
                 1,
             )
+
+    def test_rest_close_boundary_anomaly_is_canonicalized_for_exact_match(self):
+        start = ms("2024-01-01T00:00:00Z")
+        target = acq.CanonicalRow(
+            tuple(source_row(start, "1h"))
+        )
+        result = acq._verify_exact_rest_rows(
+            [target],
+            symbol="BTCUSDT",
+            interval="1h",
+            fetcher=MockRestFetcher(close_boundary_anomaly=True),
+        )
+        self.assertEqual(result["status"], "MATCH")
+        self.assertEqual(
+            result["close_boundary_normalization_count"],
+            1,
+        )
 
     def test_close_boundary_anomaly_fails_on_rest_field_conflict(self):
         plan = acq.plan_dataset(
