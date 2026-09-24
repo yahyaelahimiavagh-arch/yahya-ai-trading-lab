@@ -117,3 +117,4 @@ to CRL-006B.
 
 
 Acceptance note: CRL-006A requires exact-head deterministic CI before promotion to `main`.
+Final-head gate: this clean rebuild is tested only against the current `main` ancestry.
