@@ -15,11 +15,14 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+from bisect import bisect_left
+from dataclasses import dataclass, field, replace
 from decimal import Decimal
 from pathlib import Path
 from typing import Mapping, Sequence
 
 from yatl.backtest import (
+    AcceptedBacktestDataset,
     BacktestClock,
     IntentAction,
     PaperFillEngine,
@@ -49,13 +52,14 @@ from . import controls
 from . import replay
 
 
-DIAGNOSTIC_IMPLEMENTATION_ID = "CRL-005-STRATEGY-ACTIVE/0.1.0"
+DIAGNOSTIC_IMPLEMENTATION_ID = "CRL-005-STRATEGY-ACTIVE/0.2.0"
 DIAGNOSTIC_SCHEMA_VERSION = "0.1.0"
 DEFAULT_EVENT_CATALOG_PATH = Path(
     "docs/research/crisis-lab/EVENT-CATALOG-v0.1.0.json"
 )
 MAX_EVENT_CATALOG_BYTES = 4 * 1024 * 1024
 MAX_DIAGNOSTIC_MANIFEST_BYTES = 4 * 1024 * 1024
+SCAN_CHUNK_MS = 14 * 86_400_000
 
 
 class DiagnosticError(RuntimeError):
@@ -195,193 +199,409 @@ def _pool_event(
     )
 
 
-def _scan_symbol(
+@dataclass(slots=True)
+class _SymbolScanState:
+    symbol: str
+    dataset: AcceptedBacktestDataset
+    input_dataset_sha256: str
+    fill_engine: PaperFillEngine
+    ledger: PortfolioLedger
+    risk_tracker: _RiskTracker
+    primary_by_open: dict[int, object]
+    open_times: dict[str, tuple[int, ...]]
+    active_setup: object | None = None
+    candidates: list[dict[str, object]] = field(default_factory=list)
+    decision_count: int = 0
+    entry_signal_count: int = 0
+    risk_allowed_entry_count: int = 0
+    confirmed_open_entry_count: int = 0
+    excluded_confirmed_open_entry_count: int = 0
+
+
+def _new_scan_state(
     *,
     event: replay.AdmittedEvent,
     symbol: str,
-    exclusions: Sequence[tuple[int, int, str]],
-) -> dict[str, object]:
+) -> _SymbolScanState:
     try:
         dataset, input_sha = replay._dataset_for_symbol(event, symbol)
     except replay.ReplayError as exc:
         raise DiagnosticError(str(exc)) from None
-    events = tuple(BacktestClock(dataset).events())
-    if not events:
-        raise DiagnosticError("strategy-active scan has no legal decisions")
-    by_open = {item.open_time_ms: item for item in dataset.primary}
-    if len(by_open) != len(dataset.primary):
-        raise DiagnosticError("strategy-active primary candles are duplicated")
-
-    fill_engine = PaperFillEngine(symbol)
-    ledger = PortfolioLedger(dataset.spec)
-    risk_tracker = _RiskTracker(
-        symbol, CandidateFreeze().initial_equity_quote
+    primary_by_open = {
+        item.open_time_ms: item for item in dataset.primary
+    }
+    if len(primary_by_open) != len(dataset.primary):
+        raise DiagnosticError(
+            "strategy-active primary candles are duplicated"
+        )
+    open_times = {
+        "1h": tuple(item.open_time_ms for item in dataset.primary),
+        "15m": tuple(item.open_time_ms for item in dataset.context),
+        "4h": tuple(item.open_time_ms for item in dataset.regime),
+    }
+    return _SymbolScanState(
+        symbol=symbol,
+        dataset=dataset,
+        input_dataset_sha256=input_sha,
+        fill_engine=PaperFillEngine(symbol),
+        ledger=PortfolioLedger(dataset.spec),
+        risk_tracker=_RiskTracker(
+            symbol, CandidateFreeze().initial_equity_quote
+        ),
+        primary_by_open=primary_by_open,
+        open_times=open_times,
     )
-    active_setup = None
-    candidates: list[dict[str, object]] = []
-    entry_signal_count = 0
-    risk_allowed_entry_count = 0
-    confirmed_open_entry_count = 0
-    excluded_confirmed_open_entry_count = 0
 
-    for decision_event in events:
-        fill_candle = by_open.get(
-            decision_event.eligible_fill_open_time_ms
-        )
-        if fill_candle is None or not fill_candle.is_closed:
-            raise DiagnosticError(
-                "strategy-active next-open candle is missing"
-            )
-        if any(
-            candle.close_time_ms >= decision_event.decision_time_ms
-            for series in (
-                decision_event.snapshot.primary,
-                decision_event.snapshot.context,
-                decision_event.snapshot.regime,
-            )
-            for candle in series
-        ):
-            raise DiagnosticError(
-                "strategy-active decision contains future data"
-            )
 
-        pre = ledger.snapshot(
-            decision_event.snapshot.latest_primary.close
+def _prefix(
+    values: tuple,
+    opens: tuple[int, ...],
+    end_exclusive_ms: int,
+) -> tuple:
+    index = bisect_left(opens, end_exclusive_ms)
+    if index <= 0:
+        raise DiagnosticError(
+            "strategy-active chunk has no historical prefix"
         )
-        risk_state = risk_tracker.observe(
-            decision_event.decision_time_ms,
-            pre,
-            decision_event.snapshot.latest_primary.close,
+    return values[:index]
+
+
+def _chunk_dataset(
+    state: _SymbolScanState,
+    *,
+    start_ms: int,
+    end_ms: int,
+) -> AcceptedBacktestDataset:
+    if (
+        type(start_ms) is not int
+        or type(end_ms) is not int
+        or start_ms < state.dataset.spec.start_time_ms
+        or end_ms > state.dataset.spec.end_time_ms
+        or start_ms >= end_ms
+        or start_ms % INTERVAL_MILLISECONDS["1h"]
+        or end_ms % INTERVAL_MILLISECONDS["1h"]
+    ):
+        raise DiagnosticError(
+            "strategy-active scan chunk is invalid"
         )
-        context = StrategyContext(
-            TREND_PULLBACK_IDENTITY, decision_event.snapshot
+    try:
+        spec = replace(
+            state.dataset.spec,
+            start_time_ms=start_ms,
+            end_time_ms=end_ms,
         )
-        regime = classify_regime(context)
-        decision = evaluate_trend_pullback(
-            context,
-            in_position=fill_engine.has_position,
-            active_setup=active_setup,
+    except (TypeError, ValueError):
+        raise DiagnosticError(
+            "strategy-active scan chunk spec is invalid"
+        ) from None
+    return AcceptedBacktestDataset(
+        spec=spec,
+        manifest_generated_at_ms=state.dataset.manifest_generated_at_ms,
+        primary=_prefix(
+            state.dataset.primary,
+            state.open_times["1h"],
+            end_ms,
+        ),
+        context=_prefix(
+            state.dataset.context,
+            state.open_times["15m"],
+            end_ms,
+        ),
+        regime=_prefix(
+            state.dataset.regime,
+            state.open_times["4h"],
+            end_ms,
+        ),
+    )
+
+
+def _process_event(
+    *,
+    state: _SymbolScanState,
+    decision_event,
+    exclusions: Sequence[tuple[int, int, str]],
+) -> dict[str, object] | None:
+    fill_candle = state.primary_by_open.get(
+        decision_event.eligible_fill_open_time_ms
+    )
+    if fill_candle is None or not fill_candle.is_closed:
+        raise DiagnosticError(
+            "strategy-active next-open candle is missing"
+        )
+    if any(
+        candle.close_time_ms >= decision_event.decision_time_ms
+        for series in (
+            decision_event.snapshot.primary,
+            decision_event.snapshot.context,
+            decision_event.snapshot.regime,
+        )
+        for candle in series
+    ):
+        raise DiagnosticError(
+            "strategy-active decision contains future data"
         )
 
-        veto = None
-        if decision.action is StrategyAction.ENTER_LONG:
-            entry_signal_count += 1
-            veto = assess_fixed_quantity_entry(decision, risk_state)
-            if veto.allowed:
-                risk_allowed_entry_count += 1
-                intent = PaperIntent(
-                    IntentAction.ENTER_LONG,
-                    decision_event.decision_time_ms,
-                    RUNNER_QUANTITY,
-                    decision.setup.invalidation_price,
-                    decision.setup.target_price,
-                )
-            else:
-                intent = PaperIntent(
-                    IntentAction.HOLD,
-                    decision_event.decision_time_ms,
-                )
-        elif decision.action is StrategyAction.EXIT_LONG:
+    state.decision_count += 1
+    pre = state.ledger.snapshot(
+        decision_event.snapshot.latest_primary.close
+    )
+    risk_state = state.risk_tracker.observe(
+        decision_event.decision_time_ms,
+        pre,
+        decision_event.snapshot.latest_primary.close,
+    )
+    context = StrategyContext(
+        TREND_PULLBACK_IDENTITY, decision_event.snapshot
+    )
+    regime = classify_regime(context)
+    decision = evaluate_trend_pullback(
+        context,
+        in_position=state.fill_engine.has_position,
+        active_setup=state.active_setup,
+    )
+
+    veto = None
+    if decision.action is StrategyAction.ENTER_LONG:
+        state.entry_signal_count += 1
+        veto = assess_fixed_quantity_entry(decision, risk_state)
+        if veto.allowed:
+            state.risk_allowed_entry_count += 1
             intent = PaperIntent(
-                IntentAction.EXIT_LONG,
+                IntentAction.ENTER_LONG,
                 decision_event.decision_time_ms,
+                RUNNER_QUANTITY,
+                decision.setup.invalidation_price,
+                decision.setup.target_price,
             )
         else:
             intent = PaperIntent(
                 IntentAction.HOLD,
                 decision_event.decision_time_ms,
             )
-
-        references = fill_engine.process(
-            decision_event, intent, fill_candle
+    elif decision.action is StrategyAction.EXIT_LONG:
+        intent = PaperIntent(
+            IntentAction.EXIT_LONG,
+            decision_event.decision_time_ms,
         )
-        costed = tuple(
-            apply_costs(item, dataset.spec) for item in references
-        )
-        if costed:
-            ledger.apply_many(costed)
-
-        entry_fill = next(
-            (
-                item
-                for item in costed
-                if item.reference.action is IntentAction.ENTER_LONG
-            ),
-            None,
+    else:
+        intent = PaperIntent(
+            IntentAction.HOLD,
+            decision_event.decision_time_ms,
         )
 
-        if fill_engine.has_position:
-            if intent.action is IntentAction.ENTER_LONG:
-                active_setup = decision.setup
-            elif active_setup is None:
-                raise DiagnosticError(
-                    "strategy-active Paper position lost setup state"
-                )
-        else:
-            active_setup = None
+    references = state.fill_engine.process(
+        decision_event, intent, fill_candle
+    )
+    costed = tuple(
+        apply_costs(item, state.dataset.spec) for item in references
+    )
+    if costed:
+        state.ledger.apply_many(costed)
 
-        if (
-            intent.action is IntentAction.ENTER_LONG
-            and veto is not None
-            and veto.allowed
-            and entry_fill is not None
-            and fill_engine.has_position
-        ):
-            confirmed_open_entry_count += 1
-            if _excluded(
-                decision_event.decision_time_ms, exclusions
-            ):
-                excluded_confirmed_open_entry_count += 1
-            else:
-                if decision.setup is None or active_setup is None:
-                    raise DiagnosticError(
-                        "confirmed entry has no active setup"
-                    )
-                post = ledger.snapshot(fill_candle.open)
-                candidates.append(
-                    {
-                        "decision_time_ms": (
-                            decision_event.decision_time_ms
-                        ),
-                        "fill_time_ms": (
-                            entry_fill.reference.fill_time_ms
-                        ),
-                        "symbol": symbol,
-                        "context_sha256": decision.context_sha256,
-                        "regime": regime.regime.value,
-                        "strategy_reason": decision.reason.value,
-                        "active_setup": _setup_record(active_setup),
-                        "risk_state_before_entry": (
-                            risk_state.as_record()
-                        ),
-                        "portfolio_before_entry": (
-                            _portfolio_record(pre)
-                        ),
-                        "portfolio_after_entry": (
-                            _portfolio_record(post)
-                        ),
-                        "entry_fill": _fill_record(entry_fill),
-                        "entry_candle": fill_candle.as_record(),
-                        "source_state_confirmed_at_ms": (
-                            fill_candle.close_time_ms
-                        ),
-                    }
-                )
-
-    return {
-        "symbol": symbol,
-        "input_dataset_sha256": input_sha,
-        "decision_count": len(events),
-        "entry_signal_count": entry_signal_count,
-        "risk_allowed_entry_count": risk_allowed_entry_count,
-        "confirmed_open_entry_count": confirmed_open_entry_count,
-        "excluded_confirmed_open_entry_count": (
-            excluded_confirmed_open_entry_count
+    entry_fill = next(
+        (
+            item
+            for item in costed
+            if item.reference.action is IntentAction.ENTER_LONG
         ),
-        "eligible_candidate_count": len(candidates),
-        "candidates": candidates,
+        None,
+    )
+
+    if state.fill_engine.has_position:
+        if intent.action is IntentAction.ENTER_LONG:
+            state.active_setup = decision.setup
+        elif state.active_setup is None:
+            raise DiagnosticError(
+                "strategy-active Paper position lost setup state"
+            )
+    else:
+        state.active_setup = None
+
+    if not (
+        intent.action is IntentAction.ENTER_LONG
+        and veto is not None
+        and veto.allowed
+        and entry_fill is not None
+        and state.fill_engine.has_position
+    ):
+        return None
+
+    state.confirmed_open_entry_count += 1
+    if _excluded(decision_event.decision_time_ms, exclusions):
+        state.excluded_confirmed_open_entry_count += 1
+        return None
+    if decision.setup is None or state.active_setup is None:
+        raise DiagnosticError(
+            "confirmed entry has no active setup"
+        )
+
+    post = state.ledger.snapshot(fill_candle.open)
+    candidate = {
+        "decision_time_ms": decision_event.decision_time_ms,
+        "fill_time_ms": entry_fill.reference.fill_time_ms,
+        "symbol": state.symbol,
+        "context_sha256": decision.context_sha256,
+        "regime": regime.regime.value,
+        "strategy_reason": decision.reason.value,
+        "active_setup": _setup_record(state.active_setup),
+        "risk_state_before_entry": risk_state.as_record(),
+        "portfolio_before_entry": _portfolio_record(pre),
+        "portfolio_after_entry": _portfolio_record(post),
+        "entry_fill": _fill_record(entry_fill),
+        "entry_candle": fill_candle.as_record(),
+        "source_state_confirmed_at_ms": fill_candle.close_time_ms,
+    }
+    state.candidates.append(candidate)
+    return candidate
+
+
+def _state_summary(
+    state: _SymbolScanState,
+) -> dict[str, object]:
+    return {
+        "symbol": state.symbol,
+        "input_dataset_sha256": state.input_dataset_sha256,
+        "decision_count": state.decision_count,
+        "entry_signal_count": state.entry_signal_count,
+        "risk_allowed_entry_count": state.risk_allowed_entry_count,
+        "confirmed_open_entry_count": state.confirmed_open_entry_count,
+        "excluded_confirmed_open_entry_count": (
+            state.excluded_confirmed_open_entry_count
+        ),
+        "eligible_candidate_count": len(state.candidates),
         "point_in_time_verified": True,
     }
+
+
+def _scan_progressive(
+    *,
+    event: replay.AdmittedEvent,
+    exclusions: Sequence[tuple[int, int, str]],
+    maximum_episodes: int,
+    minimum_separation_ms: int,
+    chunk_ms: int = SCAN_CHUNK_MS,
+) -> tuple[
+    list[dict[str, object]],
+    tuple[dict[str, object], ...],
+    dict[str, object],
+]:
+    if (
+        type(chunk_ms) is not int
+        or chunk_ms < INTERVAL_MILLISECONDS["1h"]
+        or chunk_ms % INTERVAL_MILLISECONDS["1h"]
+    ):
+        raise DiagnosticError(
+            "strategy-active runtime partition is invalid"
+        )
+    states = {
+        symbol: _new_scan_state(event=event, symbol=symbol)
+        for symbol in acq.ALLOWED_SYMBOLS
+    }
+    selected: list[dict[str, object]] = []
+    last_selected_time: int | None = None
+    chunk_count = 0
+    scanned_end = event.replay_start_ms
+    stop_reason = "POOL_EXHAUSTED"
+
+    chunk_start = event.replay_start_ms
+    while chunk_start < event.replay_end_ms:
+        chunk_end = min(
+            chunk_start + chunk_ms,
+            event.replay_end_ms,
+        )
+        chunk_count += 1
+        datasets = {
+            symbol: _chunk_dataset(
+                state,
+                start_ms=chunk_start,
+                end_ms=chunk_end,
+            )
+            for symbol, state in states.items()
+        }
+        iterators = {
+            symbol: iter(BacktestClock(dataset).events())
+            for symbol, dataset in datasets.items()
+        }
+
+        while True:
+            events = {}
+            ended = []
+            for symbol in acq.ALLOWED_SYMBOLS:
+                try:
+                    events[symbol] = next(iterators[symbol])
+                    ended.append(False)
+                except StopIteration:
+                    ended.append(True)
+            if any(ended):
+                if not all(ended):
+                    raise DiagnosticError(
+                        "strategy-active symbol clocks diverged"
+                    )
+                break
+
+            times = {
+                item.decision_time_ms for item in events.values()
+            }
+            if len(times) != 1:
+                raise DiagnosticError(
+                    "strategy-active symbol decision times diverged"
+                )
+            decision_time = next(iter(times))
+            new_candidates = []
+            for symbol in acq.ALLOWED_SYMBOLS:
+                candidate = _process_event(
+                    state=states[symbol],
+                    decision_event=events[symbol],
+                    exclusions=exclusions,
+                )
+                if candidate is not None:
+                    new_candidates.append(candidate)
+
+            new_candidates.sort(
+                key=lambda item: (
+                    item["decision_time_ms"],
+                    item["symbol"],
+                )
+            )
+            for candidate in new_candidates:
+                current = int(candidate["decision_time_ms"])
+                if (
+                    last_selected_time is not None
+                    and current - last_selected_time
+                    < minimum_separation_ms
+                ):
+                    continue
+                selected.append(candidate)
+                last_selected_time = current
+                if len(selected) == maximum_episodes:
+                    break
+
+            scanned_end = decision_time + INTERVAL_MILLISECONDS["1h"]
+            if len(selected) == maximum_episodes:
+                stop_reason = "TARGET_REACHED"
+                break
+
+        if len(selected) == maximum_episodes:
+            break
+        chunk_start = chunk_end
+
+    summaries = [
+        _state_summary(states[symbol])
+        for symbol in acq.ALLOWED_SYMBOLS
+    ]
+    runtime = {
+        "partition_policy": (
+            "FIXED_CHUNKS_PERFORMANCE_ONLY_SELECTION_SEMANTICS_UNCHANGED"
+        ),
+        "chunk_ms": chunk_ms,
+        "chunk_count": chunk_count,
+        "scanned_start_ms": event.replay_start_ms,
+        "scanned_end_exclusive_ms": scanned_end,
+        "pool_end_exclusive_ms": event.replay_end_ms,
+        "stopped_early": scanned_end < event.replay_end_ms,
+        "stop_reason": stop_reason,
+    }
+    return summaries, tuple(selected), runtime
 
 
 def _select_episodes(
@@ -523,21 +743,9 @@ def run_strategy_active_diagnostic(
         pool_start_ms=pool_start,
         pool_end_ms=pool_end,
     )
-    scans = [
-        _scan_symbol(
-            event=event,
-            symbol=symbol,
-            exclusions=exclusions,
-        )
-        for symbol in acq.ALLOWED_SYMBOLS
-    ]
-    all_candidates = [
-        item
-        for scan in scans
-        for item in scan["candidates"]
-    ]
-    selected = _select_episodes(
-        all_candidates,
+    scans, selected, scan_runtime = _scan_progressive(
+        event=event,
+        exclusions=exclusions,
         maximum_episodes=maximum,
         minimum_separation_ms=separation,
     )
@@ -583,14 +791,8 @@ def run_strategy_active_diagnostic(
             "fee_bps": candidate.fee_bps,
             "slippage_bps": candidate.slippage_bps,
         },
-        "scan_summary": [
-            {
-                key: value
-                for key, value in scan.items()
-                if key != "candidates"
-            }
-            for scan in scans
-        ],
+        "scan_runtime": scan_runtime,
+        "scan_summary": scans,
         "selected_episodes": list(selected),
         "forbidden_selection_fields": active[
             "forbidden_selection_fields"

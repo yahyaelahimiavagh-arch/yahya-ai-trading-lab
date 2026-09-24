@@ -197,3 +197,31 @@ exists, does the transition into stress remain controlled?
 Exit gate: canonical control-corpus quality PASS, deterministic ordinary-window
 replay, strategy-active diagnostic evidence, continuous anchor-transition
 evidence and deterministic CASH/BUY-AND-HOLD calculations.
+
+
+## Strategy-active runtime scalability gate
+
+The continuous Development corpus spans multiple years, so the diagnostic must
+not materialize the entire `BacktestClock` event sequence or repeatedly scan
+future years for early decisions.
+
+Implementation v0.2.0 therefore:
+- partitions the scan into fixed 14-day runtime chunks;
+- preserves the exact Paper fill engine, portfolio ledger, risk tracker and
+  active setup across chunk boundaries;
+- processes BTCUSDT and ETHUSDT at the same decision timestamp before applying
+  the frozen lexical tie-break;
+- stops at the exact decision boundary where the 10th selected episode is
+  obtained;
+- keeps each point-in-time snapshot limited to the corpus prefix available by
+  the current chunk end;
+- treats partitioning as a performance detail only.
+
+The selected episodes, scan counters and exact stop boundary must be invariant
+to alternate hour-aligned chunk sizes. A dedicated regression fixture compares
+7-day and 14-day partitioning and rejects any semantic drift.
+
+Real three-year control-corpus scanning is blocked until this scalability gate
+passes Final-HEAD CI.
+
+Current acceptance gate: **Final-HEAD CI on current main ancestry**.
