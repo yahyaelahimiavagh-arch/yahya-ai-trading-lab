@@ -141,6 +141,17 @@ class AtriaCampaignTests(unittest.TestCase):
                 campaign_path=self.manifest,
             )
 
+    def test_duplicate_objective_artifact_work_fails_closed(self):
+        record = campaign_record()
+        record["tasks"][1]["objective"] = "COMPARE_EVIDENCE"
+        record["tasks"][1]["artifacts"] = ["a.json"]
+        self.manifest.write_text(json.dumps(record), encoding="utf-8")
+        with self.assertRaises(campaign.AtriaCampaignError):
+            campaign.plan_campaign(
+                runtime_root=self.root,
+                campaign_path=self.manifest,
+            )
+
     def test_campaign_token_ceiling_fails_closed(self):
         record = campaign_record()
         record["tasks"] = [
