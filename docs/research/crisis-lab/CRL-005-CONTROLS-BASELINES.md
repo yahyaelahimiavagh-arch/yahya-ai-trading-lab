@@ -150,6 +150,11 @@ uv run --locked python -m research.crisis_lab.controls \
 
 A subset may be replayed with repeated `--control CRL-C00X` arguments.
 
+The runtime index and per-window manifests remain **research evidence only**:
+they cannot upgrade P10 evidence, mutate the frozen candidate, or authorize P11.
+Real ordinary-market replay is performed only after this implementation passes
+its Final-HEAD deterministic CI gate.
+
 Research question:
 Did YATL survive/preserve/grow capital differently because of its architecture,
 or would the same behavior appear in ordinary markets? And when exposure already
