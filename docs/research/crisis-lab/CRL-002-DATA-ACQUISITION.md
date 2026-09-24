@@ -81,9 +81,13 @@ when the registered interval and `open_time` are valid. CRL-002 treats this as
 a narrow source-metadata anomaly, never as permission to trust the row blindly:
 the canonical close boundary is derived from `open_time + interval - 1`, the
 raw ZIP/CSV and checksums remain immutable, and the entire normalized row must
-exactly match the public Spot REST kline at that open time. Any OHLCV/trade-field
-difference or missing REST verification fails closed. Counts of normalized and
-REST-verified close-boundary anomalies are recorded in provenance.
+match the public Spot REST kline at that open time after applying the same
+interval-derived close boundary to REST. This exception is limited to the
+close-time field: open time, OHLCV, quote volume, trade count, taker volumes and
+the unused field must still match exactly. Any other field difference or missing
+REST verification fails closed. REST-side close-boundary normalization is
+explicitly counted in verification evidence; raw source responses remain
+unchanged.
 
 REST responses are normalized under the current official Spot API timestamp
 contract and the requested time unit is recorded in provenance.
