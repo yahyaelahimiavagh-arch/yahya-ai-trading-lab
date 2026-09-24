@@ -1,6 +1,6 @@
 # Crisis Lab Results Index
 
-Status: **NO HISTORICAL REPLAY RESULTS YET**
+Status: **CRL-E003 QUALITY ADMITTED — NO HISTORICAL REPLAY RESULTS YET**
 
 This file indexes bounded/canonical research evidence only.
 
@@ -11,14 +11,13 @@ This file indexes bounded/canonical research evidence only.
 | CRL-000 isolation | ACCEPTED 2026-09-22 | `CRL-000-CHARTER.md` | P10 no-write boundary frozen |
 | CRL-001 Event Catalog | v0.1.0 REGISTERED | `EVENT-CATALOG-v0.1.0.json` | 16 events; 9 Development / 7 Blind Holdout; E010/E015 quarantined from replay |
 | CRL-002 acquisition | **ACCEPTED 2026-09-23** | `DATA-ACQUISITION-REGISTER-v0.1.0.json`, `CRL-002-VPS-RUNBOOK.md` | real CRL-E003 VPS pilot: 6/6 datasets complete, zero gaps/duplicates, REST MATCH; event manifest SHA-256 `bb2986d87cb672eb91e2dccfbc7e593ea05c12b6f9a49d0d1ffd762b01b995cb`; external P10 no-write proof PASS |
+| CRL-003 quality / CRL-E003 | **REAL QUALITY PASS ACCEPTED 2026-09-24** | runtime `quality/event-catalog-v0.1.0/CRL-E003/event-quality-9db76653f252ac16e44fdd70.json` | 6/6 PASS, 0 FAIL, `replay_admitted=true`, market outcomes not exposed; quality manifest SHA-256 `9db76653f252ac16e44fdd701f606bcd1e177609cb4e342e4564dc8d9bd77451` |
 
 ## Active / not yet produced
 
-- CRL-003 canonical quality-PASS admission is now active; CRL-E003 acquisition is provenance-complete but remains `PENDING_CRL003` until quality admission.
-
 - remaining registered-event acquisition provenance manifests;
-- CRL-003 quality-PASS dataset manifests;
-- historical replay runs;
+- CRL-003 quality-PASS admission for remaining registered datasets;
+- CRL-004 deterministic historical replay implementation and first CRL-E003 run;
 - pre/event/aftermath/calm comparisons;
 - NO_TRADE / CASH and BUY_AND_HOLD baseline results;
 - synthetic stress results;
