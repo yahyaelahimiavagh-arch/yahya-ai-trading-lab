@@ -146,6 +146,43 @@ class MockArchiveFetcher:
             ).encode("utf-8")
         return self._zip_for(url)
 
+
+class MissingCandleArchiveFetcher(MockArchiveFetcher):
+    def __init__(self, missing_open_ms):
+        super().__init__()
+        self.missing_open_ms = missing_open_ms
+
+    def _zip_for(self, url):
+        if url in self._zips:
+            return self._zips[url]
+        original = super()._zip_for(url)
+        name = urllib.parse.urlsplit(url).path.rsplit("/", 1)[-1]
+        stem = name[:-4]
+        with zipfile.ZipFile(io.BytesIO(original), "r") as bundle:
+            payload = bundle.read(stem + ".csv")
+        rows = list(acq.csv.reader(io.StringIO(payload.decode("utf-8"))))
+        kept = []
+        for row in rows:
+            raw_open = int(row[0])
+            open_ms = (
+                raw_open // 1000
+                if raw_open > 10_000_000_000_000
+                else raw_open
+            )
+            if open_ms != self.missing_open_ms:
+                kept.append(row)
+        output = io.StringIO(newline="")
+        writer = acq.csv.writer(output, lineterminator="\n")
+        writer.writerows(kept)
+        out = io.BytesIO()
+        with zipfile.ZipFile(
+            out, "w", compression=zipfile.ZIP_DEFLATED
+        ) as bundle:
+            bundle.writestr(stem + ".csv", output.getvalue().encode("utf-8"))
+        self._zips[url] = out.getvalue()
+        return self._zips[url]
+
+
 class CloseBoundaryArchiveFetcher(MockArchiveFetcher):
     def _zip_for(self, url):
         if url in self._zips:
@@ -221,6 +258,40 @@ class MockRestFetcher:
             ]]
         ).encode("utf-8")
 
+
+
+
+class MissingAwareRestFetcher(MockRestFetcher):
+    def __init__(self, missing_open_ms):
+        super().__init__()
+        self.missing_open_ms = missing_open_ms
+
+    def fetch(self, url, *, max_bytes):
+        query = urllib.parse.parse_qs(
+            urllib.parse.urlsplit(url).query
+        )
+        interval = query["interval"][0]
+        open_ms = int(query["startTime"][0])
+        if open_ms == self.missing_open_ms:
+            if "endTime" in query:
+                return b"[]"
+            next_open = (
+                open_ms + acq.INTERVAL_MILLISECONDS[interval]
+            )
+            row = source_row(next_open, interval)
+            return json.dumps(
+                [[
+                    int(row[0]),
+                    *row[1:6],
+                    int(row[6]),
+                    row[7],
+                    int(row[8]),
+                    row[9],
+                    row[10],
+                    row[11],
+                ]]
+            ).encode("utf-8")
+        return super().fetch(url, max_bytes=max_bytes)
 
 class CrisisLabAcquisitionTests(unittest.TestCase):
     def test_real_register_is_consistent_with_code_scope(self):
@@ -728,6 +799,62 @@ class CrisisLabAcquisitionTests(unittest.TestCase):
                 canonical.read_bytes(),
                 before,
             )
+
+    def test_rest_confirmed_gap_is_admissible_for_crl003(self):
+        missing = ms("2024-01-01T01:00:00Z")
+        plan = acq.plan_dataset(
+            minimal_registration(),
+            "CRL-T001",
+            "BTCUSDT",
+            "1h",
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            result = acq.acquire_dataset(
+                plan,
+                runtime_root=Path(directory),
+                archive_fetcher=MissingCandleArchiveFetcher(missing),
+                rest_fetcher=MissingAwareRestFetcher(missing),
+                retrieved_at_utc="2026-09-22T21:00:00Z",
+            )
+        self.assertEqual(result["canonical"]["gap_count"], 1)
+        self.assertEqual(
+            result["gap_verification"]["status"],
+            "ALL_CONFIRMED_ABSENT",
+        )
+        self.assertEqual(
+            result["gap_verification"]["confirmed_absent_count"],
+            1,
+        )
+        self.assertEqual(
+            result["acquisition_status"],
+            "ACQUIRED_NEEDS_CRL003",
+        )
+
+    def test_rest_present_gap_remains_structural_anomaly(self):
+        missing = ms("2024-01-01T01:00:00Z")
+        plan = acq.plan_dataset(
+            minimal_registration(),
+            "CRL-T001",
+            "BTCUSDT",
+            "1h",
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            result = acq.acquire_dataset(
+                plan,
+                runtime_root=Path(directory),
+                archive_fetcher=MissingCandleArchiveFetcher(missing),
+                rest_fetcher=MockRestFetcher(),
+                retrieved_at_utc="2026-09-22T21:00:00Z",
+            )
+        self.assertEqual(result["canonical"]["gap_count"], 1)
+        self.assertEqual(
+            result["gap_verification"]["status"],
+            "PRESENT_CONFLICT",
+        )
+        self.assertEqual(
+            result["acquisition_status"],
+            "ACQUIRED_WITH_STRUCTURAL_ANOMALY",
+        )
 
     def test_rest_mismatch_quarantines_source_conflict(self):
         plan = acq.plan_dataset(
