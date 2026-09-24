@@ -90,14 +90,21 @@ class CrisisLabStrategyActiveDiagnosticTests(unittest.TestCase):
         )
 
     def test_selection_never_uses_future_outcome_fields(self):
-        item = candidate(1_000_000_000, "BTCUSDT")
-        item["later_pnl"] = "999"
-        with self.assertRaises(diagnostic.DiagnosticError):
-            diagnostic._select_episodes(
-                [item],
-                maximum_episodes=10,
-                minimum_separation_ms=604800000,
-            )
+        protocol, _ = controls.load_protocol()
+        forbidden = protocol["strategy_active_diagnostic"][
+            "forbidden_selection_fields"
+        ]
+        self.assertTrue(forbidden)
+        for field in forbidden:
+            with self.subTest(field=field):
+                item = candidate(1_000_000_000, "BTCUSDT")
+                item[field] = "forbidden-future-outcome"
+                with self.assertRaises(diagnostic.DiagnosticError):
+                    diagnostic._select_episodes(
+                        [item],
+                        maximum_episodes=10,
+                        minimum_separation_ms=604800000,
+                    )
 
     def test_separation_is_measured_from_last_selected_episode(self):
         day = 86_400_000
