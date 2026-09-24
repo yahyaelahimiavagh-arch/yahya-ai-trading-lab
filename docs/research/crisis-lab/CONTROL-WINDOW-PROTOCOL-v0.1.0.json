@@ -1,0 +1,127 @@
+{
+  "schema": "YATL_CRL_CONTROL_WINDOW_PROTOCOL",
+  "version": "0.1.0",
+  "frozen_date_utc": "2026-09-24",
+  "status": "REGISTERED_BEFORE_CONTROL_REPLAY",
+  "research_only": true,
+  "p10_untouched": true,
+  "p11_locked": true,
+  "purpose": "Measure frozen YATL behavior in ordinary/unlabelled market periods and diagnose state transitions without selecting windows from profitability outcomes.",
+  "development_corpus": {
+    "corpus_id": "CRL-CONTROL-DEV-POOL-001",
+    "acquisition_start_utc": "2019-12-18T00:00:00Z",
+    "analysis_pool_start_utc": "2020-01-01T00:00:00Z",
+    "analysis_pool_end_utc": "2023-01-01T00:00:00Z",
+    "symbols": [
+      "BTCUSDT",
+      "ETHUSDT"
+    ],
+    "intervals": [
+      "15m",
+      "1h",
+      "4h"
+    ],
+    "warmup_days": 14,
+    "rationale": "Continuous development-only background corpus ends before the first registered Blind Holdout era; it may contain crisis periods, which downstream control selection excludes."
+  },
+  "unbiased_ordinary_windows": {
+    "cohort_id": "ORDINARY_QUARTERLY_30D_V1",
+    "selection_rule": {
+      "candidate_months": [
+        1,
+        4,
+        7,
+        10
+      ],
+      "anchor": "FIRST_MONDAY_00_00_UTC",
+      "analysis_days": 30,
+      "warmup_days": 14,
+      "crisis_exclusion": "Reject if warmup-through-analysis overlaps any registered crisis pre_event-through-aftermath window expanded by 7 days on each side.",
+      "selection_uses_market_outcomes": false,
+      "selection_uses_strategy_results": false,
+      "selected_windows_may_not_be_discarded_for_no_trade_or_bad_performance": true
+    },
+    "windows": [
+      {
+        "control_id": "CRL-C001",
+        "acquisition_start_utc": "2019-12-23T00:00:00Z",
+        "analysis_start_utc": "2020-01-06T00:00:00Z",
+        "analysis_end_utc": "2020-02-05T00:00:00Z"
+      },
+      {
+        "control_id": "CRL-C002",
+        "acquisition_start_utc": "2020-06-22T00:00:00Z",
+        "analysis_start_utc": "2020-07-06T00:00:00Z",
+        "analysis_end_utc": "2020-08-05T00:00:00Z"
+      },
+      {
+        "control_id": "CRL-C003",
+        "acquisition_start_utc": "2020-09-21T00:00:00Z",
+        "analysis_start_utc": "2020-10-05T00:00:00Z",
+        "analysis_end_utc": "2020-11-04T00:00:00Z"
+      },
+      {
+        "control_id": "CRL-C004",
+        "acquisition_start_utc": "2020-12-21T00:00:00Z",
+        "analysis_start_utc": "2021-01-04T00:00:00Z",
+        "analysis_end_utc": "2021-02-03T00:00:00Z"
+      },
+      {
+        "control_id": "CRL-C005",
+        "acquisition_start_utc": "2021-03-22T00:00:00Z",
+        "analysis_start_utc": "2021-04-05T00:00:00Z",
+        "analysis_end_utc": "2021-05-05T00:00:00Z"
+      },
+      {
+        "control_id": "CRL-C006",
+        "acquisition_start_utc": "2021-06-21T00:00:00Z",
+        "analysis_start_utc": "2021-07-05T00:00:00Z",
+        "analysis_end_utc": "2021-08-04T00:00:00Z"
+      },
+      {
+        "control_id": "CRL-C007",
+        "acquisition_start_utc": "2021-09-20T00:00:00Z",
+        "analysis_start_utc": "2021-10-04T00:00:00Z",
+        "analysis_end_utc": "2021-11-03T00:00:00Z"
+      },
+      {
+        "control_id": "CRL-C008",
+        "acquisition_start_utc": "2021-12-20T00:00:00Z",
+        "analysis_start_utc": "2022-01-03T00:00:00Z",
+        "analysis_end_utc": "2022-02-02T00:00:00Z"
+      }
+    ]
+  },
+  "strategy_active_diagnostic": {
+    "cohort_id": "STRATEGY_ACTIVE_DIAGNOSTIC_V1",
+    "source_pool": "CRL-CONTROL-DEV-POOL-001",
+    "purpose": "Inspect ordinary periods in which the frozen strategy actually opens a Paper position.",
+    "selection_rule": "Scan chronologically; outside all crisis exclusion buffers, retain the first 10 permitted ENTER_LONG episodes separated by at least 7 days. Selection may use entry occurrence only and must not inspect later PnL, exit quality or maximum excursion.",
+    "unbiased_performance_evidence": false,
+    "diagnostic_only": true
+  },
+  "historical_crisis_transition": {
+    "cohort_id": "HISTORICAL_OPEN_POSITION_AT_ANCHOR_V1",
+    "rule": "Replay continuously from registered pre_event start through crisis and aftermath without resetting portfolio, strategy state, risk state or active setup at the event anchor.",
+    "required_fields": [
+      "position_at_event_anchor",
+      "position_quantity_at_event_anchor",
+      "equity_at_event_anchor",
+      "first_protection_time_after_anchor_ms",
+      "time_to_zero_exposure_ms",
+      "kill_switch_after_anchor",
+      "false_reentry_count_after_anchor"
+    ],
+    "no_forced_entry": true
+  },
+  "baselines": [
+    "NO_TRADE_CASH",
+    "BUY_AND_HOLD_RESEARCH"
+  ],
+  "interpretation": {
+    "ordinary_windows_are_not_assumed_calm_until_measured": true,
+    "no_trade_is_a_valid_observed_behavior": true,
+    "crisis_and_ordinary_results_must_be_reported_even_when_unfavorable": true,
+    "historical_and_synthetic_evidence_must_remain_separate": true
+  }
+}
