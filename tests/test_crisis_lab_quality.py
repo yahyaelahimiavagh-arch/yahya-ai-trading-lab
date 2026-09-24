@@ -188,6 +188,27 @@ def load_json(path):
 
 
 class CrisisLabQualityTests(unittest.TestCase):
+    def test_close_boundary_rest_evidence_must_be_complete(self):
+        source_sha = "a" * 64
+        ok, failures = quality._check_source_objects(
+            {
+                "source_objects": [
+                    {
+                        "expected_zip_sha256": source_sha,
+                        "downloaded_zip_sha256": source_sha,
+                        "extracted_csv_sha256": "b" * 64,
+                        "close_boundary_normalization_count": 1,
+                        "close_boundary_rest_verified_count": 0,
+                    }
+                ]
+            }
+        )
+        self.assertFalse(ok)
+        self.assertIn(
+            "SOURCE_OBJECT_0_CLOSE_BOUNDARY_REST_INCOMPLETE",
+            failures,
+        )
+
     def test_realistic_acquired_event_passes_all_six_datasets(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
