@@ -117,6 +117,30 @@ This is a source-selection rule, not a value repair.
 
 Reference: binance/binance-public-data issue #475.
 
+## Verified exchange-wide gaps
+
+A missing grid candle is not automatically treated as corrupt data. CRL-002
+distinguishes an unknown acquisition gap from a public Spot REST-confirmed
+absence.
+
+For every missing canonical open time:
+1. query Spot REST with the exact start/end interval window;
+2. if that exact query returns `[]`, retry once from the same `startTime`
+   without `endTime`;
+3. classify the target as confirmed absent only when the fallback is also empty
+   or its first returned candle opens strictly after the missing target;
+4. classify any returned candle at the target open time as a source conflict;
+5. fail closed on malformed responses, backward-moving fallback responses, or
+   incomplete verification.
+
+The dataset manifest records the gap count, checked/confirmed counts, a digest of
+the exact missing-open-time set, fallback usage, and bounded transport evidence.
+No synthetic candle is created and no timestamp is removed from the audit.
+A dataset with gaps can advance to CRL-003 only when every recorded gap is
+`ALL_CONFIRMED_ABSENT`; duplicates and unverified gaps remain structural
+anomalies. CRL-003 independently recomputes the missing-open-time set from the
+canonical file and requires the digest/count evidence to match before admission.
+
 ## Exact range semantics
 
 The catalog's event timestamps remain exact and may be off the 15m/1h/4h candle
