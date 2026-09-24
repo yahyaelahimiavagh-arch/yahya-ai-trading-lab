@@ -26,7 +26,7 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Callable, Iterable, Mapping, Sequence
 
-ACQUISITION_IMPLEMENTATION_ID = "CRL-002/0.1.1"
+ACQUISITION_IMPLEMENTATION_ID = "CRL-002/0.1.2"
 CATALOG_VERSION = "0.1.0"
 DEFAULT_REGISTER_PATH = Path(
     "docs/research/crisis-lab/DATA-ACQUISITION-REGISTER-v0.1.0.json"
@@ -1217,6 +1217,138 @@ def verify_rest_boundaries(
         **result,
     }
 
+
+def _missing_open_times_sha256(open_times_ms: Sequence[int]) -> str:
+    payload = _canonical_json(
+        {"missing_open_times_ms": [int(value) for value in open_times_ms]}
+    )
+    return _sha256(payload)
+
+
+def verify_rest_gap_absence(
+    open_times_ms: Sequence[int],
+    *,
+    symbol: str,
+    interval: str,
+    fetcher,
+) -> dict[str, object]:
+    """Fail-closed proof that canonical grid gaps are absent from Spot REST."""
+    targets = tuple(sorted(set(int(value) for value in open_times_ms)))
+    transport: list[dict[str, object]] = []
+    confirmed_absent = 0
+    present_conflicts = 0
+    fallback_count = 0
+
+    for target_ms in targets:
+        exact_url = _rest_kline_url(
+            symbol, interval, target_ms, exact_end=True
+        )
+        exact_payload = fetcher.fetch(
+            exact_url, max_bytes=_MAX_REST_BYTES
+        )
+        entry: dict[str, object] = {
+            "open_time_ms": target_ms,
+            "exact_transport": _transport_summary(fetcher, exact_url),
+            "start_only_fallback_used": False,
+        }
+        transport.append(entry)
+        try:
+            body = json.loads(exact_payload.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            raise AcquisitionError(
+                "REST gap verification response is invalid JSON"
+            ) from None
+
+        if body == []:
+            fallback_url = _rest_kline_url(
+                symbol, interval, target_ms, exact_end=False
+            )
+            fallback_payload = fetcher.fetch(
+                fallback_url, max_bytes=_MAX_REST_BYTES
+            )
+            entry["start_only_fallback_used"] = True
+            entry["fallback_transport"] = _transport_summary(
+                fetcher, fallback_url
+            )
+            fallback_count += 1
+            try:
+                fallback = json.loads(fallback_payload.decode("utf-8"))
+            except (UnicodeDecodeError, json.JSONDecodeError):
+                raise AcquisitionError(
+                    "REST gap fallback response is invalid JSON"
+                ) from None
+
+            if fallback == []:
+                entry["outcome"] = "CONFIRMED_ABSENT"
+                confirmed_absent += 1
+                continue
+            if (
+                not isinstance(fallback, list)
+                or len(fallback) != 1
+                or not isinstance(fallback[0], list)
+                or len(fallback[0]) < 1
+            ):
+                raise AcquisitionError(
+                    "REST gap fallback did not return a bounded kline shape"
+                )
+            try:
+                returned_open = int(fallback[0][0])
+            except (TypeError, ValueError):
+                raise AcquisitionError(
+                    "REST gap fallback open time is invalid"
+                ) from None
+            if returned_open > target_ms:
+                entry["outcome"] = "CONFIRMED_ABSENT"
+                confirmed_absent += 1
+                continue
+            if returned_open == target_ms:
+                entry["outcome"] = "PRESENT_CONFLICT"
+                present_conflicts += 1
+                continue
+            raise AcquisitionError(
+                "REST gap fallback moved backward from requested open time"
+            )
+
+        if (
+            not isinstance(body, list)
+            or len(body) != 1
+            or not isinstance(body[0], list)
+            or len(body[0]) < 1
+        ):
+            raise AcquisitionError(
+                "REST gap verification did not return a bounded kline shape"
+            )
+        try:
+            returned_open = int(body[0][0])
+        except (TypeError, ValueError):
+            raise AcquisitionError(
+                "REST gap verification open time is invalid"
+            ) from None
+        if returned_open != target_ms:
+            raise AcquisitionError(
+                "REST exact gap verification returned unexpected open time"
+            )
+        entry["outcome"] = "PRESENT_CONFLICT"
+        present_conflicts += 1
+
+    status = (
+        "ALL_CONFIRMED_ABSENT"
+        if confirmed_absent == len(targets) and present_conflicts == 0
+        else "PRESENT_CONFLICT"
+    )
+    return {
+        "enabled": True,
+        "status": status,
+        "expected_gap_count": len(targets),
+        "checked_points": len(transport),
+        "confirmed_absent_count": confirmed_absent,
+        "present_conflict_count": present_conflicts,
+        "start_only_fallback_count": fallback_count,
+        "missing_open_times_sha256": _missing_open_times_sha256(targets),
+        "transport": transport,
+    }
+
+
 def _dataset_manifest_relative_path(
     plan: DatasetPlan,
     digest: str,
@@ -1274,7 +1406,42 @@ def acquire_dataset(
         raise AcquisitionError(
             "canonical selection contains out-of-range candles"
         )
-    gap_count = len(expected - actual)
+    missing_open_times = tuple(sorted(expected - actual))
+    gap_count = len(missing_open_times)
+
+    if gap_count == 0:
+        gap_verification: dict[str, object] = {
+            "enabled": rest_fetcher is not None,
+            "status": "NO_GAPS",
+            "expected_gap_count": 0,
+            "checked_points": 0,
+            "confirmed_absent_count": 0,
+            "present_conflict_count": 0,
+            "start_only_fallback_count": 0,
+            "missing_open_times_sha256": _missing_open_times_sha256(()),
+            "transport": [],
+        }
+    elif rest_fetcher is None:
+        gap_verification = {
+            "enabled": False,
+            "status": "NOT_RUN",
+            "expected_gap_count": gap_count,
+            "checked_points": 0,
+            "confirmed_absent_count": 0,
+            "present_conflict_count": 0,
+            "start_only_fallback_count": 0,
+            "missing_open_times_sha256": _missing_open_times_sha256(
+                missing_open_times
+            ),
+            "transport": [],
+        }
+    else:
+        gap_verification = verify_rest_gap_absence(
+            missing_open_times,
+            symbol=plan.symbol,
+            interval=plan.interval,
+            fetcher=rest_fetcher,
+        )
 
     canonical_payload = _canonical_csv(rows)
     canonical_sha = _sha256(canonical_payload)
@@ -1304,7 +1471,11 @@ def acquire_dataset(
 
     if rest_verification["status"] == "MISMATCH":
         acquisition_status = "QUARANTINED_SOURCE_CONFLICT"
-    elif gap_count or duplicate_count:
+    elif duplicate_count:
+        acquisition_status = "ACQUIRED_WITH_STRUCTURAL_ANOMALY"
+    elif gap_count and (
+        gap_verification["status"] != "ALL_CONFIRMED_ABSENT"
+    ):
         acquisition_status = "ACQUIRED_WITH_STRUCTURAL_ANOMALY"
     elif rest_verification["status"] in ("MATCH", "NOT_RUN"):
         acquisition_status = "ACQUIRED_NEEDS_CRL003"
@@ -1372,6 +1543,7 @@ def acquire_dataset(
             ),
         },
         "rest_verification": rest_verification,
+        "gap_verification": gap_verification,
         "acquisition_status": acquisition_status,
         "quality_gate": "PENDING_CRL003",
         "market_outcomes_exposed": False,
