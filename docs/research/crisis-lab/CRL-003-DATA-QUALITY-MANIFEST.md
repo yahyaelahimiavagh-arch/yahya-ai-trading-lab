@@ -1,6 +1,6 @@
 # CRL-003 — Data quality and canonical manifests
 
-Status: **ACTIVE — QUALITY VALIDATOR v0.1.0 IMPLEMENTED / CI + REAL VPS VALIDATION PENDING**
+Status: **ACTIVE — CRL-E003 REAL VPS QUALITY PASS ACCEPTED / REMAINING REGISTERED DATASETS PENDING**
 
 Entry evidence: CRL-002 accepted after real VPS pilot `CRL-E003` with six complete
 source-provenance manifests, exact row counts, zero acquisition gaps/duplicates,
@@ -83,14 +83,52 @@ PnL, drawdown, volatility rank, plots or YATL trade metrics.
 A catalog-replay-ineligible event may receive structural quality PASS but remains
 `replay_admitted=false`. Quality PASS never overrides the event catalog.
 
-## CRL-003 implementation gate
+## CRL-E003 real VPS quality evidence — 2026-09-24
 
-Before real VPS validation:
+Validation ran on VPS `vps-2e03c7d1` after updating the repository to accepted
+CRL-003 implementation checkpoint
+`90ff04eaaa7d15ff282ab06f48759db201d2debb`.
+
+Input event acquisition manifest:
+- relative path:
+  `manifests/event-catalog-v0.1.0/CRL-E003/event-acquisition-bb2986d87cb672eb91e2dccf.json`;
+- full SHA-256:
+  `bb2986d87cb672eb91e2dccfbc7e593ea05c12b6f9a49d0d1ffd762b01b995cb`.
+
+Real validator result:
+- event: `CRL-E003`;
+- designation: `DEVELOPMENT`;
+- datasets: **6/6 PASS**;
+- failures: **0**;
+- overall status: **PASS**;
+- admission reason: `QUALITY_PASS`;
+- replay eligible: `true`;
+- replay admitted: `true`;
+- market outcomes exposed: `false`;
+- P10 write allowed: `false`;
+- P11 locked: `true`;
+- research only: `true`.
+
+Canonical runtime quality manifest:
+- relative path:
+  `quality/event-catalog-v0.1.0/CRL-E003/event-quality-9db76653f252ac16e44fdd70.json`;
+- full SHA-256:
+  `9db76653f252ac16e44fdd701f606bcd1e177609cb4e342e4564dc8d9bd77451`.
+
+This accepts CRL-E003 for CRL-004 replay work. It does **not** close CRL-003 for
+the remaining registered corpus; those datasets still require bounded acquisition
+and the same deterministic quality admission.
+
+## CRL-003 implementation / pilot gate
+
 - machine-readable quality contract frozen — **PASS**;
 - deterministic research-only validator implemented — **PASS**;
-- focused adversarial/unit test matrix added — **PASS / CI PENDING**;
+- focused adversarial/unit test matrix — **PASS**;
+- matching Final-HEAD GitHub Actions for PR #88 — **PASS**;
 - production dependency changes — **NONE**;
 - P10 access/write capability — **NONE**;
-- real CRL-E003 quality manifest — **PENDING**.
+- real CRL-E003 quality manifest — **PASS / ACCEPTED 2026-09-24**;
+- remaining registered Development datasets — **PENDING BOUNDED ACQUISITION + QUALITY**.
 
-CRL-004 remains closed until CRL-003 has accepted quality evidence.
+CRL-004 is open for replay implementation and validation against CRL-E003 only.
+No unadmitted event dataset may enter replay.
