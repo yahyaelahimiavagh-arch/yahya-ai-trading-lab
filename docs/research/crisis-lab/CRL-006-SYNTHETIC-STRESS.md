@@ -1,4 +1,4 @@
-# CRL-006 — Synthetic adversarial stress matrix\n\nStatus: **OPEN-POSITION SHOCK MATRIX PREREGISTERED / 006A IMPLEMENTATION NEXT**
+# CRL-006 — Synthetic adversarial stress matrix\n\nStatus: **OPEN-POSITION SHOCK MATRIX PREREGISTERED / 006A RUNTIME IMPLEMENTED — VALIDATION PENDING**
 
 Goal: test failure modes not sufficiently represented by historical candles.
 
@@ -92,3 +92,25 @@ fabricated from a single synthetic bar.
 
 006B cannot reselect a more favorable source entry after 006A outcomes are
 known.
+
+
+## CRL-006A runtime
+
+Research-only implementation:
+`research/crisis_lab/synthetic_shock.py`.
+
+006A consumes an immutable CRL-005 strategy-active diagnostic artifact and the
+registered nine-scenario matrix. For every selected source episode it runs each
+scenario twice and requires byte-identical equality.
+
+Pre-shock equity is valued using the frozen candidate's baseline fee/slippage.
+The registered 1x/2x/5x slippage multiplier applies only to the synthetic
+shock-side valuation/exit, so scenario sensitivity cannot move the pre-shock
+starting point.
+
+A direct synthetic exit must also satisfy the Paper base-volume limit. No real
+next candle is used to construct the gap, and Strategy receives only source
+history through the fully processed entry candle.
+
+Kill-switch, delayed zero-exposure, false re-entry and recovery remain deferred
+to CRL-006B.
