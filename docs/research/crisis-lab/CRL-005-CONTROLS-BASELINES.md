@@ -150,10 +150,44 @@ uv run --locked python -m research.crisis_lab.controls \
 
 A subset may be replayed with repeated `--control CRL-C00X` arguments.
 
-The runtime index and per-window manifests remain **research evidence only**:
-they cannot upgrade P10 evidence, mutate the frozen candidate, or authorize P11.
-Real ordinary-market replay is performed only after this implementation passes
-its Final-HEAD deterministic CI gate.
+## Strategy-active diagnostic runtime
+
+Research-only implementation:
+`research/crisis_lab/active_diagnostic.py`.
+
+The scanner evolves the same frozen Strategy, Risk tracker, Paper fill engine,
+portfolio accounting and costs continuously across the registered Development
+pool. It does **not** select entries from later performance.
+
+An eligible source episode is now frozen as:
+- a real `ENTER_LONG` signal;
+- accepted by the frozen risk veto;
+- actually filled by the Paper `NEXT_PRIMARY_OPEN` engine;
+- still open after same-candle protective processing;
+- outside every registered crisis interval plus the seven-day guard band.
+
+Candidates from BTCUSDT and ETHUSDT are combined and ordered by
+`decision_time_ms ASC`, then symbol lexical order. The first 10 episodes with
+at least seven days between selected episodes are retained. Selection cannot use
+future price path, later PnL, drawdown, maximum excursion, exit quality or
+recovery.
+
+Each retained episode stores the exact entry setup, pre-entry risk state,
+pre/post-entry portfolio state, entry fill and the fully processed entry candle.
+The close of that already-processed candle is the frozen last-known primary mark
+for the later synthetic gap; the real next candle is not inspected to construct
+the shock. These fields seed the separate CRL-006 synthetic open-position shock
+matrix. Historical and synthetic outcomes
+remain separate.
+
+CLI:
+
+```bash
+uv run --locked python -m research.crisis_lab.active_diagnostic \
+  --runtime-root data/research/crisis-lab \
+  --quality-manifest <control-event-quality-relative-path> \
+  --quality-manifest-sha256 <full-sha256>
+```
 
 Research question:
 Did YATL survive/preserve/grow capital differently because of its architecture,
