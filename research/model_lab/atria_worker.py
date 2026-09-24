@@ -313,17 +313,26 @@ def _provider_prompt(packet: Mapping[str, object]) -> str:
     return instructions + "\n\nRESEARCH_PACKET:\n" + _json(packet)
 
 
+def _validate_packet_binding(packet: Mapping[str, object]) -> None:
+    if (
+        not isinstance(packet, Mapping)
+        or packet.get("schema") != "YATL_ATRIA_RESEARCH_PACKET"
+        or not isinstance(packet.get("packet_sha256"), str)
+        or _SHA_RE.fullmatch(packet["packet_sha256"]) is None
+    ):
+        raise AtriaResearchError("validated research packet is required")
+    rebound = dict(packet)
+    supplied = rebound.pop("packet_sha256")
+    if _sha256(_canonical_json(rebound)) != supplied:
+        raise AtriaResearchError("research packet digest binding changed")
+
+
 def build_provider_request(
     packet: Mapping[str, object],
     *,
     max_output_tokens: int = DEFAULT_MAX_OUTPUT_TOKENS,
 ) -> dict[str, object]:
-    if (
-        not isinstance(packet, Mapping)
-        or packet.get("schema") != "YATL_ATRIA_RESEARCH_PACKET"
-        or packet.get("packet_sha256") is None
-    ):
-        raise AtriaResearchError("validated research packet is required")
+    _validate_packet_binding(packet)
     if (
         type(max_output_tokens) is not int
         or not 1 <= max_output_tokens <= MAX_OUTPUT_TOKENS
@@ -484,6 +493,7 @@ def validate_analysis(
     *,
     packet: Mapping[str, object],
 ) -> dict[str, object]:
+    _validate_packet_binding(packet)
     if (
         not isinstance(raw_text, str)
         or not raw_text
