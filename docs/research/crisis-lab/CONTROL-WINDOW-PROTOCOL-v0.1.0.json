@@ -118,6 +118,23 @@
     "NO_TRADE_CASH",
     "BUY_AND_HOLD_RESEARCH"
   ],
+  "baseline_definitions": {
+    "NO_TRADE_CASH": {
+      "position_policy": "NEVER_ENTER",
+      "initial_equity_policy": "MATCH_FROZEN_YATL_INITIAL_EQUITY_PER_SYMBOL",
+      "cost_policy": "ZERO_EXECUTION_ZERO_COST",
+      "purpose": "Capital-preservation reference with no market exposure."
+    },
+    "BUY_AND_HOLD_RESEARCH": {
+      "quantity_policy": "MATCH_FROZEN_YATL_RESEARCH_QUANTITY",
+      "entry_policy": "BUY_AT_FIRST_ANALYSIS_PRIMARY_OPEN",
+      "exit_policy": "LIQUIDATE_AT_LAST_ANALYSIS_PRIMARY_CLOSE",
+      "fee_policy": "MATCH_FROZEN_YATL_FEE_BPS_ON_ENTRY_AND_EXIT",
+      "slippage_policy": "MATCH_FROZEN_YATL_ADVERSE_SLIPPAGE_BPS_ON_ENTRY_AND_EXIT",
+      "remaining_cash_policy": "UNINVESTED_CASH_REMAINS_CASH",
+      "purpose": "Matched-size passive exposure reference; not a production strategy."
+    }
+  },
   "interpretation": {
     "ordinary_windows_are_not_assumed_calm_until_measured": true,
     "no_trade_is_a_valid_observed_behavior": true,
