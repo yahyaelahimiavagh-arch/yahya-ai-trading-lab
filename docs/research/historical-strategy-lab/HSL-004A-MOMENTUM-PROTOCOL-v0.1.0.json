@@ -1,0 +1,111 @@
+{
+  "schema": "YATL_HSL_TECHNIQUE_CANDIDATE_PROTOCOL",
+  "version": "0.1.0",
+  "registered_date_utc": "2026-09-25",
+  "status": "REGISTERED_BEFORE_HSL004A_OUTCOME_REPLAY",
+  "checkpoint": "HSL-004A",
+  "technique_family": "MOMENTUM",
+  "research_only": true,
+  "paper_only": true,
+  "p4_p10_untouched": true,
+  "p11_locked": true,
+  "live_master_lock": "OFF",
+  "trade_permission": false,
+  "order_endpoint": false,
+  "ai_direct_execution": false,
+  "source_corpus_id": "CRL-CONTROL-DEV-POOL-001",
+  "parent_walk_forward_protocol": "HSL-001-WALK-FORWARD/0.1.0",
+  "purpose": "Test one independently preregistered long-only Spot momentum hypothesis on the exact HSL-001 OOS folds without tuning from HSL-001/HSL-002/HSL-003 outcomes.",
+  "candidate": {
+    "candidate_id": "HSL004A-MOMENTUM-24H-1",
+    "strategy_id": "MOMENTUM_24H_LONG",
+    "strategy_version": "0.1.0",
+    "role": "TECHNIQUE_LIBRARY_CHALLENGER",
+    "parameters": {
+      "entry_return_lookback_hours": 24,
+      "minimum_entry_return_fraction": "0.03",
+      "ema_period_hours": 24,
+      "rsi_period_hours": 14,
+      "minimum_rsi": "55",
+      "maximum_rsi": "75",
+      "atr_period_hours": 14,
+      "stop_atr_multiple": "1.5",
+      "reward_risk": "2",
+      "exit_return_lookback_hours": 12,
+      "exit_return_threshold_fraction": "0"
+    }
+  },
+  "entry_hypothesis": [
+    "24h simple return is at least +3%",
+    "latest closed 1h close is above EMA(24)",
+    "RSI(14) is between 55 and 75 inclusive",
+    "all features use only candles closed before decision_time"
+  ],
+  "exit_hypothesis": [
+    "paper protective stop/target from the frozen entry setup remain active",
+    "explicit strategy exit when 12h simple return is <= 0",
+    "no forced fold-end liquidation; terminal open position is mark-to-market only"
+  ],
+  "protective_levels": {
+    "stop": "entry_reference_minus_1.5x_ATR14",
+    "target": "entry_reference_plus_2x_initial_risk"
+  },
+  "methodology": {
+    "folds": "EXACT_HSL001_F001_TO_F005",
+    "symbols": ["BTCUSDT", "ETHUSDT"],
+    "state_reset_at_each_evaluation_fold": true,
+    "market_history_available_point_in_time": true,
+    "p4_risk_veto_applied": false,
+    "fixed_quantity": "0.001",
+    "fee_bps": "10",
+    "slippage_bps": "5",
+    "execution": "NEXT_PRIMARY_OPEN_LONG_ONLY_SPOT",
+    "terminal_open_position": "MARK_TO_MARKET_ONLY; DO_NOT_FORCE_EXIT",
+    "parameter_search": false,
+    "outcome_driven_retuning": false,
+    "historical_outcomes_used_for_configuration_selection": false,
+    "external_source_claim_used_as_proof": false
+  },
+  "benchmarks": {
+    "cash_no_trade": true,
+    "buy_and_hold_reported": true,
+    "buy_and_hold_is_parameter_selector": false,
+    "prior_hsl_strategy_outcomes_are_parameter_selectors": false
+  },
+  "reporting": [
+    "net_pnl_after_costs_quote",
+    "net_return_after_costs",
+    "completed_trades",
+    "wins",
+    "losses",
+    "win_rate",
+    "expectancy_quote",
+    "profit_factor",
+    "gross_profit_quote",
+    "gross_loss_quote",
+    "largest_positive_trade_quote",
+    "largest_trade_profit_share",
+    "maximum_drawdown_fraction",
+    "entry_signal_count",
+    "entry_fill_count",
+    "exit_fill_count",
+    "missing_fill_decision_count",
+    "stale_snapshot_decision_count",
+    "buy_and_hold_return_fraction",
+    "excess_return_vs_buy_and_hold_fraction"
+  ],
+  "qualification_gate": {
+    "use_for_hsl_research_only": true,
+    "minimum_completed_trades_total": 30,
+    "minimum_completed_trades_per_symbol": 10,
+    "require_positive_total_net_pnl": true,
+    "require_positive_expectancy": true,
+    "minimum_profit_factor": "1.05",
+    "minimum_positive_oos_cell_fraction": "0.60",
+    "maximum_single_trade_share_of_positive_pnl": "0.50",
+    "maximum_drawdown_fraction": "0.10",
+    "buy_and_hold_outperformance_required": false,
+    "automatic_promotion_to_p10_p11_live": false
+  },
+  "interpretation": "PASS only means this fixed momentum hypothesis merits further independent HSL validation. It does not mutate production strategies, alter P4/P10, unlock P11, or authorize live trading."
+}
