@@ -1675,13 +1675,13 @@ expectancy مثبت، profit factor، OOS-cell stability، outlier dependence و
 drawdown است. PASS احتمالی فقط `QUALIFIED_HSL_RESEARCH` است و هیچ P10/P11/Live
 authorization ایجاد نمی‌کند.
 
-### HSL-002 — Risk Overlay Challenger — ACTIVE / PREREGISTERED
+### HSL-002 — Risk Overlay Challenger — ENGINEERING / CI ACCEPTED
 
-branch فعال:
-`hsl-002-risk-overlay-challenger`
-
-اولین preregistration commit:
-`397362808b43dd280c186310c781233d92932f65`
+HSL-002 با PR #110، Final HEAD
+`9b25b85ce79b25436b174bfa5e84be1a6e7e829c` و matching Actions
+`36174550993` پذیرفته شد؛ هر دو job `unit-and-safety` و
+`accepted-public-data` PASS شدند. PR #110 squash-merge شد و checkpoint جدید
+`main` برابر `cb930e3b44f32be883a07fba855e83c9cae8fd35` است.
 
 پروتکل:
 `docs/research/historical-strategy-lab/HSL-002-RISK-OVERLAY-PROTOCOL-v0.1.0.json`
@@ -1695,21 +1695,41 @@ drawdown breach تا انتهای OOS fold hard-latched می‌ماند و هر�
 session-loss فقط تا اولین UTC session بعدی entry را block می‌کند؛ loss-streak breach
 برای 24 decision واجد شرایط یک‌ساعته entry را block می‌کند. بعد از پایان cooldown،
 فقط اگر portfolio flat باشد، session-loss block فعال نباشد و drawdown زیر hard limit
-باشد، counter پژوهشیِ entry-eligibility برای loss streak صفر می‌شود؛ streak واقعی
-مشاهده‌شده برای telemetry حفظ می‌شود. این reset فقط در challenger پژوهشی است و
-P4 state یا P4 production را تغییر نمی‌دهد. risk-reducing exit همیشه مجاز می‌ماند
-و thresholdهای اصلی P4 بدون تغییرند.
+باشد، counter پژوهشی entry-eligibility صفر می‌شود؛ streak واقعی برای telemetry حفظ
+می‌شود. این reset فقط در challenger پژوهشی است و P4/P10 واقعی را تغییر نمی‌دهد.
 
-HSL-002 باید همان strategyها، symbolها، foldها، quantity، fee/slippage و execution
-HSL-001 را نگه دارد و علاوه بر economics، تعداد entry signal/fill و entryهای
-مسدودشده بر اساس session-loss/drawdown/loss-streak و cooldown release را گزارش کند.
-تا زمان runner + tests + exact CI PASS، HSL-002 فقط PREREGISTERED است و outcome
-معتبر ندارد.
+این acceptance مربوط به runner، protocol، tests و safety boundary است. **Outcome
+تاریخی HSL-002 هنوز صرفاً با merge/CI اثبات نشده است** و فقط پس از اجرای runner روی
+corpus پذیرفته‌شده و ثبت artifact canonical می‌تواند نتیجه اقتصادی پژوهشی بدهد.
 
-### مسیر بعد از HSL-002
+### HSL-003 — Entry Quality / Regime Ablation — ACTIVE / PREREGISTERED
 
-HSL-003 فقط entry-quality/regime ablation از پیش تعریف‌شده را انجام می‌دهد؛ هر
-filter جداگانه حذف/اضافه می‌شود و ترکیب post-hoc بر اساس نتیجه ممنوع است.
+branch فعال:
+`hsl-003-entry-regime-ablation`
+
+پروتکل:
+`docs/research/historical-strategy-lab/HSL-003-ENTRY-REGIME-ABLATION-PROTOCOL-v0.1.0.json`
+
+HSL-003 اثر entry filterهای موجود را **تک‌به‌تک** اندازه می‌گیرد و ترکیب post-hoc
+یا parameter search ممنوع است. برای هر دو strategy، confirmation و TREND_UP
+entry gate جداگانه ablate می‌شوند. `RANGE_BREAKOUT/1.0.0` علاوه بر این یک
+volatility-normalized extension gate واقعی دارد و ablation جداگانه آن نیز ثبت شده
+است. `TREND_PULLBACK/1.0.0` volatility-entry filter مستقل ندارد؛ ATR آن برای
+protective levels استفاده می‌شود، بنابراین volatility ablation مصنوعی برای Trend
+ساخته نمی‌شود.
+
+HSL-003 همان پنج OOS fold، BTC/ETH، quantity=0.001، fee=10 bps، slippage=5 bps،
+next-primary-open Spot semantics و gap policy HSL-001 را نگه می‌دارد. P4 risk veto
+عمداً اعمال نمی‌شود تا اثر خود entry filter جدا سنجیده شود؛ exit logic و stop/target
+بدون تغییر باقی می‌مانند.
+
+هر ablation فقط اگر sample/gateهای از پیش ثبت‌شده را پاس کند و net PnL بعد از هزینه
+از control همان strategy بهتر باشد و expectancy بدتر نشود، فقط
+`ABLATION_SUPPORTS_FUTURE_CHALLENGER` می‌گیرد. این نتیجه strategy فعلی را mutate
+نمی‌کند و هیچ اثر P10/P11/Live ندارد.
+
+### مسیر بعد از HSL-003
+
 HSL-004+ Technique Library است: momentum، volatility expansion، mean reversion،
 support/resistance و techniqueهای استخراج‌شده از منابع آموزشی هر کدام candidate
 مستقل و قابل ردشدن خواهند بود.
