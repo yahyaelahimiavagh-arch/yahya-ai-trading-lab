@@ -40,6 +40,16 @@ class HSL004BTests(unittest.TestCase):
         self.assertEqual(hsl4b._true_ranges(candles, 30), (Decimal("3"),))
         self.assertEqual(hsl4b._atr_baseline(candles, 1, 30), Decimal("3"))
 
+    def test_plain_bounds_repeating_decimal_for_long_setup(self):
+        raw = Decimal("99." + "1" * 80)
+        normalized = hsl4b._plain(raw)
+        self.assertLessEqual(
+            len(normalized.partition(".")[2]),
+            40,
+        )
+        setup = hsl4b.LongSetup("100", normalized, "101")
+        self.assertEqual(setup.invalidation_price, normalized)
+
     def test_aggregate_can_qualify_without_live_authority(self):
         protocol, _ = hsl4b.load_protocol()
         cells = [
