@@ -1746,11 +1746,39 @@ BUY-AND-HOLD و cash/no-trade benchmark گزارش می‌شوند اما برا
 PASS احتمالی فقط به معنی `QUALIFIED_HSL_RESEARCH` و شایستگی برای پژوهش مستقل
 بعدی است؛ strategy production، P4، P10، P11 و Live را تغییر نمی‌دهد.
 
-### مسیر بعد از HSL-004A
+### HSL-004A — Momentum Technique Candidate — ENGINEERING / CI ACCEPTED
 
-Technique Library به candidateهای مستقل بعدی ادامه می‌دهد: volatility expansion،
-mean reversion، support/resistance و techniqueهای استخراج‌شده از منابع آموزشی؛
-هرکدام preregistration، runner، metrics و failure criteria جدا دارند.
+HSL-004A با PR #112، Final HEAD
+`80ffa274d640987fe26139032eaa0b18e5892c29` و matching Actions
+`36183422247` پذیرفته شد؛ هر دو job `unit-and-safety` و
+`accepted-public-data` PASS شدند. PR #112 squash-merge شد و checkpoint جدید
+`main` برابر `be72a45b5960e58ea3cd95ecca0e14046d5e6570` است.
+
+این acceptance مربوط به protocol، runner، tests و safety boundary است و به‌تنهایی
+هیچ outcome اقتصادی برای Momentum اثبات نمی‌کند.
+
+### HSL-004B — Volatility Expansion Candidate — ACTIVE / PREREGISTERED
+
+branch فعال:
+`hsl-004b-volatility-expansion`
+
+پروتکل:
+`docs/research/historical-strategy-lab/HSL-004B-VOLATILITY-EXPANSION-PROTOCOL-v0.1.0.json`
+
+فرضیه مستقل HSL-004B: ATR(14) حداقل 1.25 برابر baseline 48h باشد، close بالای
+high قبلی 20h بشکند، close در 25٪ بالایی candle باشد و extension بیشتر از 1 ATR
+نباشد. stop برابر 1.25 ATR، target برابر 2R و exit پژوهشی وقتی expansion ratio
+به 1 یا پایین‌تر برگردد. پارامترها قبل از outcome فریز شده‌اند.
+
+همان پنج OOS fold، BTC/ETH، quantity=0.001، هزینه‌ها و next-primary-open semantics
+HSL-001 حفظ می‌شوند. parameter search و outcome-driven retuning ممنوع‌اند؛
+P4/P10 دست‌نخورده و P11 LOCKED است.
+
+### مسیر بعد از HSL-004B
+
+Technique Library به candidateهای مستقل mean reversion، support/resistance و
+techniqueهای استخراج‌شده از منابع آموزشی ادامه می‌دهد؛ هرکدام preregistration،
+runner، metrics و failure criteria جدا دارند.
 
 قانون توقف scope creep: قبل از افزودن هر HSL جدید باید سؤال پژوهشی، baseline،
 challenger، metrics و failure criteria مشخص باشد. HSL نباید به زنجیره بی‌پایان

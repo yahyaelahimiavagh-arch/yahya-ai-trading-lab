@@ -1,0 +1,80 @@
+{
+  "schema": "YATL_HSL_TECHNIQUE_CANDIDATE_PROTOCOL",
+  "version": "0.1.0",
+  "registered_date_utc": "2026-09-25",
+  "status": "REGISTERED_BEFORE_HSL004B_OUTCOME_REPLAY",
+  "checkpoint": "HSL-004B",
+  "technique_family": "VOLATILITY_EXPANSION",
+  "research_only": true,
+  "paper_only": true,
+  "p4_p10_untouched": true,
+  "p11_locked": true,
+  "live_master_lock": "OFF",
+  "trade_permission": false,
+  "order_endpoint": false,
+  "ai_direct_execution": false,
+  "source_corpus_id": "CRL-CONTROL-DEV-POOL-001",
+  "parent_walk_forward_protocol": "HSL-001-WALK-FORWARD/0.1.0",
+  "purpose": "Test one independently preregistered long-only Spot volatility-expansion hypothesis on the exact HSL-001 OOS folds without tuning from earlier HSL outcomes.",
+  "candidate": {
+    "candidate_id": "HSL004B-VOL-EXPANSION-1",
+    "strategy_id": "VOLATILITY_EXPANSION_LONG",
+    "strategy_version": "0.1.0",
+    "role": "TECHNIQUE_LIBRARY_CHALLENGER",
+    "parameters": {
+      "atr_period_hours": 14,
+      "atr_baseline_period_hours": 48,
+      "minimum_atr_expansion_ratio": "1.25",
+      "breakout_lookback_hours": 20,
+      "minimum_close_location": "0.75",
+      "maximum_breakout_extension_atr": "1",
+      "stop_atr_multiple": "1.25",
+      "reward_risk": "2",
+      "exit_atr_expansion_ratio": "1"
+    }
+  },
+  "entry_hypothesis": [
+    "ATR(14) is at least 1.25x the trailing 48h mean true range",
+    "latest closed 1h close breaks above the prior 20h high",
+    "latest close is in the top 25% of its candle range",
+    "breakout extension is no more than 1 ATR",
+    "all features use only candles closed before decision_time"
+  ],
+  "exit_hypothesis": [
+    "paper protective stop/target from the frozen entry setup remain active",
+    "explicit strategy exit when ATR expansion ratio falls to 1.0 or below",
+    "no forced fold-end liquidation; terminal open position is mark-to-market only"
+  ],
+  "protective_levels": {
+    "stop": "entry_reference_minus_1.25x_ATR14",
+    "target": "entry_reference_plus_2x_initial_risk"
+  },
+  "methodology": {
+    "folds": "EXACT_HSL001_F001_TO_F005",
+    "symbols": ["BTCUSDT", "ETHUSDT"],
+    "state_reset_at_each_evaluation_fold": true,
+    "market_history_available_point_in_time": true,
+    "p4_risk_veto_applied": false,
+    "fixed_quantity": "0.001",
+    "fee_bps": "10",
+    "slippage_bps": "5",
+    "execution": "NEXT_PRIMARY_OPEN_LONG_ONLY_SPOT",
+    "terminal_open_position": "MARK_TO_MARKET_ONLY; DO_NOT_FORCE_EXIT",
+    "parameter_search": false,
+    "outcome_driven_retuning": false,
+    "historical_outcomes_used_for_configuration_selection": false
+  },
+  "qualification_gate": {
+    "use_for_hsl_research_only": true,
+    "minimum_completed_trades_total": 30,
+    "minimum_completed_trades_per_symbol": 10,
+    "require_positive_total_net_pnl": true,
+    "require_positive_expectancy": true,
+    "minimum_profit_factor": "1.05",
+    "minimum_positive_oos_cell_fraction": "0.60",
+    "maximum_single_trade_share_of_positive_pnl": "0.50",
+    "maximum_drawdown_fraction": "0.10",
+    "automatic_promotion_to_p10_p11_live": false
+  },
+  "interpretation": "PASS only means this fixed volatility-expansion hypothesis merits further independent HSL validation. It does not mutate production strategies, alter P4/P10, unlock P11, or authorize live trading."
+}
