@@ -60,6 +60,13 @@ def _plain(value):
         raise HSLVolatilityError("HSL-004B arithmetic is not finite")
     if value == 0:
         return "0"
+    text = format(value, "f")
+    return text.rstrip("0").rstrip(".") if "." in text else text
+
+
+def _setup_plain(value):
+    if not isinstance(value, Decimal) or not value.is_finite():
+        raise HSLVolatilityError("HSL-004B setup arithmetic is not finite")
     if value.as_tuple().exponent < -40:
         with localcontext() as arithmetic:
             arithmetic.prec = DECIMAL_PRECISION
@@ -67,8 +74,10 @@ def _plain(value):
                 Decimal("1e-40"),
                 rounding=ROUND_HALF_EVEN,
             )
-    text = format(value, "f")
-    return text.rstrip("0").rstrip(".") if "." in text else text
+    result = _plain(value)
+    if result is None:
+        raise HSLVolatilityError("HSL-004B setup serialization failed")
+    return result
 
 
 def _number(value, label):
@@ -278,7 +287,11 @@ def _evaluate(snapshot, decision_time_ms, *, in_position, protocol):
         return VolatilityDecision(
             StrategyAction.NO_TRADE, "INVALID_PROTECTIVE_LEVELS", None, ratio_text
         )
-    setup = LongSetup(_plain(close), _plain(invalidation), _plain(target))
+    setup = LongSetup(
+        _setup_plain(close),
+        _setup_plain(invalidation),
+        _setup_plain(target),
+    )
     return VolatilityDecision(
         StrategyAction.ENTER_LONG, "VOLATILITY_EXPANSION_ENTRY", setup, ratio_text
     )
