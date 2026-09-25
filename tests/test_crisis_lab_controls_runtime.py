@@ -228,6 +228,21 @@ class CrisisLabControlRuntimeTests(unittest.TestCase):
                 == gap_start + 3_600_000
             )
             self.assertFalse(recovered["snapshot_fresh"])
+            self.assertEqual(
+                recovered["strategy_action"],
+                "NOT_EVALUATED",
+            )
+            resumed = next(
+                row
+                for row in yatl["trace"]
+                if row["decision_time_ms"]
+                == gap_start + 2 * 3_600_000
+            )
+            self.assertTrue(resumed["snapshot_fresh"])
+            self.assertNotEqual(
+                resumed["strategy_action"],
+                "NOT_EVALUATED",
+            )
             self.assertTrue(
                 all(
                     row["decision_time_ms"] != gap_start
