@@ -81,6 +81,45 @@ def corpus():
     )
 
 
+def gapped_corpus():
+    base = corpus()
+    gap_start = POOL_START_MS + 2 * DAY_MS
+    datasets = dict(base.datasets)
+    for symbol in ("BTCUSDT", "ETHUSDT"):
+        datasets[(symbol, "1h")] = tuple(
+            item
+            for item in datasets[(symbol, "1h")]
+            if item.open_time_ms != gap_start
+        )
+        datasets[(symbol, "15m")] = tuple(
+            item
+            for item in datasets[(symbol, "15m")]
+            if not (
+                gap_start
+                <= item.open_time_ms
+                < gap_start + PRIMARY_MS
+            )
+        )
+    return controls.AdmittedControlCorpus(
+        event_id=base.event_id,
+        designation=base.designation,
+        quality_manifest_relative_path=(
+            base.quality_manifest_relative_path
+        ),
+        quality_manifest_file_sha256=(
+            base.quality_manifest_file_sha256
+        ),
+        event_acquisition_manifest_relative_path=(
+            base.event_acquisition_manifest_relative_path
+        ),
+        event_acquisition_manifest_sha256=(
+            base.event_acquisition_manifest_sha256
+        ),
+        retrieved_at_ms=base.retrieved_at_ms,
+        datasets=datasets,
+    )
+
+
 class CrisisLabStrategyActiveScalabilityTests(unittest.TestCase):
     def _run(self, chunk_days):
         event = diagnostic._pool_event(
@@ -124,6 +163,42 @@ class CrisisLabStrategyActiveScalabilityTests(unittest.TestCase):
         self.assertTrue(
             all(item["symbol"] == "BTCUSDT" for item in selected)
         )
+
+    def test_verified_gap_scan_skips_missing_fill_and_recovers(self):
+        event = diagnostic._pool_event(
+            corpus=gapped_corpus(),
+            protocol_sha256="e" * 64,
+            pool_start_ms=POOL_START_MS,
+            pool_end_ms=POOL_END_MS,
+        )
+        scans7, selected7, runtime7 = diagnostic._scan_progressive(
+            event=event,
+            exclusions=(),
+            maximum_episodes=2,
+            minimum_separation_ms=7 * DAY_MS,
+            chunk_ms=7 * DAY_MS,
+        )
+        scans14, selected14, runtime14 = diagnostic._scan_progressive(
+            event=event,
+            exclusions=(),
+            maximum_episodes=2,
+            minimum_separation_ms=7 * DAY_MS,
+            chunk_ms=14 * DAY_MS,
+        )
+        self.assertEqual(selected7, selected14)
+        self.assertEqual(scans7, scans14)
+        self.assertEqual(
+            runtime7["scanned_end_exclusive_ms"],
+            runtime14["scanned_end_exclusive_ms"],
+        )
+        self.assertTrue(selected7)
+        for summary in scans7:
+            self.assertEqual(
+                summary["missing_fill_decision_count"], 1
+            )
+            self.assertGreaterEqual(
+                summary["stale_snapshot_decision_count"], 1
+            )
 
     def test_scanner_does_not_materialize_full_event_sequence(self):
         source = inspect.getsource(diagnostic)

@@ -52,7 +52,7 @@ from . import controls
 from . import replay
 
 
-DIAGNOSTIC_IMPLEMENTATION_ID = "CRL-005-STRATEGY-ACTIVE/0.2.0"
+DIAGNOSTIC_IMPLEMENTATION_ID = "CRL-005-STRATEGY-ACTIVE/0.2.1"
 DIAGNOSTIC_SCHEMA_VERSION = "0.1.0"
 DEFAULT_EVENT_CATALOG_PATH = Path(
     "docs/research/crisis-lab/EVENT-CATALOG-v0.1.0.json"
@@ -216,6 +216,8 @@ class _SymbolScanState:
     risk_allowed_entry_count: int = 0
     confirmed_open_entry_count: int = 0
     excluded_confirmed_open_entry_count: int = 0
+    missing_fill_decision_count: int = 0
+    stale_snapshot_decision_count: int = 0
 
 
 def _new_scan_state(
@@ -294,7 +296,7 @@ def _chunk_dataset(
         raise DiagnosticError(
             "strategy-active scan chunk spec is invalid"
         ) from None
-    return AcceptedBacktestDataset(
+    return replay.CrisisLabAcceptedBacktestDataset(
         spec=spec,
         manifest_generated_at_ms=state.dataset.manifest_generated_at_ms,
         primary=_prefix(
@@ -324,9 +326,12 @@ def _process_event(
     fill_candle = state.primary_by_open.get(
         decision_event.eligible_fill_open_time_ms
     )
-    if fill_candle is None or not fill_candle.is_closed:
+    if fill_candle is None:
+        state.missing_fill_decision_count += 1
+        return None
+    if not fill_candle.is_closed:
         raise DiagnosticError(
-            "strategy-active next-open candle is missing"
+            "strategy-active next-open candle is not closed"
         )
     if any(
         candle.close_time_ms >= decision_event.decision_time_ms
@@ -350,44 +355,60 @@ def _process_event(
         pre,
         decision_event.snapshot.latest_primary.close,
     )
-    context = StrategyContext(
-        TREND_PULLBACK_IDENTITY, decision_event.snapshot
-    )
-    regime = classify_regime(context)
-    decision = evaluate_trend_pullback(
-        context,
-        in_position=state.fill_engine.has_position,
-        active_setup=state.active_setup,
-    )
 
+    snapshot_fresh = replay._snapshot_is_fresh(
+        decision_event.snapshot
+    )
     veto = None
-    if decision.action is StrategyAction.ENTER_LONG:
-        state.entry_signal_count += 1
-        veto = assess_fixed_quantity_entry(decision, risk_state)
-        if veto.allowed:
-            state.risk_allowed_entry_count += 1
+    decision = None
+    regime = None
+    if not snapshot_fresh:
+        state.stale_snapshot_decision_count += 1
+        intent = PaperIntent(
+            IntentAction.HOLD,
+            decision_event.decision_time_ms,
+        )
+    else:
+        context = StrategyContext(
+            TREND_PULLBACK_IDENTITY,
+            decision_event.snapshot,
+        )
+        regime = classify_regime(context)
+        decision = evaluate_trend_pullback(
+            context,
+            in_position=state.fill_engine.has_position,
+            active_setup=state.active_setup,
+        )
+
+        if decision.action is StrategyAction.ENTER_LONG:
+            state.entry_signal_count += 1
+            veto = assess_fixed_quantity_entry(
+                decision, risk_state
+            )
+            if veto.allowed:
+                state.risk_allowed_entry_count += 1
+                intent = PaperIntent(
+                    IntentAction.ENTER_LONG,
+                    decision_event.decision_time_ms,
+                    RUNNER_QUANTITY,
+                    decision.setup.invalidation_price,
+                    decision.setup.target_price,
+                )
+            else:
+                intent = PaperIntent(
+                    IntentAction.HOLD,
+                    decision_event.decision_time_ms,
+                )
+        elif decision.action is StrategyAction.EXIT_LONG:
             intent = PaperIntent(
-                IntentAction.ENTER_LONG,
+                IntentAction.EXIT_LONG,
                 decision_event.decision_time_ms,
-                RUNNER_QUANTITY,
-                decision.setup.invalidation_price,
-                decision.setup.target_price,
             )
         else:
             intent = PaperIntent(
                 IntentAction.HOLD,
                 decision_event.decision_time_ms,
             )
-    elif decision.action is StrategyAction.EXIT_LONG:
-        intent = PaperIntent(
-            IntentAction.EXIT_LONG,
-            decision_event.decision_time_ms,
-        )
-    else:
-        intent = PaperIntent(
-            IntentAction.HOLD,
-            decision_event.decision_time_ms,
-        )
 
     references = state.fill_engine.process(
         decision_event, intent, fill_candle
@@ -408,7 +429,10 @@ def _process_event(
     )
 
     if state.fill_engine.has_position:
-        if intent.action is IntentAction.ENTER_LONG:
+        if (
+            intent.action is IntentAction.ENTER_LONG
+            and decision is not None
+        ):
             state.active_setup = decision.setup
         elif state.active_setup is None:
             raise DiagnosticError(
@@ -418,7 +442,9 @@ def _process_event(
         state.active_setup = None
 
     if not (
-        intent.action is IntentAction.ENTER_LONG
+        decision is not None
+        and regime is not None
+        and intent.action is IntentAction.ENTER_LONG
         and veto is not None
         and veto.allowed
         and entry_fill is not None
@@ -467,6 +493,12 @@ def _state_summary(
         "confirmed_open_entry_count": state.confirmed_open_entry_count,
         "excluded_confirmed_open_entry_count": (
             state.excluded_confirmed_open_entry_count
+        ),
+        "missing_fill_decision_count": (
+            state.missing_fill_decision_count
+        ),
+        "stale_snapshot_decision_count": (
+            state.stale_snapshot_decision_count
         ),
         "eligible_candidate_count": len(state.candidates),
         "point_in_time_verified": True,
