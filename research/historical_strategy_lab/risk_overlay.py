@@ -280,11 +280,15 @@ class _ReferenceRiskTracker:
             self.observed_consecutive_losses_peak,
             state.consecutive_losses,
         )
+        reasons = _threshold_reasons(state)
         if state.kill_switch_active and not was_active:
             self.kill_switch_trigger_count += 1
-            if "DRAWDOWN_LIMIT" in _threshold_reasons(state):
-                self.hard_latch_trigger_count += 1
-                self._hard_latched = True
+        if (
+            "DRAWDOWN_LIMIT" in reasons
+            and not self._hard_latched
+        ):
+            self.hard_latch_trigger_count += 1
+            self._hard_latched = True
         return state
 
     def summary(self) -> dict[str, object]:
@@ -478,6 +482,7 @@ class _RecoveryCooldownRiskTracker:
             self.hard_latched
             or self.session_block_active
             or cooldown_active_this_decision
+            or self.cooldown_release_pending
         )
         state = self._risk_state(
             snapshot=snapshot,
