@@ -168,20 +168,31 @@ class CrisisLabAcceptedBacktestDataset(AcceptedBacktestDataset):
                 "Decision time is outside the backtest range"
             )
 
-        def visible(values):
-            return tuple(
+        def visible_contiguous_suffix(values, interval):
+            visible = tuple(
                 item
                 for item in values
                 if item.close_time_ms < decision_time_ms
             )
+            if not visible:
+                return visible
+            duration = INTERVAL_MILLISECONDS[interval]
+            start = len(visible) - 1
+            while (
+                start > 0
+                and visible[start].open_time_ms
+                == visible[start - 1].open_time_ms + duration
+            ):
+                start -= 1
+            return visible[start:]
 
         try:
             return CrisisLabMarketSnapshot(
                 self.spec.symbol,
                 decision_time_ms,
-                visible(self.primary),
-                visible(self.context),
-                visible(self.regime),
+                visible_contiguous_suffix(self.primary, "1h"),
+                visible_contiguous_suffix(self.context, "15m"),
+                visible_contiguous_suffix(self.regime, "4h"),
             )
         except BacktestContractError:
             raise BacktestLoadError(
