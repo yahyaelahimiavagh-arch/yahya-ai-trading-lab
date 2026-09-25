@@ -510,6 +510,20 @@ P10 یا Live gate را ندارد.
 P10 baseline جاری تغییر نمی‌کند. Historical Strategy Lab برای ساخت نسل بعدی
 candidate است، نه برای بازنویسی evidence جاری یا بازکردن P11.
 
+##### External Research Intake — Video / Article / Transcript
+
+منابع بیرونی مثل ویدیو، مقاله، کتاب و transcript می‌توانند وارد HSL شوند، اما
+فقط به‌عنوان **idea source** و نه evidence اثبات‌شده. هر منبع باید به یک
+research note قابل‌آزمون تبدیل شود که حداقل شامل نام تکنیک، منطق entry/exit،
+timeframe، regime فرض‌شده، risk/stop/target، هزینه‌های لازم، assumptions و موارد
+نامشخص باشد.
+
+برای ویدیوها، subtitle/transcript با timestamp ترجیح داده می‌شود تا ادعاهای
+مهم به بخش دقیق منبع متصل شوند. هیچ تکنیکی صرفاً به‌دلیل اعتبار گوینده یا نتیجه
+نمایش‌داده‌شده وارد candidate نمی‌شود؛ ابتدا باید به rule قابل‌کدنویسی تبدیل،
+سپس روی historical development، walk-forward و در صورت موفقیت real-forward
+آزمایش شود. ایده‌های تکراری باید deduplicate شوند و نتیجه منفی نیز حفظ شود.
+
 #### Shadow Challenger Track
 
 Crisis Lab می‌تواند یک **Shadow Challenger Track** برای نسل‌های آینده Strategy
