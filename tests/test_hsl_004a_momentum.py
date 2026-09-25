@@ -136,6 +136,16 @@ class HSL004AMomentumTests(unittest.TestCase):
         self.assertIn("TOTAL_NET_PNL_NOT_POSITIVE", reasons)
         self.assertIn("EXPECTANCY_NOT_POSITIVE", reasons)
 
+    def test_plain_bounds_repeating_decimal_for_long_setup(self):
+        raw = Decimal("99." + "1" * 80)
+        normalized = hsl4._plain(raw)
+        self.assertLessEqual(
+            len(normalized.partition(".")[2]),
+            40,
+        )
+        setup = hsl4.LongSetup("100", normalized, "101")
+        self.assertEqual(setup.invalidation_price, normalized)
+
     def test_buy_hold_return_is_deterministic(self):
         candles = (
             SimpleNamespace(open="100", close="110"),
