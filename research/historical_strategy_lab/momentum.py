@@ -85,6 +85,13 @@ def _plain(value: Decimal | None) -> str | None:
         raise HSLMomentumError("HSL-004A arithmetic is not finite")
     if value == 0:
         return "0"
+    text = format(value, "f")
+    return text.rstrip("0").rstrip(".") if "." in text else text
+
+
+def _setup_plain(value: Decimal) -> str:
+    if not isinstance(value, Decimal) or not value.is_finite():
+        raise HSLMomentumError("HSL-004A setup arithmetic is not finite")
     if value.as_tuple().exponent < -40:
         with localcontext() as arithmetic:
             arithmetic.prec = DECIMAL_PRECISION
@@ -92,8 +99,10 @@ def _plain(value: Decimal | None) -> str | None:
                 Decimal("1e-40"),
                 rounding=ROUND_HALF_EVEN,
             )
-    text = format(value, "f")
-    return text.rstrip("0").rstrip(".") if "." in text else text
+    result = _plain(value)
+    if result is None:
+        raise HSLMomentumError("HSL-004A setup serialization failed")
+    return result
 
 
 def _number(value: object, label: str) -> Decimal:
@@ -427,9 +436,9 @@ def _evaluate(
             **values,
         )
     setup = LongSetup(
-        _plain(close),
-        _plain(invalidation),
-        _plain(target),
+        _setup_plain(close),
+        _setup_plain(invalidation),
+        _setup_plain(target),
     )
     return MomentumDecision(
         StrategyAction.ENTER_LONG,
