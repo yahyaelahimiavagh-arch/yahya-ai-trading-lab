@@ -922,37 +922,38 @@ def _run_symbol(event: AdmittedEvent, symbol: str) -> dict[str, object]:
             pre,
             decision_event.snapshot.latest_primary.close,
         )
-        context = StrategyContext(
-            TREND_PULLBACK_IDENTITY, decision_event.snapshot
-        )
-        regime = classify_regime(context)
-        regime_counts[regime.regime.value] = (
-            regime_counts.get(regime.regime.value, 0) + 1
-        )
-        decision = evaluate_trend_pullback(
-            context,
-            in_position=fill_engine.has_position,
-            active_setup=active_setup,
-        )
         snapshot_fresh = _snapshot_is_fresh(
             decision_event.snapshot
         )
-        if not snapshot_fresh:
-            counts["stale_snapshot"] += 1
-
         veto = None
         stale_entry_blocked = False
-        if decision.action is StrategyAction.ENTER_LONG:
-            counts["entry"] += 1
-            if not snapshot_fresh:
-                counts["blocked"] += 1
-                counts["stale_entry_blocked"] += 1
-                stale_entry_blocked = True
-                intent = PaperIntent(
-                    IntentAction.HOLD,
-                    decision_event.decision_time_ms,
-                )
-            else:
+        decision = None
+        regime = None
+
+        if not snapshot_fresh:
+            counts["stale_snapshot"] += 1
+            counts["no_trade"] += 1
+            intent = PaperIntent(
+                IntentAction.HOLD,
+                decision_event.decision_time_ms,
+            )
+        else:
+            context = StrategyContext(
+                TREND_PULLBACK_IDENTITY,
+                decision_event.snapshot,
+            )
+            regime = classify_regime(context)
+            regime_counts[regime.regime.value] = (
+                regime_counts.get(regime.regime.value, 0) + 1
+            )
+            decision = evaluate_trend_pullback(
+                context,
+                in_position=fill_engine.has_position,
+                active_setup=active_setup,
+            )
+
+            if decision.action is StrategyAction.ENTER_LONG:
+                counts["entry"] += 1
                 veto = assess_fixed_quantity_entry(
                     decision, risk_state
                 )
@@ -971,16 +972,18 @@ def _run_symbol(event: AdmittedEvent, symbol: str) -> dict[str, object]:
                         IntentAction.HOLD,
                         decision_event.decision_time_ms,
                     )
-        elif decision.action is StrategyAction.EXIT_LONG:
-            counts["exit"] += 1
-            intent = PaperIntent(
-                IntentAction.EXIT_LONG, decision_event.decision_time_ms
-            )
-        else:
-            counts["no_trade"] += 1
-            intent = PaperIntent(
-                IntentAction.HOLD, decision_event.decision_time_ms
-            )
+            elif decision.action is StrategyAction.EXIT_LONG:
+                counts["exit"] += 1
+                intent = PaperIntent(
+                    IntentAction.EXIT_LONG,
+                    decision_event.decision_time_ms,
+                )
+            else:
+                counts["no_trade"] += 1
+                intent = PaperIntent(
+                    IntentAction.HOLD,
+                    decision_event.decision_time_ms,
+                )
 
         references = fill_engine.process(
             decision_event, intent, fill_candle
@@ -993,7 +996,10 @@ def _run_symbol(event: AdmittedEvent, symbol: str) -> dict[str, object]:
             fills.extend(_fill_record(item) for item in costed)
 
         if fill_engine.has_position:
-            if intent.action is IntentAction.ENTER_LONG:
+            if (
+                intent.action is IntentAction.ENTER_LONG
+                and decision is not None
+            ):
                 active_setup = decision.setup
             elif active_setup is None:
                 raise ReplayError(
@@ -1003,14 +1009,45 @@ def _run_symbol(event: AdmittedEvent, symbol: str) -> dict[str, object]:
             active_setup = None
 
         post = ledger.snapshot(fill_candle.open)
+        if decision is None:
+            context_sha256 = _sha256_value({
+                "symbol": symbol,
+                "decision_time_ms": (
+                    decision_event.decision_time_ms
+                ),
+                "primary": [
+                    item.as_record()
+                    for item in decision_event.snapshot.primary
+                ],
+                "context": [
+                    item.as_record()
+                    for item in decision_event.snapshot.context
+                ],
+                "regime": [
+                    item.as_record()
+                    for item in decision_event.snapshot.regime
+                ],
+                "crl_stale_history": True,
+            })
+            regime_value = "CRL_STALE_HISTORY"
+            regime_reason = "CRL_STALE_HISTORY"
+            strategy_action = "NOT_EVALUATED"
+            strategy_reason = "CRL_STALE_HISTORY"
+        else:
+            context_sha256 = decision.context_sha256
+            regime_value = regime.regime.value
+            regime_reason = regime.reason.value
+            strategy_action = decision.action.value
+            strategy_reason = decision.reason.value
+
         trace.append({
             "sequence": decision_event.sequence,
             "decision_time_ms": decision_event.decision_time_ms,
-            "context_sha256": decision.context_sha256,
-            "regime": regime.regime.value,
-            "regime_reason": regime.reason.value,
-            "strategy_action": decision.action.value,
-            "strategy_reason": decision.reason.value,
+            "context_sha256": context_sha256,
+            "regime": regime_value,
+            "regime_reason": regime_reason,
+            "strategy_action": strategy_action,
+            "strategy_reason": strategy_reason,
             "effective_intent": intent.action.value,
             "snapshot_fresh": snapshot_fresh,
             "stale_entry_blocked": stale_entry_blocked,
