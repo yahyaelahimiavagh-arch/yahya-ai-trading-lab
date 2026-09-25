@@ -329,6 +329,36 @@ entry جعل نمی‌شود؛ سناریوی کنترل‌شده‌ی «positio
 یا رفتار عمومی Strategy است. Control windowها قبل از دیدن نتیجه run نهایی انتخاب
 و ثبت می‌شوند تا cherry-picking کاهش یابد.
 
+
+##### گزارش پیوسته چندساله — Continuous Long-Horizon Replay
+
+برای اینکه Strategy به‌خاطر کوتاه‌بودن control windowها یا resetهای مصنوعی
+از فرصت‌های واقعی ورود/خروج محروم نشود، یک run مستقل و از پیش‌ثبت‌شده روی کل
+Development corpus اجرا می‌شود:
+
+`docs/research/crisis-lab/LONG-HORIZON-REPLAY-PROTOCOL-v0.1.0.json`.
+
+بازه اصلی این run از **2020-01-01 00:00 UTC تا 2023-01-01 00:00 UTC** است و
+داده 2019-12-18 تا شروع بازه فقط warm-up محسوب می‌شود.
+
+قواعد:
+- Strategy، Risk، Paper portfolio و active setup در تمام سه سال state پیوسته دارند؛
+- در مرز روز/ماه/فصل/control window/crisis anchor reset انجام نمی‌شود؛
+- سقف «اولین 10 entry» فقط برای diagnostic جداگانه است و روی گزارش سه‌ساله اعمال
+  نمی‌شود؛ در long-horizon هر `ENTER_LONG` قانونی پردازش می‌شود؛
+- هیچ threshold استراتژی یا Risk برای زیادکردن تعداد معامله شل نمی‌شود؛
+- stop/target/EXIT_LONG، fee و slippage دقیقاً فعال باقی می‌مانند؛
+- position می‌تواند طبیعی از بازار عادی وارد crisis شود و تا خروج واقعی ادامه یابد؛
+- chunking فقط برای performance است و حق تغییر نتیجه ندارد؛
+- گزارش علاوه بر PnL باید funnel فرصت را نشان دهد: decision → signal → risk allow/
+  veto → fill → exit → completed trade، به‌همراه time-in-market، holding time،
+  exit reason، drawdown و هزینه‌ها.
+
+اگر نتیجه سه‌ساله نشان دهد frozen candidate بیش از حد کم‌معامله است، این موضوع
+به‌عنوان evidence «trade starvation» ثبت می‌شود؛ خود همین run بعد از مشاهده
+نتیجه retune نمی‌شود. هر candidate بازتر باید در CRL-008 به‌عنوان challenger
+نسل بعدی جداگانه ثبت و روی evidence مستقل ارزیابی شود.
+
 #### Baseline comparison
 
 هر Crisis Run باید دست‌کم با دو baseline مقایسه شود:

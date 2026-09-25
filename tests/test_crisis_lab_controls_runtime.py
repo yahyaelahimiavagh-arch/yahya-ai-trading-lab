@@ -70,6 +70,45 @@ def corpus():
     )
 
 
+def gapped_corpus():
+    base = corpus()
+    gap_start = ANALYSIS_START_MS + 12 * 3_600_000
+    datasets = dict(base.datasets)
+    for symbol in acq.ALLOWED_SYMBOLS:
+        datasets[(symbol, "1h")] = tuple(
+            item
+            for item in datasets[(symbol, "1h")]
+            if item.open_time_ms != gap_start
+        )
+        datasets[(symbol, "15m")] = tuple(
+            item
+            for item in datasets[(symbol, "15m")]
+            if not (
+                gap_start
+                <= item.open_time_ms
+                < gap_start + 3_600_000
+            )
+        )
+    return controls.AdmittedControlCorpus(
+        event_id=base.event_id,
+        designation=base.designation,
+        quality_manifest_relative_path=(
+            base.quality_manifest_relative_path
+        ),
+        quality_manifest_file_sha256=(
+            base.quality_manifest_file_sha256
+        ),
+        event_acquisition_manifest_relative_path=(
+            base.event_acquisition_manifest_relative_path
+        ),
+        event_acquisition_manifest_sha256=(
+            base.event_acquisition_manifest_sha256
+        ),
+        retrieved_at_ms=base.retrieved_at_ms,
+        datasets=datasets,
+    )
+
+
 def window():
     return {
         "control_id": "CRL-TC001",
@@ -165,6 +204,50 @@ class CrisisLabControlRuntimeTests(unittest.TestCase):
             self.assertEqual(
                 item["baselines"]["BUY_AND_HOLD_RESEARCH"]["quantity"],
                 str(RUNNER_QUANTITY),
+            )
+
+    def test_verified_gap_runtime_skips_missing_fill_and_recovers(self):
+        result = controls._run_window(
+            corpus=gapped_corpus(),
+            protocol_sha256="e" * 64,
+            window=window(),
+        )
+        for item in result["symbols"]:
+            yatl = item["yatl"]
+            self.assertEqual(yatl["grid_event_count"], 48)
+            self.assertEqual(yatl["missing_fill_decision_count"], 1)
+            self.assertEqual(yatl["event_count"], 47)
+            self.assertGreaterEqual(
+                yatl["stale_snapshot_decision_count"], 1
+            )
+            gap_start = ANALYSIS_START_MS + 12 * 3_600_000
+            recovered = next(
+                row
+                for row in yatl["trace"]
+                if row["decision_time_ms"]
+                == gap_start + 3_600_000
+            )
+            self.assertFalse(recovered["snapshot_fresh"])
+            self.assertEqual(
+                recovered["strategy_action"],
+                "NOT_EVALUATED",
+            )
+            resumed = next(
+                row
+                for row in yatl["trace"]
+                if row["decision_time_ms"]
+                == gap_start + 2 * 3_600_000
+            )
+            self.assertTrue(resumed["snapshot_fresh"])
+            self.assertNotEqual(
+                resumed["strategy_action"],
+                "NOT_EVALUATED",
+            )
+            self.assertTrue(
+                all(
+                    row["decision_time_ms"] != gap_start
+                    for row in yatl["trace"]
+                )
             )
 
     def test_buy_hold_is_matched_quantity_and_costed(self):

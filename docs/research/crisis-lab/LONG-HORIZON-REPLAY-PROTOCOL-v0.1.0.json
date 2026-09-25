@@ -1,0 +1,135 @@
+{
+  "schema": "YATL_CRL_LONG_HORIZON_REPLAY_PROTOCOL",
+  "version": "0.1.0",
+  "registered_date_utc": "2026-09-25",
+  "status": "REGISTERED_BEFORE_LONG_HORIZON_OUTCOME_REPLAY",
+  "research_only": true,
+  "p10_untouched": true,
+  "p11_locked": true,
+  "source_corpus_id": "CRL-CONTROL-DEV-POOL-001",
+  "purpose": "Measure the frozen candidate over the full multi-year Development corpus with continuous strategy/risk/portfolio state so natural entry, hold, protective exit and strategy exit opportunities are not suppressed by short control-window resets.",
+  "analysis_range": {
+    "warmup_start_utc": "2019-12-18T00:00:00Z",
+    "analysis_start_utc": "2020-01-01T00:00:00Z",
+    "analysis_end_exclusive_utc": "2023-01-01T00:00:00Z",
+    "symbols": [
+      "BTCUSDT",
+      "ETHUSDT"
+    ],
+    "intervals": [
+      "15m",
+      "1h",
+      "4h"
+    ]
+  },
+  "execution_semantics": {
+    "candidate_policy": "EXACT_FROZEN_P10_BASELINE_TREND_PULLBACK_V1",
+    "continuous_state": true,
+    "reset_between_days": false,
+    "reset_between_months": false,
+    "reset_between_quarters": false,
+    "reset_at_registered_crisis_anchor": false,
+    "maximum_entry_episodes": null,
+    "maximum_completed_trades": null,
+    "all_legal_enter_long_signals_are_processed": true,
+    "all_legal_exit_long_signals_are_processed": true,
+    "protective_stop_target_processing_remains_enabled": true,
+    "risk_veto_remains_enabled": true,
+    "risk_thresholds_may_not_be_loosened_for_trade_count": true,
+    "strategy_thresholds_may_not_be_loosened_for_trade_count": true,
+    "fee_slippage_may_not_be_removed": true,
+    "paper_only": true,
+    "gap_policy": "USE_ONLY_CRL003_VERIFIED_ABSENT_GRID_POINTS; NEVER_INTERPOLATE_OR_FORWARD_FILL; BLOCK_NEW_ENTRY_WHILE_REQUIRED_SNAPSHOT_IS_STALE"
+  },
+  "state_continuity": {
+    "portfolio_state_carries_across_entire_analysis_range": true,
+    "active_setup_carries_across_chunk_boundaries": true,
+    "risk_tracker_carries_across_chunk_boundaries": true,
+    "open_position_carries_across_calendar_boundaries": true,
+    "open_position_carries_across_crisis_anchors": true,
+    "implementation_chunking_is_performance_only": true,
+    "chunk_size_may_not_change_results": true
+  },
+  "reporting": {
+    "opportunity_funnel": [
+      "decision_count",
+      "fresh_snapshot_decision_count",
+      "stale_snapshot_decision_count",
+      "regime_counts",
+      "strategy_reason_counts",
+      "enter_long_signal_count",
+      "risk_allowed_entry_count",
+      "risk_blocked_entry_count",
+      "stale_entry_block_count",
+      "entry_fill_count",
+      "exit_long_signal_count",
+      "protective_exit_fill_count",
+      "strategy_exit_fill_count",
+      "completed_trade_count",
+      "open_position_at_end",
+      "no_trade_decision_count"
+    ],
+    "lifecycle_metrics": [
+      "trade_entry_time_ms",
+      "trade_exit_time_ms",
+      "holding_duration_ms",
+      "entry_reason",
+      "exit_reason",
+      "gross_pnl_quote",
+      "fees_quote",
+      "slippage_quote",
+      "net_pnl_after_costs_quote"
+    ],
+    "exposure_metrics": [
+      "exposure_decision_count",
+      "time_in_market_fraction",
+      "maximum_consecutive_exposure_ms",
+      "peak_position_quantity",
+      "maximum_drawdown_fraction",
+      "maximum_drawdown_quote"
+    ],
+    "economic_metrics": [
+      "initial_equity_quote",
+      "final_equity_quote",
+      "net_pnl_after_costs_quote",
+      "net_return_after_costs",
+      "realized_net_pnl_quote",
+      "unrealized_liquidation_net_pnl_quote",
+      "executed_fee_quote",
+      "executed_slippage_quote",
+      "executed_total_cost_quote"
+    ],
+    "starvation_diagnostic": [
+      "entry_signal_rate_per_1000_decisions",
+      "risk_allow_rate",
+      "fill_rate_per_1000_decisions",
+      "completed_trade_rate_per_year",
+      "dominant_no_trade_reasons"
+    ],
+    "starvation_verdict_thresholds_frozen": false,
+    "note": "v0.1.0 reports trade-opportunity scarcity descriptively; it does not invent a post-hoc PASS/FAIL threshold after seeing the three-year result."
+  },
+  "crisis_transition_tags": {
+    "annotate_registered_development_crisis_anchors": true,
+    "crisis_label_visible_to_strategy": false,
+    "do_not_reset_state_at_anchor": true,
+    "record_position_at_anchor": true,
+    "record_first_protection_after_anchor": true,
+    "record_time_to_zero_exposure_after_anchor": true,
+    "historical_position_may_not_be_forced": true
+  },
+  "terminal_policy": {
+    "force_exit_at_analysis_end": false,
+    "preserve_open_position_state": true,
+    "report_mark_to_market_equity": true,
+    "terminal_liquidation_counterfactual_may_be_reported_separately": true,
+    "terminal_counterfactual_may_not_replace_primary_result": true
+  },
+  "anti_tuning": {
+    "do_not_change_candidate_to_increase_trade_count_in_this_run": true,
+    "do_not_drop_no_trade_periods": true,
+    "do_not_drop_losing_trades": true,
+    "do_not_select_subperiods_from_pnl": true,
+    "if_trade_starvation_is_observed": "REGISTER_NEXT_GENERATION_CHALLENGER_IN_CRL008; DO_NOT_RETUNE_THIS_FROZEN_RUN"
+  }
+}

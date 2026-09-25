@@ -108,5 +108,81 @@ class CrisisLabControlProtocolTests(unittest.TestCase):
         self.assertIn("time_to_zero_exposure_ms", transition["required_fields"])
 
 
+class CrisisLabLongHorizonProtocolTests(unittest.TestCase):
+    def test_long_horizon_protocol_preserves_full_trade_opportunity(self):
+        path = ROOT / "LONG-HORIZON-REPLAY-PROTOCOL-v0.1.0.json"
+        protocol = json.loads(path.read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            protocol["schema"],
+            "YATL_CRL_LONG_HORIZON_REPLAY_PROTOCOL",
+        )
+        self.assertEqual(protocol["version"], "0.1.0")
+        self.assertTrue(protocol["research_only"])
+        self.assertTrue(protocol["p10_untouched"])
+        self.assertTrue(protocol["p11_locked"])
+
+        analysis = protocol["analysis_range"]
+        self.assertEqual(
+            analysis["analysis_start_utc"],
+            "2020-01-01T00:00:00Z",
+        )
+        self.assertEqual(
+            analysis["analysis_end_exclusive_utc"],
+            "2023-01-01T00:00:00Z",
+        )
+
+        execution = protocol["execution_semantics"]
+        self.assertTrue(execution["continuous_state"])
+        self.assertFalse(execution["reset_between_days"])
+        self.assertFalse(execution["reset_between_months"])
+        self.assertFalse(execution["reset_between_quarters"])
+        self.assertFalse(execution["reset_at_registered_crisis_anchor"])
+        self.assertIsNone(execution["maximum_entry_episodes"])
+        self.assertIsNone(execution["maximum_completed_trades"])
+        self.assertTrue(
+            execution["all_legal_enter_long_signals_are_processed"]
+        )
+        self.assertTrue(
+            execution["all_legal_exit_long_signals_are_processed"]
+        )
+        self.assertTrue(execution["risk_veto_remains_enabled"])
+        self.assertTrue(
+            execution["risk_thresholds_may_not_be_loosened_for_trade_count"]
+        )
+        self.assertTrue(
+            execution["strategy_thresholds_may_not_be_loosened_for_trade_count"]
+        )
+
+        state = protocol["state_continuity"]
+        self.assertTrue(
+            state["portfolio_state_carries_across_entire_analysis_range"]
+        )
+        self.assertTrue(state["active_setup_carries_across_chunk_boundaries"])
+        self.assertTrue(state["risk_tracker_carries_across_chunk_boundaries"])
+        self.assertTrue(state["open_position_carries_across_crisis_anchors"])
+
+        reporting = protocol["reporting"]
+        funnel = set(reporting["opportunity_funnel"])
+        self.assertTrue({
+            "decision_count",
+            "enter_long_signal_count",
+            "risk_allowed_entry_count",
+            "risk_blocked_entry_count",
+            "entry_fill_count",
+            "exit_long_signal_count",
+            "completed_trade_count",
+            "no_trade_decision_count",
+        }.issubset(funnel))
+        self.assertFalse(
+            reporting["starvation_verdict_thresholds_frozen"]
+        )
+
+        terminal = protocol["terminal_policy"]
+        self.assertFalse(terminal["force_exit_at_analysis_end"])
+        self.assertTrue(terminal["preserve_open_position_state"])
+
+
+
 if __name__ == "__main__":
     unittest.main()

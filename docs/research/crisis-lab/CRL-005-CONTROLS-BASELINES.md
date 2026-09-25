@@ -150,6 +150,17 @@ uv run --locked python -m research.crisis_lab.controls \
 
 A subset may be replayed with repeated `--control CRL-C00X` arguments.
 
+### Exchange-maintenance gaps inside controls
+
+Registered ordinary windows are never discarded merely because the exchange had
+a CRL-003-verified no-trade interval. The control slice preserves the real
+missing timestamps rather than fabricating candles. Replay skips only decision
+slots whose required 1h execution candle does not exist. On the first tradable
+slot after a verified gap, protective/risk-reducing processing remains available,
+while new entries are blocked until all required timeframes are fresh again.
+CASH and BUY-AND-HOLD remain deterministic comparisons over the actual available
+analysis candles. Unknown or unverified gaps still fail before replay.
+
 ## Strategy-active diagnostic runtime
 
 Research-only implementation:
@@ -225,3 +236,53 @@ Real three-year control-corpus scanning is blocked until this scalability gate
 passes Final-HEAD CI.
 
 Current acceptance gate: **Final-HEAD CI on current main ancestry**.
+
+
+## Continuous multi-year trading report
+
+The short 30-day ordinary controls and the first-10-entry diagnostic do **not**
+replace the full trading report. A separate pre-registered long-horizon protocol
+now exists:
+
+`LONG-HORIZON-REPLAY-PROTOCOL-v0.1.0.json`.
+
+The primary long-horizon analysis runs continuously from **2020-01-01 00:00 UTC
+through 2023-01-01 00:00 UTC**, with the 2019-12-18 prefix used only for warm-up.
+
+Its purpose is to give the frozen candidate every natural legal opportunity to
+enter, remain exposed and exit across the full Development period without an
+artificial calendar reset.
+
+Required semantics:
+- one continuous Strategy / Paper / Risk / portfolio state per symbol;
+- no reset at day, month, quarter, 30-day control boundary or crisis anchor;
+- no cap of 10 entry episodes and no cap on completed trades;
+- every legal `ENTER_LONG` is passed through the frozen risk veto;
+- every accepted entry receives the normal `NEXT_PRIMARY_OPEN` Paper execution
+  path;
+- strategy exits, stop/target protection, fees and adverse slippage remain active;
+- an open position may cross ordinary/crisis and calendar boundaries naturally;
+- verified exchange gaps are handled only by the CRL gap-aware rules: no
+  interpolation, no forward fill, and no new entry from stale required data;
+- the three-year run may be partitioned into chunks for runtime scalability, but
+  state must carry across chunks and alternate chunk sizes must produce the same
+  canonical result.
+
+The report must expose an **opportunity funnel** rather than only final PnL:
+decision count, regime/reason counts, ENTER_LONG signals, risk-allowed and
+risk-blocked entries, entry fills, EXIT_LONG signals, protective/strategy exits,
+completed trades, no-trade decisions, time in market and open-position state.
+
+It must also report full lifecycle/economics after fee and slippage, including
+holding duration, exit reason, per-trade net result, aggregate costs, drawdown and
+exposure.
+
+This protocol does **not** loosen the frozen Strategy or Risk rules merely to
+increase trade count. If the three-year evidence shows that the system is
+starved of valid trades, that becomes explicit CRL evidence and motivates a
+separately registered CRL-008 next-generation challenger. The frozen long-horizon
+run itself is never retuned after seeing its result.
+
+If a position remains open at 2023-01-01, the primary report preserves that real
+state and marks it to market. A terminal-liquidation counterfactual may be shown
+separately but cannot replace the primary result.

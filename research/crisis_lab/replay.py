@@ -20,7 +20,10 @@ from typing import Mapping, Sequence
 from yatl.backtest import (
     AcceptedBacktestDataset,
     BacktestClock,
+    BacktestContractError,
+    BacktestLoadError,
     BacktestSpec,
+    MarketSnapshot,
     IntentAction,
     PaperFillEngine,
     PaperIntent,
@@ -51,7 +54,7 @@ from yatl.validation.registration import CandidateFreeze
 from . import acquisition as acq
 
 
-REPLAY_IMPLEMENTATION_ID = "CRL-004/0.1.0"
+REPLAY_IMPLEMENTATION_ID = "CRL-004/0.1.1"
 REPLAY_SCHEMA_VERSION = "0.1.0"
 QUALITY_SCHEMA_VERSION = "0.1.0"
 ALLOWED_DESIGNATION = "DEVELOPMENT"
@@ -64,6 +67,153 @@ MAX_EVENT_CATALOG_BYTES = 4 * 1024 * 1024
 
 class ReplayError(RuntimeError):
     """Historical replay input or deterministic execution failed closed."""
+
+
+def _validate_gap_aware_history(
+    candles: tuple[Candle, ...],
+    *,
+    symbol: str,
+    interval: str,
+    decision_time_ms: int,
+) -> None:
+    if not isinstance(candles, tuple) or not candles:
+        raise BacktestContractError(
+            f"{interval} history must be a non-empty tuple"
+        )
+    duration = INTERVAL_MILLISECONDS[interval]
+    expected_last_open = (
+        (decision_time_ms // duration) * duration - duration
+    )
+    previous = None
+    for candle in candles:
+        if (
+            not isinstance(candle, Candle)
+            or candle.source != DATA_SOURCE
+            or candle.symbol != symbol
+            or candle.interval != interval
+            or not candle.is_closed
+        ):
+            raise BacktestContractError(
+                f"{interval} history identity or state is invalid"
+            )
+        if candle.close_time_ms >= decision_time_ms:
+            raise BacktestContractError(
+                "Future or still-open candle reached the decision"
+            )
+        if candle.open_time_ms % duration:
+            raise BacktestContractError(
+                f"{interval} history is off the interval grid"
+            )
+        if previous is not None:
+            delta = candle.open_time_ms - previous
+            if delta <= 0 or delta % duration:
+                raise BacktestContractError(
+                    f"{interval} history is not ordered on the interval grid"
+                )
+        previous = candle.open_time_ms
+    if candles[-1].open_time_ms > expected_last_open:
+        raise BacktestContractError(
+            f"{interval} history reached beyond the legal decision boundary"
+        )
+
+
+class CrisisLabMarketSnapshot(MarketSnapshot):
+    """CRL-only snapshot that preserves CRL-003-verified no-trade gaps."""
+
+    __slots__ = ()
+
+    def __post_init__(self):
+        primary_duration = INTERVAL_MILLISECONDS["1h"]
+        if (
+            type(self.decision_time_ms) is not int
+            or self.decision_time_ms <= 0
+            or self.decision_time_ms % primary_duration
+        ):
+            raise BacktestContractError(
+                "Decision time must be an aligned 1h boundary"
+            )
+        _validate_gap_aware_history(
+            self.primary,
+            symbol=self.symbol,
+            interval="1h",
+            decision_time_ms=self.decision_time_ms,
+        )
+        _validate_gap_aware_history(
+            self.context,
+            symbol=self.symbol,
+            interval="15m",
+            decision_time_ms=self.decision_time_ms,
+        )
+        _validate_gap_aware_history(
+            self.regime,
+            symbol=self.symbol,
+            interval="4h",
+            decision_time_ms=self.decision_time_ms,
+        )
+
+
+class CrisisLabAcceptedBacktestDataset(AcceptedBacktestDataset):
+    """CRL-only dataset adapter; core P2 strict-contiguity remains unchanged."""
+
+    __slots__ = ()
+
+    def snapshot_at(self, decision_time_ms):
+        if (
+            type(decision_time_ms) is not int
+            or not self.spec.start_time_ms
+            <= decision_time_ms
+            < self.spec.end_time_ms
+        ):
+            raise BacktestLoadError(
+                "Decision time is outside the backtest range"
+            )
+
+        def visible_contiguous_suffix(values, interval):
+            visible = tuple(
+                item
+                for item in values
+                if item.close_time_ms < decision_time_ms
+            )
+            if not visible:
+                return visible
+            duration = INTERVAL_MILLISECONDS[interval]
+            start = len(visible) - 1
+            while (
+                start > 0
+                and visible[start].open_time_ms
+                == visible[start - 1].open_time_ms + duration
+            ):
+                start -= 1
+            return visible[start:]
+
+        try:
+            return CrisisLabMarketSnapshot(
+                self.spec.symbol,
+                decision_time_ms,
+                visible_contiguous_suffix(self.primary, "1h"),
+                visible_contiguous_suffix(self.context, "15m"),
+                visible_contiguous_suffix(self.regime, "4h"),
+            )
+        except BacktestContractError:
+            raise BacktestLoadError(
+                "CRL point-in-time snapshot cannot be built safely"
+            ) from None
+
+
+def _snapshot_is_fresh(snapshot: MarketSnapshot) -> bool:
+    for interval, values in (
+        ("1h", snapshot.primary),
+        ("15m", snapshot.context),
+        ("4h", snapshot.regime),
+    ):
+        duration = INTERVAL_MILLISECONDS[interval]
+        expected_last = (
+            (snapshot.decision_time_ms // duration) * duration
+            - duration
+        )
+        if values[-1].open_time_ms != expected_last:
+            return False
+    return True
 
 
 def _json(value: object) -> str:
@@ -335,11 +485,95 @@ def _load_canonical_candles(
     ):
         raise ReplayError("canonical dataset rows differ from quality evidence")
     duration = INTERVAL_MILLISECONDS[interval]
-    expected_grid = tuple(
-        range(candles[0].open_time_ms, candles[-1].open_time_ms + duration, duration)
+    opens = tuple(item.open_time_ms for item in candles)
+    gap_count = canonical.get("gap_count", 0)
+    if type(gap_count) is not int or gap_count < 0:
+        raise ReplayError("canonical gap metadata is invalid")
+
+    if gap_count == 0:
+        expected_grid = tuple(
+            range(
+                candles[0].open_time_ms,
+                candles[-1].open_time_ms + duration,
+                duration,
+            )
+        )
+        if opens != expected_grid:
+            raise ReplayError(
+                "canonical dataset contains an unverified gap"
+            )
+        return tuple(candles)
+
+    transport_range = acquisition.get("transport_range")
+    gap_verification = acquisition.get("gap_verification")
+    checks = quality.get("checks")
+    if (
+        not isinstance(transport_range, dict)
+        or not isinstance(gap_verification, dict)
+        or not isinstance(checks, dict)
+        or checks.get("gap_rest_verification") != "PASS"
+    ):
+        raise ReplayError(
+            "canonical gap lacks CRL-003 admission evidence"
+        )
+    try:
+        transport_start = acq._iso_to_ms(
+            transport_range["start_utc"]
+        )
+        transport_end = acq._iso_to_ms(
+            transport_range["end_utc"]
+        )
+    except (KeyError, TypeError, acq.AcquisitionError):
+        raise ReplayError(
+            "canonical gap transport range is invalid"
+        ) from None
+
+    expected = set(
+        range(transport_start, transport_end, duration)
     )
-    if tuple(item.open_time_ms for item in candles) != expected_grid:
-        raise ReplayError("canonical dataset is not contiguous")
+    actual = set(opens)
+    if actual - expected:
+        raise ReplayError(
+            "canonical gap dataset contains out-of-range candles"
+        )
+    missing = tuple(sorted(expected - actual))
+    if (
+        len(missing) != gap_count
+        or gap_verification.get("status")
+        != "ALL_CONFIRMED_ABSENT"
+        or gap_verification.get("expected_gap_count")
+        != gap_count
+        or gap_verification.get("checked_points")
+        != gap_count
+        or gap_verification.get("confirmed_absent_count")
+        != gap_count
+        or gap_verification.get("present_conflict_count") != 0
+        or gap_verification.get("missing_open_times_sha256")
+        != acq._missing_open_times_sha256(missing)
+    ):
+        raise ReplayError(
+            "canonical gap verification evidence is inconsistent"
+        )
+    transport = gap_verification.get("transport")
+    if not isinstance(transport, list) or len(transport) != gap_count:
+        raise ReplayError(
+            "canonical gap transport evidence is incomplete"
+        )
+    confirmed = []
+    for item in transport:
+        if (
+            not isinstance(item, dict)
+            or item.get("outcome") != "CONFIRMED_ABSENT"
+            or type(item.get("open_time_ms")) is not int
+        ):
+            raise ReplayError(
+                "canonical gap transport evidence is invalid"
+            )
+        confirmed.append(item["open_time_ms"])
+    if tuple(sorted(confirmed)) != missing:
+        raise ReplayError(
+            "canonical gap transport timestamps do not match the dataset"
+        )
     return tuple(candles)
 
 
@@ -571,7 +805,7 @@ def _dataset_for_symbol(
         fee_bps=candidate.fee_bps,
         slippage_bps=candidate.slippage_bps,
     )
-    dataset = AcceptedBacktestDataset(
+    dataset = CrisisLabAcceptedBacktestDataset(
         spec=spec,
         manifest_generated_at_ms=event.retrieved_at_ms,
         primary=values["1h"],
@@ -643,12 +877,19 @@ def _economics(
 
 def _run_symbol(event: AdmittedEvent, symbol: str) -> dict[str, object]:
     dataset, input_sha = _dataset_for_symbol(event, symbol)
-    events = tuple(BacktestClock(dataset).events())
-    if not events:
-        raise ReplayError("historical replay has no legal decision event")
     by_open = {item.open_time_ms: item for item in dataset.primary}
     if len(by_open) != len(dataset.primary):
         raise ReplayError("historical primary candles are duplicated")
+
+    grid_events = tuple(BacktestClock(dataset).events())
+    events = tuple(
+        item
+        for item in grid_events
+        if item.eligible_fill_open_time_ms in by_open
+    )
+    missing_fill_decisions = len(grid_events) - len(events)
+    if not events:
+        raise ReplayError("historical replay has no legal decision event")
 
     fill_engine = PaperFillEngine(symbol)
     ledger = PortfolioLedger(dataset.spec)
@@ -664,6 +905,8 @@ def _run_symbol(event: AdmittedEvent, symbol: str) -> dict[str, object]:
         "blocked": 0,
         "exit": 0,
         "no_trade": 0,
+        "stale_entry_blocked": 0,
+        "stale_snapshot": 0,
     }
     regime_counts: dict[str, int] = {}
 
@@ -690,47 +933,68 @@ def _run_symbol(event: AdmittedEvent, symbol: str) -> dict[str, object]:
             pre,
             decision_event.snapshot.latest_primary.close,
         )
-        context = StrategyContext(
-            TREND_PULLBACK_IDENTITY, decision_event.snapshot
+        snapshot_fresh = _snapshot_is_fresh(
+            decision_event.snapshot
         )
-        regime = classify_regime(context)
-        regime_counts[regime.regime.value] = (
-            regime_counts.get(regime.regime.value, 0) + 1
-        )
-        decision = evaluate_trend_pullback(
-            context,
-            in_position=fill_engine.has_position,
-            active_setup=active_setup,
-        )
-
         veto = None
-        if decision.action is StrategyAction.ENTER_LONG:
-            counts["entry"] += 1
-            veto = assess_fixed_quantity_entry(decision, risk_state)
-            if veto.allowed:
-                counts["allowed"] += 1
-                intent = PaperIntent(
-                    IntentAction.ENTER_LONG,
-                    decision_event.decision_time_ms,
-                    RUNNER_QUANTITY,
-                    decision.setup.invalidation_price,
-                    decision.setup.target_price,
-                )
-            else:
-                counts["blocked"] += 1
-                intent = PaperIntent(
-                    IntentAction.HOLD, decision_event.decision_time_ms
-                )
-        elif decision.action is StrategyAction.EXIT_LONG:
-            counts["exit"] += 1
-            intent = PaperIntent(
-                IntentAction.EXIT_LONG, decision_event.decision_time_ms
-            )
-        else:
+        stale_entry_blocked = False
+        decision = None
+        regime = None
+
+        if not snapshot_fresh:
+            counts["stale_snapshot"] += 1
             counts["no_trade"] += 1
             intent = PaperIntent(
-                IntentAction.HOLD, decision_event.decision_time_ms
+                IntentAction.HOLD,
+                decision_event.decision_time_ms,
             )
+        else:
+            context = StrategyContext(
+                TREND_PULLBACK_IDENTITY,
+                decision_event.snapshot,
+            )
+            regime = classify_regime(context)
+            regime_counts[regime.regime.value] = (
+                regime_counts.get(regime.regime.value, 0) + 1
+            )
+            decision = evaluate_trend_pullback(
+                context,
+                in_position=fill_engine.has_position,
+                active_setup=active_setup,
+            )
+
+            if decision.action is StrategyAction.ENTER_LONG:
+                counts["entry"] += 1
+                veto = assess_fixed_quantity_entry(
+                    decision, risk_state
+                )
+                if veto.allowed:
+                    counts["allowed"] += 1
+                    intent = PaperIntent(
+                        IntentAction.ENTER_LONG,
+                        decision_event.decision_time_ms,
+                        RUNNER_QUANTITY,
+                        decision.setup.invalidation_price,
+                        decision.setup.target_price,
+                    )
+                else:
+                    counts["blocked"] += 1
+                    intent = PaperIntent(
+                        IntentAction.HOLD,
+                        decision_event.decision_time_ms,
+                    )
+            elif decision.action is StrategyAction.EXIT_LONG:
+                counts["exit"] += 1
+                intent = PaperIntent(
+                    IntentAction.EXIT_LONG,
+                    decision_event.decision_time_ms,
+                )
+            else:
+                counts["no_trade"] += 1
+                intent = PaperIntent(
+                    IntentAction.HOLD,
+                    decision_event.decision_time_ms,
+                )
 
         references = fill_engine.process(
             decision_event, intent, fill_candle
@@ -743,7 +1007,10 @@ def _run_symbol(event: AdmittedEvent, symbol: str) -> dict[str, object]:
             fills.extend(_fill_record(item) for item in costed)
 
         if fill_engine.has_position:
-            if intent.action is IntentAction.ENTER_LONG:
+            if (
+                intent.action is IntentAction.ENTER_LONG
+                and decision is not None
+            ):
                 active_setup = decision.setup
             elif active_setup is None:
                 raise ReplayError(
@@ -753,15 +1020,48 @@ def _run_symbol(event: AdmittedEvent, symbol: str) -> dict[str, object]:
             active_setup = None
 
         post = ledger.snapshot(fill_candle.open)
+        if decision is None:
+            context_sha256 = _sha256_value({
+                "symbol": symbol,
+                "decision_time_ms": (
+                    decision_event.decision_time_ms
+                ),
+                "primary": [
+                    item.as_record()
+                    for item in decision_event.snapshot.primary
+                ],
+                "context": [
+                    item.as_record()
+                    for item in decision_event.snapshot.context
+                ],
+                "regime": [
+                    item.as_record()
+                    for item in decision_event.snapshot.regime
+                ],
+                "crl_stale_history": True,
+            })
+            regime_value = "CRL_STALE_HISTORY"
+            regime_reason = "CRL_STALE_HISTORY"
+            strategy_action = "NOT_EVALUATED"
+            strategy_reason = "CRL_STALE_HISTORY"
+        else:
+            context_sha256 = decision.context_sha256
+            regime_value = regime.regime.value
+            regime_reason = regime.reason.value
+            strategy_action = decision.action.value
+            strategy_reason = decision.reason.value
+
         trace.append({
             "sequence": decision_event.sequence,
             "decision_time_ms": decision_event.decision_time_ms,
-            "context_sha256": decision.context_sha256,
-            "regime": regime.regime.value,
-            "regime_reason": regime.reason.value,
-            "strategy_action": decision.action.value,
-            "strategy_reason": decision.reason.value,
+            "context_sha256": context_sha256,
+            "regime": regime_value,
+            "regime_reason": regime_reason,
+            "strategy_action": strategy_action,
+            "strategy_reason": strategy_reason,
             "effective_intent": intent.action.value,
+            "snapshot_fresh": snapshot_fresh,
+            "stale_entry_blocked": stale_entry_blocked,
             "entry_veto": (
                 None if veto is None else veto.as_record()
             ),
@@ -793,6 +1093,10 @@ def _run_symbol(event: AdmittedEvent, symbol: str) -> dict[str, object]:
         "first_decision_time_ms": dataset.spec.start_time_ms,
         "end_time_ms": dataset.spec.end_time_ms,
         "event_count": len(events),
+        "grid_event_count": len(grid_events),
+        "missing_fill_decision_count": missing_fill_decisions,
+        "stale_snapshot_decision_count": counts["stale_snapshot"],
+        "stale_entry_block_count": counts["stale_entry_blocked"],
         "entry_signals": counts["entry"],
         "entries_allowed": counts["allowed"],
         "entries_blocked": counts["blocked"],

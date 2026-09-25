@@ -75,6 +75,32 @@ post-hoc defined after inspecting CRL-E003 outcomes. The core replay may run
 before those derived-score definitions are added; the overall CRL-004 exit gate
 remains open until the required derived measures are frozen and emitted.
 
+## CRL-003-verified exchange-gap semantics
+
+Historical Binance Spot maintenance can produce real grid intervals for which no
+kline exists. These intervals are admissible only when CRL-002 recorded the
+exact missing-open-time set and CRL-003 independently passed its REST-absence
+proof. CRL-004 does not interpolate, forward-fill or synthesize candles.
+
+The core P2 backtest contract remains strict-contiguous. Crisis Lab uses a
+research-only adapter after provenance admission:
+
+- histories remain ordered on the native interval grid and may cross only gaps
+  already admitted by CRL-003;
+- a 1h decision slot whose execution/fill candle does not exist is skipped;
+- the first tradable slot after an exchange gap may process risk-reducing
+  exits/protective Paper fills using only legally visible historical candles;
+- a new long entry is blocked while any required timeframe is stale at the
+  decision boundary;
+- normal frozen-strategy entry semantics resume only after primary, context and
+  regime histories are fresh again;
+- skipped-fill decisions, stale-snapshot decisions and stale-entry blocks are
+  explicit deterministic replay counters.
+
+This rule is fail-closed and does not convert an unknown data gap into an
+exchange closure. Gap provenance is rechecked before canonical candles can enter
+the replay adapter.
+
 ## First real target
 
 - Development event `CRL-E003` only;
