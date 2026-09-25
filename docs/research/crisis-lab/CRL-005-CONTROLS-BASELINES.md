@@ -150,6 +150,17 @@ uv run --locked python -m research.crisis_lab.controls \
 
 A subset may be replayed with repeated `--control CRL-C00X` arguments.
 
+### Exchange-maintenance gaps inside controls
+
+Registered ordinary windows are never discarded merely because the exchange had
+a CRL-003-verified no-trade interval. The control slice preserves the real
+missing timestamps rather than fabricating candles. Replay skips only decision
+slots whose required 1h execution candle does not exist. On the first tradable
+slot after a verified gap, protective/risk-reducing processing remains available,
+while new entries are blocked until all required timeframes are fresh again.
+CASH and BUY-AND-HOLD remain deterministic comparisons over the actual available
+analysis candles. Unknown or unverified gaps still fail before replay.
+
 ## Strategy-active diagnostic runtime
 
 Research-only implementation:
