@@ -23,6 +23,8 @@ def summary(
         "profit_factor_infinite": False,
         "maximum_drawdown_fraction": drawdown,
         "entry_signal_count": 50,
+        "filter_pass_count": 25,
+        "filter_block_count": 25,
         "qualification": {
             "status": (
                 "QUALIFIED_HSL_RESEARCH"
