@@ -510,6 +510,27 @@ P10 یا Live gate را ندارد.
 P10 baseline جاری تغییر نمی‌کند. Historical Strategy Lab برای ساخت نسل بعدی
 candidate است، نه برای بازنویسی evidence جاری یا بازکردن P11.
 
+Checkpointهای اجرایی اولیه HSL:
+- **HSL-001 — Walk-Forward Baseline Matrix:** مقایسه frozen `TREND_PULLBACK 1.0.0`
+  و frozen `RANGE_BREAKOUT 1.0.0` روی پنج fold شش‌ماهه OOS از 2020-07 تا 2023-01،
+  با BTCUSDT/ETHUSDT، quantity/fee/slippage یکسان و بدون P4 risk veto تا edge خود
+  Strategy جداگانه اندازه‌گیری شود. state در مرز هر fold مستقل reset می‌شود ولی
+  market history فقط point-in-time قابل مشاهده است.
+- **HSL-002 — Risk Overlay Challenger:** فقط بعد از HSL-001، اثر P4 latched risk
+  در برابر یک recovery/cooldown policy research-only بررسی می‌شود؛ P4/P10 واقعی
+  تغییر نمی‌کند.
+- **HSL-003 — Entry Quality / Regime Ablation:** filterهای volatility، confirmation
+  و regime به‌صورت تک‌به‌تک ablation می‌شوند، نه با ترکیب post-hoc.
+- **HSL-004+ — Technique Library:** Momentum، volatility expansion، mean reversion،
+  support/resistance و تکنیک‌های استخراج‌شده از منابع خارجی هرکدام candidate
+  مستقل می‌شوند.
+
+پروتکل HSL-001 قبل از outcome run در
+`docs/research/historical-strategy-lab/HSL-001-WALK-FORWARD-PROTOCOL-v0.1.0.json`
+فریز می‌شود. gate اولیه آن شامل minimum trade count، net PnL و expectancy مثبت،
+profit factor، پایداری foldها، وابستگی به outlier و maximum drawdown است.
+PASS در HSL فقط research qualification است و هیچ مجوز P10/P11/Live ایجاد نمی‌کند.
+
 ##### External Research Intake — Video / Article / Transcript
 
 منابع بیرونی مثل ویدیو، مقاله، کتاب و transcript می‌توانند وارد HSL شوند، اما
