@@ -12,7 +12,7 @@ import argparse
 import hashlib
 import json
 from dataclasses import dataclass
-from decimal import Decimal, localcontext
+from decimal import Decimal, ROUND_HALF_EVEN, localcontext
 from pathlib import Path
 from typing import Mapping, Sequence
 
@@ -85,6 +85,11 @@ def _plain(value: Decimal | None) -> str | None:
         raise HSLMomentumError("HSL-004A arithmetic is not finite")
     if value == 0:
         return "0"
+    if value.as_tuple().exponent < -40:
+        value = value.quantize(
+            Decimal("1e-40"),
+            rounding=ROUND_HALF_EVEN,
+        )
     text = format(value, "f")
     return text.rstrip("0").rstrip(".") if "." in text else text
 
