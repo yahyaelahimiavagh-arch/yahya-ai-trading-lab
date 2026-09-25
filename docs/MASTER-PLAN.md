@@ -1702,10 +1702,13 @@ session-loss فقط تا اولین UTC session بعدی entry را block می�
 تاریخی HSL-002 هنوز صرفاً با merge/CI اثبات نشده است** و فقط پس از اجرای runner روی
 corpus پذیرفته‌شده و ثبت artifact canonical می‌تواند نتیجه اقتصادی پژوهشی بدهد.
 
-### HSL-003 — Entry Quality / Regime Ablation — ACTIVE / PREREGISTERED
+### HSL-003 — Entry Quality / Regime Ablation — ENGINEERING / CI ACCEPTED
 
-branch فعال:
-`hsl-003-entry-regime-ablation`
+HSL-003 با PR #111، Final HEAD
+`e1a3a9b56f6fad687d715ba3309238927a837e82` و matching Actions
+`36179547969` پذیرفته شد؛ هر دو job `unit-and-safety` و
+`accepted-public-data` PASS شدند. PR #111 squash-merge شد و checkpoint جدید
+`main` برابر `732542a39d9f4881f710174b4958cb583f3117a3` است.
 
 پروتکل:
 `docs/research/historical-strategy-lab/HSL-003-ENTRY-REGIME-ABLATION-PROTOCOL-v0.1.0.json`
@@ -1713,26 +1716,41 @@ branch فعال:
 HSL-003 اثر entry filterهای موجود را **تک‌به‌تک** اندازه می‌گیرد و ترکیب post-hoc
 یا parameter search ممنوع است. برای هر دو strategy، confirmation و TREND_UP
 entry gate جداگانه ablate می‌شوند. `RANGE_BREAKOUT/1.0.0` علاوه بر این یک
-volatility-normalized extension gate واقعی دارد و ablation جداگانه آن نیز ثبت شده
-است. `TREND_PULLBACK/1.0.0` volatility-entry filter مستقل ندارد؛ ATR آن برای
-protective levels استفاده می‌شود، بنابراین volatility ablation مصنوعی برای Trend
-ساخته نمی‌شود.
+volatility-normalized extension gate واقعی دارد؛ `TREND_PULLBACK/1.0.0`
+volatility-entry filter مستقل ندارد و هیچ فیلتر مصنوعی برای آن ساخته نشد.
 
-HSL-003 همان پنج OOS fold، BTC/ETH، quantity=0.001، fee=10 bps، slippage=5 bps،
-next-primary-open Spot semantics و gap policy HSL-001 را نگه می‌دارد. P4 risk veto
-عمداً اعمال نمی‌شود تا اثر خود entry filter جدا سنجیده شود؛ exit logic و stop/target
-بدون تغییر باقی می‌مانند.
+این acceptance مربوط به preregistration، runner، tests و safety boundary است.
+Outcome تاریخی HSL-003 فقط پس از اجرای canonical runner روی corpus پذیرفته‌شده
+و ثبت artifact معتبر قابل تفسیر اقتصادی است.
 
-هر ablation فقط اگر sample/gateهای از پیش ثبت‌شده را پاس کند و net PnL بعد از هزینه
-از control همان strategy بهتر باشد و expectancy بدتر نشود، فقط
-`ABLATION_SUPPORTS_FUTURE_CHALLENGER` می‌گیرد. این نتیجه strategy فعلی را mutate
-نمی‌کند و هیچ اثر P10/P11/Live ندارد.
+### HSL-004A — Momentum Technique Candidate — ACTIVE / PREREGISTERED
 
-### مسیر بعد از HSL-003
+branch فعال:
+`hsl-004a-momentum-technique`
 
-HSL-004+ Technique Library است: momentum، volatility expansion، mean reversion،
-support/resistance و techniqueهای استخراج‌شده از منابع آموزشی هر کدام candidate
-مستقل و قابل ردشدن خواهند بود.
+پروتکل:
+`docs/research/historical-strategy-lab/HSL-004A-MOMENTUM-PROTOCOL-v0.1.0.json`
+
+Technique Library به PRهای کوچک و مستقل شکسته می‌شود تا scope creep کنترل شود.
+HSL-004A اولین candidate مستقل است: `MOMENTUM_24H_LONG/0.1.0`.
+پارامترها قبل از outcome فریز شده‌اند: 24h return حداقل +3٪، close بالای EMA(24)،
+RSI(14) بین 55 و 75، ATR(14) برای stop برابر 1.5 ATR، target برابر 2R و
+momentum-reversal exit وقتی 12h return به صفر یا پایین‌تر برسد.
+
+HSL-004A دقیقاً همان پنج OOS fold، BTC/ETH، quantity=0.001، fee=10 bps،
+slippage=5 bps، next-primary-open Spot semantics و point-in-time history HSL-001
+را استفاده می‌کند. parameter search و outcome-driven retuning ممنوع‌اند.
+BUY-AND-HOLD و cash/no-trade benchmark گزارش می‌شوند اما برای انتخاب پارامتر
+استفاده نمی‌شوند و outperform کردن buy-and-hold شرط qualification نیست.
+
+PASS احتمالی فقط به معنی `QUALIFIED_HSL_RESEARCH` و شایستگی برای پژوهش مستقل
+بعدی است؛ strategy production، P4، P10، P11 و Live را تغییر نمی‌دهد.
+
+### مسیر بعد از HSL-004A
+
+Technique Library به candidateهای مستقل بعدی ادامه می‌دهد: volatility expansion،
+mean reversion، support/resistance و techniqueهای استخراج‌شده از منابع آموزشی؛
+هرکدام preregistration، runner، metrics و failure criteria جدا دارند.
 
 قانون توقف scope creep: قبل از افزودن هر HSL جدید باید سؤال پژوهشی، baseline،
 challenger، metrics و failure criteria مشخص باشد. HSL نباید به زنجیره بی‌پایان
