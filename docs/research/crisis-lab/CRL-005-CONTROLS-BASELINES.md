@@ -170,6 +170,15 @@ The scanner evolves the same frozen Strategy, Risk tracker, Paper fill engine,
 portfolio accounting and costs continuously across the registered Development
 pool. It does **not** select entries from later performance.
 
+The scanner inherits the CRL-004 verified-gap contract. A registered 1h grid
+slot with no admitted execution candle is skipped because no historical fill was
+possible. On the first real candle after a verified exchange gap, existing Paper
+protection may still reduce risk, but Strategy entry evaluation is suppressed
+while the required snapshot is stale. Strategy resumes from the contiguous
+post-gap history and must rebuild its normal feature/regime warm-up naturally.
+Missing-fill and stale-snapshot counts are emitted in each symbol scan summary.
+Unverified gaps remain fail-closed before this runtime.
+
 An eligible source episode is now frozen as:
 - a real `ENTER_LONG` signal;
 - accepted by the frozen risk veto;
