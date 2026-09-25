@@ -312,11 +312,20 @@ trade count، PnL یا drawdown برای انتخاب window ندارد.
 اطراف تمام crisisهای ثبت‌شده، قبل از مشاهده outcome فریز می‌شوند. هیچ window به
 خاطر no-trade یا نتیجه بد حذف نمی‌شود.
 
-علاوه بر cohort unbiased، یک **strategy-active diagnostic** وجود دارد: خارج از
-crisis buffer، اولین 10 episode که frozen Strategy واقعاً ENTER_LONG می‌دهد
-به‌صورت chronological انتخاب می‌شوند. انتخاب فقط اجازه دیدن occurrence ورود را
-دارد و آینده/PnL/exit کیفیت ورودی انتخاب نیست. این cohort برای تشخیص رفتار
-position lifecycle است و evidence بازده unbiased محسوب نمی‌شود.
+علاوه بر cohort unbiased، یک **strategy-active diagnostic** برای ساخت source
+stateهای CRL-006 وجود دارد. V1 با state کاملاً پیوسته سه‌ساله اجرا شد و پیش از
+مشاهده هر outcome مربوط به synthetic shock فقط 2 episode انتخاب کرد؛ این نتیجه
+به‌عنوان feasibility evidence حفظ می‌شود و بازنویسی نمی‌شود. علت ساختاری مهم این
+است که Kill Switch پذیرفته‌شده P4 عمداً latch می‌شود و در یک scan تاریخی طولانی
+می‌تواند entryهای بعدی را برای مدت نامحدود veto کند.
+
+برای sample-feasibility، V2 پیش از اجرای synthetic-shock outcomeها جداگانه
+pre-register می‌شود: market history همچنان point-in-time و پیوسته است، اما
+Paper/Risk/portfolio/active-setup در epochهای ثابت 30روزه که از شروع analysis pool
+anchor شده‌اند reset می‌شوند. در هر epoch حداکثر یک episode قابل انتخاب است؛
+حداقل فاصله 7 روز، ترتیب chronological + lexical و ممنوعیت استفاده از آینده/PnL/
+exit quality حفظ می‌شود. این cohort فقط diagnostic/source-state harvesting است و
+evidence بازده unbiased یا تغییر P4/P10 محسوب نمی‌شود.
 
 همچنین historical replay از pre-event به crisis anchor بدون reset ادامه می‌یابد.
 اگر position قبل از بحران باز شده باشد، همان position باید داخل shock حمل شود و
