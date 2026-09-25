@@ -271,6 +271,104 @@ def build_runtime(root, *, designation="DEVELOPMENT"):
 
 
 class CrisisLabReplayTests(unittest.TestCase):
+    def test_canonical_loader_accepts_only_crl003_verified_gap(self):
+        duration = acq.INTERVAL_MILLISECONDS["1h"]
+        start = START_MS
+        end = start + 4 * duration
+        missing = start + duration
+        out = io.StringIO(newline="")
+        writer = csv.writer(out, lineterminator="\n")
+        writer.writerow(acq.CANONICAL_COLUMNS)
+        for index, open_ms in enumerate(
+            value
+            for value in range(start, end, duration)
+            if value != missing
+        ):
+            price = 100000 + index
+            writer.writerow([
+                str(open_ms),
+                str(price),
+                str(price + 2),
+                str(price - 1),
+                str(price + 1),
+                "10",
+                str(open_ms + duration - 1),
+                "100",
+                "1",
+                "5",
+                "50",
+                "0",
+            ])
+        payload = out.getvalue().encode("utf-8")
+        digest = hashlib.sha256(payload).hexdigest()
+        relative = Path("canonical") / f"dataset-{digest}.csv"
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_bound(root, relative, payload)
+            acquisition = {
+                "canonical": {
+                    "relative_path": relative.as_posix(),
+                    "sha256": digest,
+                    "row_count": 3,
+                    "expected_row_count": 4,
+                    "gap_count": 1,
+                },
+                "transport_range": {
+                    "start_utc": acq._ms_to_iso(start),
+                    "end_utc": acq._ms_to_iso(end),
+                },
+                "gap_verification": {
+                    "status": "ALL_CONFIRMED_ABSENT",
+                    "expected_gap_count": 1,
+                    "checked_points": 1,
+                    "confirmed_absent_count": 1,
+                    "present_conflict_count": 0,
+                    "missing_open_times_sha256": (
+                        acq._missing_open_times_sha256((missing,))
+                    ),
+                    "transport": [{
+                        "open_time_ms": missing,
+                        "outcome": "CONFIRMED_ABSENT",
+                    }],
+                },
+            }
+            quality = {
+                "canonical_evidence": {
+                    "canonical_sha256": digest,
+                    "row_count": 3,
+                },
+                "checks": {
+                    "gap_rest_verification": "PASS",
+                },
+            }
+            candles = replay._load_canonical_candles(
+                root,
+                symbol="BTCUSDT",
+                interval="1h",
+                acquisition=acquisition,
+                quality=quality,
+            )
+            self.assertEqual(len(candles), 3)
+            self.assertNotIn(
+                missing,
+                {item.open_time_ms for item in candles},
+            )
+
+            broken = dict(acquisition)
+            broken["gap_verification"] = dict(
+                acquisition["gap_verification"]
+            )
+            broken["gap_verification"]["status"] = "NOT_RUN"
+            with self.assertRaises(replay.ReplayError):
+                replay._load_canonical_candles(
+                    root,
+                    symbol="BTCUSDT",
+                    interval="1h",
+                    acquisition=broken,
+                    quality=quality,
+                )
+
     def test_admitted_development_event_replays_deterministically(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
