@@ -1691,11 +1691,14 @@ HSL-002 یک سؤال محدود دارد: آیا رفتار risk overlay فعل
 می‌تواند بدون افزایش drawdown ناموجه، participation اقتصادی بهتری بدهد؟
 
 Control = P4-style latched behavior. Challenger = recovery/cooldown research-only:
-loss-streak breach برای 24 decision یک‌ساعته entry را block می‌کند و برای release
-باید loss streak زیر 3 باشد؛ session-loss تا session بعدی block است؛ drawdown breach
-تا انتهای OOS fold latched می‌ماند. risk-reducing exit همیشه مجاز می‌ماند.
-thresholdهای اصلی P4 تغییر نمی‌کنند و این policy هرگز P4 production را mutate
-نمی‌کند.
+drawdown breach تا انتهای OOS fold hard-latched می‌ماند و هرگز auto-reset نمی‌شود؛
+session-loss فقط تا اولین UTC session بعدی entry را block می‌کند؛ loss-streak breach
+برای 24 decision واجد شرایط یک‌ساعته entry را block می‌کند. بعد از پایان cooldown،
+فقط اگر portfolio flat باشد، session-loss block فعال نباشد و drawdown زیر hard limit
+باشد، counter پژوهشیِ entry-eligibility برای loss streak صفر می‌شود؛ streak واقعی
+مشاهده‌شده برای telemetry حفظ می‌شود. این reset فقط در challenger پژوهشی است و
+P4 state یا P4 production را تغییر نمی‌دهد. risk-reducing exit همیشه مجاز می‌ماند
+و thresholdهای اصلی P4 بدون تغییرند.
 
 HSL-002 باید همان strategyها، symbolها، foldها، quantity، fee/slippage و execution
 HSL-001 را نگه دارد و علاوه بر economics، تعداد entry signal/fill و entryهای
