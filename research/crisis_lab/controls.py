@@ -26,7 +26,7 @@ from . import acquisition as acq
 from . import replay
 
 
-CONTROL_IMPLEMENTATION_ID = "CRL-005/0.1.0"
+CONTROL_IMPLEMENTATION_ID = "CRL-005/0.1.1"
 CONTROL_SCHEMA_VERSION = "0.1.0"
 CONTROL_CORPUS_ID = "CRL-CONTROL-DEV-POOL-001"
 DEFAULT_PROTOCOL_PATH = Path(
@@ -404,12 +404,27 @@ def _slice_window(
                 <= candle.open_time_ms
                 < analysis_end
             )
-            expected = tuple(
+            expected = set(
                 range(acquisition_start, analysis_end, duration)
             )
-            if tuple(item.open_time_ms for item in values) != expected:
+            actual = tuple(item.open_time_ms for item in values)
+            if (
+                not values
+                or len(set(actual)) != len(actual)
+                or actual != tuple(sorted(actual))
+                or not set(actual).issubset(expected)
+            ):
                 raise ControlError(
                     "admitted control corpus does not cover registered window"
+                )
+            full = corpus.datasets[(symbol, interval)]
+            if (
+                acquisition_start < full[0].open_time_ms
+                or analysis_end
+                > full[-1].open_time_ms + duration
+            ):
+                raise ControlError(
+                    "registered control window exceeds admitted corpus coverage"
                 )
             sliced[(symbol, interval)] = values
     return sliced
@@ -523,15 +538,21 @@ def _analysis_primary(
         <= item.open_time_ms
         < event.replay_end_ms
     )
-    expected = tuple(
+    expected = set(
         range(
             event.replay_start_ms,
             event.replay_end_ms,
             INTERVAL_MILLISECONDS["1h"],
         )
     )
-    if tuple(item.open_time_ms for item in values) != expected:
-        raise ControlError("analysis primary window is incomplete")
+    actual = tuple(item.open_time_ms for item in values)
+    if (
+        not values
+        or len(set(actual)) != len(actual)
+        or actual != tuple(sorted(actual))
+        or not set(actual).issubset(expected)
+    ):
+        raise ControlError("analysis primary window is invalid")
     return values
 
 
