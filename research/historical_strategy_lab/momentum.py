@@ -43,7 +43,7 @@ from research.crisis_lab import controls, replay
 from . import walk_forward as hsl1
 
 
-IMPLEMENTATION_ID = "HSL-004A-MOMENTUM/0.1.0"
+IMPLEMENTATION_ID = "HSL-004A-MOMENTUM/0.1.1"
 SCHEMA_VERSION = "0.1.0"
 DEFAULT_PROTOCOL_PATH = Path(
     "docs/research/historical-strategy-lab/"
@@ -86,10 +86,12 @@ def _plain(value: Decimal | None) -> str | None:
     if value == 0:
         return "0"
     if value.as_tuple().exponent < -40:
-        value = value.quantize(
-            Decimal("1e-40"),
-            rounding=ROUND_HALF_EVEN,
-        )
+        with localcontext() as arithmetic:
+            arithmetic.prec = DECIMAL_PRECISION
+            value = value.quantize(
+                Decimal("1e-40"),
+                rounding=ROUND_HALF_EVEN,
+            )
     text = format(value, "f")
     return text.rstrip("0").rstrip(".") if "." in text else text
 
