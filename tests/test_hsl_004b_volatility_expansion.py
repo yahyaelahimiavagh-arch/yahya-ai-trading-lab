@@ -42,7 +42,7 @@ class HSL004BTests(unittest.TestCase):
 
     def test_plain_bounds_repeating_decimal_for_long_setup(self):
         raw = Decimal("99." + "1" * 80)
-        normalized = hsl4b._plain(raw)
+        normalized = hsl4b._setup_plain(raw)
         self.assertLessEqual(
             len(normalized.partition(".")[2]),
             40,
