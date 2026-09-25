@@ -136,6 +136,23 @@ class CrisisLabStrategyActiveScalabilityTests(unittest.TestCase):
             chunk_ms=chunk_days * DAY_MS,
         )
 
+    def _run_v2(self, chunk_days):
+        event = diagnostic._pool_event(
+            corpus=corpus(),
+            protocol_sha256="f" * 64,
+            pool_start_ms=POOL_START_MS,
+            pool_end_ms=POOL_END_MS,
+        )
+        return diagnostic._scan_progressive(
+            event=event,
+            exclusions=(),
+            maximum_episodes=3,
+            minimum_separation_ms=7 * DAY_MS,
+            source_state_epoch_ms=10 * DAY_MS,
+            maximum_selected_per_epoch=1,
+            chunk_ms=chunk_days * DAY_MS,
+        )
+
     def test_partition_size_does_not_change_selected_evidence(self):
         scans7, selected7, runtime7 = self._run(7)
         scans14, selected14, runtime14 = self._run(14)
@@ -154,6 +171,28 @@ class CrisisLabStrategyActiveScalabilityTests(unittest.TestCase):
         self.assertEqual(runtime7["stop_reason"], "TARGET_REACHED")
         self.assertTrue(runtime7["stopped_early"])
         self.assertTrue(runtime14["stopped_early"])
+
+    def test_v2_epoch_partition_is_deterministic_and_one_per_epoch(self):
+        scans7, selected7, runtime7 = self._run_v2(7)
+        scans14, selected14, runtime14 = self._run_v2(14)
+
+        self.assertEqual(selected7, selected14)
+        self.assertEqual(scans7, scans14)
+        self.assertEqual(
+            runtime7["scanned_end_exclusive_ms"],
+            runtime14["scanned_end_exclusive_ms"],
+        )
+        self.assertEqual(runtime7["source_state_epoch_ms"], 10 * DAY_MS)
+        self.assertEqual(runtime7["maximum_selected_per_epoch"], 1)
+        epochs = [
+            (item["decision_time_ms"] - POOL_START_MS)
+            // (10 * DAY_MS)
+            for item in selected7
+        ]
+        self.assertEqual(len(epochs), len(set(epochs)))
+        for summary in scans7:
+            self.assertGreaterEqual(summary["epoch_reset_count"], 1)
+            self.assertIn("veto_reason_counts", summary)
 
     def test_global_tie_break_remains_btc_then_eth(self):
         _, selected, _ = self._run(14)
