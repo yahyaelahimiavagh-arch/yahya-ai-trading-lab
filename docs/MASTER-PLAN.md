@@ -1636,3 +1636,98 @@ focused P10-010 برابر **26/26** بود. final mocked disposition برابر
 DB اختصاصی P10 و canonical snapshot را به‌روزرسانی می‌کند و هیچ credential،
 account access، order endpoint یا Live authority ندارد. runbook:
 `docs/P10-OPERATIONS.md`.
+
+
+## Historical Strategy Lab checkpoint — 2026-09-25
+
+این track برای قوی‌کردن یادگیری از تاریخ در کنار P10 forward validation ایجاد شد؛
+جایگزین P10 نیست و evidence تاریخی و forward عمداً با هم مخلوط نمی‌شوند.
+هدف تجاری نهایی همچنان یافتن edge اقتصادی قابل تکرار است، نه صرفاً زیادکردن
+تعداد تحلیل‌ها یا محدودکردن سیستم تا جایی که هیچ معامله‌ای رخ ندهد.
+
+CRL historical acquisition و quality work منبع دادهٔ پذیرفته‌شده HSL است.
+HSL اجازه دارد تکنیک‌های متفاوت trading را روی گذشته به‌صورت preregistered،
+point-in-time و بدون hindsight tuning مقایسه کند. رویدادهای کلان/بحرانی نیز در
+Crisis Lab به‌عنوان stress context نگه داشته می‌شوند، نه به‌عنوان مجوز cherry-pick.
+منابع آموزشی خارجی مثل transcript ویدیوها می‌توانند بعداً candidate مستقل بسازند؛
+هیچ ادعای منبع خارجی مستقیماً به strategy production یا execution تبدیل نمی‌شود.
+
+### HSL-001 — Walk-Forward Baseline Matrix — ACCEPTED
+
+HSL-001 با PR #109 و Final HEAD
+`1ead2cbdc74706d17e3d0ced76ad8f21b9b03b8a` پس از PASS شدن هر دو job
+`unit-and-safety` و `accepted-public-data` squash-merge شد. checkpoint جدید
+`main` برابر `e5ee1c291f5a715f5bd10311e86980e778ee439f` است.
+
+پروتکل قبل از outcome در
+`docs/research/historical-strategy-lab/HSL-001-WALK-FORWARD-PROTOCOL-v0.1.0.json`
+فریز شد. دو strategy از قبل frozen یعنی `TREND_PULLBACK/1.0.0` و
+`RANGE_BREAKOUT/1.0.0` روی BTCUSDT و ETHUSDT در پنج OOS fold شش‌ماهه از
+2020-07 تا 2023-01 با expanding history مقایسه می‌شوند. quantity برابر 0.001،
+fee برابر 10 bps، adverse slippage برابر 5 bps و execution برابر
+NEXT_PRIMARY_OPEN_LONG_ONLY_SPOT است. state در مرز هر fold reset می‌شود ولی
+market history فقط point-in-time در دسترس strategy است. source gapهای پذیرفته‌شده
+CRL-003 interpolate نمی‌شوند.
+
+HSL-001 عمداً P4/P10 risk veto را اعمال نمی‌کند تا edge خود signal/exit جدا از
+risk overlay اندازه‌گیری شود. gate پژوهشی از قبل شامل حداقل sample، net PnL و
+expectancy مثبت، profit factor، OOS-cell stability، outlier dependence و maximum
+drawdown است. PASS احتمالی فقط `QUALIFIED_HSL_RESEARCH` است و هیچ P10/P11/Live
+authorization ایجاد نمی‌کند.
+
+### HSL-002 — Risk Overlay Challenger — ACTIVE / PREREGISTERED
+
+branch فعال:
+`hsl-002-risk-overlay-challenger`
+
+اولین preregistration commit:
+`397362808b43dd280c186310c781233d92932f65`
+
+پروتکل:
+`docs/research/historical-strategy-lab/HSL-002-RISK-OVERLAY-PROTOCOL-v0.1.0.json`
+
+HSL-002 یک سؤال محدود دارد: آیا رفتار risk overlay فعلی در historical OOS،
+فرصت‌های مفید را بیش از حد مسدود می‌کند، و آیا recovery/cooldown از پیش تعریف‌شده
+می‌تواند بدون افزایش drawdown ناموجه، participation اقتصادی بهتری بدهد؟
+
+Control = P4-style latched behavior. Challenger = recovery/cooldown research-only:
+drawdown breach تا انتهای OOS fold hard-latched می‌ماند و هرگز auto-reset نمی‌شود؛
+session-loss فقط تا اولین UTC session بعدی entry را block می‌کند؛ loss-streak breach
+برای 24 decision واجد شرایط یک‌ساعته entry را block می‌کند. بعد از پایان cooldown،
+فقط اگر portfolio flat باشد، session-loss block فعال نباشد و drawdown زیر hard limit
+باشد، counter پژوهشیِ entry-eligibility برای loss streak صفر می‌شود؛ streak واقعی
+مشاهده‌شده برای telemetry حفظ می‌شود. این reset فقط در challenger پژوهشی است و
+P4 state یا P4 production را تغییر نمی‌دهد. risk-reducing exit همیشه مجاز می‌ماند
+و thresholdهای اصلی P4 بدون تغییرند.
+
+HSL-002 باید همان strategyها، symbolها، foldها، quantity، fee/slippage و execution
+HSL-001 را نگه دارد و علاوه بر economics، تعداد entry signal/fill و entryهای
+مسدودشده بر اساس session-loss/drawdown/loss-streak و cooldown release را گزارش کند.
+تا زمان runner + tests + exact CI PASS، HSL-002 فقط PREREGISTERED است و outcome
+معتبر ندارد.
+
+### مسیر بعد از HSL-002
+
+HSL-003 فقط entry-quality/regime ablation از پیش تعریف‌شده را انجام می‌دهد؛ هر
+filter جداگانه حذف/اضافه می‌شود و ترکیب post-hoc بر اساس نتیجه ممنوع است.
+HSL-004+ Technique Library است: momentum، volatility expansion، mean reversion،
+support/resistance و techniqueهای استخراج‌شده از منابع آموزشی هر کدام candidate
+مستقل و قابل ردشدن خواهند بود.
+
+قانون توقف scope creep: قبل از افزودن هر HSL جدید باید سؤال پژوهشی، baseline،
+challenger، metrics و failure criteria مشخص باشد. HSL نباید به زنجیره بی‌پایان
+featureها تبدیل شود. اگر candidateها edge اقتصادی کافی نشان ندهند، نتیجه معتبر
+`NO_EDGE_FOUND` است و به‌جای پیچیده‌ترکردن بی‌پایان سیستم باید hypothesis جدید
+و مستقل تعریف شود.
+
+### وضعیت کل پروژه در این checkpoint
+
+مسیر عملیاتی اصلی هنوز P10 real forward validation است و روی VPS به جمع‌آوری
+داده ادامه می‌دهد. حداقل window آن تا 2026-12-21 00:00 UTC ادامه دارد و sample
+gate نیز باید کامل شود. HSL مسیر موازی historical research است تا در مدت انتظار
+P10، گذشته را عمیق و منظم مطالعه کنیم؛ HSL حق ندارد forward evidence را جعل یا
+جایگزین کند.
+
+P11 باز نشده است. `LIVE_MASTER_LOCK=OFF`، PAPER ONLY، Spot only، no leverage،
+no withdrawal، no trade permission، no order endpoint و no AI direct execution
+بدون تغییر باقی می‌مانند.

@@ -1,0 +1,98 @@
+{
+  "schema": "YATL_HSL_RISK_OVERLAY_PROTOCOL",
+  "version": "0.1.0",
+  "registered_date_utc": "2026-09-25",
+  "status": "REGISTERED_BEFORE_HSL002_OUTCOME_REPLAY",
+  "research_only": true,
+  "paper_only": true,
+  "p10_untouched": true,
+  "p11_locked": true,
+  "live_master_lock": "OFF",
+  "trade_permission": false,
+  "order_endpoint": false,
+  "ai_direct_execution": false,
+  "parent_protocol": "HSL-001-WALK-FORWARD/0.1.0",
+  "objective": "Compare the frozen P4-style latched entry veto with one preregistered research-only recovery/cooldown challenger while keeping strategies, folds, costs, quantity, market data, and execution semantics unchanged.",
+  "arms": [
+    {
+      "arm_id": "HSL-RISK-P4-LATCHED",
+      "role": "CONTROL",
+      "entry_policy": "Use the accepted P10 _RiskTracker semantics: once any P4 session-loss, drawdown, or consecutive-loss circuit threshold activates the kill switch, new entries remain blocked for the rest of the OOS fold. Risk-reducing exits remain allowed.",
+      "thresholds": {
+        "max_session_loss_fraction": "0.02",
+        "max_drawdown_fraction": "0.10",
+        "max_consecutive_losses": 3
+      }
+    },
+    {
+      "arm_id": "HSL-RISK-RECOVERY-COOLDOWN",
+      "role": "CHALLENGER",
+      "entry_policy": "Use the same frozen P4 numeric entry envelope. Drawdown breach is a hard latch through fold end. Session-loss breach blocks new entries only through the breached UTC session and clears at the first later UTC session if no hard drawdown latch exists. Consecutive-loss breach starts a fixed 24 subsequent eligible-primary-decision cooldown. After that cooldown, if flat, outside a session-loss block, and below the drawdown hard limit, only the research entry-eligibility loss-streak counter resets to zero; the observed historical streak is retained in telemetry. Risk-reducing exits remain allowed.",
+      "cooldown_primary_decisions": 24,
+      "hard_latch_breakers": [
+        "DRAWDOWN_LIMIT"
+      ],
+      "recoverable_breakers": [
+        "SESSION_LOSS_LIMIT",
+        "CONSECUTIVE_LOSS_LIMIT"
+      ],
+      "thresholds": {
+        "max_session_loss_fraction": "0.02",
+        "max_drawdown_fraction": "0.10",
+        "max_consecutive_losses": 3
+      }
+    }
+  ],
+  "invariants": {
+    "strategies": [
+      "TREND_PULLBACK/1.0.0",
+      "RANGE_BREAKOUT/1.0.0"
+    ],
+    "symbols": [
+      "BTCUSDT",
+      "ETHUSDT"
+    ],
+    "folds": "EXACT_HSL001_F001_TO_F005",
+    "fixed_quantity": "0.001",
+    "fee_bps": "10",
+    "slippage_bps": "5",
+    "execution": "NEXT_PRIMARY_OPEN_LONG_ONLY_SPOT",
+    "parameter_search": false,
+    "strategy_selection_from_hsl001_outcomes": false,
+    "point_in_time_market_history": true,
+    "drawdown_hard_latch_auto_reset": false,
+    "p4_policy_mutated": false
+  },
+  "reporting": [
+    "net_pnl_after_costs_quote",
+    "completed_trades",
+    "expectancy_quote",
+    "profit_factor",
+    "maximum_drawdown_fraction",
+    "entry_signal_count",
+    "entry_fill_count",
+    "risk_blocked_entry_count",
+    "blocked_by_kill_switch_count",
+    "blocked_by_session_loss_count",
+    "blocked_by_drawdown_count",
+    "blocked_by_loss_streak_count",
+    "kill_switch_trigger_count",
+    "hard_latch_trigger_count",
+    "session_release_count",
+    "cooldown_release_count",
+    "cooldown_blocked_decision_count",
+    "observed_consecutive_losses_peak"
+  ],
+  "comparison_gate": {
+    "research_only": true,
+    "minimum_completed_trades_total": 30,
+    "maximum_drawdown_fraction": "0.10",
+    "require_positive_total_net_pnl": true,
+    "require_positive_expectancy": true,
+    "minimum_profit_factor": "1.05",
+    "require_net_pnl_above_control": true,
+    "hard_latch_bypass_allowed": false,
+    "automatic_promotion_to_p10_p11_live": false
+  },
+  "interpretation": "HSL-002 is comparative research only. Qualification means only that the cooldown challenger merits later independent HSL study; it cannot alter P4/P10, upgrade P10 evidence, unlock P11, or authorize live trading."
+}
