@@ -1,0 +1,125 @@
+{
+  "schema": "YATL_HSL_ENTRY_REGIME_ABLATION_PROTOCOL",
+  "version": "0.1.0",
+  "registered_date_utc": "2026-09-25",
+  "status": "REGISTERED_BEFORE_HSL003_OUTCOME_REPLAY",
+  "research_only": true,
+  "paper_only": true,
+  "p4_p10_untouched": true,
+  "p11_locked": true,
+  "live_master_lock": "OFF",
+  "trade_permission": false,
+  "order_endpoint": false,
+  "ai_direct_execution": false,
+  "parent_protocol": "HSL-001-WALK-FORWARD/0.1.0",
+  "preceding_checkpoint": "HSL-002-RISK-OVERLAY/0.1.0",
+  "objective": "Measure the incremental effect of existing entry filters one at a time, without post-hoc combinations or parameter search. HSL-003 isolates strategy entry quality, so P4/P10 risk vetoes remain disabled exactly as in HSL-001.",
+  "methodology": {
+    "folds": "EXACT_HSL001_F001_TO_F005",
+    "symbols": ["BTCUSDT", "ETHUSDT"],
+    "fixed_quantity": "0.001",
+    "fee_bps": "10",
+    "slippage_bps": "5",
+    "execution": "NEXT_PRIMARY_OPEN_LONG_ONLY_SPOT",
+    "state_reset_at_each_evaluation_fold": true,
+    "market_history_available_point_in_time": true,
+    "p4_risk_veto_applied": false,
+    "parameter_search": false,
+    "post_hoc_combination": false,
+    "exit_logic_frozen": true,
+    "protective_level_logic_frozen": true,
+    "strategy_selection_from_prior_hsl_outcomes": false
+  },
+  "experiments": [
+    {
+      "experiment_id": "HSL003-TREND-CONTROL",
+      "strategy_id": "TREND_PULLBACK",
+      "strategy_version": "1.0.0",
+      "role": "CONTROL",
+      "entry_changes": []
+    },
+    {
+      "experiment_id": "HSL003-TREND-NO-CONFIRMATION",
+      "strategy_id": "TREND_PULLBACK",
+      "strategy_version": "1.0.0",
+      "role": "SINGLE_FILTER_ABLATION",
+      "entry_changes": ["REMOVE_15M_BULLISH_CONFIRMATION"]
+    },
+    {
+      "experiment_id": "HSL003-TREND-NO-REGIME-ENTRY",
+      "strategy_id": "TREND_PULLBACK",
+      "strategy_version": "1.0.0",
+      "role": "SINGLE_FILTER_ABLATION",
+      "entry_changes": ["REMOVE_TREND_UP_ENTRY_GATE_ONLY"]
+    },
+    {
+      "experiment_id": "HSL003-BREAKOUT-CONTROL",
+      "strategy_id": "RANGE_BREAKOUT",
+      "strategy_version": "1.0.0",
+      "role": "CONTROL",
+      "entry_changes": []
+    },
+    {
+      "experiment_id": "HSL003-BREAKOUT-NO-CONFIRMATION",
+      "strategy_id": "RANGE_BREAKOUT",
+      "strategy_version": "1.0.0",
+      "role": "SINGLE_FILTER_ABLATION",
+      "entry_changes": ["REMOVE_15M_BULLISH_CONFIRMATION"]
+    },
+    {
+      "experiment_id": "HSL003-BREAKOUT-NO-REGIME-ENTRY",
+      "strategy_id": "RANGE_BREAKOUT",
+      "strategy_version": "1.0.0",
+      "role": "SINGLE_FILTER_ABLATION",
+      "entry_changes": ["REMOVE_TREND_UP_ENTRY_GATE_ONLY"]
+    },
+    {
+      "experiment_id": "HSL003-BREAKOUT-NO-VOLATILITY-EXTENSION",
+      "strategy_id": "RANGE_BREAKOUT",
+      "strategy_version": "1.0.0",
+      "role": "SINGLE_FILTER_ABLATION",
+      "entry_changes": ["REMOVE_MAXIMUM_EXTENSION_ATR_ENTRY_GATE_ONLY"]
+    }
+  ],
+  "non_experiments": {
+    "trend_volatility_filter_ablation": "NOT_APPLICABLE: TREND_PULLBACK/1.0.0 has no independent volatility entry filter; ATR is used for protective-level construction and remains frozen.",
+    "combined_filter_removal": "FORBIDDEN_IN_HSL003",
+    "parameter_retuning": "FORBIDDEN_IN_HSL003",
+    "exit_rule_ablation": "DEFERRED",
+    "stop_target_ablation": "DEFERRED"
+  },
+  "reporting": [
+    "net_pnl_after_costs_quote",
+    "net_return_after_costs",
+    "completed_trades",
+    "win_rate",
+    "expectancy_quote",
+    "profit_factor",
+    "positive_oos_cell_fraction",
+    "largest_trade_profit_share",
+    "maximum_drawdown_fraction",
+    "entry_signal_count",
+    "entry_fill_count",
+    "exit_fill_count",
+    "executed_total_cost_quote",
+    "filter_pass_count",
+    "filter_block_count",
+    "delta_vs_strategy_control"
+  ],
+  "comparison_gate": {
+    "research_only": true,
+    "minimum_completed_trades_total": 30,
+    "minimum_completed_trades_per_symbol": 10,
+    "require_positive_total_net_pnl": true,
+    "require_positive_expectancy": true,
+    "minimum_profit_factor": "1.05",
+    "minimum_positive_oos_cell_fraction": "0.60",
+    "maximum_single_trade_share_of_positive_pnl": "0.50",
+    "maximum_drawdown_fraction": "0.10",
+    "require_net_pnl_above_control": true,
+    "require_expectancy_not_below_control": true,
+    "automatic_strategy_mutation": false,
+    "automatic_promotion_to_p10_p11_live": false
+  },
+  "interpretation": "A beneficial single-filter ablation is only evidence for a future separately versioned challenger. HSL-003 never edits TREND_PULLBACK/1.0.0 or RANGE_BREAKOUT/1.0.0, never changes P4/P10, and never authorizes live trading."
+}
