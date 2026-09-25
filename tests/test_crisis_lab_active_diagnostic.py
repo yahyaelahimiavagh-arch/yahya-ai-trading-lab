@@ -28,7 +28,9 @@ def candidate(time_ms, symbol):
 
 class CrisisLabStrategyActiveDiagnosticTests(unittest.TestCase):
     def test_protocol_freezes_confirmed_open_entry_definition(self):
-        protocol, _ = controls.load_protocol()
+        protocol, _ = controls.load_protocol(
+            diagnostic.DEFAULT_ACTIVE_PROTOCOL_PATH
+        )
         active = protocol["strategy_active_diagnostic"]
 
         self.assertEqual(
@@ -90,7 +92,9 @@ class CrisisLabStrategyActiveDiagnosticTests(unittest.TestCase):
         )
 
     def test_selection_never_uses_future_outcome_fields(self):
-        protocol, _ = controls.load_protocol()
+        protocol, _ = controls.load_protocol(
+            diagnostic.DEFAULT_ACTIVE_PROTOCOL_PATH
+        )
         forbidden = protocol["strategy_active_diagnostic"][
             "forbidden_selection_fields"
         ]
@@ -126,7 +130,9 @@ class CrisisLabStrategyActiveDiagnosticTests(unittest.TestCase):
         )
 
     def test_crisis_exclusions_are_registered_and_guarded(self):
-        protocol, _ = controls.load_protocol()
+        protocol, _ = controls.load_protocol(
+            diagnostic.DEFAULT_ACTIVE_PROTOCOL_PATH
+        )
         guard = protocol["strategy_active_diagnostic"][
             "crisis_exclusion_guard_days"
         ]
