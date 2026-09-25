@@ -130,6 +130,6 @@
     "do_not_drop_no_trade_periods": true,
     "do_not_drop_losing_trades": true,
     "do_not_select_subperiods_from_pnl": true,
-    "if_trade_starvation_is_observed": "REGISTER_NEXT_GENERATION_CHALLENGER_IN_CRL008; DO_NOT_RETUNE_THIS FROZEN RUN"
+    "if_trade_starvation_is_observed": "REGISTER_NEXT_GENERATION_CHALLENGER_IN_CRL008; DO_NOT_RETUNE_THIS_FROZEN_RUN"
   }
 }
