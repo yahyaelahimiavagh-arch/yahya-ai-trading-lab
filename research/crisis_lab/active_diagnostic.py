@@ -52,10 +52,14 @@ from . import controls
 from . import replay
 
 
-DIAGNOSTIC_IMPLEMENTATION_ID = "CRL-005-STRATEGY-ACTIVE/0.2.1"
-DIAGNOSTIC_SCHEMA_VERSION = "0.1.0"
+DIAGNOSTIC_IMPLEMENTATION_ID = "CRL-005-STRATEGY-ACTIVE/0.3.0"
+DIAGNOSTIC_SCHEMA_VERSION = "0.2.0"
 DEFAULT_EVENT_CATALOG_PATH = Path(
     "docs/research/crisis-lab/EVENT-CATALOG-v0.1.0.json"
+)
+DEFAULT_ACTIVE_PROTOCOL_PATH = Path(
+    "docs/research/crisis-lab/"
+    "CONTROL-WINDOW-PROTOCOL-v0.1.0-STRATEGY-ACTIVE-V2.json"
 )
 MAX_EVENT_CATALOG_BYTES = 4 * 1024 * 1024
 MAX_DIAGNOSTIC_MANIFEST_BYTES = 4 * 1024 * 1024
@@ -218,6 +222,10 @@ class _SymbolScanState:
     excluded_confirmed_open_entry_count: int = 0
     missing_fill_decision_count: int = 0
     stale_snapshot_decision_count: int = 0
+    epoch_reset_count: int = 0
+    epoch_reset_open_position_count: int = 0
+    first_kill_switch_time_ms: int | None = None
+    veto_reason_counts: dict[str, int] = field(default_factory=dict)
 
 
 def _new_scan_state(
@@ -253,6 +261,18 @@ def _new_scan_state(
         primary_by_open=primary_by_open,
         open_times=open_times,
     )
+
+
+def _reset_execution_state(state: _SymbolScanState) -> None:
+    if state.fill_engine.has_position:
+        state.epoch_reset_open_position_count += 1
+    state.fill_engine = PaperFillEngine(state.symbol)
+    state.ledger = PortfolioLedger(state.dataset.spec)
+    state.risk_tracker = _RiskTracker(
+        state.symbol, CandidateFreeze().initial_equity_quote
+    )
+    state.active_setup = None
+    state.epoch_reset_count += 1
 
 
 def _prefix(
@@ -355,6 +375,13 @@ def _process_event(
         pre,
         decision_event.snapshot.latest_primary.close,
     )
+    if (
+        risk_state.kill_switch_active
+        and state.first_kill_switch_time_ms is None
+    ):
+        state.first_kill_switch_time_ms = (
+            decision_event.decision_time_ms
+        )
 
     snapshot_fresh = replay._snapshot_is_fresh(
         decision_event.snapshot
@@ -385,6 +412,12 @@ def _process_event(
             veto = assess_fixed_quantity_entry(
                 decision, risk_state
             )
+            if not veto.allowed:
+                for reason in veto.reasons:
+                    key = reason.value
+                    state.veto_reason_counts[key] = (
+                        state.veto_reason_counts.get(key, 0) + 1
+                    )
             if veto.allowed:
                 state.risk_allowed_entry_count += 1
                 intent = PaperIntent(
@@ -500,6 +533,16 @@ def _state_summary(
         "stale_snapshot_decision_count": (
             state.stale_snapshot_decision_count
         ),
+        "epoch_reset_count": state.epoch_reset_count,
+        "epoch_reset_open_position_count": (
+            state.epoch_reset_open_position_count
+        ),
+        "first_kill_switch_time_ms": (
+            state.first_kill_switch_time_ms
+        ),
+        "veto_reason_counts": dict(
+            sorted(state.veto_reason_counts.items())
+        ),
         "eligible_candidate_count": len(state.candidates),
         "point_in_time_verified": True,
     }
@@ -511,6 +554,8 @@ def _scan_progressive(
     exclusions: Sequence[tuple[int, int, str]],
     maximum_episodes: int,
     minimum_separation_ms: int,
+    source_state_epoch_ms: int | None = None,
+    maximum_selected_per_epoch: int | None = None,
     chunk_ms: int = SCAN_CHUNK_MS,
 ) -> tuple[
     list[dict[str, object]],
@@ -521,6 +566,22 @@ def _scan_progressive(
         type(chunk_ms) is not int
         or chunk_ms < INTERVAL_MILLISECONDS["1h"]
         or chunk_ms % INTERVAL_MILLISECONDS["1h"]
+        or (
+            source_state_epoch_ms is not None
+            and (
+                type(source_state_epoch_ms) is not int
+                or source_state_epoch_ms < INTERVAL_MILLISECONDS["1h"]
+                or source_state_epoch_ms
+                % INTERVAL_MILLISECONDS["1h"]
+            )
+        )
+        or (
+            maximum_selected_per_epoch is not None
+            and (
+                type(maximum_selected_per_epoch) is not int
+                or maximum_selected_per_epoch < 1
+            )
+        )
     ):
         raise DiagnosticError(
             "strategy-active runtime partition is invalid"
@@ -530,7 +591,9 @@ def _scan_progressive(
         for symbol in acq.ALLOWED_SYMBOLS
     }
     selected: list[dict[str, object]] = []
+    selected_per_epoch: dict[int, int] = {}
     last_selected_time: int | None = None
+    current_epoch_index = 0
     chunk_count = 0
     scanned_end = event.replay_start_ms
     stop_reason = "POOL_EXHAUSTED"
@@ -579,6 +642,17 @@ def _scan_progressive(
                     "strategy-active symbol decision times diverged"
                 )
             decision_time = next(iter(times))
+            if source_state_epoch_ms is not None:
+                epoch_index = (
+                    decision_time - event.replay_start_ms
+                ) // source_state_epoch_ms
+                if epoch_index != current_epoch_index:
+                    for state in states.values():
+                        _reset_execution_state(state)
+                    current_epoch_index = epoch_index
+            else:
+                epoch_index = 0
+
             new_candidates = []
             for symbol in acq.ALLOWED_SYMBOLS:
                 candidate = _process_event(
@@ -598,12 +672,21 @@ def _scan_progressive(
             for candidate in new_candidates:
                 current = int(candidate["decision_time_ms"])
                 if (
+                    maximum_selected_per_epoch is not None
+                    and selected_per_epoch.get(epoch_index, 0)
+                    >= maximum_selected_per_epoch
+                ):
+                    continue
+                if (
                     last_selected_time is not None
                     and current - last_selected_time
                     < minimum_separation_ms
                 ):
                     continue
                 selected.append(candidate)
+                selected_per_epoch[epoch_index] = (
+                    selected_per_epoch.get(epoch_index, 0) + 1
+                )
                 last_selected_time = current
                 if len(selected) == maximum_episodes:
                     break
@@ -627,6 +710,11 @@ def _scan_progressive(
         ),
         "chunk_ms": chunk_ms,
         "chunk_count": chunk_count,
+        "source_state_epoch_ms": source_state_epoch_ms,
+        "maximum_selected_per_epoch": (
+            maximum_selected_per_epoch
+        ),
+        "epoch_count_touched": current_epoch_index + 1,
         "scanned_start_ms": event.replay_start_ms,
         "scanned_end_exclusive_ms": scanned_end,
         "pool_end_exclusive_ms": event.replay_end_ms,
@@ -708,7 +796,7 @@ def run_strategy_active_diagnostic(
     runtime_root: Path,
     quality_manifest_relative_path: str,
     quality_manifest_file_sha256: str,
-    protocol_path: Path = controls.DEFAULT_PROTOCOL_PATH,
+    protocol_path: Path = DEFAULT_ACTIVE_PROTOCOL_PATH,
     event_catalog_path: Path = DEFAULT_EVENT_CATALOG_PATH,
 ) -> dict[str, object]:
     protocol, protocol_sha = controls.load_protocol(protocol_path)
@@ -717,12 +805,25 @@ def run_strategy_active_diagnostic(
     if not isinstance(active, dict) or not isinstance(development, dict):
         raise DiagnosticError("strategy-active protocol is missing")
     if (
-        active.get("selection_scope")
+        active.get("cohort_id")
+        != "STRATEGY_ACTIVE_DIAGNOSTIC_V2"
+        or active.get("selection_scope")
         != "BTCUSDT_AND_ETHUSDT_COMBINED"
         or active.get("confirmed_open_position_required") is not True
         or active.get("deterministic_tie_break") is not True
         or active.get("unbiased_performance_evidence") is not False
         or active.get("diagnostic_only") is not True
+        or active.get("market_history_reset") is not False
+        or active.get("p4_p10_policy_modified") is not False
+        or active.get("source_state_epoch_anchor")
+        != "ANALYSIS_POOL_START"
+        or active.get("reset_at_epoch_boundary")
+        != [
+            "PAPER_FILL_ENGINE",
+            "PORTFOLIO_LEDGER",
+            "RISK_TRACKER",
+            "ACTIVE_SETUP",
+        ]
     ):
         raise DiagnosticError(
             "strategy-active selection semantics are not frozen"
@@ -737,6 +838,12 @@ def run_strategy_active_diagnostic(
         guard_days = int(active["crisis_exclusion_guard_days"])
         maximum = int(active["maximum_episodes"])
         separation = int(active["minimum_separation_ms"])
+        source_state_epoch_ms = int(
+            active["source_state_epoch_ms"]
+        )
+        maximum_selected_per_epoch = int(
+            active["maximum_selected_per_epoch"]
+        )
     except (KeyError, TypeError, ValueError, acq.AcquisitionError):
         raise DiagnosticError(
             "strategy-active protocol values are invalid"
@@ -780,6 +887,8 @@ def run_strategy_active_diagnostic(
         exclusions=exclusions,
         maximum_episodes=maximum,
         minimum_separation_ms=separation,
+        source_state_epoch_ms=source_state_epoch_ms,
+        maximum_selected_per_epoch=maximum_selected_per_epoch,
     )
 
     candidate = CandidateFreeze()
@@ -801,6 +910,12 @@ def run_strategy_active_diagnostic(
             "start_ms": pool_start,
             "end_exclusive_ms": pool_end,
             "crisis_exclusion_guard_days": guard_days,
+            "source_state_epoch_ms": source_state_epoch_ms,
+            "maximum_selected_per_epoch": (
+                maximum_selected_per_epoch
+            ),
+            "market_history_reset": False,
+            "p4_p10_policy_modified": False,
         },
         "selection": {
             "selection_scope": active["selection_scope"],
@@ -917,7 +1032,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--protocol",
         type=Path,
-        default=controls.DEFAULT_PROTOCOL_PATH,
+        default=DEFAULT_ACTIVE_PROTOCOL_PATH,
     )
     parser.add_argument(
         "--event-catalog",

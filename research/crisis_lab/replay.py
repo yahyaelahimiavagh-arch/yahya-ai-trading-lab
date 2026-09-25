@@ -118,7 +118,7 @@ def _validate_gap_aware_history(
 
 
 class CrisisLabMarketSnapshot(MarketSnapshot):
-    """CRL-only snapshot that preserves CRL-003-verified no-trade gaps."""
+    """CRL-only snapshot that preserves CRL-003-verified source gaps."""
 
     __slots__ = ()
 

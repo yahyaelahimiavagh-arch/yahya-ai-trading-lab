@@ -150,13 +150,15 @@ uv run --locked python -m research.crisis_lab.controls \
 
 A subset may be replayed with repeated `--control CRL-C00X` arguments.
 
-### Exchange-maintenance gaps inside controls
+### CRL-003-verified source gaps inside controls
 
-Registered ordinary windows are never discarded merely because the exchange had
-a CRL-003-verified no-trade interval. The control slice preserves the real
-missing timestamps rather than fabricating candles. Replay skips only decision
-slots whose required 1h execution candle does not exist. On the first tradable
-slot after a verified gap, protective/risk-reducing processing remains available,
+Registered ordinary windows are never discarded merely because the admitted
+public-data corpus contains a CRL-003-verified absent-kline interval. This proves
+source/market-data absence for the exact interval, not a specific exchange-wide
+cause or no-trading condition. The control slice preserves the missing timestamps
+rather than fabricating candles. Replay skips only decision slots whose required
+1h execution candle does not exist. On the first available real slot after a
+verified source gap, protective/risk-reducing processing remains available,
 while new entries are blocked until all required timeframes are fresh again.
 CASH and BUY-AND-HOLD remain deterministic comparisons over the actual available
 analysis candles. Unknown or unverified gaps still fail before replay.
@@ -166,18 +168,31 @@ analysis candles. Unknown or unverified gaps still fail before replay.
 Research-only implementation:
 `research/crisis_lab/active_diagnostic.py`.
 
-The scanner evolves the same frozen Strategy, Risk tracker, Paper fill engine,
-portfolio accounting and costs continuously across the registered Development
-pool. It does **not** select entries from later performance.
+V1 evolved one continuous frozen Strategy/Risk/Paper state through the full
+Development pool. Its feasibility run exhausted 2020-01-01 through 2023-01-01
+with only two selected source episodes, before any CRL-006 synthetic-shock
+outcomes were observed. The cause is structurally important for sampling:
+the accepted P4 kill switch is intentionally latched and therefore can suppress
+all later historical entries once triggered.
 
-The scanner inherits the CRL-004 verified-gap contract. A registered 1h grid
-slot with no admitted execution candle is skipped because no historical fill was
-possible. On the first real candle after a verified exchange gap, existing Paper
-protection may still reduce risk, but Strategy entry evaluation is suppressed
-while the required snapshot is stale. Strategy resumes from the contiguous
-post-gap history and must rebuild its normal feature/regime warm-up naturally.
-Missing-fill and stale-snapshot counts are emitted in each symbol scan summary.
-Unverified gaps remain fail-closed before this runtime.
+V2 is a separate diagnostic-only source-state cohort, preregistered before
+synthetic-shock outcomes. Market history remains point-in-time continuous, but
+Paper execution state, portfolio, Risk tracker and active setup reset at fixed
+30-day research-epoch boundaries anchored to the analysis-pool start. P4/P10
+policy itself is unchanged. At most one selected episode may come from each
+epoch, and the global seven-day separation and chronological/lexical tie-break
+remain frozen. These resets exist only to harvest independent CRL-006 source
+states; V2 is not long-horizon performance evidence.
+
+The scanner inherits the CRL-004 verified-source-gap contract. A registered 1h
+grid slot with no admitted execution candle is skipped because no historical fill
+can be evidenced for that slot. On the first available real candle after a
+verified source gap, existing Paper protection may still reduce risk, but Strategy
+entry evaluation is suppressed while the required snapshot is stale. Strategy
+resumes from contiguous post-gap history and rebuilds its normal
+feature/regime warm-up naturally. Missing-fill, stale-snapshot, epoch-reset and
+entry-veto counters are emitted in each symbol scan summary. Unverified gaps
+remain fail-closed before this runtime.
 
 An eligible source episode is now frozen as:
 - a real `ENTER_LONG` signal;
@@ -271,7 +286,7 @@ Required semantics:
   path;
 - strategy exits, stop/target protection, fees and adverse slippage remain active;
 - an open position may cross ordinary/crisis and calendar boundaries naturally;
-- verified exchange gaps are handled only by the CRL gap-aware rules: no
+- verified source gaps are handled only by the CRL gap-aware rules: no
   interpolation, no forward fill, and no new entry from stale required data;
 - the three-year run may be partitioned into chunks for runtime scalability, but
   state must carry across chunks and alternate chunk sizes must produce the same

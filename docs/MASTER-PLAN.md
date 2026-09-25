@@ -312,11 +312,20 @@ trade count، PnL یا drawdown برای انتخاب window ندارد.
 اطراف تمام crisisهای ثبت‌شده، قبل از مشاهده outcome فریز می‌شوند. هیچ window به
 خاطر no-trade یا نتیجه بد حذف نمی‌شود.
 
-علاوه بر cohort unbiased، یک **strategy-active diagnostic** وجود دارد: خارج از
-crisis buffer، اولین 10 episode که frozen Strategy واقعاً ENTER_LONG می‌دهد
-به‌صورت chronological انتخاب می‌شوند. انتخاب فقط اجازه دیدن occurrence ورود را
-دارد و آینده/PnL/exit کیفیت ورودی انتخاب نیست. این cohort برای تشخیص رفتار
-position lifecycle است و evidence بازده unbiased محسوب نمی‌شود.
+علاوه بر cohort unbiased، یک **strategy-active diagnostic** برای ساخت source
+stateهای CRL-006 وجود دارد. V1 با state کاملاً پیوسته سه‌ساله اجرا شد و پیش از
+مشاهده هر outcome مربوط به synthetic shock فقط 2 episode انتخاب کرد؛ این نتیجه
+به‌عنوان feasibility evidence حفظ می‌شود و بازنویسی نمی‌شود. علت ساختاری مهم این
+است که Kill Switch پذیرفته‌شده P4 عمداً latch می‌شود و در یک scan تاریخی طولانی
+می‌تواند entryهای بعدی را برای مدت نامحدود veto کند.
+
+برای sample-feasibility، V2 پیش از اجرای synthetic-shock outcomeها جداگانه
+pre-register می‌شود: market history همچنان point-in-time و پیوسته است، اما
+Paper/Risk/portfolio/active-setup در epochهای ثابت 30روزه که از شروع analysis pool
+anchor شده‌اند reset می‌شوند. در هر epoch حداکثر یک episode قابل انتخاب است؛
+حداقل فاصله 7 روز، ترتیب chronological + lexical و ممنوعیت استفاده از آینده/PnL/
+exit quality حفظ می‌شود. این cohort فقط diagnostic/source-state harvesting است و
+evidence بازده unbiased یا تغییر P4/P10 محسوب نمی‌شود.
 
 همچنین historical replay از pre-event به crisis anchor بدون reset ادامه می‌یابد.
 اگر position قبل از بحران باز شده باشد، همان position باید داخل shock حمل شود و
@@ -427,6 +436,93 @@ News، geopolitical labels، macro feeds یا AI به‌طور پیش‌فرض �
 - incremental OOS/holdout value قابل اندازه‌گیری باشد.
 
 AI همچنان analysis-only است و قانون `NO AI DIRECT EXECUTION` تغییر نمی‌کند.
+
+#### Historical Strategy Lab — Historical Mastery + Forward Validation
+
+از این checkpoint به بعد، داده تاریخی فقط برای «اثبات زنده‌ماندن» استفاده نمی‌شود.
+YATL یک مسیر پژوهشی مستقل با نام **Historical Strategy Lab (HSL)** خواهد داشت که
+هدفش یادگیری نظام‌مند از بازار گذشته و ساخت challengerهای سودآورتر است، بدون اینکه
+P10 جاری یا Live gate را دور بزند.
+
+اصل پژوهشی HSL:
+- گذشته یک dataset آموزشی/آزمایشگاهی اصلی است؛ الگوهای رفتاری بازار می‌توانند در
+  شکل‌های متفاوت تکرار شوند، بنابراین failureها و successهای تاریخی باید استخراج،
+  طبقه‌بندی و دوباره‌آزمایی شوند.
+- بهترشدن روی گذشته مطلوب است، اما نتیجه تاریخی به‌تنهایی مجوز آینده نیست؛ هر
+  challenger بعد از Historical Mastery باید از walk-forward و سپس real-forward
+  مستقل عبور کند.
+- failure تاریخی حذف، پنهان یا cherry-pick نمی‌شود. هر failure باید به علت احتمالی
+  مشخص مثل entry quality، regime mismatch، exit logic، risk veto، cost drag،
+  volatility condition یا execution assumption متصل شود.
+- هدف HSL فقط بیشینه‌کردن total return نیست؛ robustness، sample size، expectancy،
+  profit factor، win rate، maximum drawdown، year-by-year stability، symbol
+  stability، regime stability و dependence on a few outlier trades همزمان سنجیده
+  می‌شوند.
+- یک strategy که سودش فقط از چند معامله استثنایی آمده، حتی با total return بالا،
+  از یک strategy پایدارتر با expectancy مثبت در تعداد بیشتری از معاملات متمایز
+  گزارش می‌شود.
+
+خانواده‌های اولیه challenger که می‌توانند مستقل و سبک آزمایش شوند:
+- Trend Pullback؛
+- Breakout / Trend Continuation؛
+- Momentum continuation؛
+- Volatility contraction → expansion؛
+- Mean Reversion فقط در regime مناسب؛
+- Support / Resistance reaction؛
+- Trend + volume confirmation؛
+- Multi-timeframe confirmation؛
+- Adaptive stop / trailing stop؛
+- Time-based exit.
+
+قانون معماری: این تکنیک‌ها داخل یک Strategy واحد و شلوغ ادغام نمی‌شوند. ابتدا هر
+کدام یک challenger مستقل با config/version/identity جدا است؛ فقط تکنیک‌هایی که
+ارزش افزوده تکرارپذیر نشان دهند می‌توانند بعداً وارد ensemble یا regime router شوند.
+
+##### Market Regime Library
+
+HSL باید بازار را علاوه بر تاریخ، بر اساس regime نیز طبقه‌بندی کند. taxonomy اولیه:
+`TREND_UP / TREND_DOWN / SIDEWAYS / HIGH_VOL / LOW_VOL / SHOCK / RECOVERY`.
+
+برای هر challenger باید مشخص شود:
+- در کدام regime edge مثبت دارد؛
+- در کدام regime باید entry محدود یا صفر شود؛
+- آیا تغییر regime باعث degradation ناگهانی می‌شود؛
+- آیا exit/risk logic در shock و recovery همان رفتار مطلوب را دارد.
+
+هدف نهایی regime library این است که YATL مجبور نباشد یک setup را در همه محیط‌ها
+استفاده کند. در صورت وجود evidence کافی، یک research-only regime router می‌تواند
+بین challengerهای از قبل پذیرفته‌شده انتخاب کند؛ این router حق bypass کردن Risk،
+P10 یا Live gate را ندارد.
+
+##### Walk-forward discipline
+
+سه‌سال Historical Development باید به چند segment زمانی ترتیبی تقسیم شود.
+پارامتر/منطق هر challenger فقط با segmentهای گذشته ساخته یا انتخاب می‌شود و segment
+بعدی برای همان iteration نقش out-of-sample دارد. پس از هر fold، فقط evidence ثبت
+می‌شود؛ outcome segment آینده نباید برای انتخاب همان fold استفاده شود.
+
+نتیجه نهایی HSL سه سطح دارد:
+1. **Historical Mastery** — تکنیک روی گذشته متنوع، هزینه‌دار و regime-aware مفید است؛
+2. **Walk-Forward Proven** — edge فقط حاصل fit کردن کل تاریخ نیست؛
+3. **Forward Candidate** — فقط challengerهایی که دو سطح قبلی را می‌گذرانند حق ورود
+   به یک registration جدید real-forward را دارند.
+
+P10 baseline جاری تغییر نمی‌کند. Historical Strategy Lab برای ساخت نسل بعدی
+candidate است، نه برای بازنویسی evidence جاری یا بازکردن P11.
+
+##### External Research Intake — Video / Article / Transcript
+
+منابع بیرونی مثل ویدیو، مقاله، کتاب و transcript می‌توانند وارد HSL شوند، اما
+فقط به‌عنوان **idea source** و نه evidence اثبات‌شده. هر منبع باید به یک
+research note قابل‌آزمون تبدیل شود که حداقل شامل نام تکنیک، منطق entry/exit،
+timeframe، regime فرض‌شده، risk/stop/target، هزینه‌های لازم، assumptions و موارد
+نامشخص باشد.
+
+برای ویدیوها، subtitle/transcript با timestamp ترجیح داده می‌شود تا ادعاهای
+مهم به بخش دقیق منبع متصل شوند. هیچ تکنیکی صرفاً به‌دلیل اعتبار گوینده یا نتیجه
+نمایش‌داده‌شده وارد candidate نمی‌شود؛ ابتدا باید به rule قابل‌کدنویسی تبدیل،
+سپس روی historical development، walk-forward و در صورت موفقیت real-forward
+آزمایش شود. ایده‌های تکراری باید deduplicate شوند و نتیجه منفی نیز حفظ شود.
 
 #### Shadow Challenger Track
 
