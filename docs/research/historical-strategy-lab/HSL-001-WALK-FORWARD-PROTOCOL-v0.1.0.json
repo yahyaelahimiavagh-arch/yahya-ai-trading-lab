@@ -1,0 +1,133 @@
+{
+  "schema": "YATL_HSL_WALK_FORWARD_PROTOCOL",
+  "version": "0.1.0",
+  "registered_date_utc": "2026-09-25",
+  "status": "REGISTERED_BEFORE_HSL001_OUTCOME_REPLAY",
+  "research_only": true,
+  "paper_only": true,
+  "p10_untouched": true,
+  "p11_locked": true,
+  "live_master_lock": "OFF",
+  "trade_permission": false,
+  "order_endpoint": false,
+  "ai_direct_execution": false,
+  "source_corpus_id": "CRL-CONTROL-DEV-POOL-001",
+  "purpose": "Measure strategy edge across sequential historical out-of-sample folds before adding new HSL challengers. HSL-001 compares only already-frozen Trend Pullback and Range Breakout candidates with identical Spot paper execution and costs.",
+  "methodology": {
+    "initial_training_only_range": {
+      "start_utc": "2020-01-01T00:00:00Z",
+      "end_exclusive_utc": "2020-07-01T00:00:00Z"
+    },
+    "fold_mode": "EXPANDING_HISTORY_SEQUENTIAL_OOS",
+    "strategy_configuration_selection": "FROZEN_BEFORE_HSL001; NO PARAMETER SEARCH IN HSL001",
+    "state_reset_at_each_evaluation_fold": true,
+    "market_history_available_point_in_time": true,
+    "p4_risk_veto_applied": false,
+    "p4_risk_reason": "HSL-001 isolates strategy edge before risk-overlay research; disabling the risk veto here grants no trading authority and does not alter P4/P10.",
+    "fixed_quantity": "0.001",
+    "fee_bps": "10",
+    "slippage_bps": "5",
+    "execution": "NEXT_PRIMARY_OPEN_LONG_ONLY_SPOT",
+    "terminal_open_position": "MARK_TO_MARKET_ONLY; DO_NOT_FORCE_EXIT",
+    "verified_source_gap_policy": "USE_CRL003_ADMITTED_SOURCE_GAPS; SKIP MISSING EXECUTION CANDLE; BLOCK STRATEGY EVALUATION WHILE SNAPSHOT_STALE; NEVER FILL_OR_INTERPOLATE"
+  },
+  "candidates": [
+    {
+      "candidate_id": "HSL-BASELINE-TREND-PULLBACK-1",
+      "strategy_id": "TREND_PULLBACK",
+      "strategy_version": "1.0.0",
+      "role": "CURRENT_P10_STRATEGY_BASELINE",
+      "parameters": {
+        "atr_period": 14,
+        "primary_sma_period": 20,
+        "pullback_lookback": 3,
+        "reward_risk": "2",
+        "stop_atr_fraction": "0.25"
+      }
+    },
+    {
+      "candidate_id": "HSL-CHALLENGER-RANGE-BREAKOUT-1",
+      "strategy_id": "RANGE_BREAKOUT",
+      "strategy_version": "1.0.0",
+      "role": "EXISTING_FROZEN_BREAKOUT_CHALLENGER",
+      "parameters": {
+        "atr_period": 14,
+        "breakout_lookback": 20,
+        "maximum_extension_atr": "1",
+        "minimum_close_location": "0.75",
+        "reward_risk": "2",
+        "stop_atr_fraction": "0.25"
+      }
+    }
+  ],
+  "folds": [
+    {
+      "fold_id": "HSL-F001",
+      "training_start_utc": "2020-01-01T00:00:00Z",
+      "training_end_exclusive_utc": "2020-07-01T00:00:00Z",
+      "evaluation_start_utc": "2020-07-01T00:00:00Z",
+      "evaluation_end_exclusive_utc": "2021-01-01T00:00:00Z"
+    },
+    {
+      "fold_id": "HSL-F002",
+      "training_start_utc": "2020-01-01T00:00:00Z",
+      "training_end_exclusive_utc": "2021-01-01T00:00:00Z",
+      "evaluation_start_utc": "2021-01-01T00:00:00Z",
+      "evaluation_end_exclusive_utc": "2021-07-01T00:00:00Z"
+    },
+    {
+      "fold_id": "HSL-F003",
+      "training_start_utc": "2020-01-01T00:00:00Z",
+      "training_end_exclusive_utc": "2021-07-01T00:00:00Z",
+      "evaluation_start_utc": "2021-07-01T00:00:00Z",
+      "evaluation_end_exclusive_utc": "2022-01-01T00:00:00Z"
+    },
+    {
+      "fold_id": "HSL-F004",
+      "training_start_utc": "2020-01-01T00:00:00Z",
+      "training_end_exclusive_utc": "2022-01-01T00:00:00Z",
+      "evaluation_start_utc": "2022-01-01T00:00:00Z",
+      "evaluation_end_exclusive_utc": "2022-07-01T00:00:00Z"
+    },
+    {
+      "fold_id": "HSL-F005",
+      "training_start_utc": "2020-01-01T00:00:00Z",
+      "training_end_exclusive_utc": "2022-07-01T00:00:00Z",
+      "evaluation_start_utc": "2022-07-01T00:00:00Z",
+      "evaluation_end_exclusive_utc": "2023-01-01T00:00:00Z"
+    }
+  ],
+  "reporting": [
+    "net_pnl_after_costs_quote",
+    "net_return_after_costs",
+    "completed_trades",
+    "wins",
+    "losses",
+    "win_rate",
+    "expectancy_quote",
+    "profit_factor",
+    "gross_profit_quote",
+    "gross_loss_quote",
+    "largest_positive_trade_quote",
+    "largest_trade_profit_share",
+    "maximum_drawdown_fraction",
+    "entry_signal_count",
+    "entry_fill_count",
+    "exit_fill_count",
+    "missing_fill_decision_count",
+    "stale_snapshot_decision_count"
+  ],
+  "qualification_gate": {
+    "use_for_hsl_research_only": true,
+    "minimum_completed_trades_total": 30,
+    "minimum_completed_trades_per_symbol": 10,
+    "require_positive_total_net_pnl": true,
+    "require_positive_expectancy": true,
+    "minimum_profit_factor": "1.05",
+    "minimum_positive_oos_cell_fraction": "0.60",
+    "maximum_single_trade_share_of_positive_pnl": "0.50",
+    "maximum_drawdown_fraction": "0.10",
+    "win_rate_is_reported_not_gated": true,
+    "note": "Passing HSL qualification is not P10/P11/live approval."
+  }
+}
