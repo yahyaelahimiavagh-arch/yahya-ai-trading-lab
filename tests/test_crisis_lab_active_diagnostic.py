@@ -40,6 +40,17 @@ class CrisisLabStrategyActiveDiagnosticTests(unittest.TestCase):
         self.assertTrue(active["confirmed_open_position_required"])
         self.assertTrue(active["deterministic_tie_break"])
         self.assertEqual(active["maximum_episodes"], 10)
+        self.assertEqual(
+            active["cohort_id"],
+            "STRATEGY_ACTIVE_DIAGNOSTIC_V2",
+        )
+        self.assertEqual(
+            active["source_state_epoch_ms"],
+            2_592_000_000,
+        )
+        self.assertEqual(active["maximum_selected_per_epoch"], 1)
+        self.assertFalse(active["market_history_reset"])
+        self.assertFalse(active["p4_p10_policy_modified"])
         self.assertEqual(active["minimum_separation_ms"], 604800000)
         self.assertFalse(active["unbiased_performance_evidence"])
         self.assertTrue(active["diagnostic_only"])
