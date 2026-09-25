@@ -490,7 +490,7 @@ def _run_cell(
     ledger = PortfolioLedger(dataset.spec)
     open_trade_cash_delta: Decimal | None = None
     trade_pnls: list[Decimal] = []
-    trace: list[dict[str, object]] = []
+    reason_counts: dict[str, int] = {}
     counts = {
         "decision": 0,
         "missing_fill": 0,
@@ -615,14 +615,8 @@ def _run_cell(
         )
 
         if decision is not None:
-            trace.append(
-                {
-                    "sequence": event.sequence,
-                    "decision_time_ms": event.decision_time_ms,
-                    "decision": decision.as_record(),
-                    "effective_intent": intent.action.value,
-                    "fill_count": len(costed),
-                }
+            reason_counts[decision.reason] = (
+                reason_counts.get(decision.reason, 0) + 1
             )
 
     final_mark = analysis_primary[-1].close
@@ -717,7 +711,7 @@ def _run_cell(
         "open_position_at_fold_end": fill_engine.has_position,
         "terminal_position_forced_closed": False,
         "point_in_time_verified": True,
-        "trace": trace,
+        "decision_reason_counts": dict(sorted(reason_counts.items())),
     }
 
 
