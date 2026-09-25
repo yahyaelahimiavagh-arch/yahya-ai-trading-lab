@@ -138,7 +138,7 @@ class HSL004AMomentumTests(unittest.TestCase):
 
     def test_plain_bounds_repeating_decimal_for_long_setup(self):
         raw = Decimal("99." + "1" * 80)
-        normalized = hsl4._plain(raw)
+        normalized = hsl4._setup_plain(raw)
         self.assertLessEqual(
             len(normalized.partition(".")[2]),
             40,
