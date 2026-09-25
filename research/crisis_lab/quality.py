@@ -19,7 +19,7 @@ from typing import Mapping, Sequence
 
 from . import acquisition as acq
 
-QUALITY_IMPLEMENTATION_ID = "CRL-003/0.1.1"
+QUALITY_IMPLEMENTATION_ID = "CRL-003/0.1.2"
 QUALITY_SCHEMA_VERSION = "0.1.0"
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _ALLOWED_DESIGNATIONS = frozenset({"DEVELOPMENT", "BLIND_HOLDOUT"})
@@ -253,8 +253,6 @@ def _inspect_canonical(
             "expected_row_count": 0,
         }
 
-    if gap_manifest != 0:
-        failures.append("ACQUISITION_RECORDED_GAPS")
     if duplicate_manifest != 0:
         failures.append("ACQUISITION_RECORDED_DUPLICATES")
     if close_boundary_normalized < 0 or close_boundary_verified < 0:
@@ -358,6 +356,7 @@ def _inspect_canonical(
     first_open: int | None = None
     last_open: int | None = None
     previous_open: int | None = None
+    open_times: list[int] = []
 
     for row_number, row in enumerate(reader, start=2):
         row_count += 1
@@ -440,8 +439,7 @@ def _inspect_canonical(
                 failures.append("DUPLICATE_TIMESTAMP")
             elif open_ms < previous_open:
                 failures.append("NONMONOTONIC_TIMESTAMP")
-            elif open_ms != previous_open + duration:
-                failures.append("TIMESTAMP_GAP")
+        open_times.append(open_ms)
         previous_open = open_ms
         last_open = open_ms
 
@@ -449,17 +447,76 @@ def _inspect_canonical(
         failures.append("EMPTY_CANONICAL_DATASET")
     if row_count != manifest_rows:
         failures.append("ROW_COUNT_MANIFEST_MISMATCH")
-    if row_count != expected_rows:
-        failures.append("ROW_COUNT_EXPECTED_MISMATCH")
     if first_open != first_manifest:
         failures.append("FIRST_OPEN_MANIFEST_MISMATCH")
     if last_open != last_manifest:
         failures.append("LAST_OPEN_MANIFEST_MISMATCH")
-    if first_open != transport_start:
-        failures.append("FIRST_OPEN_TRANSPORT_MISMATCH")
-    expected_last = transport_end - duration
-    if last_open != expected_last:
-        failures.append("LAST_OPEN_TRANSPORT_MISMATCH")
+
+    expected_opens = set(
+        range(transport_start, transport_end, duration)
+    )
+    actual_opens = set(open_times)
+    computed_missing = tuple(sorted(expected_opens - actual_opens))
+    if actual_opens - expected_opens:
+        failures.append("CANONICAL_OPEN_OUTSIDE_EXPECTED_GRID")
+    if len(computed_missing) != gap_manifest:
+        failures.append("GAP_COUNT_MANIFEST_MISMATCH")
+    if row_count + gap_manifest != expected_rows:
+        failures.append("ROW_COUNT_GAP_ACCOUNTING_MISMATCH")
+
+    gap_verification = dataset_manifest.get("gap_verification")
+    expected_gap_sha = acq._missing_open_times_sha256(computed_missing)
+    gap_evidence_ok = False
+    if isinstance(gap_verification, dict):
+        try:
+            gv_expected = _require_int(
+                gap_verification.get("expected_gap_count"),
+                "gap verification expected count",
+            )
+            gv_checked = _require_int(
+                gap_verification.get("checked_points"),
+                "gap verification checked points",
+            )
+            gv_absent = _require_int(
+                gap_verification.get("confirmed_absent_count"),
+                "gap verification absent count",
+            )
+            gv_present = _require_int(
+                gap_verification.get("present_conflict_count"),
+                "gap verification present count",
+            )
+        except QualityError:
+            failures.append("GAP_VERIFICATION_METADATA_INVALID")
+        else:
+            digest = gap_verification.get("missing_open_times_sha256")
+            status = gap_verification.get("status")
+            if gap_manifest == 0:
+                gap_evidence_ok = (
+                    status == "NO_GAPS"
+                    and gv_expected == 0
+                    and gv_checked == 0
+                    and gv_absent == 0
+                    and gv_present == 0
+                    and digest == expected_gap_sha
+                )
+            else:
+                gap_evidence_ok = (
+                    status == "ALL_CONFIRMED_ABSENT"
+                    and gv_expected == gap_manifest
+                    and gv_checked == gap_manifest
+                    and gv_absent == gap_manifest
+                    and gv_present == 0
+                    and digest == expected_gap_sha
+                )
+    if not gap_evidence_ok:
+        failures.append("GAP_REST_VERIFICATION_INCOMPLETE")
+
+    if gap_manifest == 0:
+        if first_open != transport_start:
+            failures.append("FIRST_OPEN_TRANSPORT_MISMATCH")
+        expected_last = transport_end - duration
+        if last_open != expected_last:
+            failures.append("LAST_OPEN_TRANSPORT_MISMATCH")
 
     unique_failures = tuple(sorted(set(failures)))
     return {
@@ -664,6 +721,16 @@ def validate_dataset(
                 )
                 and dataset_manifest["rest_verification"].get("status")
                 == "MATCH"
+                else "FAIL"
+            ),
+            "gap_rest_verification": (
+                "PASS"
+                if dataset_manifest
+                and isinstance(
+                    dataset_manifest.get("gap_verification"), dict
+                )
+                and dataset_manifest["gap_verification"].get("status")
+                in ("NO_GAPS", "ALL_CONFIRMED_ABSENT")
                 else "FAIL"
             ),
             "canonical_integrity": canonical_result["status"],

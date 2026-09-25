@@ -164,6 +164,71 @@ class MockRestFetcher:
         }
 
 
+
+class MissingCandleArchiveFetcher(MockArchiveFetcher):
+    def __init__(self, missing_open_ms):
+        super().__init__()
+        self.missing_open_ms = missing_open_ms
+
+    def _zip_for(self, url):
+        if url in self._zips:
+            return self._zips[url]
+        original = super()._zip_for(url)
+        name = urllib.parse.urlsplit(url).path.rsplit("/", 1)[-1]
+        stem = name[:-4]
+        with zipfile.ZipFile(io.BytesIO(original), "r") as bundle:
+            payload = bundle.read(stem + ".csv")
+        rows = list(acq.csv.reader(io.StringIO(payload.decode("utf-8"))))
+        kept = [
+            row
+            for row in rows
+            if int(row[0]) != self.missing_open_ms
+        ]
+        output = io.StringIO(newline="")
+        writer = acq.csv.writer(output, lineterminator="\n")
+        writer.writerows(kept)
+        out = io.BytesIO()
+        with zipfile.ZipFile(
+            out, "w", compression=zipfile.ZIP_DEFLATED
+        ) as bundle:
+            bundle.writestr(stem + ".csv", output.getvalue().encode("utf-8"))
+        self._zips[url] = out.getvalue()
+        return self._zips[url]
+
+
+class MissingAwareRestFetcher(MockRestFetcher):
+    def __init__(self, missing_open_ms):
+        super().__init__()
+        self.missing_open_ms = missing_open_ms
+
+    def fetch(self, url, *, max_bytes):
+        query = urllib.parse.parse_qs(
+            urllib.parse.urlsplit(url).query
+        )
+        interval = query["interval"][0]
+        open_ms = int(query["startTime"][0])
+        if open_ms == self.missing_open_ms:
+            if "endTime" in query:
+                return b"[]"
+            next_open = (
+                open_ms + acq.INTERVAL_MILLISECONDS[interval]
+            )
+            row = source_row(next_open, interval)
+            return json.dumps(
+                [[
+                    int(row[0]),
+                    *row[1:6],
+                    int(row[6]),
+                    row[7],
+                    int(row[8]),
+                    row[9],
+                    row[10],
+                    row[11],
+                ]]
+            ).encode("utf-8")
+        return super().fetch(url, max_bytes=max_bytes)
+
+
 def acquire_fixture(
     runtime_root,
     *,
@@ -182,6 +247,19 @@ def acquire_fixture(
         retrieved_at_utc="2024-01-02T00:00:00Z",
     )
 
+
+
+
+def acquire_gap_fixture(runtime_root):
+    missing = ms("2024-01-01T01:00:00Z")
+    return acq.acquire_event(
+        minimal_registration(),
+        "CRL-T003",
+        runtime_root=runtime_root,
+        archive_fetcher=MissingCandleArchiveFetcher(missing),
+        rest_fetcher=MissingAwareRestFetcher(missing),
+        retrieved_at_utc="2024-01-02T00:00:00Z",
+    )
 
 def load_json(path):
     return json.loads(path.read_text(encoding="utf-8"))
@@ -232,6 +310,54 @@ class CrisisLabQualityTests(unittest.TestCase):
             self.assertEqual(result["fail_count"], 0)
             self.assertTrue(result["replay_admitted"])
             self.assertFalse(result["market_outcomes_exposed"])
+
+    def test_rest_verified_exchange_gaps_pass_quality(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            acquired = acquire_gap_fixture(root)
+            self.assertEqual(acquired["overall_status"], "COMPLETE")
+            result = quality.validate_event(
+                runtime_root=root,
+                event_manifest_relative_path=acquired[
+                    "manifest_relative_path"
+                ],
+                event_manifest_sha256=acquired[
+                    "manifest_file_sha256"
+                ],
+            )
+            self.assertEqual(
+                result["overall_status"],
+                "PASS",
+                msg=json.dumps(result, sort_keys=True),
+            )
+            self.assertEqual(result["pass_count"], 6)
+            self.assertTrue(result["replay_admitted"])
+
+    def test_unverified_gap_evidence_fails_canonical_quality(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            acquired = acquire_gap_fixture(root)
+            event = load_json(root / acquired["manifest_relative_path"])
+            ref = next(
+                item
+                for item in event["datasets"]
+                if item["symbol"] == "BTCUSDT"
+                and item["interval"] == "1h"
+            )
+            dataset = load_json(root / ref["manifest_relative_path"])
+            dataset["gap_verification"] = dict(
+                dataset["gap_verification"]
+            )
+            dataset["gap_verification"]["status"] = "NOT_RUN"
+            result = quality._inspect_canonical(
+                runtime_root=root,
+                dataset_manifest=dataset,
+            )
+            self.assertEqual(result["status"], "FAIL")
+            self.assertIn(
+                "GAP_REST_VERIFICATION_INCOMPLETE",
+                result["failures"],
+            )
 
     def test_quality_output_is_deterministic_for_same_inputs(self):
         with tempfile.TemporaryDirectory() as directory:
