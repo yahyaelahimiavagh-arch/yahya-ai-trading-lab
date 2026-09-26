@@ -1,0 +1,273 @@
+{
+  "schema": "YATL_HSSE_SEARCH_PROTOCOL",
+  "schema_version": "0.1.0",
+  "protocol_id": "HSSE-001-SEARCH-PROTOCOL",
+  "registered_date_utc": "2026-09-26",
+  "status": "REGISTERED_BEFORE_HSSE_SEARCH_OUTCOMES",
+  "purpose": "Search broadly inside already-exposed historical development data, freeze a small survivor set, then evaluate those survivors exactly once on sealed later historical periods before any future forward-candidate review.",
+  "research_only": true,
+  "paper_only": true,
+  "p10_read": false,
+  "p10_write_allowed": false,
+  "p10_evidence_effect": "NONE",
+  "live_master_lock": "OFF",
+  "trade_permission": false,
+  "order_endpoint": false,
+  "quantity_authority": false,
+  "risk_authorization_mutation": false,
+  "ai_direct_execution": false,
+  "p11_locked": true,
+  "data_boundaries": {
+    "development": {
+      "corpus_id": "CRL-CONTROL-DEV-POOL-001",
+      "warmup_start_utc": "2019-12-18T00:00:00Z",
+      "analysis_start_utc": "2020-01-01T00:00:00Z",
+      "analysis_end_exclusive_utc": "2023-01-01T00:00:00Z",
+      "inspection_status": "OUTCOMES_ALREADY_EXPOSED; DEVELOPMENT_ONLY",
+      "allowed_uses": [
+        "parameter_search",
+        "family_search",
+        "development_cross_validation",
+        "ablation",
+        "cost_sensitivity",
+        "candidate_ranking"
+      ]
+    },
+    "blind_oos": {
+      "corpus_id": "HSSE-BLIND-OOS-001",
+      "acquisition_start_utc": "2022-11-01T00:00:00Z",
+      "analysis_start_utc": "2023-01-01T00:00:00Z",
+      "analysis_end_exclusive_utc": "2025-01-01T00:00:00Z",
+      "inspection_status": "SEALED_UNTIL_HSSE-004",
+      "pre_hsse004_allowed_fields": [
+        "identity",
+        "row_count",
+        "timestamp_bounds",
+        "gaps",
+        "duplicates",
+        "source_checksums",
+        "canonical_digest",
+        "structural_status"
+      ],
+      "pre_hsse004_forbidden_fields": [
+        "returns",
+        "direction",
+        "drawdown",
+        "volatility_rank",
+        "plots",
+        "strategy_trade_metrics",
+        "candidate_scores",
+        "pnl"
+      ]
+    },
+    "final_audit_holdout": {
+      "corpus_id": "HSSE-AUDIT-HOLDOUT-001",
+      "acquisition_start_utc": "2024-11-01T00:00:00Z",
+      "analysis_start_utc": "2025-01-01T00:00:00Z",
+      "analysis_end_exclusive_utc": "2026-07-01T00:00:00Z",
+      "inspection_status": "SEALED_UNTIL_HSSE-006",
+      "pre_hsse006_allowed_fields": [
+        "identity",
+        "row_count",
+        "timestamp_bounds",
+        "gaps",
+        "duplicates",
+        "source_checksums",
+        "canonical_digest",
+        "structural_status"
+      ],
+      "pre_hsse006_forbidden_fields": [
+        "returns",
+        "direction",
+        "drawdown",
+        "volatility_rank",
+        "plots",
+        "strategy_trade_metrics",
+        "candidate_scores",
+        "pnl"
+      ]
+    },
+    "recent_reserve": {
+      "start_utc": "2026-07-01T00:00:00Z",
+      "policy": "DO_NOT_USE_IN_HSSE-001_THROUGH_HSSE-006; retain as future independent historical reserve unless separately preregistered."
+    },
+    "symbols": [
+      "BTCUSDT",
+      "ETHUSDT"
+    ],
+    "intervals": [
+      "15m",
+      "1h",
+      "4h"
+    ],
+    "gap_policy": "NEVER_INTERPOLATE_OR_FORWARD_FILL; use only structurally admitted gaps and block decisions when required snapshots are stale."
+  },
+  "development_cross_validation": {
+    "mode": "EXPANDING_HISTORY_SEQUENTIAL_DEVELOPMENT_CV",
+    "note": "These folds were previously observed by HSL and are deliberately classified as Development, never fresh OOS.",
+    "folds": [
+      {
+        "fold_id": "HSSE-D001",
+        "training_start_utc": "2020-01-01T00:00:00Z",
+        "training_end_exclusive_utc": "2020-07-01T00:00:00Z",
+        "evaluation_start_utc": "2020-07-01T00:00:00Z",
+        "evaluation_end_exclusive_utc": "2021-01-01T00:00:00Z"
+      },
+      {
+        "fold_id": "HSSE-D002",
+        "training_start_utc": "2020-01-01T00:00:00Z",
+        "training_end_exclusive_utc": "2021-01-01T00:00:00Z",
+        "evaluation_start_utc": "2021-01-01T00:00:00Z",
+        "evaluation_end_exclusive_utc": "2021-07-01T00:00:00Z"
+      },
+      {
+        "fold_id": "HSSE-D003",
+        "training_start_utc": "2020-01-01T00:00:00Z",
+        "training_end_exclusive_utc": "2021-07-01T00:00:00Z",
+        "evaluation_start_utc": "2021-07-01T00:00:00Z",
+        "evaluation_end_exclusive_utc": "2022-01-01T00:00:00Z"
+      },
+      {
+        "fold_id": "HSSE-D004",
+        "training_start_utc": "2020-01-01T00:00:00Z",
+        "training_end_exclusive_utc": "2022-01-01T00:00:00Z",
+        "evaluation_start_utc": "2022-01-01T00:00:00Z",
+        "evaluation_end_exclusive_utc": "2022-07-01T00:00:00Z"
+      },
+      {
+        "fold_id": "HSSE-D005",
+        "training_start_utc": "2020-01-01T00:00:00Z",
+        "training_end_exclusive_utc": "2022-07-01T00:00:00Z",
+        "evaluation_start_utc": "2022-07-01T00:00:00Z",
+        "evaluation_end_exclusive_utc": "2023-01-01T00:00:00Z"
+      }
+    ]
+  },
+  "eligibility": {
+    "registry_status_required": "READY_FOR_TRAIN_SEARCH",
+    "reproduction_packet_required": true,
+    "source_or_implementation_identity_frozen": true,
+    "external_reported_performance_is_evidence": false,
+    "candidate_may_not_enter_search_from_source_reputation_alone": true
+  },
+  "search_budget": {
+    "maximum_eligible_families": 8,
+    "maximum_trials_per_family": 5000,
+    "maximum_total_trials": 20000,
+    "all_trials_count_toward_multiple_testing": true,
+    "failed_trials_retained": true,
+    "hidden_retries_forbidden": true,
+    "budget_may_not_be_increased_after_viewing_results": true,
+    "oversized_source_grid_policy": "Pre-register a deterministic hierarchical or reduced grid before execution; never prune using outcome knowledge."
+  },
+  "execution_semantics": {
+    "fixed_research_quantity": "0.001",
+    "fee_bps": 10,
+    "adverse_slippage_bps": 5,
+    "cost_stress": {
+      "fee_bps": 20,
+      "adverse_slippage_bps": 10
+    },
+    "execution": "NEXT_PRIMARY_OPEN_LONG_ONLY_SPOT",
+    "terminal_open_position": "MARK_TO_MARKET_ONLY; DO_NOT_FORCE_EXIT",
+    "shorting": false,
+    "futures": false,
+    "leverage": false
+  },
+  "development_survivor_filters": {
+    "minimum_completed_trades_total": 60,
+    "minimum_completed_trades_per_symbol": 20,
+    "require_positive_total_net_pnl_after_base_costs": true,
+    "require_positive_expectancy_after_base_costs": true,
+    "minimum_profit_factor_after_base_costs": "1.10",
+    "minimum_positive_development_cell_fraction": "0.60",
+    "maximum_drawdown_fraction": "0.10",
+    "maximum_single_trade_share_of_positive_pnl": "0.35",
+    "cost_stress_requires_positive_net_pnl": true,
+    "cost_stress_requires_positive_expectancy": true,
+    "neighbor_robustness_required": true,
+    "single_parameter_spike_rejected": true
+  },
+  "ranking": {
+    "raw_pnl_only_ranking_forbidden": true,
+    "method": "PARETO_THEN_LEXICOGRAPHIC",
+    "pareto_dimensions": [
+      "median_development_cell_net_return_after_costs",
+      "lower_quartile_development_cell_net_return_after_costs",
+      "profit_factor_after_costs",
+      "maximum_drawdown_fraction",
+      "cost_stress_net_pnl",
+      "parameter_neighborhood_stability"
+    ],
+    "lexicographic_tiebreakers": [
+      "higher_lower_quartile_cell_return",
+      "higher_median_cell_return",
+      "higher_profit_factor",
+      "lower_maximum_drawdown",
+      "lower_parameter_complexity",
+      "lower_trade_concentration"
+    ],
+    "family_survivor_cap": 3,
+    "overall_survivor_cap": 12,
+    "survivor_count_is_a_cap_not_a_quota": true
+  },
+  "freeze_before_blind_oos": {
+    "required": true,
+    "freeze_fields": [
+      "candidate_id",
+      "strategy_family",
+      "implementation_digest",
+      "parameter_values",
+      "signal_and_exit_rules",
+      "execution_semantics",
+      "cost_model",
+      "data_boundaries",
+      "selection_rule",
+      "development_trial_ledger_digest"
+    ],
+    "post_freeze_parameter_change": "FORBIDDEN",
+    "post_blind_failure_retune_same_holdout": "FORBIDDEN"
+  },
+  "blind_oos_gate": {
+    "execution_count": 1,
+    "minimum_completed_trades_total": 40,
+    "minimum_completed_trades_per_symbol": 10,
+    "require_positive_total_net_pnl_after_base_costs": true,
+    "require_positive_expectancy_after_base_costs": true,
+    "minimum_profit_factor_after_base_costs": "1.05",
+    "minimum_positive_calendar_quarter_fraction": "0.50",
+    "maximum_drawdown_fraction": "0.12",
+    "cost_stress_report_required": true,
+    "failure_policy": "RETAIN_FAILURE; DO_NOT_RETUNE_ON_THIS_HOLDOUT"
+  },
+  "audit_holdout_gate": {
+    "execution_count": 1,
+    "purpose": "Independent final historical audit after HSSE-004 survivor decision; not an additional tuning surface.",
+    "require_positive_total_net_pnl_after_base_costs": true,
+    "require_positive_expectancy_after_base_costs": true,
+    "minimum_profit_factor_after_base_costs": "1.00",
+    "maximum_drawdown_fraction": "0.15",
+    "failure_policy": "RETAIN_FAILURE_AND_BLOCK_FORWARD_CANDIDATE_REVIEW_UNTIL_NEW_GENERATION"
+  },
+  "anti_overfitting": {
+    "development_outcomes_may_inform_selection": true,
+    "blind_oos_outcomes_may_inform_selection": false,
+    "audit_holdout_outcomes_may_inform_selection": false,
+    "candidate_deduplication_required": true,
+    "trial_ledger_required": true,
+    "parameter_neighborhood_report_required": true,
+    "family_and_parameter_search_counted_together": true,
+    "negative_results_retained": true,
+    "buy_and_hold_and_cash_baselines_reported": true,
+    "no_edge_found_is_valid_outcome": true
+  },
+  "phase_order": [
+    "HSSE-001_PROTOCOL_AND_DATA_BOUNDARIES",
+    "HSSE-002_DETERMINISTIC_SEARCH_RUNNER",
+    "HSSE-003_SURVIVOR_RANKING_AND_ROBUSTNESS",
+    "HSSE-004_FROZEN_BLIND_OOS",
+    "HSSE-005_CRISIS_REGIME_CERTIFICATION",
+    "HSSE-006_INDEPENDENT_AUDIT",
+    "FORWARD_CANDIDATE_REVIEW"
+  ]
+}
