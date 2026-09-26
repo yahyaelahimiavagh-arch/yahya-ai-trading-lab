@@ -13,6 +13,8 @@ import re
 from pathlib import Path
 from typing import Mapping, Sequence
 
+from . import reproduction
+
 
 SCHEMA = "YATL_RESEARCH_CANDIDATE_REGISTRY"
 SCHEMA_VERSION = "0.1.0"
@@ -267,6 +269,7 @@ def _validate_candidate(candidate: object) -> dict[str, object]:
         "duplicate_of",
         "strategy_evidence_effect",
         "p10_evidence_effect",
+        "reproduction_packet",
     )
     if not _exact_keys(candidate, keys):
         raise ResearchIntakeError("candidate schema is invalid")
@@ -304,6 +307,30 @@ def _validate_candidate(candidate: object) -> dict[str, object]:
     _text_list(candidate["known_limitations"], "known limitations")
     _text_list(candidate["leakage_risks"], "leakage risks")
 
+    packet_ref = candidate["reproduction_packet"]
+    if packet_ref is not None:
+        if not _exact_keys(packet_ref, ("relative_path", "git_blob_sha")):
+            raise ResearchIntakeError("reproduction packet reference is invalid")
+        relative = _text(
+            packet_ref["relative_path"], "reproduction packet relative path"
+        )
+        relative_path = Path(relative)
+        if (
+            relative_path.is_absolute()
+            or ".." in relative_path.parts
+            or relative_path.suffix != ".json"
+            or not relative.startswith("reproduction-packets/")
+        ):
+            raise ResearchIntakeError(
+                "reproduction packet path is outside the registry scope"
+            )
+        blob_sha = packet_ref["git_blob_sha"]
+        if (
+            not isinstance(blob_sha, str)
+            or re.fullmatch(r"[0-9a-f]{40}", blob_sha) is None
+        ):
+            raise ResearchIntakeError("reproduction packet Git blob SHA is invalid")
+
     status = candidate["status"]
     if status not in STATUSES:
         raise ResearchIntakeError("candidate status is invalid")
@@ -322,10 +349,10 @@ def _validate_candidate(candidate: object) -> dict[str, object]:
         )
 
     if status in {"REPRODUCIBLE", "READY_FOR_TRAIN_SEARCH"} and (
-        source["content_sha256"] is None
+        source["content_sha256"] is None and packet_ref is None
     ):
         raise ResearchIntakeError(
-            "reproducible/search-ready candidate needs frozen source content"
+            "reproducible/search-ready candidate needs frozen source or reproduction packet"
         )
     if status in {"REPRODUCIBLE", "READY_FOR_TRAIN_SEARCH"} and (
         not entry_rules or not exit_rules
@@ -346,6 +373,11 @@ def _validate_candidate(candidate: object) -> dict[str, object]:
     if not market_universe or not timeframes:
         raise ResearchIntakeError("candidate market scope is missing")
     return dict(candidate)
+
+
+def _git_blob_sha(payload: bytes) -> str:
+    header = b"blob " + str(len(payload)).encode("ascii") + b"\0"
+    return hashlib.sha1(header + payload).hexdigest()
 
 
 def validate_registry(path: Path) -> dict[str, object]:
@@ -415,6 +447,41 @@ def validate_registry(path: Path) -> dict[str, object]:
         raise ResearchIntakeError(
             "candidate ids must be unique and sorted"
         )
+    packet_count = 0
+    for item in validated:
+        packet_ref = item["reproduction_packet"]
+        if packet_ref is None:
+            continue
+        packet_path = target.parent / packet_ref["relative_path"]
+        if packet_path.is_symlink():
+            raise ResearchIntakeError("symlink reproduction packet is forbidden")
+        try:
+            packet_payload = packet_path.read_bytes()
+        except OSError:
+            raise ResearchIntakeError(
+                "cannot read bound reproduction packet"
+            ) from None
+        if _git_blob_sha(packet_payload) != packet_ref["git_blob_sha"]:
+            raise ResearchIntakeError(
+                "reproduction packet Git blob SHA does not match"
+            )
+        try:
+            packet_result = reproduction.validate_packet(packet_path)
+        except reproduction.ReproductionPacketError as exc:
+            raise ResearchIntakeError(str(exc)) from None
+        if packet_result["candidate_id"] != item["candidate_id"]:
+            raise ResearchIntakeError(
+                "reproduction packet candidate identity mismatch"
+            )
+        if item["status"] == "READY_FOR_TRAIN_SEARCH" and (
+            packet_result["candidate_status"] != "READY_FOR_TRAIN_SEARCH"
+            or packet_result["ready_for_train_search"] is not True
+        ):
+            raise ResearchIntakeError(
+                "search-ready registry candidate lacks a ready reproduction packet"
+            )
+        packet_count += 1
+
     sources_by_id: dict[str, dict[str, object]] = {}
     for item in validated:
         source = item["source"]
@@ -466,6 +533,7 @@ def validate_registry(path: Path) -> dict[str, object]:
         "registry_file_sha256": _sha256(payload),
         "candidate_count": len(validated),
         "source_count": len(sources_by_id),
+        "reproduction_packet_count": packet_count,
         "unique_hypothesis_count": len(first_by_fingerprint),
         "duplicate_count": duplicate_count,
         "status_counts": status_counts,
