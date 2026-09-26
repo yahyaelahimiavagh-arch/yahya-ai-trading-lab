@@ -1998,7 +1998,7 @@ Forward مستقل و با protocol جدید بررسی می‌شود. real-forw
    هم‌بسته‌اند. مرحله بعد **HSSE-005 Crisis/Regime Certification** است؛ Audit
    Holdout همچنان sealed و Forward promotion همچنان ممنوع است.
 
-9. **HSSE-005 — Crisis/Regime Certification**: اتصال survivorهای OOS به CRL.
+9. **HSSE-005 — Crisis/Regime Certification — PREREGISTERED / ENGINEERING ACTIVE**: شش survivor بدون تغییر روی 8 واحد زمانی de-duplicated از 11 رویداد CRL تا پایان 2024 تست می‌شوند. رویدادهای 2025–2026 و Audit Holdout ممنوع‌اند. واحدهای هم‌پوشان 2022 و مارس 2023 ادغام شده‌اند تا double-count کاهش یابد. Gate قبل از outcome شامل positive-unit fractions، median base/stress، حداقل activity/trades و drawdown نسبت به Blind است. correlation/sign-agreement فقط diagnostic است و هیچ rerank/retune مجاز نیست.
 10. **HSSE-006 — Independent Audit**: recomputation، trial ledger audit، leakage
    audit و candidate registry audit.
 11. فقط پس از آن: **Forward Candidate Review** برای نسل بعدی؛ P10 جاری untouched.
