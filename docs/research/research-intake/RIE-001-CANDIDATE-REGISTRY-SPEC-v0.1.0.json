@@ -1,0 +1,59 @@
+{
+  "schema": "YATL_RIE_001_CANDIDATE_REGISTRY_SPEC",
+  "schema_version": "0.1.0",
+  "registry_schema": "YATL_RESEARCH_CANDIDATE_REGISTRY",
+  "registry_id": "RIE-001-RESEARCH-CANDIDATES",
+  "source_tiers": {
+    "A": "research-grade methodology with clear provenance",
+    "B": "reproducible inspectable implementation",
+    "C": "idea-mining source only"
+  },
+  "source_languages": ["EN", "ZH", "MULTI", "OTHER"],
+  "technique_families": [
+    "TIME_SERIES_MOMENTUM",
+    "VOLUME_WEIGHTED_MOMENTUM",
+    "TREND",
+    "BREAKOUT",
+    "MEAN_REVERSION",
+    "VOLATILITY",
+    "REGIME_AWARE",
+    "OTHER"
+  ],
+  "statuses": [
+    "NEW",
+    "DUPLICATE",
+    "REPRODUCIBLE",
+    "REJECTED_SOURCE",
+    "READY_FOR_TRAIN_SEARCH"
+  ],
+  "dedupe": {
+    "basis": "strategy logic plus market scope; excludes source identity and reported performance",
+    "duplicate_must_be_retained": true,
+    "duplicate_must_reference_first_matching_candidate": true
+  },
+  "reproducibility": {
+    "https_provenance_uri_required": true,
+    "source_content_sha256_required_for": [
+      "REPRODUCIBLE",
+      "READY_FOR_TRAIN_SEARCH"
+    ],
+    "reported_performance_is_yatl_evidence": false
+  },
+  "search_readiness": {
+    "entry_rules_required": true,
+    "exit_rules_required": true,
+    "cost_assumptions_required": true,
+    "grants_historical_qualification": false,
+    "grants_forward_authority": false
+  },
+  "research_only": true,
+  "p10_read": false,
+  "p10_write_allowed": false,
+  "p10_evidence_effect": "NONE",
+  "trade_permission": false,
+  "order_endpoint": false,
+  "quantity_authority": false,
+  "risk_authorization_mutation": false,
+  "ai_direct_execution": false,
+  "p11_locked": true
+}

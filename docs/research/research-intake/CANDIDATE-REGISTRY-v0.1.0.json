@@ -1,0 +1,16 @@
+{
+  "schema": "YATL_RESEARCH_CANDIDATE_REGISTRY",
+  "schema_version": "0.1.0",
+  "registry_id": "RIE-001-RESEARCH-CANDIDATES",
+  "candidates": [],
+  "research_only": true,
+  "p10_read": false,
+  "p10_write_allowed": false,
+  "p10_evidence_effect": "NONE",
+  "trade_permission": false,
+  "order_endpoint": false,
+  "quantity_authority": false,
+  "risk_authorization_mutation": false,
+  "ai_direct_execution": false,
+  "p11_locked": true
+}
