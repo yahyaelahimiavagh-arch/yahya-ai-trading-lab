@@ -1,0 +1,115 @@
+{
+  "schema": "YATL_HSSE_BLIND_OOS_PROTOCOL",
+  "schema_version": "0.1.0",
+  "protocol_id": "HSSE-004B-FROZEN-BLIND-OOS-001",
+  "registered_date_utc": "2026-09-26",
+  "status": "REGISTERED_BEFORE_HSSE_BLIND_OOS_ACQUISITION_OR_OUTCOME_ACCESS",
+  "freeze": {
+    "freeze_id": "HSSE-004A-SURVIVOR-FREEZE-001",
+    "relative_path": "docs/research/historical-strategy-search/HSSE-004A-SURVIVOR-FREEZE-v0.1.0.json",
+    "git_blob_sha": "bb1b0f9c25a013e766558419f6fa08bf2a1f70c2",
+    "survivor_count": 6
+  },
+  "data": {
+    "event_id": "HSSE-BLIND-OOS-001",
+    "designation": "BLIND_HOLDOUT",
+    "acquisition_start_utc": "2022-11-01T00:00:00Z",
+    "analysis_start_utc": "2023-01-01T00:00:00Z",
+    "analysis_end_exclusive_utc": "2025-01-01T00:00:00Z",
+    "symbols": [
+      "BTCUSDT",
+      "ETHUSDT"
+    ],
+    "acquired_intervals": [
+      "15m",
+      "1h",
+      "4h"
+    ],
+    "strategy_interval": "1h",
+    "warmup_only_before_analysis_start": true,
+    "structural_quality_before_replay": true,
+    "pre_replay_allowed_fields": [
+      "identity",
+      "row_count",
+      "timestamp_bounds",
+      "gaps",
+      "duplicates",
+      "source_checksums",
+      "canonical_digest",
+      "structural_status"
+    ],
+    "pre_replay_forbidden_fields": [
+      "returns",
+      "direction",
+      "drawdown",
+      "volatility_rank",
+      "plots",
+      "strategy_metrics",
+      "pnl"
+    ]
+  },
+  "execution": {
+    "execution_count_per_frozen_survivor": 1,
+    "portfolio_semantics": "INDEPENDENT_PER_SYMBOL_CONTINUOUS_2023_2025",
+    "indicator_state": "CONTINUOUS_FROM_2022_11_01_WARMUP; NO_FORWARD_FILL",
+    "position_at_analysis_start": "FLAT; WARMUP_DOES_NOT_TRADE",
+    "reset_at_calendar_quarter_boundary": false,
+    "reset_inside_analysis_period": false,
+    "quantity": "0.001",
+    "initial_equity_quote_per_symbol": "10000",
+    "base_fee_bps": "10",
+    "base_adverse_slippage_bps": "5",
+    "stress_fee_bps": "20",
+    "stress_adverse_slippage_bps": "10",
+    "signal_math": "SOURCE_FIDELITY_BINARY64_FROZEN_HSSE002",
+    "economics_math": "DECIMAL_256",
+    "next_open": true,
+    "side": "LONG_ONLY_SPOT",
+    "terminal_open_position": "MARK_TO_MARKET_WITH_LIQUIDATION_COSTS; DO_NOT_FORCE_EXIT",
+    "aggregate_total_net_pnl": "SUM_OF_TWO_INDEPENDENT_SYMBOL_LEDGERS",
+    "aggregate_maximum_drawdown": "MAX_OF_SYMBOL_LEDGER_DRAWDOWNS",
+    "aggregate_quarter_pnl": "SUM_OF_PER_SYMBOL_EQUITY_CHANGE_WITH_CONTINUOUS_STATE",
+    "positive_quarter_rule": "AGGREGATE_QUARTER_PNL_AFTER_COSTS_GREATER_THAN_ZERO"
+  },
+  "blind_gate": {
+    "minimum_completed_trades_total": 40,
+    "minimum_completed_trades_per_symbol": 10,
+    "require_positive_total_net_pnl_after_base_costs": true,
+    "require_positive_expectancy_after_base_costs": true,
+    "minimum_profit_factor_after_base_costs": "1.05",
+    "minimum_positive_calendar_quarter_fraction": "0.50",
+    "maximum_drawdown_fraction": "0.12",
+    "cost_stress_report_required": true,
+    "failure_policy": "RETAIN_FAILURE; DO_NOT_RETUNE_ON_THIS_HOLDOUT"
+  },
+  "decision": {
+    "no_cross_candidate_reranking_on_blind": true,
+    "no_parameter_change": true,
+    "no_family_change": true,
+    "no_survivor_replacement": true,
+    "no_hidden_retry": true,
+    "pass_action": "ELIGIBLE_FOR_HSSE005_CRISIS_REGIME_CERTIFICATION",
+    "fail_action": "RETAIN_FAILURE_AND_REMOVE_FROM_THIS_GENERATION",
+    "zero_pass_is_valid": true,
+    "no_automatic_forward_promotion": true
+  },
+  "output": {
+    "one_immutable_result_artifact": true,
+    "all_six_results_retained": true,
+    "all_failure_reasons_retained": true,
+    "quarterly_evidence_retained": true,
+    "source_quality_identity_retained": true,
+    "audit_holdout_read": false
+  },
+  "research_only": true,
+  "p10_read": false,
+  "p10_write_allowed": false,
+  "p10_evidence_effect": "NONE",
+  "live_master_lock": "OFF",
+  "trade_permission": false,
+  "order_endpoint": false,
+  "quantity_authority": false,
+  "risk_authorization_mutation": false,
+  "ai_direct_execution": false,
+  "p11_locked": true
+}

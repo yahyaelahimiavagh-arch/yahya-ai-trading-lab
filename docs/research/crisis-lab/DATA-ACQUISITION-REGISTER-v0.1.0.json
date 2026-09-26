@@ -267,6 +267,18 @@
       "transport_alignment": "round outward per timeframe to full UTC candle boundaries; archive download may round outward to UTC day files; canonical trim preserves semantic range",
       "inspection_mode": "STRUCTURAL_ONLY_BEFORE_FINAL_EVALUATION",
       "source_conflict_quarantine": true
+    },
+    {
+      "event_id": "HSSE-BLIND-OOS-001",
+      "designation": "BLIND_HOLDOUT",
+      "replay_eligible": true,
+      "semantic_range": {
+        "start_utc": "2022-11-01T00:00:00Z",
+        "end_utc": "2025-01-01T00:00:00Z"
+      },
+      "transport_alignment": "Exact UTC grid-aligned HSSE acquisition range; 2022-11-01 through 2022-12-31 is indicator warmup only and 2023-01-01 through 2024-12-31 is the frozen Blind OOS analysis surface.",
+      "inspection_mode": "STRUCTURAL_ONLY_UNTIL_HSSE004B_SINGLE_REPLAY",
+      "source_conflict_quarantine": false
     }
   ]
 }
