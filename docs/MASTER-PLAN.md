@@ -1757,6 +1757,47 @@ HSL-004A با PR #112، Final HEAD
 این acceptance مربوط به protocol، runner، tests و safety boundary است و به‌تنهایی
 هیچ outcome اقتصادی برای Momentum اثبات نمی‌کند.
 
+### HSL-004A — Canonical Historical Outcome — NOT QUALIFIED — 2026-09-26
+
+پس از کشف دو خطای عددی در اولین replay واقعی، PR #114 برای اصلاح
+LongSetup decimal contract و هم‌ترازکردن closed-trade accounting با
+`DECIMAL_PRECISION=256` باز شد. Diagnostic مستقل با precision=256 ریشه خطای
+accounting را تأیید کرد و Final HEAD
+`4ccf16e5c809bfb32043d26e6cdac52aa34479a1` هر دو GitHub Actions job
+`accepted-public-data` و `unit-and-safety` را PASS کرد. این اصلاح فقط
+implementation/accounting correctness است؛ strategy version، پارامترها، folds،
+fee/slippage، qualification gate و P10 تغییر نکردند.
+
+Canonical HSL-004A replay روی همان Final HEAD و quality manifest پذیرفته‌شده
+CRL-CONTROL-DEV-POOL-001 اجرا شد. artifact immutable:
+
+`historical-strategy-lab/technique-library/momentum-v0.1.0/hsl-004a-19ba7a4fde6e14a50d8b705d.json`
+
+SHA-256 فایل:
+`19ba7a4fde6e14a50d8b705dfc2278efd9f0bc84aa385ff0137787f2daa17981`
+
+result SHA-256:
+`0be5bd76b75565f6ee60466c36bf0775ae5757849b6c7bdc2b04bdfeb2ad6829`
+
+Outcome رسمی روی 10 OOS cell و 1,357 معامله:
+- BTCUSDT: 552 trade؛ ETHUSDT: 805 trade؛
+- wins=423، losses=934، win rate≈31.17٪؛
+- total net PnL after costs≈-56.639451 quote؛
+- expectancy≈-0.041747 quote/trade؛
+- profit factor≈0.6951؛
+- positive OOS cells=1/10=10٪؛
+- qualification=`NOT_QUALIFIED_HSL_RESEARCH`.
+
+Failure reasons رسمی:
+`TOTAL_NET_PNL_NOT_POSITIVE`,
+`EXPECTANCY_NOT_POSITIVE`,
+`PROFIT_FACTOR_GATE_FAILED`,
+`POSITIVE_OOS_CELL_FRACTION_GATE_FAILED`.
+
+این نتیجه به‌عنوان evidence منفی حفظ می‌شود. HSL-004A با دیدن outcome retune
+نمی‌شود و parameter search پسینی روی همان OOS ممنوع است. این candidate هیچ
+اثر P10 ندارد: `p10_evidence_effect=NONE`، P11 LOCKED و Live authorization=false.
+
 ### HSL-004B — Volatility Expansion Candidate — ACTIVE / PREREGISTERED
 
 branch فعال:
@@ -1774,17 +1815,137 @@ high قبلی 20h بشکند، close در 25٪ بالایی candle باشد و e
 HSL-001 حفظ می‌شوند. parameter search و outcome-driven retuning ممنوع‌اند؛
 P4/P10 دست‌نخورده و P11 LOCKED است.
 
-### مسیر بعد از HSL-004B
+### مسیر بعد از HSL-004B — Research Intake + Historical Strategy Search Engine
 
-Technique Library به candidateهای مستقل mean reversion، support/resistance و
-techniqueهای استخراج‌شده از منابع آموزشی ادامه می‌دهد؛ هرکدام preregistration،
-runner، metrics و failure criteria جدا دارند.
+پس از بستن canonical outcome HSL-004B، مدل توسعه Past از ساخت بی‌پایان candidateهای
+تک‌به‌تک به یک pipeline رسمی برای **کشف، بازتولید و جست‌وجوی کنترل‌شده Edge**
+تغییر می‌کند. هدف این تغییر افزایش سرعت یادگیری است، نه حذف validation یا
+تبدیل backtest به مجوز Live.
 
-قانون توقف scope creep: قبل از افزودن هر HSL جدید باید سؤال پژوهشی، baseline،
-challenger، metrics و failure criteria مشخص باشد. HSL نباید به زنجیره بی‌پایان
-featureها تبدیل شود. اگر candidateها edge اقتصادی کافی نشان ندهند، نتیجه معتبر
-`NO_EDGE_FOUND` است و به‌جای پیچیده‌ترکردن بی‌پایان سیستم باید hypothesis جدید
-و مستقل تعریف شود.
+جریان رسمی از این checkpoint به بعد:
+
+`External Research → Research Candidate Registry → Train Search → Frozen Survivor → Blind OOS → Crisis Stress → Forward Candidate Review`
+
+#### Research Intake Engine — RIE
+
+RIE ورودی انگلیسی و چینی را به candidateهای قابل‌آزمایش و دارای provenance تبدیل
+می‌کند. منابع اولیه هدف شامل paperهای دانشگاهی/peer-reviewed یا working paperهای
+معتبر، repositoryهای reproducible، کتاب/lecture/transcript حرفه‌ای، و strategy
+libraryهای عمومی انگلیسی/چینی است. نتیجه گزارش‌شده یک منبع هرگز به‌عنوان evidence
+YATL پذیرفته نمی‌شود؛ فقط hypothesis و implementation detail استخراج می‌شود.
+
+Tierهای منبع:
+- **Tier A — Research-grade**: paper یا پژوهش معتبر با methodology روشن، داده،
+  فرمول/قواعد و ترجیحاً code/reproduction material؛
+- **Tier B — Reproducible implementation**: repository یا notebook قابل‌ممیزی با
+  strategy logic روشن و license/provenance مشخص؛
+- **Tier C — Idea mining**: منابع عمومی انگلیسی/چینی، strategy marketplace،
+  ویدیو/lecture/transcript یا community implementation؛ فقط برای ساخت hypothesis،
+  نه اعتماد به performance claim.
+
+برای هر ورودی، Research Candidate Registry حداقل این فیلدها را نگه می‌دارد:
+source/provenance، publication/repository date، technique family، market/universe،
+timeframe، signal، lookback، entry، exit، stop، sizing، cost assumptions، reported
+metrics، data period، known limitations، leakage risk، implementation availability،
+و وضعیت `NEW / DUPLICATE / REPRODUCIBLE / REJECTED_SOURCE / READY_FOR_TRAIN_SEARCH`.
+
+هدف Sweep اولیه: **20 تا 50 candidate مستقل و غیرتکراری** با اولویت
+Time-Series Momentum، Volume-Weighted Momentum، Trend/Breakout،
+Mean-Reversion-after-extreme-moves، Volatility/Expansion و Regime-aware logic.
+این عدد target پژوهشی است، نه quota برای اجبار به نگه‌داشتن strategy ضعیف.
+
+RIE حق ندارد:
+- code خارجی را مستقیماً وارد P10 یا execution کند؛
+- performance claim منبع را evidence YATL بنامد؛
+- candidate را به‌خاطر شهرت منبع promote کند؛
+- credential، order endpoint، leverage/futures یا Live permission اضافه کند.
+
+#### Historical Strategy Search Engine — HSSE
+
+HSSE پس از HSL-004B ساخته می‌شود تا به‌جای retune پسینی روی OOS، search و
+optimization را فقط داخل **development/train partition** انجام دهد.
+
+قواعد:
+- search space قبل از دیدن نتیجه validation ثبت و versioned می‌شود؛
+- parameter search فقط روی Train/Development مجاز است؛
+- OOS/validation و blind holdout برای انتخاب پارامتر دست‌نخورده می‌مانند؛
+- fee و adverse slippage در تمام rankingهای اقتصادی لحاظ می‌شوند؛
+- candidate family، parameter ranges، trial count و selection rule همگی در
+  Candidate Registry ثبت می‌شوند؛
+- تمام trialها، شامل شکست‌ها، retained evidence هستند تا multiple-testing و
+  cherry-picking پنهان نشود؛
+- انتخاب فقط بر اساس بیشترین raw PnL ممنوع است.
+
+معیار selection باید چندبعدی باشد و حداقل شامل:
+- net PnL after costs؛
+- positive expectancy؛
+- profit factor؛
+- maximum drawdown / downside behavior؛
+- stability across train folds/regimes؛
+- sufficient completed-trade sample؛
+- cost/slippage sensitivity؛
+- concentration/outlier dependence؛
+- complexity penalty / preference for simpler equivalent candidates.
+
+خروجی Train Search فقط **Frozen Survivor** است. قبل از OOS، parameters،
+implementation digest، data boundary و selection rule فریز می‌شوند. سپس survivor
+فقط روی داده‌ای که در search استفاده نشده ارزیابی می‌شود. شکست OOS باعث برگشت و
+retune همان holdout نمی‌شود؛ hypothesis بعدی باید به‌عنوان نسل جدید و با registry
+شفاف ساخته شود.
+
+#### Multiple-testing / overfitting controls
+
+از آنجا که HSSE عمداً تعداد زیادی candidate/trial را بررسی می‌کند، نتیجه «بهترین
+backtest» به‌تنهایی معتبر نیست. حداقل کنترل‌ها:
+- ثبت تعداد واقعی hypothesis/trialهای آزموده‌شده؛
+- deduplication candidateها و جلوگیری از بازآزمایی پنهانی یک ایده با نام جدید؛
+- train/validation/holdout separation؛
+- walk-forward stability؛
+- sensitivity/neighbor checks برای جلوگیری از انتخاب یک نقطه پارامتری شکننده؛
+- comparison با CASH و Buy-and-Hold و baseline family؛
+- نگهداری failure ledger و negative evidence؛
+- ممنوعیت بازکردن P10/P11 صرفاً با historical search result.
+
+#### Gate انتقال از Past به Forward
+
+یک strategy فقط وقتی برای `Forward Candidate Review` مطرح می‌شود که:
+1. در Train Search survivor شده باشد؛
+2. پارامترها قبل از OOS فریز شده باشند؛
+3. blind OOS بعد از هزینه مثبت و از نظر sample/stability قابل‌قبول باشد؛
+4. Crisis/Regime Stress شکست ایمنی یا شکنندگی ناموجه نشان ندهد؛
+5. provenance، implementation digest و evidence chain قابل بازسازی باشند.
+
+عبور از این Gate به معنی تغییر P10 جاری نیست. candidate جدید فقط در یک نسل
+Forward مستقل و با protocol جدید بررسی می‌شود. real-forward فعلی sealed باقی
+می‌ماند.
+
+#### ترتیب ساخت پس از HSL-004B
+
+1. **RIE-001 — Source & Candidate Registry**: schema، provenance، tier، dedupe،
+   status lifecycle و immutable source references.
+2. **RIE-002 — English/Chinese Research Sweep #001**: استخراج 20–50 candidate
+   و ثبت بدون اجرای production.
+3. **RIE-003 — Reproduction Packets**: تبدیل candidateهای برتر به specification
+   دقیق قابل‌پیاده‌سازی، بدون performance trust.
+4. **HSSE-001 — Search Protocol & Data Boundaries**: train/validation/holdout،
+   search-budget و anti-leakage rules.
+5. **HSSE-002 — Deterministic Search Runner**: اجرای bounded trial matrix با
+   fee/slippage و artifact کامل تمام trialها.
+6. **HSSE-003 — Survivor Ranking & Robustness**: ranking چندمعیاره، stability،
+   cost sensitivity و complexity control.
+7. **HSSE-004 — Frozen Blind OOS**: اجرای survivorهای فریز‌شده روی blind data.
+8. **HSSE-005 — Crisis/Regime Certification**: اتصال survivorهای OOS به CRL.
+9. **HSSE-006 — Independent Audit**: recomputation، trial ledger audit، leakage
+   audit و candidate registry audit.
+10. فقط پس از آن: **Forward Candidate Review** برای نسل بعدی؛ P10 جاری untouched.
+
+قانون توقف scope creep همچنان پابرجاست: اگر search گسترده با protocol صحیح
+candidate قابل‌قبولی پیدا نکند، نتیجه معتبر `NO_EDGE_FOUND` است. پاسخ به این
+نتیجه افزایش کورکورانه trialها یا شکستن holdout نیست؛ باید hypothesis/source
+family جدید وارد Research شود.
+
+هدف این مسیر «پیداکردن بهترین backtest» نیست؛ هدف پیدا کردن **edge اقتصادی
+پایدار، قابل‌تکرار و قابل‌دفاع پس از هزینه‌ها** است.
 
 ### وضعیت کل پروژه در این checkpoint
 
