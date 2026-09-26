@@ -1397,6 +1397,471 @@
       "strategy_evidence_effect": "NONE",
       "p10_evidence_effect": "NONE",
       "reproduction_packet": null
+    },
+    {
+      "candidate_id": "RIE-CAND-0025",
+      "source": {
+        "source_id": "RIE-SRC-0021",
+        "tier": "A",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "Momentum has its moments",
+        "uri": "https://www.sciencedirect.com/science/article/pii/S0304405X14002566",
+        "publication_date": "2015-04-01",
+        "content_sha256": null,
+        "authors": [
+          "Pedro Barroso",
+          "Pedro Santa-Clara"
+        ],
+        "provenance_notes": [
+          "Web-verified academic/publisher source; source bytes are not frozen yet.",
+          "Reported performance is not YATL evidence and must be independently reproduced."
+        ]
+      },
+      "technique_family": "REGIME_AWARE",
+      "market_universe": [
+        "BTCUSDT",
+        "ETHUSDT"
+      ],
+      "timeframes": [
+        "1h",
+        "4h"
+      ],
+      "hypothesis": "Scaling a frozen trend/momentum exposure down when only lagged realized volatility is high may preserve more of the trend edge while reducing crash sensitivity.",
+      "entry_rules": [
+        "Use the underlying frozen long-only trend signal; the volatility layer may scale an allowed entry but may not create a new directional entry."
+      ],
+      "exit_rules": [
+        "Exit when the frozen underlying trend signal exits; the risk layer may additionally reduce exposure toward a preregistered floor using only lagged volatility."
+      ],
+      "stop_rules": [],
+      "sizing_rules": [
+        "Exposure is a preregistered monotone function of lagged realized volatility with no leverage in YATL Spot.",
+        "Estimator window, target and caps must be frozen before OOS."
+      ],
+      "lookbacks": [
+        "Exact volatility estimator, scaling constant and window require reproduction before search readiness."
+      ],
+      "cost_assumptions": [
+        "Use frozen YATL fee and adverse-slippage assumptions in controlled Development search.",
+        "No source-reported performance can substitute for YATL after-cost evidence."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Original evidence is equity momentum rather than BTC/ETH Spot.",
+        "Source strategy can use leverage; YATL adaptation forbids leverage."
+      ],
+      "leakage_risks": [
+        "Volatility inputs must end before the decision timestamp.",
+        "Do not choose target volatility or caps using crisis/holdout results."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
+    },
+    {
+      "candidate_id": "RIE-CAND-0026",
+      "source": {
+        "source_id": "RIE-SRC-0022",
+        "tier": "A",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "Momentum Crashes",
+        "uri": "https://www.nber.org/papers/w20439",
+        "publication_date": null,
+        "content_sha256": null,
+        "authors": [
+          "Kent Daniel",
+          "Tobias J. Moskowitz"
+        ],
+        "provenance_notes": [
+          "Web-verified academic/publisher source; source bytes are not frozen yet.",
+          "Reported performance is not YATL evidence and must be independently reproduced."
+        ]
+      },
+      "technique_family": "REGIME_AWARE",
+      "market_universe": [
+        "BTCUSDT",
+        "ETHUSDT"
+      ],
+      "timeframes": [
+        "1h",
+        "4h"
+      ],
+      "hypothesis": "A panic-state detector based only on lagged market decline and lagged volatility can identify states where trend/momentum exposure should be reduced before rebound-driven whipsaw.",
+      "entry_rules": [
+        "Allow the frozen long-only trend entry only according to a preregistered panic-state exposure rule computed from information available at the decision time."
+      ],
+      "exit_rules": [
+        "Exit or reduce exposure when the preregistered panic state activates; resume only according to frozen deactivation logic."
+      ],
+      "stop_rules": [],
+      "sizing_rules": [
+        "Exposure may take only a small preregistered set of values such as full/reduced/cash; exact states are reproduction/search variables, not post-outcome choices."
+      ],
+      "lookbacks": [
+        "Recent market-decline horizon and volatility horizon must be extracted and then bounded in Development search."
+      ],
+      "cost_assumptions": [
+        "Use frozen YATL fee and adverse-slippage assumptions in controlled Development search.",
+        "No source-reported performance can substitute for YATL after-cost evidence."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Original paper studies momentum portfolios across traditional assets rather than BTC/ETH Spot.",
+        "Dynamic mean/variance forecasting is more complex than the first YATL implementation should be."
+      ],
+      "leakage_risks": [
+        "Panic labels must not depend on subsequent rebound information.",
+        "Any thresholds must be selected only inside Development folds."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
+    },
+    {
+      "candidate_id": "RIE-CAND-0027",
+      "source": {
+        "source_id": "RIE-SRC-0023",
+        "tier": "A",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "Downside risk and the performance of volatility-managed portfolios",
+        "uri": "https://www.sciencedirect.com/science/article/pii/S0378426621001576",
+        "publication_date": "2021-10-01",
+        "content_sha256": null,
+        "authors": [
+          "Feifei Wang",
+          "Xuemin Sterling Yan"
+        ],
+        "provenance_notes": [
+          "Web-verified academic/publisher source; source bytes are not frozen yet.",
+          "Reported performance is not YATL evidence and must be independently reproduced."
+        ]
+      },
+      "technique_family": "VOLATILITY",
+      "market_universe": [
+        "BTCUSDT",
+        "ETHUSDT"
+      ],
+      "timeframes": [
+        "1h",
+        "4h"
+      ],
+      "hypothesis": "Downside-only realized volatility may be a better exposure-control signal than total volatility for a long-only crypto trend strategy because negative-return variation is more directly related to adverse states.",
+      "entry_rules": [
+        "Use the frozen trend entry signal; apply a preregistered exposure multiplier derived only from lagged negative-return volatility."
+      ],
+      "exit_rules": [
+        "Underlying trend exit remains authoritative; downside-volatility scaling can reduce exposure earlier but cannot reverse short."
+      ],
+      "stop_rules": [],
+      "sizing_rules": [
+        "Compare downside-volatility scaling against both unscaled trend and total-volatility scaling using identical costs and no leverage."
+      ],
+      "lookbacks": [
+        "Negative-return volatility window and fixed scaling schedule require reproduction and bounded search."
+      ],
+      "cost_assumptions": [
+        "Use frozen YATL fee and adverse-slippage assumptions in controlled Development search.",
+        "No source-reported performance can substitute for YATL after-cost evidence."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Source evidence is from equity factors/anomalies, not crypto.",
+        "Downside volatility may react too late at 1h frequency."
+      ],
+      "leakage_risks": [
+        "Only returns strictly before the decision bar may enter downside volatility.",
+        "Do not estimate ex-post optimal combination weights."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
+    },
+    {
+      "candidate_id": "RIE-CAND-0028",
+      "source": {
+        "source_id": "RIE-SRC-0024",
+        "tier": "A",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "A hidden Markov model to detect regime changes in cryptoasset markets",
+        "uri": "https://onlinelibrary.wiley.com/doi/full/10.1002/qre.2673",
+        "publication_date": "2020-06-04",
+        "content_sha256": null,
+        "authors": [
+          "Paolo Giudici",
+          "Iman Abu Hashish"
+        ],
+        "provenance_notes": [
+          "Web-verified academic/publisher source; source bytes are not frozen yet.",
+          "Reported performance is not YATL evidence and must be independently reproduced."
+        ]
+      },
+      "technique_family": "REGIME_AWARE",
+      "market_universe": [
+        "BTCUSDT",
+        "ETHUSDT"
+      ],
+      "timeframes": [
+        "1h",
+        "4h"
+      ],
+      "hypothesis": "A small hidden-state model using only point-in-time BTC/ETH return and volatility features can separate bull, stable and bear regimes sufficiently to gate a frozen trend strategy.",
+      "entry_rules": [
+        "Trend entries remain generated by the frozen strategy; a regime probability/state determines whether full, reduced or zero long exposure is allowed."
+      ],
+      "exit_rules": [
+        "Exit if the underlying trend exits or if the frozen regime policy disallows long exposure."
+      ],
+      "stop_rules": [],
+      "sizing_rules": [
+        "Start with a bounded 3-state model; exposure mapping is fixed before OOS and no state label is assigned using future returns."
+      ],
+      "lookbacks": [
+        "State count, training-window policy and feature set require a reproduction packet before any search."
+      ],
+      "cost_assumptions": [
+        "Use frozen YATL fee and adverse-slippage assumptions in controlled Development search.",
+        "No source-reported performance can substitute for YATL after-cost evidence."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Hidden-state labels can swap across fits and require deterministic canonicalization.",
+        "Model estimation adds substantial instability and complexity."
+      ],
+      "leakage_risks": [
+        "Fit/update must use expanding or rolling data ending before each decision.",
+        "State labels must be mapped using training-only statistics, never future realized outcomes."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
+    },
+    {
+      "candidate_id": "RIE-CAND-0029",
+      "source": {
+        "source_id": "RIE-SRC-0025",
+        "tier": "A",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "Exploring the predictability of cryptocurrencies via Bayesian hidden Markov models",
+        "uri": "https://www.sciencedirect.com/science/article/pii/S0275531921001756",
+        "publication_date": "2022-01-01",
+        "content_sha256": null,
+        "authors": [
+          "Constandina Koki",
+          "Stefanos Leonardos",
+          "Georgios Piliouras"
+        ],
+        "provenance_notes": [
+          "Web-verified academic/publisher source; source bytes are not frozen yet.",
+          "Reported performance is not YATL evidence and must be independently reproduced."
+        ]
+      },
+      "technique_family": "REGIME_AWARE",
+      "market_universe": [
+        "BTCUSDT",
+        "ETHUSDT"
+      ],
+      "timeframes": [
+        "1h",
+        "4h"
+      ],
+      "hypothesis": "A four-state crypto regime model may add useful state information beyond price-only trend by combining series momentum with point-in-time financial stress predictors.",
+      "entry_rules": [
+        "Use a frozen trend entry only when the preregistered state/exposure map allows it."
+      ],
+      "exit_rules": [
+        "Exit on underlying trend exit or when state probability crosses a frozen risk-off condition."
+      ],
+      "stop_rules": [],
+      "sizing_rules": [
+        "First reproduction is diagnostic; any later YATL adaptation must compare price-only versus external-predictor variants before adding complexity."
+      ],
+      "lookbacks": [
+        "Four states; source highlights series momentum, VIX and U.S. Treasury Yield among common predictors."
+      ],
+      "cost_assumptions": [
+        "Use frozen YATL fee and adverse-slippage assumptions in controlled Development search.",
+        "No source-reported performance can substitute for YATL after-cost evidence."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Requires external macro/financial data not currently in the minimal Binance-only research path.",
+        "Bayesian NHHM is materially more complex than deterministic filters."
+      ],
+      "leakage_risks": [
+        "External predictors require timestamped point-in-time releases and no revised/future values.",
+        "Model hyperparameters and state mappings must be frozen before OOS."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
+    },
+    {
+      "candidate_id": "RIE-CAND-0030",
+      "source": {
+        "source_id": "RIE-SRC-0026",
+        "tier": "A",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "Stop-loss rules and momentum payoffs in cryptocurrencies",
+        "uri": "https://www.sciencedirect.com/science/article/pii/S2214635023000473",
+        "publication_date": null,
+        "content_sha256": null,
+        "authors": [
+          "Mohsin Sadaqat",
+          "Hilal Anwar Butt"
+        ],
+        "provenance_notes": [
+          "Web-verified academic/publisher source; source bytes are not frozen yet.",
+          "Reported performance is not YATL evidence and must be independently reproduced."
+        ]
+      },
+      "technique_family": "REGIME_AWARE",
+      "market_universe": [
+        "BTCUSDT",
+        "ETHUSDT"
+      ],
+      "timeframes": [
+        "1h",
+        "4h"
+      ],
+      "hypothesis": "A simple point-in-time stop-loss overlay may reduce the downside of a long-only crypto momentum/trend position without suppressing most ordinary trend entries.",
+      "entry_rules": [
+        "Enter only from the frozen trend signal; the stop layer cannot create entries."
+      ],
+      "exit_rules": [
+        "Exit to cash when the preregistered stop-loss condition is hit, or when the underlying trend exits, whichever occurs first."
+      ],
+      "stop_rules": [
+        "Stop threshold family must be bounded and chosen only in Development; no trailing rule may use future extrema."
+      ],
+      "sizing_rules": [
+        "Fixed research quantity or preregistered non-levered exposure scaling only."
+      ],
+      "lookbacks": [
+        "Exact stop construction and thresholds require full-paper reproduction."
+      ],
+      "cost_assumptions": [
+        "Use frozen YATL fee and adverse-slippage assumptions in controlled Development search.",
+        "No source-reported performance can substitute for YATL after-cost evidence."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Source studies a broad cross-section of 147 cryptocurrencies, not just BTC/ETH.",
+        "Stops can increase turnover and slippage."
+      ],
+      "leakage_risks": [
+        "Stop reference price must be known at entry and updated only by past/current permitted information.",
+        "Threshold selection cannot use HSSE-005 failures individually."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
+    },
+    {
+      "candidate_id": "RIE-CAND-0031",
+      "source": {
+        "source_id": "RIE-SRC-0027",
+        "tier": "A",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "Dynamic time series momentum of cryptocurrencies",
+        "uri": "https://www.sciencedirect.com/science/article/pii/S1062940821000590",
+        "publication_date": "2021-07-01",
+        "content_sha256": null,
+        "authors": [
+          "Oliver Borgards"
+        ],
+        "provenance_notes": [
+          "Web-verified academic/publisher source; source bytes are not frozen yet.",
+          "Reported performance is not YATL evidence and must be independently reproduced."
+        ]
+      },
+      "technique_family": "TIME_SERIES_MOMENTUM",
+      "market_universe": [
+        "BTCUSDT",
+        "ETHUSDT"
+      ],
+      "timeframes": [
+        "1h",
+        "4h"
+      ],
+      "hypothesis": "Crypto momentum duration and structural turning points may be state-dependent; a dynamic but preregistered momentum-duration signal may reduce fixed-horizon whipsaw.",
+      "entry_rules": [
+        "Enter long when the reproduced dynamic momentum condition is positive using only completed historical observations."
+      ],
+      "exit_rules": [
+        "Exit when the reproduced momentum-period termination/turning condition fires."
+      ],
+      "stop_rules": [],
+      "sizing_rules": [
+        "Initial YATL adaptation must remain fixed-quantity and non-levered so signal value is separated from sizing effects."
+      ],
+      "lookbacks": [
+        "Exact formation, momentum-period and critical-price definitions require full-paper extraction."
+      ],
+      "cost_assumptions": [
+        "Use frozen YATL fee and adverse-slippage assumptions in controlled Development search.",
+        "No source-reported performance can substitute for YATL after-cost evidence."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Dynamic structural rules can hide many degrees of freedom if not reproduced exactly.",
+        "Source scope spans twenty cryptocurrencies and multiple frequencies."
+      ],
+      "leakage_risks": [
+        "Turning points must be detected online, not retrospectively.",
+        "No horizon selection from crisis or Blind outcomes."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
     }
   ],
   "research_only": true,

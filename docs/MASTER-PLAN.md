@@ -2001,7 +2001,18 @@ Forward مستقل و با protocol جدید بررسی می‌شود. real-forw
 9. **HSSE-005 — Crisis/Regime Certification — CANONICAL COMPLETE / 0 PASS 2026-09-26**: هر شش survivor بدون retune/rerank/retry روی 8 واحد de-duplicated بحران/regime تا پایان 2024 اجرا شدند و **0/6 PASS** شد. همه شش مورد فقط 25% واحدها را در base و stress مثبت کردند و median unit PnL هر شش منفی بود؛ drawdown و sample gates مشکل اصلی نبودند. correlation بین unit-PnLهای survivorها بسیار بالا بود (~0.83 تا ~0.999) و sign agreement برابر 0.875 تا 1.0 بود، بنابراین شش survivor عملاً شش edge مستقل محسوب نمی‌شوند. نسل فعلی در HSSE-005 رد شد؛ همان نسل retune یا survivor-replacement نمی‌شود. Audit Holdout 2025–2026 و recent reserve همچنان sealed هستند. HSSE-006 در صورت اجرا فقط rejection/pipeline integrity را audit می‌کند، نه promotion.
 10. **HSSE-006 — Independent Audit**: recomputation، trial ledger audit، leakage
    audit و candidate registry audit.
-11. فقط پس از آن: **Forward Candidate Review** برای نسل بعدی؛ P10 جاری untouched.
+11. **Generation-2 Research — ACTIVE / RIE-004**: پس از رد 0/6 در HSSE-005،
+   نسل اول retune نمی‌شود. literature sweep جدید روی volatility management،
+   downside-volatility، panic-state protection، stop-loss و crypto regime
+   detection باز شده است. Candidateهای موجود `RIE-CAND-0011` و
+   `RIE-CAND-0022` دوباره استفاده می‌شوند و Candidateهای `0025..0031`
+   به registry افزوده شده‌اند. اول simple deterministic control layers تست
+   می‌شوند؛ HMM/NHHM فقط بعد از شکست/نیازِ مدل‌های ساده وارد search می‌شوند.
+   هیچ combination قبل از standalone evidence مجاز نیست.
+12. فقط پس از Audit نسل اول و protocol جدید Gen-2: **Generation-2 Controlled
+   Development/Search → Fresh Evaluation → Crisis Certification → Independent
+   Audit → Forward Candidate Review**. P10 جاری untouched است و 2025–2026 تا
+   تعیین protocol جدید sealed می‌ماند.
 
 قانون توقف scope creep همچنان پابرجاست: اگر search گسترده با protocol صحیح
 candidate قابل‌قبولی پیدا نکند، نتیجه معتبر `NO_EDGE_FOUND` است. پاسخ به این
