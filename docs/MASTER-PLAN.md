@@ -1998,7 +1998,7 @@ Forward مستقل و با protocol جدید بررسی می‌شود. real-forw
    هم‌بسته‌اند. مرحله بعد **HSSE-005 Crisis/Regime Certification** است؛ Audit
    Holdout همچنان sealed و Forward promotion همچنان ممنوع است.
 
-9. **HSSE-005 — Crisis/Regime Certification**: اتصال survivorهای OOS به CRL.
+9. **HSSE-005 — Crisis/Regime Certification — CANONICAL COMPLETE / 0 PASS 2026-09-26**: هر شش survivor بدون retune/rerank/retry روی 8 واحد de-duplicated بحران/regime تا پایان 2024 اجرا شدند و **0/6 PASS** شد. همه شش مورد فقط 25% واحدها را در base و stress مثبت کردند و median unit PnL هر شش منفی بود؛ drawdown و sample gates مشکل اصلی نبودند. correlation بین unit-PnLهای survivorها بسیار بالا بود (~0.83 تا ~0.999) و sign agreement برابر 0.875 تا 1.0 بود، بنابراین شش survivor عملاً شش edge مستقل محسوب نمی‌شوند. نسل فعلی در HSSE-005 رد شد؛ همان نسل retune یا survivor-replacement نمی‌شود. Audit Holdout 2025–2026 و recent reserve همچنان sealed هستند. HSSE-006 در صورت اجرا فقط rejection/pipeline integrity را audit می‌کند، نه promotion.
 10. **HSSE-006 — Independent Audit**: recomputation، trial ledger audit، leakage
    audit و candidate registry audit.
 11. فقط پس از آن: **Forward Candidate Review** برای نسل بعدی؛ P10 جاری untouched.

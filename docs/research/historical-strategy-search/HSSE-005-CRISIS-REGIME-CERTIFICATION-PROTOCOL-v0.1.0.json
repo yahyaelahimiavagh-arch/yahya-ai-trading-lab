@@ -1,0 +1,220 @@
+{
+  "schema": "YATL_HSSE_CRISIS_REGIME_CERTIFICATION_PROTOCOL",
+  "schema_version": "0.1.0",
+  "protocol_id": "HSSE-005-CRISIS-REGIME-CERTIFICATION-001",
+  "registered_date_utc": "2026-09-26",
+  "status": "REGISTERED_AFTER_HSSE004B_CANONICAL_BEFORE_HSSE005_OUTCOME_ACCESS",
+  "purpose": "Certify the six immutable HSSE-004A survivors across de-duplicated pre-2025 crisis/regime units without retuning, reranking or opening the 2025-2026 Audit Holdout.",
+  "inputs": {
+    "hsse004b_acceptance": {
+      "relative_path": "docs/research/historical-strategy-search/HSSE-004B-CANONICAL-ACCEPTANCE-v0.1.0.json",
+      "git_blob_sha": "7d5790ead6d8013ed9a2402fdbe3bc60bc33dcaa",
+      "required_status": "CANONICAL_COMPLETE",
+      "required_pass_count": 6,
+      "required_fail_count": 0
+    },
+    "survivor_freeze": {
+      "relative_path": "docs/research/historical-strategy-search/HSSE-004A-SURVIVOR-FREEZE-v0.1.0.json",
+      "git_blob_sha": "bb1b0f9c25a013e766558419f6fa08bf2a1f70c2",
+      "survivor_count": 6
+    },
+    "event_catalog": {
+      "relative_path": "docs/research/crisis-lab/EVENT-CATALOG-v0.1.0.json",
+      "git_blob_sha": "1f6c7fc7e9a1057051292d6e0f631d317fc9444c",
+      "catalog_version": "0.1.0"
+    },
+    "corpora": [
+      {
+        "corpus_id": "CRL-CONTROL-DEV-POOL-001",
+        "role": "PRE_2023_CRISIS_SOURCE",
+        "quality_manifest_relative_path": "quality/event-catalog-v0.1.0/CRL-CONTROL-DEV-POOL-001/event-quality-74ea7a7084bb138122ee5d82.json",
+        "quality_manifest_file_sha256": "74ea7a7084bb138122ee5d823c790853ad55cb57e1378a876bec6d3f1537167e",
+        "scored_event_ids": [
+          "CRL-E001",
+          "CRL-E002",
+          "CRL-E003",
+          "CRL-E004",
+          "CRL-E005",
+          "CRL-E006",
+          "CRL-E007"
+        ]
+      },
+      {
+        "corpus_id": "HSSE-BLIND-OOS-001",
+        "role": "2023_2024_CRISIS_SOURCE",
+        "quality_manifest_relative_path": "quality/event-catalog-v0.1.0/HSSE-BLIND-OOS-001/event-quality-e466c8249f8d9d70e0664b83.json",
+        "quality_manifest_file_sha256": "e466c8249f8d9d70e0664b839093ffd9b564405427a3698dfdf7e6f9c6a0f8fd",
+        "scored_event_ids": [
+          "CRL-E008",
+          "CRL-E009",
+          "CRL-E016",
+          "CRL-E011"
+        ]
+      }
+    ]
+  },
+  "exclusions": {
+    "quarantined_or_replay_ineligible_event_ids": [
+      "CRL-E010",
+      "CRL-E015"
+    ],
+    "audit_holdout_event_ids": [
+      "CRL-E012",
+      "CRL-E013",
+      "CRL-E014"
+    ],
+    "latest_allowed_scored_time_exclusive_utc": "2025-01-01T00:00:00Z",
+    "audit_holdout_read": false,
+    "recent_reserve_read": false
+  },
+  "certification_units": [
+    {
+      "unit_id": "HSSE005-U001",
+      "source_corpus_id": "CRL-CONTROL-DEV-POOL-001",
+      "event_ids": [
+        "CRL-E001"
+      ],
+      "semantic_start_utc": "2020-03-05T01:02:00Z",
+      "semantic_end_exclusive_utc": "2020-03-29T01:02:00Z",
+      "label": "global-risk shock"
+    },
+    {
+      "unit_id": "HSSE005-U002",
+      "source_corpus_id": "CRL-CONTROL-DEV-POOL-001",
+      "event_ids": [
+        "CRL-E002"
+      ],
+      "semantic_start_utc": "2020-04-13T18:08:00Z",
+      "semantic_end_exclusive_utc": "2020-05-07T18:08:00Z",
+      "label": "cross-asset energy dislocation"
+    },
+    {
+      "unit_id": "HSSE005-U003",
+      "source_corpus_id": "CRL-CONTROL-DEV-POOL-001",
+      "event_ids": [
+        "CRL-E003"
+      ],
+      "semantic_start_utc": "2021-05-18T12:50:00Z",
+      "semantic_end_exclusive_utc": "2021-05-23T12:50:00Z",
+      "label": "crypto exchange dislocation"
+    },
+    {
+      "unit_id": "HSSE005-U004",
+      "source_corpus_id": "CRL-CONTROL-DEV-POOL-001",
+      "event_ids": [
+        "CRL-E004",
+        "CRL-E005",
+        "CRL-E006"
+      ],
+      "semantic_start_utc": "2022-02-14T18:00:00Z",
+      "semantic_end_exclusive_utc": "2022-10-12T18:00:00Z",
+      "label": "2022 macro-geopolitical-crypto regime cluster"
+    },
+    {
+      "unit_id": "HSSE005-U005",
+      "source_corpus_id": "CRL-CONTROL-DEV-POOL-001",
+      "event_ids": [
+        "CRL-E007"
+      ],
+      "semantic_start_utc": "2022-10-26T14:44:00Z",
+      "semantic_end_exclusive_utc": "2022-12-12T14:44:00Z",
+      "label": "crypto solvency/contagion"
+    },
+    {
+      "unit_id": "HSSE005-U006",
+      "source_corpus_id": "HSSE-BLIND-OOS-001",
+      "event_ids": [
+        "CRL-E008",
+        "CRL-E009"
+      ],
+      "semantic_start_utc": "2023-03-03T16:15:00Z",
+      "semantic_end_exclusive_utc": "2023-03-28T11:27:00Z",
+      "label": "banking and exchange-liquidity cluster"
+    },
+    {
+      "unit_id": "HSSE005-U007",
+      "source_corpus_id": "HSSE-BLIND-OOS-001",
+      "event_ids": [
+        "CRL-E016"
+      ],
+      "semantic_start_utc": "2023-08-10T21:30:00Z",
+      "semantic_end_exclusive_utc": "2023-09-03T21:30:00Z",
+      "label": "crypto flash deleveraging"
+    },
+    {
+      "unit_id": "HSSE005-U008",
+      "source_corpus_id": "HSSE-BLIND-OOS-001",
+      "event_ids": [
+        "CRL-E011"
+      ],
+      "semantic_start_utc": "2024-04-06T20:12:00Z",
+      "semantic_end_exclusive_utc": "2024-04-30T20:12:00Z",
+      "label": "geopolitical weekend shock"
+    }
+  ],
+  "execution": {
+    "strategy_interval": "1h",
+    "lead_in_hours": 720,
+    "lead_in_purpose": "indicator warmup plus natural position-state formation; lead-in economics are not scored",
+    "position_at_lead_in_start": "FLAT",
+    "continuous_state_inside_unit": true,
+    "reset_inside_unit": false,
+    "event_labels_visible_to_strategy": false,
+    "signal_math": "SOURCE_FIDELITY_BINARY64_FROZEN_HSSE002",
+    "economics_math": "DECIMAL_256",
+    "quantity": "0.001",
+    "initial_equity_quote_per_symbol": "10000",
+    "base_fee_bps": "10",
+    "base_adverse_slippage_bps": "5",
+    "stress_fee_bps": "20",
+    "stress_adverse_slippage_bps": "10",
+    "side": "LONG_ONLY_SPOT",
+    "next_contiguous_open_execution": true,
+    "terminal_open_position": "MARK_TO_MARKET_WITH_CANONICAL_LIQUIDATION_COSTS",
+    "gap_policy": "NEVER_INTERPOLATE_OR_FORWARD_FILL",
+    "score_alignment": "first 1h open >= semantic_start; end exclusive at first 1h open >= semantic_end"
+  },
+  "certification_gate": {
+    "unit_count": 8,
+    "minimum_positive_unit_fraction_base": "0.625",
+    "minimum_positive_unit_fraction_stress": "0.50",
+    "require_positive_median_unit_net_base": true,
+    "require_positive_median_unit_net_stress": true,
+    "minimum_total_completed_trades_in_scored_units": 20,
+    "minimum_completed_trades_per_symbol_in_scored_units": 5,
+    "minimum_active_unit_fraction": "0.625",
+    "active_unit_definition": "at least one scored entry or scored exit on either symbol",
+    "drawdown_limit_rule": "max(0.005, 5 * that survivor's canonical HSSE-004B maximum_drawdown_fraction)",
+    "maximum_absolute_drawdown_ceiling": "0.02",
+    "require_finite_metrics": true,
+    "failure_policy": "RETAIN_FAILURE; NO_RETUNE; NO_SURVIVOR_REPLACEMENT"
+  },
+  "diagnostics": {
+    "retain_per_unit_per_symbol_metrics": true,
+    "retain_base_and_stress_metrics": true,
+    "compute_pairwise_survivor_unit_pnl_correlation": true,
+    "compute_pairwise_survivor_unit_sign_agreement": true,
+    "correlation_is_certification_gate": false,
+    "development_era_units_are_diagnostic_not_new_independent_oos": true,
+    "units_2023_2024_are_subwindows_of_already_opened_hsse004b_blind": true
+  },
+  "decision": {
+    "pass_action": "ELIGIBLE_FOR_HSSE006_INDEPENDENT_AUDIT",
+    "fail_action": "RETAIN_FAILURE_AND_REMOVE_FROM_THIS_GENERATION",
+    "zero_pass_is_valid": true,
+    "no_reranking": true,
+    "no_parameter_change": true,
+    "no_family_change": true,
+    "no_hidden_retry": true,
+    "no_automatic_forward_promotion": true
+  },
+  "research_only": true,
+  "p10_read": false,
+  "p10_write_allowed": false,
+  "p10_evidence_effect": "NONE",
+  "live_master_lock": "OFF",
+  "trade_permission": false,
+  "order_endpoint": false,
+  "ai_direct_execution": false,
+  "p11_locked": true
+}
