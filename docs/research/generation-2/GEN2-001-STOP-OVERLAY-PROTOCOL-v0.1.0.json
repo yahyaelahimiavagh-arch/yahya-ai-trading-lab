@@ -1,0 +1,114 @@
+{
+  "schema": "YATL_GEN2_STOP_OVERLAY_PROTOCOL",
+  "schema_version": "0.1.0",
+  "protocol_id": "GEN2-001-STOP-OVERLAY-001",
+  "status": "REGISTERED_BEFORE_GEN2_STOP_OVERLAY_OUTCOMES",
+  "source_candidate_id": "RIE-CAND-0030",
+  "research_question": "Can a simple ex-ante long-only stop-loss overlay improve after-cost downside/economic behavior across the frozen Generation-1 trend family without changing entries, trend parameters, or signal logic?",
+  "source_basis": {
+    "primary_source_rule_percent": 30,
+    "source_robustness_thresholds_percent": [
+      10,
+      20,
+      30,
+      40,
+      50
+    ],
+    "yatl_adaptation": "Use the same bounded source threshold set as a new long-only risk overlay; no new thresholds may be introduced after outcomes."
+  },
+  "reference_strategies": {
+    "source_freeze": "HSSE-004A-SURVIVOR-FREEZE-001",
+    "selection_rule": "Use all six survivors in immutable freeze order; no survivor is selected or excluded using HSSE-005 outcomes.",
+    "frozen_ids": [
+      "HSSE004A-SURV-001",
+      "HSSE004A-SURV-002",
+      "HSSE004A-SURV-003",
+      "HSSE004A-SURV-004",
+      "HSSE004A-SURV-005",
+      "HSSE004A-SURV-006"
+    ],
+    "signal_parameters_immutable": true
+  },
+  "development_scope": {
+    "corpus_id": "CRL-CONTROL-DEV-POOL-001",
+    "analysis_start_utc": "2020-01-01T00:00:00Z",
+    "analysis_end_exclusive_utc": "2023-01-01T00:00:00Z",
+    "selection_only": true,
+    "hsse_004b_2023_2024_read_allowed": false,
+    "hsse_005_outcomes_used_for_selection": false,
+    "fresh_oos_read_allowed": false,
+    "recent_reserve_read_allowed": false
+  },
+  "execution": {
+    "timeframe": "1h",
+    "mode": "LONG_ONLY_SPOT_RESEARCH",
+    "quantity": "0.001",
+    "initial_equity_quote": "10000",
+    "base_fee_bps": 10,
+    "base_adverse_slippage_bps": 5,
+    "stress_fee_bps": 20,
+    "stress_adverse_slippage_bps": 10,
+    "entry_logic": "Unmodified frozen underlying survivor entry logic.",
+    "ordinary_exit_logic": "Unmodified frozen underlying survivor exit logic.",
+    "stop_measurement_basis": "Raw market reference price of the filled long entry before fee/slippage accounting.",
+    "stop_trigger": "At a completed contiguous 1h close, trigger when close <= entry_reference_price * (1 - threshold_percent/100).",
+    "stop_fill": "Exit at the next contiguous 1h open; if the next fill candle is missing or outside the scored fold, record an unfilled stop signal and do not fabricate a fill.",
+    "precedence": "If both ordinary exit and stop exit become actionable on the same completed bar, execute one exit and classify the reason as STOP_AND_STRATEGY_EXIT.",
+    "reentry": "After a stop, remain flat until a new valid underlying entry signal occurs; no synthetic cooldown or immediate forced re-entry is added.",
+    "gap_handling": "Never interpolate or forward-fill accepted source gaps."
+  },
+  "trial_matrix": {
+    "control_threshold_percent": null,
+    "stop_thresholds_percent": [
+      10,
+      20,
+      30,
+      40,
+      50
+    ],
+    "reference_strategy_count": 6,
+    "conditions_per_strategy": 6,
+    "total_conditions": 36,
+    "hidden_trials_forbidden": true,
+    "failed_trials_retained": true
+  },
+  "required_metrics": [
+    "net_pnl_after_costs_base",
+    "net_pnl_after_costs_stress",
+    "expectancy_base",
+    "profit_factor_base",
+    "maximum_drawdown_fraction",
+    "completed_trades",
+    "stop_signals",
+    "stop_fills",
+    "ordinary_exit_fills",
+    "missing_stop_fills",
+    "per_fold_metrics",
+    "per_symbol_metrics"
+  ],
+  "proposal_gate": {
+    "unit_of_selection": "threshold across all six frozen reference strategies",
+    "stop_activation_required": true,
+    "minimum_reference_strategies_with_stop_fill": 2,
+    "minimum_total_stop_fills": 6,
+    "aggregate_base_net_must_exceed_control": true,
+    "aggregate_stress_net_must_exceed_control": true,
+    "median_reference_strategy_base_net_delta_must_be_positive": true,
+    "median_reference_strategy_stress_net_delta_must_be_positive": true,
+    "median_reference_strategy_drawdown_delta_must_be_negative": true,
+    "at_least_reference_strategies_with_nonworse_drawdown": 4,
+    "all_metrics_finite": true,
+    "zero_proposals_is_valid": true
+  },
+  "interpretation_rules": [
+    "This is component evidence, not a complete Generation-2 strategy qualification.",
+    "A proposal does not unlock 2023-2024 known diagnostics, Fresh OOS, P10, P11, or Live execution automatically.",
+    "If no threshold passes, RIE-CAND-0030 is retained as negative standalone evidence and the preregistered queue continues."
+  ],
+  "no_rerank_after_outcomes": true,
+  "no_retune_after_outcomes": true,
+  "p10_read": false,
+  "p10_write_allowed": false,
+  "p11_locked": true,
+  "research_only": true
+}

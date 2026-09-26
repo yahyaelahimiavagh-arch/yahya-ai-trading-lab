@@ -2034,3 +2034,6 @@ P10، گذشته را عمیق و منظم مطالعه کنیم؛ HSL حق ند
 P11 باز نشده است. `LIVE_MASTER_LOCK=OFF`، PAPER ONLY، Spot only، no leverage،
 no withdrawal، no trade permission، no order endpoint و no AI direct execution
 بدون تغییر باقی می‌مانند.
+
+14. **GEN2 Master Protocol — REGISTERED BEFORE PERFORMANCE**: پایان نسل دوم فقط یکی از دو حالت است: `GEN2_FORWARD_CANDIDATE` یا `GEN2_NO_ROBUST_EDGE_FOUND`. حداکثر 8 hypothesis اصلی و 3 combination، بدون افزایش budget بعد از outcome. Fresh OOS = 2025-01-01 تا 2026-07-01 و recent reserve از 2026-07-01 همچنان sealed هستند.
+15. **GEN2-001 Stop Overlay — PREREGISTERED**: Candidate `0030` روی هر شش survivor فریز‌شده نسل اول و فقط روی Development تا 2023-01-01 تست می‌شود. grid دقیق stop = 10/20/30/40/50% + control؛ 36 condition، بدون hidden trial. 2023–2024، HSSE-005 outcomes و Fresh OOS برای selection ممنوع‌اند. هیچ performance run هنوز انجام نشده.
