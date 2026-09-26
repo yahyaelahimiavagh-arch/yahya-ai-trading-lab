@@ -2,6 +2,9 @@
 
 Status: **SOURCE DISCOVERY COMPLETE / REPRODUCTION PRIORITIZATION ACTIVE**
 
+Canonical Generation-2 registry snapshot: `CANDIDATE-REGISTRY-GEN2-v0.1.0.json`.
+The historical `CANDIDATE-REGISTRY-v0.1.0.json` remains byte-immutable because HSSE-002 binds its Git blob SHA.
+
 Trigger: HSSE-005 produced a canonical 0/6 crisis/regime pass result for the
 Generation-1 MA-trend survivors. This sweep does not retune those survivors.
 It searches for independently motivated control layers and alternative
