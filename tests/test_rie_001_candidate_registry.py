@@ -69,6 +69,7 @@ def candidate(candidate_id="RIE-CAND-0001", source_id="RIE-SRC-0001"):
         "duplicate_of": None,
         "strategy_evidence_effect": "NONE",
         "p10_evidence_effect": "NONE",
+        "reproduction_packet": None,
     }
 
 
