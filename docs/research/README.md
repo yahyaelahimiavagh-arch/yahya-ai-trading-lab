@@ -3,8 +3,12 @@
 This directory contains research-only tracks that are intentionally isolated from
 the frozen production/validation path.
 
-Current track:
+Current tracks:
 - `crisis-lab/` — Crisis & Regime Stress Lab.
+- `historical-strategy-lab/` — historical walk-forward / challenger research.
+- `model-lab/` — isolated external-model research critic.
+- `research-intake/` — external source provenance and candidate registry.
+- `historical-strategy-search/` — controlled Train search, sealed historical OOS and audit boundaries.
 
 Rules:
 - research evidence never mutates an active forward-validation registration;
