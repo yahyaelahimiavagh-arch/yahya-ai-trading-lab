@@ -128,5 +128,15 @@
       "relative_path": "quality/event-catalog-v0.1.0/CRL-CONTROL-DEV-POOL-001/event-quality-74ea7a7084bb138122ee5d82.json",
       "file_sha256": "74ea7a7084bb138122ee5d823c790853ad55cb57e1378a876bec6d3f1537167e"
     }
+  },
+  "evidence_attribution": {
+    "source_candidate_status_remains": "NEW",
+    "source_candidate_is_not_claimed_reproduced": true,
+    "tested_object_id": "GEN2-ADAPT-0001-STOP-OVERLAY",
+    "tested_object_type": "YATL_INTERNAL_ADAPTATION",
+    "source_role": "HYPOTHESIS_PROVENANCE_ONLY",
+    "method_extraction_role": "FREEZE_VISIBLE_SOURCE_RULE_AND_DOCUMENT_ADAPTATION_GAPS",
+    "source_performance_claims_are_yatl_evidence": false,
+    "development_results_may_only_evidence_the_yatl_adaptation": true
   }
 }

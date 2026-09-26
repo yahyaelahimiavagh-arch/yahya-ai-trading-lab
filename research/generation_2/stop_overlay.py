@@ -171,6 +171,8 @@ def validate_protocol(path: Path = DEFAULT_PROTOCOL_PATH) -> tuple[dict[str, obj
         or gate.get("median_reference_strategy_drawdown_delta_must_be_negative") is not True
         or gate.get("at_least_reference_strategies_with_nonworse_drawdown") != 4
         or gate.get("zero_proposals_is_valid") is not True
+        or gate.get("stop_activation_required") is not True
+        or gate.get("all_metrics_finite") is not True
     ):
         raise Gen2StopError("GEN2-001 proposal gate is invalid")
 
@@ -608,6 +610,10 @@ def run(*, runtime_root: Path, protocol_path: Path = DEFAULT_PROTOCOL_PATH) -> d
         "protocol_id": protocol["protocol_id"],
         "protocol_sha256": protocol_sha,
         "source_candidate_id": "RIE-CAND-0030",
+        "tested_object_id": protocol["evidence_attribution"]["tested_object_id"],
+        "tested_object_type": protocol["evidence_attribution"]["tested_object_type"],
+        "source_candidate_claimed_reproduced": False,
+        "source_performance_claims_used_as_evidence": False,
         "development_corpus_id": "CRL-CONTROL-DEV-POOL-001",
         "condition_count": 36,
         "proposal_thresholds_percent": proposals,

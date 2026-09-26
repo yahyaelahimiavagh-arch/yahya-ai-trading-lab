@@ -19,6 +19,8 @@ class Gen2StopOverlayTests(unittest.TestCase):
         self.assertEqual(len(hsse["development_cross_validation"]["folds"]),5)
         self.assertEqual(p["trial_matrix"]["total_conditions"],36)
         self.assertFalse(p["development_scope"]["fresh_oos_read_allowed"])
+        self.assertTrue(p["evidence_attribution"]["source_candidate_is_not_claimed_reproduced"])
+        self.assertEqual(p["evidence_attribution"]["tested_object_id"],"GEN2-ADAPT-0001-STOP-OVERLAY")
         self.assertFalse(p["p10_write_allowed"])
         self.assertTrue(p["p11_locked"])
 
