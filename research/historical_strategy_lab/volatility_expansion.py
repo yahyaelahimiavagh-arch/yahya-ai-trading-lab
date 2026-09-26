@@ -6,7 +6,7 @@ import argparse
 import hashlib
 import json
 from dataclasses import dataclass
-from decimal import Decimal, localcontext
+from decimal import Decimal, ROUND_HALF_EVEN, localcontext
 from pathlib import Path
 from typing import Mapping, Sequence
 
@@ -23,7 +23,7 @@ from research.crisis_lab import acquisition as acq
 from research.crisis_lab import controls, replay
 from . import walk_forward as hsl1
 
-IMPLEMENTATION_ID = "HSL-004B-VOLATILITY-EXPANSION/0.1.0"
+IMPLEMENTATION_ID = "HSL-004B-VOLATILITY-EXPANSION/0.1.2"
 SCHEMA_VERSION = "0.1.0"
 DEFAULT_PROTOCOL_PATH = Path(
     "docs/research/historical-strategy-lab/"
@@ -62,6 +62,22 @@ def _plain(value):
         return "0"
     text = format(value, "f")
     return text.rstrip("0").rstrip(".") if "." in text else text
+
+
+def _setup_plain(value):
+    if not isinstance(value, Decimal) or not value.is_finite():
+        raise HSLVolatilityError("HSL-004B setup arithmetic is not finite")
+    if value.as_tuple().exponent < -40:
+        with localcontext() as arithmetic:
+            arithmetic.prec = DECIMAL_PRECISION
+            value = value.quantize(
+                Decimal("1e-40"),
+                rounding=ROUND_HALF_EVEN,
+            )
+    result = _plain(value)
+    if result is None:
+        raise HSLVolatilityError("HSL-004B setup serialization failed")
+    return result
 
 
 def _number(value, label):
@@ -271,7 +287,11 @@ def _evaluate(snapshot, decision_time_ms, *, in_position, protocol):
         return VolatilityDecision(
             StrategyAction.NO_TRADE, "INVALID_PROTECTIVE_LEVELS", None, ratio_text
         )
-    setup = LongSetup(_plain(close), _plain(invalidation), _plain(target))
+    setup = LongSetup(
+        _setup_plain(close),
+        _setup_plain(invalidation),
+        _setup_plain(target),
+    )
     return VolatilityDecision(
         StrategyAction.ENTER_LONG, "VOLATILITY_EXPANSION_ENTRY", setup, ratio_text
     )
@@ -366,12 +386,14 @@ def _run_cell(*, corpus, fold, symbol, protocol):
 
     final = ledger.snapshot(analysis[-1].close)
     peak, max_dd = hsl1._drawdown_update(final.equity_quote, peak, max_dd)
-    realized = sum(pnls, Decimal(0))
+    realized = hsl1._sum_decimals(pnls)
     if realized != final.realized_pnl_quote:
         raise HSLVolatilityError("HSL-004B accounting disagrees with ledger")
     wins = [x for x in pnls if x > 0]
     losses = [x for x in pnls if x < 0]
-    gp, gl, completed = sum(wins, Decimal(0)), -sum(losses, Decimal(0)), len(pnls)
+    gp = hsl1._sum_decimals(wins)
+    gl = -hsl1._sum_decimals(losses)
+    completed = len(pnls)
     with localcontext() as arithmetic:
         arithmetic.prec = DECIMAL_PRECISION
         net = final.equity_quote - initial
