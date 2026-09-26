@@ -2013,6 +2013,7 @@ Forward مستقل و با protocol جدید بررسی می‌شود. real-forw
    Development/Search → Fresh Evaluation → Crisis Certification → Independent
    Audit → Forward Candidate Review**. P10 جاری untouched است و 2025–2026 تا
    تعیین protocol جدید sealed می‌ماند.
+13. **RIE-005 — Gen-2 Method Extraction — ACTIVE**: Queue به‌ترتیب preregistered اجرا می‌شود. `0011`، `0022` و `0027` به‌دلیل source/method reproducibility blockers قبل از هر performance run در حالت NOT_READY باقی مانده‌اند؛ `0030` (crypto stop-loss overlay) اولین candidate با روش کافی برای specification است، ولی تا freeze شدن stop basis، bar trigger، execution timing، bounded threshold grid و costs هیچ Development run مجاز نیست.
 
 قانون توقف scope creep همچنان پابرجاست: اگر search گسترده با protocol صحیح
 candidate قابل‌قبولی پیدا نکند، نتیجه معتبر `NO_EDGE_FOUND` است. پاسخ به این

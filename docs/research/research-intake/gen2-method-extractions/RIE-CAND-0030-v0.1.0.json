@@ -1,0 +1,56 @@
+{
+  "schema": "YATL_GEN2_METHOD_EXTRACTION",
+  "schema_version": "0.1.0",
+  "candidate_id": "RIE-CAND-0030",
+  "source": {
+    "title": "Stop-loss rules and momentum payoffs in cryptocurrencies",
+    "author": [
+      "Mohsin Sadaqat",
+      "Hilal Anwar Butt"
+    ],
+    "doi": "10.1016/j.jbef.2023.100833",
+    "uri": "https://www.sciencedirect.com/science/article/pii/S2214635023000473",
+    "publication_year": 2023,
+    "access_state": "PUBLIC_FULL_METHOD_TEXT_SUFFICIENT_FOR_OVERLAY_RULE",
+    "source_bytes_frozen": false,
+    "implementation_found": false
+  },
+  "extracted_method": {
+    "source_universe": "147 cryptocurrencies; analysis January 2015 through June 2022.",
+    "source_strategy_context": "Cross-sectional momentum with long winner and short loser portfolios.",
+    "primary_stop_rule": "Within a month, if cumulative loss for an individual cryptocurrency reaches 30%, close/reverse the relevant source-side exposure according to the source portfolio logic.",
+    "winner_long_interpretation": "For a long winner, a cumulative loss of 30% within the month activates the stop-loss and sells/closes that cryptocurrency.",
+    "loser_short_interpretation": "For a short loser, a 30% adverse price increase activates the stop-loss and closes/buys the cryptocurrency.",
+    "robustness_thresholds_percent": [
+      10,
+      20,
+      30,
+      40,
+      50
+    ],
+    "source_primary_threshold_percent": 30
+  },
+  "yatl_adaptation_draft": {
+    "mode": "LONG_ONLY_SPOT_RISK_LAYER",
+    "scope": "Risk overlay only; it may not create entries.",
+    "entry_authority": "Underlying frozen Gen-2 candidate only.",
+    "exit_rule": "Close an open long when point-in-time cumulative loss from its recorded entry reaches the frozen stop threshold.",
+    "no_short": true,
+    "no_leverage": true,
+    "next_step": "Preregister a bounded standalone Development protocol comparing an unmodified underlying candidate with stop thresholds selected from a frozen small grid.",
+    "source_fidelity": "ADAPTED_OVERLAY: preserves the ex-ante loss-threshold idea; source cross-sectional short-leg mechanics are excluded."
+  },
+  "unresolved": [
+    "Source bytes are not yet frozen.",
+    "YATL must define intrabar/close-only stop triggering and next-open execution before any Development run.",
+    "YATL must freeze whether the threshold is measured from entry price or month-to-date portfolio return; no outcome-driven choice is allowed.",
+    "Transaction costs and increased turnover must be modeled explicitly."
+  ],
+  "status": "METHOD_READY_PROTOCOL_NOT_FROZEN",
+  "performance_claims_trusted": false,
+  "performance_run_allowed": false,
+  "p10_read": false,
+  "p10_write_allowed": false,
+  "p11_locked": true,
+  "research_only": true
+}
