@@ -1,0 +1,110 @@
+{
+  "schema": "YATL_RESEARCH_REPRODUCTION_PACKET",
+  "schema_version": "0.1.0",
+  "packet_id": "RIE-RP-0020-V1",
+  "candidate_id": "RIE-CAND-0020",
+  "source_binding": {
+    "uri": "https://arxiv.org/abs/2009.12155",
+    "immutable_identity": "arXiv:2009.12155v1",
+    "freeze_status": "PENDING_BYTES",
+    "content_sha256": null
+  },
+  "implementation_binding": {
+    "repository": "Globe-Research/bittrends",
+    "repository_uri": "https://github.com/Globe-Research/bittrends",
+    "commit_sha": "d2e66e405183349f52556a18d387bb1dfc900db5",
+    "license": "MIT",
+    "files": [
+      {
+        "path": "LICENSE",
+        "blob_sha": "1b85103a45c6f825ddefb4797d02a89914e8af07"
+      },
+      {
+        "path": "MovingAverage.py",
+        "blob_sha": "4f9312832e7177f0cff63fd5dd8ccc9dd53adf4e"
+      },
+      {
+        "path": "Price_Data.py",
+        "blob_sha": "9e9163eb475f1e61492d5ee3062565448a3d6a38"
+      },
+      {
+        "path": "Walkforwards and Correlation.ipynb",
+        "blob_sha": "0206e948d065c3d028b0bf4e63545e00f984e660"
+      }
+    ],
+    "snapshot_sha256": "abc51e7be89ea688c4cc6f42c06495a99b5ddafc66761c90ad0cba6a43c1f824"
+  },
+  "source_method": {
+    "market_data": "BTCUSD Bitstamp Spot; hourly resampling; source study period 2011-09-13 through 2019-12-12.",
+    "signal_families": [
+      "SMA",
+      "EMA",
+      "DEMA"
+    ],
+    "paper_parameter_domain": "Short and long moving-average windows are described as varying from 1 to 1000 hours for BTCUSD.",
+    "observed_code_grid": "The bound notebook searches n1=range(1,1000,10), n2=range(1,1000,10), constrained by n1<n2, separately for SMA/EMA/DEMA.",
+    "entry_rule": "Bullish crossover: the short moving average crosses above the long moving average.",
+    "exit_rule": "Bearish crossover: the short moving average crosses below the long moving average; source code calls sell().",
+    "optimization_objective": "Sharpe Ratio on each training year.",
+    "walk_forward": "Optimize each one-year training slice, then apply that frozen n1/n2 pair to the following one-year test slice.",
+    "source_cost_model": "The paper states transaction fees, bid-offer spread, slippage and market impact are assumed negligible.",
+    "source_gap_handling": "Source hourly data forward-fills missing observations.",
+    "paper_code_discrepancies": [
+      "Paper describes 1-1000 hour parameter ranges while the observed notebook uses a step-10 grid range(1,1000,10).",
+      "Source code uses buy/sell semantics while YATL is long-only Spot; YATL must translate bearish crossover to exit-to-cash rather than short exposure.",
+      "Source forward-fills missing hourly data while YATL accepted historical corpus does not interpolate accepted source gaps.",
+      "Source assumes negligible trading costs while YATL must include fee and adverse slippage."
+    ]
+  },
+  "yatl_adaptation": {
+    "mode": "LONG_ONLY_SPOT_RESEARCH",
+    "symbols": [
+      "BTCUSDT",
+      "ETHUSDT"
+    ],
+    "timeframe": "1h",
+    "entry_rule": "Enter long on a completed-bar bullish short-over-long moving-average crossover.",
+    "exit_rule": "Exit to cash on a completed-bar bearish short-under-long moving-average crossover; never open a short.",
+    "fee_bps": 10,
+    "adverse_slippage_bps": 5,
+    "execution": "NEXT_PRIMARY_OPEN_LONG_ONLY_SPOT",
+    "gap_handling": "Use accepted YATL historical gap semantics; do not forward-fill missing source intervals.",
+    "source_fidelity": "ADAPTED_REPLICATION: signal family and train-to-next-year walk-forward concept are preserved, while shorting, zero-cost assumptions and source gap filling are not."
+  },
+  "train_search": {
+    "status": "FROZEN",
+    "families": [
+      "TREND_MA_SMA",
+      "TREND_MA_EMA",
+      "TREND_MA_DEMA"
+    ],
+    "parameter_grid": "Three independent families. For each family, n1 and n2 are selected from range(1,1000,10), constrained by n1<n2. This yields exactly 4,950 trials per family and 14,850 total trials; no outcome-based pruning is permitted.",
+    "selection_scope": "All 14,850 trials are Development-only. Every executed or failed trial counts toward the HSSE multiple-testing ledger. Blind OOS and audit holdout are not read.",
+    "multiple_testing_accounted": true,
+    "oos_used_for_selection": false
+  },
+  "unresolved": [
+    "Exact arXiv v1 paper bytes remain unfrozen; all paper return and Sharpe claims remain external, untrusted context and cannot become YATL evidence.",
+    "HSSE-003 must exact-recompute any proposed survivor before survivor freeze.",
+    "Blind OOS and final audit datasets remain sealed until their registered phases."
+  ],
+  "readiness": {
+    "candidate_status": "READY_FOR_TRAIN_SEARCH",
+    "implementation_frozen": true,
+    "source_bytes_frozen": false,
+    "readiness_basis": "FROZEN_IMPLEMENTATION",
+    "ready_for_train_search": true,
+    "blockers": []
+  },
+  "research_only": true,
+  "p10_read": false,
+  "p10_write_allowed": false,
+  "p10_evidence_effect": "NONE",
+  "strategy_evidence_effect": "NONE",
+  "trade_permission": false,
+  "order_endpoint": false,
+  "quantity_authority": false,
+  "risk_authorization_mutation": false,
+  "ai_direct_execution": false,
+  "p11_locked": true
+}
