@@ -37,6 +37,7 @@ def candidate(candidate_id="RIE-CAND-0001", source_id="RIE-SRC-0001"):
             "title": "Example momentum research",
             "uri": "https://example.org/paper",
             "publication_date": "2026-01-01",
+            "content_sha256": "a" * 64,
             "authors": ["Researcher A"],
             "provenance_notes": ["Performance claims are untrusted."],
         },
@@ -105,6 +106,40 @@ class RIE001CandidateRegistryTests(unittest.TestCase):
             rie.candidate_fingerprint(first),
             rie.candidate_fingerprint(second),
         )
+
+    def test_one_source_can_yield_multiple_distinct_candidates(self):
+        record = base_registry()
+        first = candidate()
+        second = candidate("RIE-CAND-0002", "RIE-SRC-0001")
+        second["hypothesis"] = "A different falsifiable hypothesis."
+        second["entry_rules"] = ["Enter long on a different frozen signal."]
+        record["candidates"] = [first, second]
+        self.write(record)
+        result = rie.validate_registry(self.path)
+        self.assertEqual(result["candidate_count"], 2)
+        self.assertEqual(result["source_count"], 1)
+        self.assertEqual(result["unique_hypothesis_count"], 2)
+
+    def test_conflicting_provenance_for_same_source_id_fails_closed(self):
+        record = base_registry()
+        first = candidate()
+        second = candidate("RIE-CAND-0002", "RIE-SRC-0001")
+        second["hypothesis"] = "A different falsifiable hypothesis."
+        second["entry_rules"] = ["Enter long on a different frozen signal."]
+        second["source"]["uri"] = "https://example.org/different"
+        record["candidates"] = [first, second]
+        self.write(record)
+        with self.assertRaises(rie.ResearchIntakeError):
+            rie.validate_registry(self.path)
+
+    def test_reproducible_candidate_requires_frozen_source_hash(self):
+        record = base_registry()
+        item = candidate()
+        item["source"]["content_sha256"] = None
+        record["candidates"] = [item]
+        self.write(record)
+        with self.assertRaises(rie.ResearchIntakeError):
+            rie.validate_registry(self.path)
 
     def test_hidden_duplicate_fails_closed(self):
         record = base_registry()

@@ -20,7 +20,8 @@ uv run --locked python -m research.research_intake.registry validate \
 ```
 
 Each candidate records:
-- source identity, tier, language, type, title, HTTPS provenance URI and authors;
+- source identity, tier, language, type, title, HTTPS provenance URI, frozen
+  source-content SHA-256 when reproducibility is claimed, and authors;
 - technique family, market scope and timeframe;
 - a falsifiable hypothesis plus extracted entry/exit/stop/sizing/lookback rules;
 - source-reported cost assumptions and performance claims as **untrusted metadata**;
@@ -54,8 +55,12 @@ Alternative terminal research statuses:
 - `DUPLICATE`
 - `REJECTED_SOURCE`
 
-`READY_FOR_TRAIN_SEARCH` requires explicit entry/exit rules and cost
-assumptions. It still grants no historical qualification or Forward authority.
+`REPRODUCIBLE` and `READY_FOR_TRAIN_SEARCH` require a frozen source-content
+SHA-256 plus explicit entry/exit rules. `READY_FOR_TRAIN_SEARCH` additionally
+requires cost assumptions. One source may yield multiple distinct candidates;
+reuse of a source ID is allowed only when its provenance record is byte-for-byte
+equivalent. These statuses still grant no historical qualification or Forward
+authority.
 
 ## Isolation
 

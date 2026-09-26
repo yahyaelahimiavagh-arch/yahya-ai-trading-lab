@@ -24,6 +24,7 @@ MAX_TEXT_CHARS = 4000
 
 CANDIDATE_ID_RE = re.compile(r"RIE-CAND-[0-9]{4}")
 SOURCE_ID_RE = re.compile(r"RIE-SRC-[0-9]{4}")
+SHA256_RE = re.compile(r"[0-9a-f]{64}")
 
 SOURCE_TIERS = frozenset({"A", "B", "C"})
 SOURCE_TYPES = frozenset(
@@ -187,6 +188,7 @@ def _validate_source(source: object) -> dict[str, object]:
         "title",
         "uri",
         "publication_date",
+        "content_sha256",
         "authors",
         "provenance_notes",
     )
@@ -207,6 +209,12 @@ def _validate_source(source: object) -> dict[str, object]:
     _text(source["title"], "source title")
     _https_uri(source["uri"], "source uri")
     _date_or_none(source["publication_date"], "publication date")
+    content_sha256 = source["content_sha256"]
+    if content_sha256 is not None and (
+        not isinstance(content_sha256, str)
+        or SHA256_RE.fullmatch(content_sha256) is None
+    ):
+        raise ResearchIntakeError("source content_sha256 is invalid")
     _text_list(source["authors"], "authors")
     _text_list(source["provenance_notes"], "provenance notes")
     return dict(source)
@@ -269,7 +277,7 @@ def _validate_candidate(candidate: object) -> dict[str, object]:
     ):
         raise ResearchIntakeError("candidate identity is invalid")
 
-    _validate_source(candidate["source"])
+    source = _validate_source(candidate["source"])
     if candidate["technique_family"] not in TECHNIQUE_FAMILIES:
         raise ResearchIntakeError("technique family is invalid")
     market_universe = _text_list(
@@ -313,6 +321,12 @@ def _validate_candidate(candidate: object) -> dict[str, object]:
             "external research cannot create strategy or P10 evidence"
         )
 
+    if status in {"REPRODUCIBLE", "READY_FOR_TRAIN_SEARCH"} and (
+        source["content_sha256"] is None
+    ):
+        raise ResearchIntakeError(
+            "reproducible/search-ready candidate needs frozen source content"
+        )
     if status in {"REPRODUCIBLE", "READY_FOR_TRAIN_SEARCH"} and (
         not entry_rules or not exit_rules
     ):
@@ -401,9 +415,17 @@ def validate_registry(path: Path) -> dict[str, object]:
         raise ResearchIntakeError(
             "candidate ids must be unique and sorted"
         )
-    source_ids = [item["source"]["source_id"] for item in validated]
-    if len(set(source_ids)) != len(source_ids):
-        raise ResearchIntakeError("source ids must be unique")
+    sources_by_id: dict[str, dict[str, object]] = {}
+    for item in validated:
+        source = item["source"]
+        source_id = str(source["source_id"])
+        existing = sources_by_id.get(source_id)
+        if existing is None:
+            sources_by_id[source_id] = source
+        elif existing != source:
+            raise ResearchIntakeError(
+                "one source_id cannot describe conflicting provenance"
+            )
 
     first_by_fingerprint: dict[str, str] = {}
     fingerprints: dict[str, str] = {}
@@ -443,6 +465,7 @@ def validate_registry(path: Path) -> dict[str, object]:
         "registry_id": REGISTRY_ID,
         "registry_file_sha256": _sha256(payload),
         "candidate_count": len(validated),
+        "source_count": len(sources_by_id),
         "unique_hypothesis_count": len(first_by_fingerprint),
         "duplicate_count": duplicate_count,
         "status_counts": status_counts,
