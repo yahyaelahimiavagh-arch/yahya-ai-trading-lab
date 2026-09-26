@@ -2,7 +2,1363 @@
   "schema": "YATL_RESEARCH_CANDIDATE_REGISTRY",
   "schema_version": "0.1.0",
   "registry_id": "RIE-001-RESEARCH-CANDIDATES",
-  "candidates": [],
+  "candidates": [
+    {
+      "candidate_id": "RIE-CAND-0001",
+      "source": {
+        "source_id": "RIE-SRC-0001",
+        "tier": "A",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "Momentum in the Cryptocurrency Market: A Comprehensive Analysis under Realistic Assumptions",
+        "uri": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4675565",
+        "publication_date": "2023-12-26",
+        "content_sha256": null,
+        "authors": [
+          "Chulwoo Han",
+          "Byeongguk Kang",
+          "Jehyeon Ryu"
+        ],
+        "provenance_notes": [
+          "Web-verified source page/abstract; source bytes are not frozen yet.",
+          "Reported performance, if any, is untrusted until independent YATL reproduction."
+        ]
+      },
+      "technique_family": "TIME_SERIES_MOMENTUM",
+      "market_universe": [
+        "BTCUSDT",
+        "ETHUSDT"
+      ],
+      "timeframes": [
+        "1d"
+      ],
+      "hypothesis": "An asset's own positive trailing return can persist enough to support a long-or-cash momentum rule after realistic costs.",
+      "entry_rules": [
+        "Enter long when own trailing return over a preregistered lookback is positive."
+      ],
+      "exit_rules": [
+        "Return to cash when the frozen momentum signal is non-positive."
+      ],
+      "stop_rules": [],
+      "sizing_rules": [],
+      "lookbacks": [
+        "Exact paper lookbacks must be extracted before reproduction."
+      ],
+      "cost_assumptions": [
+        "Reproduce with YATL fee and adverse-slippage model before search readiness."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Source examines broader momentum designs than current YATL Spot scope."
+      ],
+      "leakage_risks": [
+        "Do not select lookback using holdout performance."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE"
+    },
+    {
+      "candidate_id": "RIE-CAND-0002",
+      "source": {
+        "source_id": "RIE-SRC-0002",
+        "tier": "A",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "Cryptocurrency Volume-Weighted Time Series Momentum",
+        "uri": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4825389",
+        "publication_date": "2024-12-04",
+        "content_sha256": null,
+        "authors": [
+          "Zih-Chun Huang",
+          "Ivan Sangiorgi",
+          "Andrew Urquhart"
+        ],
+        "provenance_notes": [
+          "Web-verified source page/abstract; source bytes are not frozen yet.",
+          "Reported performance, if any, is untrusted until independent YATL reproduction."
+        ]
+      },
+      "technique_family": "VOLUME_WEIGHTED_MOMENTUM",
+      "market_universe": [
+        "CRYPTO_CROSS_SECTION"
+      ],
+      "timeframes": [
+        "1d"
+      ],
+      "hypothesis": "Volume-weighted market information can improve time-series momentum selection versus price-only momentum.",
+      "entry_rules": [],
+      "exit_rules": [],
+      "stop_rules": [],
+      "sizing_rules": [],
+      "lookbacks": [
+        "Exact volume weighting and formation/holding horizons require full-paper extraction."
+      ],
+      "cost_assumptions": [
+        "Reproduce with YATL fee and adverse-slippage model before search readiness."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Cross-sectional universe exceeds current BTC/ETH scope."
+      ],
+      "leakage_risks": [
+        "Volume quality and wash-trading handling must be reproduced point-in-time."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE"
+    },
+    {
+      "candidate_id": "RIE-CAND-0003",
+      "source": {
+        "source_id": "RIE-SRC-0003",
+        "tier": "A",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "Cross-sectional Momentum in Cryptocurrency Markets",
+        "uri": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4322637",
+        "publication_date": "2023-01-11",
+        "content_sha256": null,
+        "authors": [
+          "Leigh Drogen",
+          "Corey Hoffstein",
+          "Kevin Otte"
+        ],
+        "provenance_notes": [
+          "Web-verified source page/abstract; source bytes are not frozen yet.",
+          "Reported performance, if any, is untrusted until independent YATL reproduction."
+        ]
+      },
+      "technique_family": "TIME_SERIES_MOMENTUM",
+      "market_universe": [
+        "CRYPTO_CROSS_SECTION"
+      ],
+      "timeframes": [
+        "1d"
+      ],
+      "hypothesis": "Recent 30-day winners can continue to outperform over the next 7 days and may support a long-only winner portfolio.",
+      "entry_rules": [
+        "Rank eligible assets by trailing 30-day return and take the long-side winner basket."
+      ],
+      "exit_rules": [
+        "Rebalance or exit after the 7-day holding horizon according to the frozen paper specification."
+      ],
+      "stop_rules": [],
+      "sizing_rules": [],
+      "lookbacks": [
+        "30d formation",
+        "7d holding"
+      ],
+      "cost_assumptions": [
+        "Reproduce with YATL fee and adverse-slippage model before search readiness."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Current YATL universe has only BTC/ETH, so cross-sectional breadth is limited."
+      ],
+      "leakage_risks": [
+        "Universe construction and survivorship must be point-in-time."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE"
+    },
+    {
+      "candidate_id": "RIE-CAND-0004",
+      "source": {
+        "source_id": "RIE-SRC-0004",
+        "tier": "A",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "Cross-Sectional Dispersion and the State Dependence of Cryptocurrency Momentum",
+        "uri": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6648082",
+        "publication_date": "2026-04-25",
+        "content_sha256": null,
+        "authors": [
+          "Cong Zhang",
+          "Olorato MacDonald Makgolo"
+        ],
+        "provenance_notes": [
+          "Web-verified source page/abstract; source bytes are not frozen yet.",
+          "Reported performance, if any, is untrusted until independent YATL reproduction."
+        ]
+      },
+      "technique_family": "REGIME_AWARE",
+      "market_universe": [
+        "CRYPTO_CROSS_SECTION"
+      ],
+      "timeframes": [
+        "1d"
+      ],
+      "hypothesis": "High lagged cross-sectional dispersion can identify states in which momentum reliability deteriorates and exposure should be reduced.",
+      "entry_rules": [],
+      "exit_rules": [],
+      "stop_rules": [],
+      "sizing_rules": [],
+      "lookbacks": [
+        "Lagged cross-sectional dispersion window must be extracted from the full paper."
+      ],
+      "cost_assumptions": [
+        "Reproduce with YATL fee and adverse-slippage model before search readiness."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Requires a dynamic multi-asset universe."
+      ],
+      "leakage_risks": [
+        "Dispersion threshold must be trained without using OOS outcomes."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE"
+    },
+    {
+      "candidate_id": "RIE-CAND-0005",
+      "source": {
+        "source_id": "RIE-SRC-0005",
+        "tier": "A",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "Up or down? Short-term reversal, momentum, and liquidity effects in cryptocurrency markets",
+        "uri": "https://www.sciencedirect.com/science/article/pii/S1057521921002349",
+        "publication_date": null,
+        "content_sha256": null,
+        "authors": [
+          "Adam Zaremba",
+          "Mehmet Huseyin Bilgin",
+          "Huaigang Long",
+          "Aleksander Mercik",
+          "Jan J. Szczygielski"
+        ],
+        "provenance_notes": [
+          "Web-verified source page/abstract; source bytes are not frozen yet.",
+          "Reported performance, if any, is untrusted until independent YATL reproduction."
+        ]
+      },
+      "technique_family": "TIME_SERIES_MOMENTUM",
+      "market_universe": [
+        "BTCUSDT",
+        "ETHUSDT"
+      ],
+      "timeframes": [
+        "1d"
+      ],
+      "hypothesis": "Highly liquid large cryptocurrencies may exhibit one-day momentum even when illiquid coins show reversal.",
+      "entry_rules": [
+        "Use prior-day return direction as a frozen long-or-cash signal on highly liquid assets."
+      ],
+      "exit_rules": [
+        "Exit to cash when the frozen prior-return condition no longer supports the position."
+      ],
+      "stop_rules": [],
+      "sizing_rules": [],
+      "lookbacks": [
+        "1d predictive return"
+      ],
+      "cost_assumptions": [
+        "Reproduce with YATL fee and adverse-slippage model before search readiness."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Paper's cross-sectional liquidity split must be mapped carefully to BTC/ETH."
+      ],
+      "leakage_risks": [
+        "Liquidity classification must use only information available at decision time."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE"
+    },
+    {
+      "candidate_id": "RIE-CAND-0006",
+      "source": {
+        "source_id": "RIE-SRC-0006",
+        "tier": "A",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "Intraday return predictability in the cryptocurrency markets: Momentum, reversal, or both",
+        "uri": "https://www.sciencedirect.com/science/article/pii/S1062940822000833",
+        "publication_date": null,
+        "content_sha256": null,
+        "authors": [
+          "Zhuzhu Wen",
+          "Elie Bouri",
+          "Yahua Xu",
+          "Yang Zhao"
+        ],
+        "provenance_notes": [
+          "Web-verified source page/abstract; source bytes are not frozen yet.",
+          "Reported performance, if any, is untrusted until independent YATL reproduction."
+        ]
+      },
+      "technique_family": "TIME_SERIES_MOMENTUM",
+      "market_universe": [
+        "BTCUSDT",
+        "ETHUSDT"
+      ],
+      "timeframes": [
+        "intraday"
+      ],
+      "hypothesis": "Intraday return continuation can be conditional on market state and may provide a short-horizon long signal.",
+      "entry_rules": [],
+      "exit_rules": [],
+      "stop_rules": [],
+      "sizing_rules": [],
+      "lookbacks": [
+        "Exact intraday predictor horizon requires full-paper extraction."
+      ],
+      "cost_assumptions": [
+        "Reproduce with YATL fee and adverse-slippage model before search readiness."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Current HSL data granularity may be insufficient for the paper's high-frequency design."
+      ],
+      "leakage_risks": [
+        "Session alignment, jumps and announcement timing must be point-in-time."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE"
+    },
+    {
+      "candidate_id": "RIE-CAND-0007",
+      "source": {
+        "source_id": "RIE-SRC-0006",
+        "tier": "A",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "Intraday return predictability in the cryptocurrency markets: Momentum, reversal, or both",
+        "uri": "https://www.sciencedirect.com/science/article/pii/S1062940822000833",
+        "publication_date": null,
+        "content_sha256": null,
+        "authors": [
+          "Zhuzhu Wen",
+          "Elie Bouri",
+          "Yahua Xu",
+          "Yang Zhao"
+        ],
+        "provenance_notes": [
+          "Web-verified source page/abstract; source bytes are not frozen yet.",
+          "Reported performance, if any, is untrusted until independent YATL reproduction."
+        ]
+      },
+      "technique_family": "MEAN_REVERSION",
+      "market_universe": [
+        "BTCUSDT",
+        "ETHUSDT"
+      ],
+      "timeframes": [
+        "intraday"
+      ],
+      "hypothesis": "Intraday overreaction can create short-horizon reversal opportunities after extreme moves.",
+      "entry_rules": [],
+      "exit_rules": [],
+      "stop_rules": [],
+      "sizing_rules": [],
+      "lookbacks": [
+        "Exact reversal horizon and jump definition require full-paper extraction."
+      ],
+      "cost_assumptions": [
+        "Reproduce with YATL fee and adverse-slippage model before search readiness."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Long-only Spot adaptation can only exploit negative-shock rebound side."
+      ],
+      "leakage_risks": [
+        "Jump labels must not use future bars."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE"
+    },
+    {
+      "candidate_id": "RIE-CAND-0008",
+      "source": {
+        "source_id": "RIE-SRC-0007",
+        "tier": "A",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "The effectiveness of technical trading rules in cryptocurrency markets",
+        "uri": "https://www.sciencedirect.com/science/article/pii/S1544612319300315",
+        "publication_date": null,
+        "content_sha256": null,
+        "authors": [],
+        "provenance_notes": [
+          "Web-verified source page/abstract; source bytes are not frozen yet.",
+          "Reported performance, if any, is untrusted until independent YATL reproduction."
+        ]
+      },
+      "technique_family": "TREND",
+      "market_universe": [
+        "BTCUSDT"
+      ],
+      "timeframes": [
+        "intraday"
+      ],
+      "hypothesis": "Variable-length moving-average technical rules can identify persistent Bitcoin trends better than a fixed naive rule.",
+      "entry_rules": [],
+      "exit_rules": [],
+      "stop_rules": [],
+      "sizing_rules": [],
+      "lookbacks": [
+        "Moving-average short/long windows require full-paper extraction."
+      ],
+      "cost_assumptions": [
+        "Reproduce with YATL fee and adverse-slippage model before search readiness."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Paper uses high-frequency Bitcoin data and may not transfer to ETH."
+      ],
+      "leakage_risks": [
+        "Window selection must occur only inside train partitions."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE"
+    },
+    {
+      "candidate_id": "RIE-CAND-0009",
+      "source": {
+        "source_id": "RIE-SRC-0008",
+        "tier": "A",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "The profitability of technical trading rules in the Bitcoin market",
+        "uri": "https://www.sciencedirect.com/science/article/pii/S1544612319303770",
+        "publication_date": null,
+        "content_sha256": null,
+        "authors": [],
+        "provenance_notes": [
+          "Web-verified source page/abstract; source bytes are not frozen yet.",
+          "Reported performance, if any, is untrusted until independent YATL reproduction."
+        ]
+      },
+      "technique_family": "BREAKOUT",
+      "market_universe": [
+        "BTCUSDT"
+      ],
+      "timeframes": [
+        "1d"
+      ],
+      "hypothesis": "Trading-range breakouts around support/resistance can forecast continuation during strongly trending Bitcoin regimes.",
+      "entry_rules": [
+        "Enter long after a preregistered upside trading-range breakout."
+      ],
+      "exit_rules": [
+        "Exit according to the paper's frozen reverse/neutral condition after full specification extraction."
+      ],
+      "stop_rules": [],
+      "sizing_rules": [],
+      "lookbacks": [
+        "Trading-range window requires full-paper extraction."
+      ],
+      "cost_assumptions": [
+        "Reproduce with YATL fee and adverse-slippage model before search readiness."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Historical period predates current market microstructure."
+      ],
+      "leakage_risks": [
+        "Support/resistance must be computed from past data only."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE"
+    },
+    {
+      "candidate_id": "RIE-CAND-0010",
+      "source": {
+        "source_id": "RIE-SRC-0009",
+        "tier": "A",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "Reversal in Cryptocurrency Returns",
+        "uri": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6703978",
+        "publication_date": "2026-05-03",
+        "content_sha256": null,
+        "authors": [
+          "Patrick Kiefer",
+          "Michael Nowotny"
+        ],
+        "provenance_notes": [
+          "Web-verified source page/abstract; source bytes are not frozen yet.",
+          "Reported performance, if any, is untrusted until independent YATL reproduction."
+        ]
+      },
+      "technique_family": "MEAN_REVERSION",
+      "market_universe": [
+        "CRYPTO_CROSS_SECTION"
+      ],
+      "timeframes": [
+        "1w"
+      ],
+      "hypothesis": "Recent 8-10 week losers may mean-revert, especially after high-volatility formation periods.",
+      "entry_rules": [
+        "Long the eligible loser side after a frozen 8-10 week formation ranking."
+      ],
+      "exit_rules": [
+        "Rebalance according to the frozen overlapping holding specification."
+      ],
+      "stop_rules": [],
+      "sizing_rules": [],
+      "lookbacks": [
+        "8-10w formation"
+      ],
+      "cost_assumptions": [
+        "Reproduce with YATL fee and adverse-slippage model before search readiness."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Original design is long-short; YATL Spot can test only the long loser leg unless scope changes."
+      ],
+      "leakage_risks": [
+        "Delisting and dynamic-universe handling must be point-in-time."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE"
+    },
+    {
+      "candidate_id": "RIE-CAND-0011",
+      "source": {
+        "source_id": "RIE-SRC-0010",
+        "tier": "A",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "Cryptocurrency market risk-managed momentum strategies",
+        "uri": "https://www.sciencedirect.com/science/article/pii/S1544612325011377",
+        "publication_date": null,
+        "content_sha256": null,
+        "authors": [],
+        "provenance_notes": [
+          "Web-verified source page/abstract; source bytes are not frozen yet.",
+          "Reported performance, if any, is untrusted until independent YATL reproduction."
+        ]
+      },
+      "technique_family": "REGIME_AWARE",
+      "market_universe": [
+        "CRYPTO_CROSS_SECTION"
+      ],
+      "timeframes": [
+        "1w"
+      ],
+      "hypothesis": "Volatility-managed exposure can improve conventional cryptocurrency momentum by scaling risk across changing regimes.",
+      "entry_rules": [],
+      "exit_rules": [],
+      "stop_rules": [],
+      "sizing_rules": [],
+      "lookbacks": [
+        "Exact momentum and volatility-scaling windows require full-paper extraction."
+      ],
+      "cost_assumptions": [
+        "Reproduce with YATL fee and adverse-slippage model before search readiness."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Original portfolio construction may not map directly to BTC/ETH Spot."
+      ],
+      "leakage_risks": [
+        "Volatility estimator and scaling target must be frozen before OOS."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE"
+    },
+    {
+      "candidate_id": "RIE-CAND-0012",
+      "source": {
+        "source_id": "RIE-SRC-0011",
+        "tier": "A",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "Trend-based Forecast of Cryptocurrency Returns",
+        "uri": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4222864",
+        "publication_date": "2023-04-16",
+        "content_sha256": null,
+        "authors": [
+          "Xilong Tan",
+          "Yubo Tao"
+        ],
+        "provenance_notes": [
+          "Web-verified source page/abstract; source bytes are not frozen yet.",
+          "Reported performance, if any, is untrusted until independent YATL reproduction."
+        ]
+      },
+      "technique_family": "TREND",
+      "market_universe": [
+        "CRYPTO_CROSS_SECTION"
+      ],
+      "timeframes": [
+        "1d"
+      ],
+      "hypothesis": "Price-based trend signals may be most useful at shorter horizons in cryptocurrency markets.",
+      "entry_rules": [],
+      "exit_rules": [],
+      "stop_rules": [],
+      "sizing_rules": [],
+      "lookbacks": [
+        "Short-horizon price indicator definitions require full-paper extraction."
+      ],
+      "cost_assumptions": [
+        "Reproduce with YATL fee and adverse-slippage model before search readiness."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Broad universe evidence may not transfer to BTC/ETH."
+      ],
+      "leakage_risks": [
+        "Indicator family selection must not use blind OOS."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE"
+    },
+    {
+      "candidate_id": "RIE-CAND-0013",
+      "source": {
+        "source_id": "RIE-SRC-0011",
+        "tier": "A",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "Trend-based Forecast of Cryptocurrency Returns",
+        "uri": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4222864",
+        "publication_date": "2023-04-16",
+        "content_sha256": null,
+        "authors": [
+          "Xilong Tan",
+          "Yubo Tao"
+        ],
+        "provenance_notes": [
+          "Web-verified source page/abstract; source bytes are not frozen yet.",
+          "Reported performance, if any, is untrusted until independent YATL reproduction."
+        ]
+      },
+      "technique_family": "VOLUME_WEIGHTED_MOMENTUM",
+      "market_universe": [
+        "CRYPTO_CROSS_SECTION"
+      ],
+      "timeframes": [
+        "1w",
+        "1mo"
+      ],
+      "hypothesis": "Volume-based trend signals may add predictive value at longer horizons where price-only signals weaken.",
+      "entry_rules": [],
+      "exit_rules": [],
+      "stop_rules": [],
+      "sizing_rules": [],
+      "lookbacks": [
+        "Long-horizon volume indicator definitions require full-paper extraction."
+      ],
+      "cost_assumptions": [
+        "Reproduce with YATL fee and adverse-slippage model before search readiness."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Requires reliable historical volume and universe data."
+      ],
+      "leakage_risks": [
+        "Volume revisions/exchange coverage must be point-in-time."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE"
+    },
+    {
+      "candidate_id": "RIE-CAND-0014",
+      "source": {
+        "source_id": "RIE-SRC-0012",
+        "tier": "A",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "Low-volatility strategies for highly liquid cryptocurrencies",
+        "uri": "https://www.sciencedirect.com/science/article/pii/S1544612321004116",
+        "publication_date": null,
+        "content_sha256": null,
+        "authors": [],
+        "provenance_notes": [
+          "Web-verified source page/abstract; source bytes are not frozen yet.",
+          "Reported performance, if any, is untrusted until independent YATL reproduction."
+        ]
+      },
+      "technique_family": "VOLATILITY",
+      "market_universe": [
+        "CRYPTO_CROSS_SECTION"
+      ],
+      "timeframes": [
+        "1mo"
+      ],
+      "hypothesis": "Concentrating on historically low-volatility liquid cryptocurrencies with a stop-loss can improve risk-adjusted outcomes.",
+      "entry_rules": [
+        "Select a frozen low-volatility subset from the eligible liquid universe."
+      ],
+      "exit_rules": [
+        "Exit on the preregistered stop-loss or portfolio rebalance condition."
+      ],
+      "stop_rules": [],
+      "sizing_rules": [],
+      "lookbacks": [
+        "6-12mo volatility lookback/holding candidates require exact extraction."
+      ],
+      "cost_assumptions": [
+        "Reproduce with YATL fee and adverse-slippage model before search readiness."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Current BTC/ETH universe is too small for the source's portfolio selection design."
+      ],
+      "leakage_risks": [
+        "Liquidity and volatility ranks must use contemporaneously eligible assets."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE"
+    },
+    {
+      "candidate_id": "RIE-CAND-0015",
+      "source": {
+        "source_id": "RIE-SRC-0013",
+        "tier": "A",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "Econometric Modelling and Algorithmic Trading of Bitcoin: ARIMA-GARCH Volatility Analysis and Backtested Strategy Evaluation",
+        "uri": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6467818",
+        "publication_date": "2026-02-22",
+        "content_sha256": null,
+        "authors": [
+          "Tejas Paramashiva"
+        ],
+        "provenance_notes": [
+          "Web-verified source page/abstract; source bytes are not frozen yet.",
+          "Reported performance, if any, is untrusted until independent YATL reproduction."
+        ]
+      },
+      "technique_family": "MEAN_REVERSION",
+      "market_universe": [
+        "BTCUSDT"
+      ],
+      "timeframes": [
+        "1d"
+      ],
+      "hypothesis": "RSI extremes may identify Bitcoin mean-reversion opportunities after costs.",
+      "entry_rules": [
+        "Enter long when RSI(14) crosses/enters the source-defined oversold region near 30."
+      ],
+      "exit_rules": [
+        "Exit according to the source-defined RSI recovery/overbought rule near 70."
+      ],
+      "stop_rules": [],
+      "sizing_rules": [],
+      "lookbacks": [
+        "RSI 14"
+      ],
+      "cost_assumptions": [
+        "Reproduce with YATL fee and adverse-slippage model before search readiness."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Single recent sample and coursework context require strong independent replication."
+      ],
+      "leakage_risks": [
+        "Exact crossing semantics must be frozen before train search."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE"
+    },
+    {
+      "candidate_id": "RIE-CAND-0016",
+      "source": {
+        "source_id": "RIE-SRC-0013",
+        "tier": "A",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "Econometric Modelling and Algorithmic Trading of Bitcoin: ARIMA-GARCH Volatility Analysis and Backtested Strategy Evaluation",
+        "uri": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6467818",
+        "publication_date": "2026-02-22",
+        "content_sha256": null,
+        "authors": [
+          "Tejas Paramashiva"
+        ],
+        "provenance_notes": [
+          "Web-verified source page/abstract; source bytes are not frozen yet.",
+          "Reported performance, if any, is untrusted until independent YATL reproduction."
+        ]
+      },
+      "technique_family": "TREND",
+      "market_universe": [
+        "BTCUSDT"
+      ],
+      "timeframes": [
+        "1d"
+      ],
+      "hypothesis": "A 20/50 moving-average crossover may capture medium-term Bitcoin trend changes.",
+      "entry_rules": [
+        "Enter long on the frozen bullish 20/50 moving-average crossover."
+      ],
+      "exit_rules": [
+        "Exit to cash on the frozen bearish crossover."
+      ],
+      "stop_rules": [],
+      "sizing_rules": [],
+      "lookbacks": [
+        "20d fast MA",
+        "50d slow MA"
+      ],
+      "cost_assumptions": [
+        "Reproduce with YATL fee and adverse-slippage model before search readiness."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Single recent sample and coursework context require strong independent replication."
+      ],
+      "leakage_risks": [
+        "MA type and next-bar execution must be specified before reproduction."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE"
+    },
+    {
+      "candidate_id": "RIE-CAND-0017",
+      "source": {
+        "source_id": "RIE-SRC-0014",
+        "tier": "C",
+        "type": "LECTURE",
+        "language": "ZH",
+        "title": "区块链量化投资系列课程(2) - 认识数字货币",
+        "uri": "https://www.fmz.com/bbs-topic/2211",
+        "publication_date": null,
+        "content_sha256": null,
+        "authors": [
+          "FMZ community"
+        ],
+        "provenance_notes": [
+          "Web-verified source page/abstract; source bytes are not frozen yet.",
+          "Reported performance, if any, is untrusted until independent YATL reproduction."
+        ]
+      },
+      "technique_family": "TREND",
+      "market_universe": [
+        "CRYPTO_SPOT"
+      ],
+      "timeframes": [
+        "1h"
+      ],
+      "hypothesis": "A long-only dual-moving-average trend rule with price and slope confirmation can avoid large downtrends.",
+      "entry_rules": [
+        "Enter when price is above both short and long averages, short average is above long average, and both average slopes are rising."
+      ],
+      "exit_rules": [
+        "Exit when price falls below the long moving average."
+      ],
+      "stop_rules": [],
+      "sizing_rules": [],
+      "lookbacks": [
+        "Source tutorial windows must be frozen during reproduction."
+      ],
+      "cost_assumptions": [
+        "Reproduce with YATL fee and adverse-slippage model before search readiness."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Educational community source; historical profitability claims are not research-grade."
+      ],
+      "leakage_risks": [
+        "Do not copy source backtest assumptions; use YATL next-bar costed execution."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE"
+    },
+    {
+      "candidate_id": "RIE-CAND-0018",
+      "source": {
+        "source_id": "RIE-SRC-0015",
+        "tier": "C",
+        "type": "STRATEGY_LIBRARY",
+        "language": "ZH",
+        "title": "数字货币高频策略详细入门",
+        "uri": "https://www.fmz.com/bbs-topic/9976",
+        "publication_date": "2023-03-10",
+        "content_sha256": null,
+        "authors": [
+          "FMZ community"
+        ],
+        "provenance_notes": [
+          "Web-verified source page/abstract; source bytes are not frozen yet.",
+          "Reported performance, if any, is untrusted until independent YATL reproduction."
+        ]
+      },
+      "technique_family": "TIME_SERIES_MOMENTUM",
+      "market_universe": [
+        "CRYPTO_SPOT"
+      ],
+      "timeframes": [
+        "tick"
+      ],
+      "hypothesis": "Sub-10-second signed trade-flow and price acceleration may indicate very short-lived directional pressure.",
+      "entry_rules": [
+        "Long bias when recent buy-side trade intensity and buy/sell prices indicate upward pressure under the frozen rule."
+      ],
+      "exit_rules": [
+        "Exit when the short-horizon flow/trend state no longer supports the position."
+      ],
+      "stop_rules": [],
+      "sizing_rules": [],
+      "lookbacks": [
+        "<10s rolling trade-flow window"
+      ],
+      "cost_assumptions": [
+        "Reproduce with YATL fee and adverse-slippage model before search readiness."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Requires tick/aggTrade data not present in current HSL corpus.",
+        "Latency sensitivity may dominate edge."
+      ],
+      "leakage_risks": [
+        "Exchange event ordering and clock synchronization are critical."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE"
+    },
+    {
+      "candidate_id": "RIE-CAND-0019",
+      "source": {
+        "source_id": "RIE-SRC-0016",
+        "tier": "C",
+        "type": "STRATEGY_LIBRARY",
+        "language": "ZH",
+        "title": "数字货币中的Lead-Lag套利介绍（3）",
+        "uri": "https://www.fmz.com/bbs-topic/10563",
+        "publication_date": null,
+        "content_sha256": null,
+        "authors": [
+          "FMZ community"
+        ],
+        "provenance_notes": [
+          "Web-verified source page/abstract; source bytes are not frozen yet.",
+          "Reported performance, if any, is untrusted until independent YATL reproduction."
+        ]
+      },
+      "technique_family": "REGIME_AWARE",
+      "market_universe": [
+        "BTCUSDT",
+        "ETHUSDT"
+      ],
+      "timeframes": [
+        "tick"
+      ],
+      "hypothesis": "Price changes across multiple exchanges may lead a target venue and provide a short-horizon confirmation signal.",
+      "entry_rules": [
+        "Enter long when a frozen majority/aggregate lead-exchange trend signal is positive beyond its threshold."
+      ],
+      "exit_rules": [
+        "Exit when the frozen cross-exchange trend signal becomes non-positive."
+      ],
+      "stop_rules": [],
+      "sizing_rules": [],
+      "lookbacks": [
+        "Short external-exchange price-change window"
+      ],
+      "cost_assumptions": [
+        "Reproduce with YATL fee and adverse-slippage model before search readiness."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Requires synchronized multi-exchange feeds and latency modeling.",
+        "Source discusses leveraged/live components that are outside YATL scope."
+      ],
+      "leakage_risks": [
+        "No future exchange tick may enter the target-venue decision timestamp."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE"
+    },
+    {
+      "candidate_id": "RIE-CAND-0020",
+      "source": {
+        "source_id": "RIE-SRC-0017",
+        "tier": "B",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "A Decade of Evidence of Trend Following Investing in Cryptocurrencies",
+        "uri": "https://arxiv.org/abs/2009.12155",
+        "publication_date": "2020-09-25",
+        "content_sha256": null,
+        "authors": [
+          "Evans Rozario",
+          "Samuel Holt",
+          "James West",
+          "Shaun Ng"
+        ],
+        "provenance_notes": [
+          "Paper page states accompanying public code exists; exact code commit is not frozen yet.",
+          "Reported performance is untrusted until independent YATL reproduction."
+        ]
+      },
+      "technique_family": "TREND",
+      "market_universe": [
+        "BTCUSDT",
+        "ETHUSDT"
+      ],
+      "timeframes": [
+        "1d"
+      ],
+      "hypothesis": "Systematic trend following can capture persistent cryptocurrency trends across long historical windows.",
+      "entry_rules": [],
+      "exit_rules": [],
+      "stop_rules": [],
+      "sizing_rules": [],
+      "lookbacks": [
+        "Exact trend signal and portfolio rules will be extracted from paper plus code before reproduction."
+      ],
+      "cost_assumptions": [
+        "Reproduce with YATL fee and adverse-slippage model before search readiness."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "CODE",
+        "uri": "https://github.com/Globe-Research/bittrends"
+      },
+      "known_limitations": [
+        "Paper/code environment may differ materially from YATL costs and execution."
+      ],
+      "leakage_risks": [
+        "Freeze exact public-code commit and data boundaries before REPRODUCIBLE status."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE"
+    },
+    {
+      "candidate_id": "RIE-CAND-0021",
+      "source": {
+        "source_id": "RIE-SRC-0018",
+        "tier": "A",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "Systematic Trend-Following with Adaptive Portfolio Construction: Enhancing Risk-Adjusted Alpha in Cryptocurrency Markets",
+        "uri": "https://arxiv.org/abs/2602.11708",
+        "publication_date": "2026-02-12",
+        "content_sha256": null,
+        "authors": [
+          "Duc Bui",
+          "Thanh Nguyen"
+        ],
+        "provenance_notes": [
+          "Web-verified source page/abstract; source bytes are not frozen yet.",
+          "Reported performance, if any, is untrusted until independent YATL reproduction."
+        ]
+      },
+      "technique_family": "TREND",
+      "market_universe": [
+        "CRYPTO_CROSS_SECTION"
+      ],
+      "timeframes": [
+        "6h"
+      ],
+      "hypothesis": "A multi-component 6-hour trend system with volatility-adaptive trailing stops and adaptive asset selection may improve robustness across regimes.",
+      "entry_rules": [],
+      "exit_rules": [],
+      "stop_rules": [],
+      "sizing_rules": [],
+      "lookbacks": [
+        "6h trend signal",
+        "monthly portfolio adaptation"
+      ],
+      "cost_assumptions": [
+        "Reproduce with YATL fee and adverse-slippage model before search readiness."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Source includes long-short allocation; YATL must isolate a Spot long-only hypothesis.",
+        "Complexity creates substantial multiple-testing risk."
+      ],
+      "leakage_risks": [
+        "All adaptive selection rules and stop calibration must be trained without blind OOS."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE"
+    },
+    {
+      "candidate_id": "RIE-CAND-0022",
+      "source": {
+        "source_id": "RIE-SRC-0019",
+        "tier": "A",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "Detecting Volatility Regimes in Crypto Markets using Realized Volatility Structure and Normalized Momentum",
+        "uri": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5920642",
+        "publication_date": "2025-12-14",
+        "content_sha256": null,
+        "authors": [
+          "Kaustuv Banerjee"
+        ],
+        "provenance_notes": [
+          "Web-verified source page/abstract; source bytes are not frozen yet.",
+          "Reported performance, if any, is untrusted until independent YATL reproduction."
+        ]
+      },
+      "technique_family": "REGIME_AWARE",
+      "market_universe": [
+        "BTCUSDT"
+      ],
+      "timeframes": [
+        "intraday"
+      ],
+      "hypothesis": "The ratio/structure of short- versus long-horizon realized volatility combined with normalized directional momentum can classify expansion, neutral and contraction regimes.",
+      "entry_rules": [],
+      "exit_rules": [],
+      "stop_rules": [],
+      "sizing_rules": [],
+      "lookbacks": [
+        "Short/long realized-volatility horizons and normalized-momentum definition require full-paper extraction."
+      ],
+      "cost_assumptions": [
+        "Reproduce with YATL fee and adverse-slippage model before search readiness."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "This is a control/filter hypothesis, not a standalone trading strategy."
+      ],
+      "leakage_risks": [
+        "Regime thresholds must be fit on train data only and lagged at decision time."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE"
+    },
+    {
+      "candidate_id": "RIE-CAND-0023",
+      "source": {
+        "source_id": "RIE-SRC-0020",
+        "tier": "A",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "Intraday price forecasts using candlestick patterns in cryptocurrency markets",
+        "uri": "https://www.sciencedirect.com/science/article/pii/S1059056026002716",
+        "publication_date": null,
+        "content_sha256": null,
+        "authors": [
+          "Stefanie Moser",
+          "Alexander Brauneis"
+        ],
+        "provenance_notes": [
+          "Web-verified source page/abstract; source bytes are not frozen yet.",
+          "Reported performance, if any, is untrusted until independent YATL reproduction."
+        ]
+      },
+      "technique_family": "MEAN_REVERSION",
+      "market_universe": [
+        "CRYPTO_CROSS_SECTION"
+      ],
+      "timeframes": [
+        "1h"
+      ],
+      "hypothesis": "A bullish Harami pattern may contain short-horizon positive return information in cryptocurrency markets.",
+      "entry_rules": [
+        "Enter long after a point-in-time bullish Harami pattern under a frozen TA-Lib-compatible definition."
+      ],
+      "exit_rules": [
+        "Exit after the preregistered forecast horizon or protective rule."
+      ],
+      "stop_rules": [],
+      "sizing_rules": [],
+      "lookbacks": [
+        "Hourly pattern horizon requires full-paper extraction."
+      ],
+      "cost_assumptions": [
+        "Reproduce with YATL fee and adverse-slippage model before search readiness."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Pattern evidence is cross-sectional across many exchanges/pairs, not BTC/ETH-specific."
+      ],
+      "leakage_risks": [
+        "Pattern recognition must use only completed candles."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE"
+    },
+    {
+      "candidate_id": "RIE-CAND-0024",
+      "source": {
+        "source_id": "RIE-SRC-0020",
+        "tier": "A",
+        "type": "PAPER",
+        "language": "EN",
+        "title": "Intraday price forecasts using candlestick patterns in cryptocurrency markets",
+        "uri": "https://www.sciencedirect.com/science/article/pii/S1059056026002716",
+        "publication_date": null,
+        "content_sha256": null,
+        "authors": [
+          "Stefanie Moser",
+          "Alexander Brauneis"
+        ],
+        "provenance_notes": [
+          "Web-verified source page/abstract; source bytes are not frozen yet.",
+          "Reported performance, if any, is untrusted until independent YATL reproduction."
+        ]
+      },
+      "technique_family": "BREAKOUT",
+      "market_universe": [
+        "CRYPTO_CROSS_SECTION"
+      ],
+      "timeframes": [
+        "1h"
+      ],
+      "hypothesis": "A Hikkake pattern may contain short-horizon directional information in cryptocurrency markets.",
+      "entry_rules": [
+        "Enter long only for the bullish Hikkake variant under a frozen completed-candle definition."
+      ],
+      "exit_rules": [
+        "Exit after the preregistered forecast horizon or protective rule."
+      ],
+      "stop_rules": [],
+      "sizing_rules": [],
+      "lookbacks": [
+        "Hourly pattern horizon requires full-paper extraction."
+      ],
+      "cost_assumptions": [
+        "Reproduce with YATL fee and adverse-slippage model before search readiness."
+      ],
+      "reported_metrics": [],
+      "implementation": {
+        "availability": "NONE",
+        "uri": null
+      },
+      "known_limitations": [
+        "Pattern evidence is broad and may decay after costs."
+      ],
+      "leakage_risks": [
+        "Multiple-pattern selection must be accounted for as multiple testing."
+      ],
+      "status": "NEW",
+      "duplicate_of": null,
+      "strategy_evidence_effect": "NONE",
+      "p10_evidence_effect": "NONE"
+    }
+  ],
   "research_only": true,
   "p10_read": false,
   "p10_write_allowed": false,
