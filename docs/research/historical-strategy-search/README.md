@@ -80,3 +80,23 @@ The entire search is Development-only. Binary64 is permitted only for this
 high-throughput discovery layer; every proposed survivor must be independently
 recomputed with canonical exact accounting in HSSE-003 before survivor freeze.
 Paper-reported returns remain external context and never become YATL evidence.
+
+## HSSE-003 — Exact Recompute, Plateau Check, Survivor Ranking
+
+HSSE-003 is bound to the exact HSSE-002 index and three ledger SHA-256 values
+from the canonical 14,850-trial run.
+
+Only the 16 Development precheck candidates are exact-recomputed. Moving-average
+signal semantics remain the frozen source-fidelity binary64 semantics from
+HSSE-002, while execution economics, fees, adverse slippage, terminal
+liquidation and drawdown use Decimal-256 arithmetic over original canonical
+price strings.
+
+Immediate axial parameter neighbors are checked in the immutable HSSE-002
+ledger. A candidate must have at least two valid neighbors and at least 50% of
+valid neighbors must remain economically positive under preregistered relaxed
+plateau gates. This rejects isolated parameter spikes.
+
+Candidates that pass both exact gates and neighbor robustness enter a Pareto
+front and deterministic tie-break ranking. The output is only a set of proposed
+HSSE-004 survivors; no survivor is frozen here and no Blind OOS is read.
