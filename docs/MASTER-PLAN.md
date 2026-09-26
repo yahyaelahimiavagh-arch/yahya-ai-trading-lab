@@ -1971,17 +1971,27 @@ Forward مستقل و با protocol جدید بررسی می‌شود. real-forw
    `a79ee4e92edb24d04b14b5b1f058658ae6e8264ee1c7783dd219088977e11eed`.
    این 16 مورد هنوز survivor نیستند و ranking_performed=false /
    survivor_selected=false باقی ماند.
-6. **HSSE-003 — Survivor Ranking & Robustness — ACTIVE / PREREGISTERED**:
-   ورودی فقط همان سه ledger immutable HSSE-002 است. هر 16 precheck-pass با
-   Decimal-256 economics دوباره محاسبه می‌شوند، immediate parameter neighbors
-   برای جلوگیری از single-point spike بررسی می‌شوند، سپس Pareto +
-   deterministic tie-break ranking اجرا می‌شود. هیچ Blind OOS در این فاز
-   خوانده نمی‌شود.
-7. **HSSE-004 — Frozen Blind OOS**: اجرای survivorهای فریز‌شده روی blind data.
-8. **HSSE-005 — Crisis/Regime Certification**: اتصال survivorهای OOS به CRL.
-9. **HSSE-006 — Independent Audit**: recomputation، trial ledger audit، leakage
+6. **HSSE-003 — Survivor Ranking & Robustness — CANONICAL COMPLETE 2026-09-26**:
+   Final HEAD `7f7097c076816bf2b4eacc6ca95597e54afb0995` روی سه ledger immutable
+   HSSE-002 اجرا شد. از 16 precheck candidate، 15 مورد exact Decimal-256 gate و
+   14 مورد neighbor robustness را پاس کردند. Pareto + deterministic ranking
+   شش proposal داد: EMA(11,511)، EMA(11,491)، EMA(11,471)، DEMA(121,131)،
+   DEMA(91,191)، DEMA(111,161). artifact SHA-256:
+   `2dd4cd9711f3c58305fe97290b0e50ba6bcc18066e2029e9e7287484047de22f`؛
+   result SHA-256:
+   `9063db9a1e734a76ef30e175dc144c577c5159bba5b07a707d8251273ce44e23`.
+   Blind OOS و audit holdout خوانده نشدند و survivor_freeze_performed=false بود.
+7. **HSSE-004A — Survivor Freeze — ACTIVE / PREREGISTERED**:
+   همین شش proposal و تمام signal/execution/cost semantics قبل از هر Blind OOS
+   access immutable می‌شوند. بعد از freeze هیچ parameter/family/survivor-set
+   تغییر یا blind-failure retuning مجاز نیست.
+8. **HSSE-004B — Frozen Blind OOS**: فقط پس از HSSE-004A validation، acquisition
+   ساختاری و سپس تک‌اجرای frozen survivorها روی 2023-01-01 تا 2025-01-01.
+
+9. **HSSE-005 — Crisis/Regime Certification**: اتصال survivorهای OOS به CRL.
+10. **HSSE-006 — Independent Audit**: recomputation، trial ledger audit، leakage
    audit و candidate registry audit.
-10. فقط پس از آن: **Forward Candidate Review** برای نسل بعدی؛ P10 جاری untouched.
+11. فقط پس از آن: **Forward Candidate Review** برای نسل بعدی؛ P10 جاری untouched.
 
 قانون توقف scope creep همچنان پابرجاست: اگر search گسترده با protocol صحیح
 candidate قابل‌قبولی پیدا نکند، نتیجه معتبر `NO_EDGE_FOUND` است. پاسخ به این

@@ -1,0 +1,231 @@
+{
+  "schema": "YATL_HSSE_SURVIVOR_FREEZE",
+  "schema_version": "0.1.0",
+  "freeze_id": "HSSE-004A-SURVIVOR-FREEZE-001",
+  "registered_date_utc": "2026-09-26",
+  "status": "FROZEN_BEFORE_BLIND_OOS_DATA_ACCESS",
+  "purpose": "Freeze the exact HSSE-003 proposed survivor set before any HSSE Blind OOS acquisition, inspection, replay or outcome exposure.",
+  "source_hsse003": {
+    "implementation_id": "HSSE-003-SURVIVOR-RANKING/0.1.0",
+    "final_head_sha": "7f7097c076816bf2b4eacc6ca95597e54afb0995",
+    "protocol_sha256": "b0b39f81185982390266eed10bbc66996aa9c85b1c43f0c2a90bd80cbd6cbdc7",
+    "artifact_relative_path": "historical-strategy-search/hsse-003/survivor-ranking-2dd4cd9711f3c58305fe9729.json",
+    "artifact_file_sha256": "2dd4cd9711f3c58305fe97290b0e50ba6bcc18066e2029e9e7287484047de22f",
+    "result_sha256": "9063db9a1e734a76ef30e175dc144c577c5159bba5b07a707d8251273ce44e23",
+    "input_precheck_candidate_count": 16,
+    "exact_gate_pass_count": 15,
+    "neighbor_robustness_pass_count": 14,
+    "proposed_survivor_count": 6,
+    "survivor_freeze_performed": false,
+    "blind_oos_read": false,
+    "audit_holdout_read": false
+  },
+  "survivors": [
+    {
+      "frozen_id": "HSSE004A-SURV-001",
+      "source_trial_id": "HSSE002-TREND_MA_EMA-0011-0511",
+      "family": "TREND_MA_EMA",
+      "parameters": {
+        "n1": 11,
+        "n2": 511
+      },
+      "search_trial_sha256": "5a41e967fc6972ae0ad1fbd252cd77b2dc8aad61b8abcea3a23c01321ed3f1fb",
+      "development_reference": {
+        "completed_trades": 97,
+        "expectancy_quote": "0.05339090901402061855670103092783505154639175257731958762886597938144329896907216494845360824742268041237113402061855670103092783505154639175257731958762886597938144329896907216494845360824742268041237113402061855670103092783505154639175257731958762886597938",
+        "profit_factor": "1.132555075832390139002861579314429119656888955371850050723032378869052760596333691818641035893365456506525502477911760090048632596150803257633416201319547305013538785657843536718883730700610126715895177399882045786821202894393554829781062655292762210563484",
+        "positive_development_cell_fraction": "0.6",
+        "maximum_drawdown_fraction": "0.001508301232824892678617369809687304868537710318777689260286455866640309068624092827822224738297224173674770405122574551289824155830676739061895314023854706143089213973076008289325854582794183904041702887615046127471621529253427720575699814575876691782389931",
+        "total_net_pnl_after_costs_quote": "17.233425215415",
+        "stress_total_net_pnl_after_costs_quote": "12.74604215166",
+        "neighbor_pass_fraction": "0.75"
+      }
+    },
+    {
+      "frozen_id": "HSSE004A-SURV-002",
+      "source_trial_id": "HSSE002-TREND_MA_EMA-0011-0491",
+      "family": "TREND_MA_EMA",
+      "parameters": {
+        "n1": 11,
+        "n2": 491
+      },
+      "search_trial_sha256": "e890e58f0f99533cfd3e677c2239763820bf5e9c6ab075d32e5131ab959586d9",
+      "development_reference": {
+        "completed_trades": 109,
+        "expectancy_quote": "0.05619758801917431192660550458715596330275229357798165137614678899082568807339449541284403669724770642201834862385321100917431192660550458715596330275229357798165137614678899082568807339449541284403669724770642201834862385321100917431192660550458715596330275",
+        "profit_factor": "1.159820950221613447823933054599912318768377189362060040080674327231341897608129585320147796829208166268031835040124775063742276319855731123089520160631379000277653545558629474813862044954913289410617244244633214870549748434092639732854065375806003588826027",
+        "positive_development_cell_fraction": "0.6",
+        "maximum_drawdown_fraction": "0.001553774431650091778838016062879141950401162968588266150122814666934700594360491595653486620769384490228982909248654402983647096603975619911056495579638115158840205849235487665889558809376942510335696103400131362689581877146273738462385092227726232712157314",
+        "total_net_pnl_after_costs_quote": "18.123759807045",
+        "stress_total_net_pnl_after_costs_quote": "13.04345281818",
+        "neighbor_pass_fraction": "1"
+      }
+    },
+    {
+      "frozen_id": "HSSE004A-SURV-003",
+      "source_trial_id": "HSSE002-TREND_MA_EMA-0011-0471",
+      "family": "TREND_MA_EMA",
+      "parameters": {
+        "n1": 11,
+        "n2": 471
+      },
+      "search_trial_sha256": "67a995daf6d9373c379cbf67e226cf06152c454a3dcff480ef958e377a8f8617",
+      "development_reference": {
+        "completed_trades": 103,
+        "expectancy_quote": "0.05939105522519417475728155339805825242718446601941747572815533980582524271844660194174757281553398058252427184466019417475728155339805825242718446601941747572815533980582524271844660194174757281553398058252427184466019417475728155339805825242718446601941748",
+        "profit_factor": "1.164385156641717885319788790554998359708480660874642782577913495667241295304006494959470519490556245554180538338919516284358516873490437412449487053597283332354281738802279258763339459300157144409296495122243082353527916644183489614075290144404949853796017",
+        "positive_development_cell_fraction": "0.6",
+        "maximum_drawdown_fraction": "0.001503909450438989703229140518042635284600529881060152012451306084897258866004717362171179868617593962329179145594331083923209120065214053807462907157311531180555155673375809599291873463432029591597957020872631860700733136940278021381797090879363227686705878",
+        "total_net_pnl_after_costs_quote": "17.981931279465",
+        "stress_total_net_pnl_after_costs_quote": "13.31495520786",
+        "neighbor_pass_fraction": "1"
+      }
+    },
+    {
+      "frozen_id": "HSSE004A-SURV-004",
+      "source_trial_id": "HSSE002-TREND_MA_DEMA-0121-0131",
+      "family": "TREND_MA_DEMA",
+      "parameters": {
+        "n1": 121,
+        "n2": 131
+      },
+      "search_trial_sha256": "f83912da137d50445c9b9cda4f86f6163e41650e09d69878784ecff3b1c167b2",
+      "development_reference": {
+        "completed_trades": 161,
+        "expectancy_quote": "0.08962703736829192546583850931677018633540372670807453416149068322981366459627329192546583850931677018633540372670807453416149068322981366459627329192546583850931677018633540372670807453416149068322981366459627329192546583850931677018633540372670807453416149",
+        "profit_factor": "1.189374373445604350503516029136695779611232144346325453004756456120262538409896285863519389616666331935590641483647716811441520597294285016059308193413394396114044925404625695716643653849458503102470705840602626869423074232789935561657140620840518277148409",
+        "positive_development_cell_fraction": "0.6",
+        "maximum_drawdown_fraction": "0.002213093424223552468299898281033317286194557519349995701971683029524278553973427314697783527846332173211287777980277120054978037365977909054969568828855746725053277880615237944863138665290912305226383167599415017337172610753676520367167213064256619895113986",
+        "total_net_pnl_after_costs_quote": "26.507833545405",
+        "stress_total_net_pnl_after_costs_quote": "17.93489217162",
+        "neighbor_pass_fraction": "1"
+      }
+    },
+    {
+      "frozen_id": "HSSE004A-SURV-005",
+      "source_trial_id": "HSSE002-TREND_MA_DEMA-0091-0191",
+      "family": "TREND_MA_DEMA",
+      "parameters": {
+        "n1": 91,
+        "n2": 191
+      },
+      "search_trial_sha256": "cbdc0f7a056a24522b98e3a07b03dd4d210d8bd0f1f8e75313b4ca504321127d",
+      "development_reference": {
+        "completed_trades": 157,
+        "expectancy_quote": "0.0759482153615923566878980891719745222929936305732484076433121019108280254777070063694267515923566878980891719745222929936305732484076433121019108280254777070063694267515923566878980891719745222929936305732484076433121019108280254777070063694267515923566879",
+        "profit_factor": "1.161683432409755585432707442831762531658642166217083213860183697926409310067290462444431075405970679219844880563765019345116683562689297244531360625771998616761348074224913917416709982665859309179137033707879940092748678057931789631221033148550743765702349",
+        "positive_development_cell_fraction": "0.6",
+        "maximum_drawdown_fraction": "0.002008841423022393557663833160036162143793848785979346806321334877722931174984681412028742458949255599785147652764329101891315855854606844442621392713801431398217163990770238708951691737109820360820270614255949493102765694705872669075488274101625510625152394",
+        "total_net_pnl_after_costs_quote": "24.18001742988",
+        "stress_total_net_pnl_after_costs_quote": "16.10030711952",
+        "neighbor_pass_fraction": "1"
+      }
+    },
+    {
+      "frozen_id": "HSSE004A-SURV-006",
+      "source_trial_id": "HSSE002-TREND_MA_DEMA-0111-0161",
+      "family": "TREND_MA_DEMA",
+      "parameters": {
+        "n1": 111,
+        "n2": 161
+      },
+      "search_trial_sha256": "9ae17ea8c17e5b70f0c51be8bed35374328ddf9da71887fbb3dd00953f7c878c",
+      "development_reference": {
+        "completed_trades": 159,
+        "expectancy_quote": "0.06815817441981132075471698113207547169811320754716981132075471698113207547169811320754716981132075471698113207547169811320754716981132075471698113207547169811320754716981132075471698113207547169811320754716981132075471698113207547169811320754716981132075472",
+        "profit_factor": "1.149386078466894879949512538533578273183577888187320910173868553149085433293439857964316383502945009943321613802929567799660047276586297978600527084368147419041395819418608811063656161784935231244885068217414623502238342330399302382938222823518988587612297",
+        "positive_development_cell_fraction": "0.6",
+        "maximum_drawdown_fraction": "0.001964974689166805284770478474740642358720214147841585408325353887053726487434855542756648049659811785585458017341438656983655055905889185259410679229681388769820311224586167350720626495170792620079257127441744573839474054250323012195483236338234137907248503",
+        "total_net_pnl_after_costs_quote": "22.937273587965",
+        "stress_total_net_pnl_after_costs_quote": "14.72864832186",
+        "neighbor_pass_fraction": "1"
+      }
+    }
+  ],
+  "freeze_rules": {
+    "survivor_count": 6,
+    "family_counts": {
+      "TREND_MA_EMA": 3,
+      "TREND_MA_DEMA": 3
+    },
+    "parameters_mutable_after_freeze": false,
+    "family_mutable_after_freeze": false,
+    "signal_semantics_mutable_after_freeze": false,
+    "execution_semantics_mutable_after_freeze": false,
+    "cost_model_mutable_after_freeze": false,
+    "quantity_mutable_after_freeze": false,
+    "survivor_set_mutable_after_freeze": false,
+    "blind_failure_retune_same_holdout": false,
+    "development_reranking_after_blind_outcome": false
+  },
+  "frozen_signal_and_execution": {
+    "timeframe": "1h",
+    "price_field": "close",
+    "signal_math": "SOURCE_FIDELITY_BINARY64",
+    "sma_used": false,
+    "ema": "Pandas-compatible adjust=False recursive EMA alpha=2/(N+1), reset after admitted 1h source gap.",
+    "dema": "2*EMA(price,N)-EMA(EMA(price,N),N), reset after admitted 1h source gap.",
+    "post_gap_warmup": "Signal unavailable until contiguous run length >= max(n1,n2).",
+    "entry": "Completed-bar bullish crossover; execute at next contiguous 1h open.",
+    "exit": "Completed-bar bearish crossover; exit to cash at next contiguous 1h open.",
+    "side": "LONG_ONLY_SPOT",
+    "quantity": "0.001",
+    "initial_equity_quote": "10000",
+    "base_fee_bps": "10",
+    "base_adverse_slippage_bps": "5",
+    "stress_fee_bps": "20",
+    "stress_adverse_slippage_bps": "10",
+    "exact_economic_arithmetic": "DECIMAL_256",
+    "terminal_open_position": "MARK_TO_MARKET_WITH_CANONICAL_LIQUIDATION_COSTS; DO_NOT_FORCE_EXIT",
+    "gap_policy": "NEVER_INTERPOLATE_OR_FORWARD_FILL"
+  },
+  "blind_oos": {
+    "corpus_id": "HSSE-BLIND-OOS-001",
+    "acquisition_start_utc": "2022-11-01T00:00:00Z",
+    "analysis_start_utc": "2023-01-01T00:00:00Z",
+    "analysis_end_exclusive_utc": "2025-01-01T00:00:00Z",
+    "symbols": [
+      "BTCUSDT",
+      "ETHUSDT"
+    ],
+    "intervals": [
+      "15m",
+      "1h",
+      "4h"
+    ],
+    "state_before_hsse004b": "SEALED_UNACQUIRED_BY_HSSE",
+    "outcome_access_before_hsse004b": false,
+    "reuse_for_retuning_after_first_outcome": false,
+    "execution_count_per_frozen_survivor": 1,
+    "calendar_reporting": "QUARTERLY"
+  },
+  "blind_gate": {
+    "minimum_completed_trades_total": 40,
+    "minimum_completed_trades_per_symbol": 10,
+    "require_positive_total_net_pnl_after_base_costs": true,
+    "require_positive_expectancy_after_base_costs": true,
+    "minimum_profit_factor_after_base_costs": "1.05",
+    "minimum_positive_calendar_quarter_fraction": "0.50",
+    "maximum_drawdown_fraction": "0.12",
+    "cost_stress_report_required": true,
+    "failure_policy": "RETAIN_FAILURE; DO_NOT_RETUNE_ON_THIS_HOLDOUT"
+  },
+  "post_blind": {
+    "passing_candidate_action": "ELIGIBLE_FOR_HSSE005_CRISIS_REGIME_CERTIFICATION",
+    "failing_candidate_action": "RETAIN_FAILURE_AND_REMOVE_FROM_THIS_GENERATION",
+    "no_survivor_outcome": "NO_EDGE_SURVIVED_BLIND_OOS_IS_VALID",
+    "no_automatic_forward_promotion": true,
+    "no_live_authorization": true
+  },
+  "research_only": true,
+  "p10_read": false,
+  "p10_write_allowed": false,
+  "p10_evidence_effect": "NONE",
+  "live_master_lock": "OFF",
+  "trade_permission": false,
+  "order_endpoint": false,
+  "quantity_authority": false,
+  "risk_authorization_mutation": false,
+  "ai_direct_execution": false,
+  "p11_locked": true
+}
