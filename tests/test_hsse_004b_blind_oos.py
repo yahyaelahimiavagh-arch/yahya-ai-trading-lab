@@ -6,7 +6,8 @@ from research.historical_strategy_search import blind_oos
 
 ROOT=Path(__file__).resolve().parents[1]
 PROTOCOL=ROOT/"docs/research/historical-strategy-search/HSSE-004B-BLIND-OOS-PROTOCOL-v0.1.0.json"
-REGISTER=ROOT/"docs/research/crisis-lab/DATA-ACQUISITION-REGISTER-v0.1.0.json"
+REGISTER=ROOT/"docs/research/historical-strategy-search/HSSE-004B-DATA-ACQUISITION-REGISTER-v0.1.0.json"
+CRL_REGISTER=ROOT/"docs/research/crisis-lab/DATA-ACQUISITION-REGISTER-v0.1.0.json"
 
 class HSSE004BTests(unittest.TestCase):
     def test_protocol_binds_six_frozen_survivors_before_blind(self):
@@ -26,6 +27,14 @@ class HSSE004BTests(unittest.TestCase):
         for d in plan["datasets"]:
             self.assertEqual(d["semantic_start_utc"],"2022-11-01T00:00:00Z")
             self.assertEqual(d["semantic_end_utc"],"2025-01-01T00:00:00Z")
+
+    def test_hsse_register_does_not_mutate_canonical_crl_catalog(self):
+        crl=acq.load_acquisition_register(CRL_REGISTER)
+        hsse=acq.load_acquisition_register(REGISTER)
+        self.assertEqual(len(crl["events"]),16)
+        self.assertEqual(len(hsse["events"]),1)
+        self.assertEqual(hsse["events"][0]["event_id"],"HSSE-BLIND-OOS-001")
+        self.assertNotIn("HSSE-BLIND-OOS-001",{e["event_id"] for e in crl["events"]})
 
     def test_protocol_rejects_parameter_change_permission(self):
         p=json.loads(PROTOCOL.read_text(encoding="utf-8"))

@@ -3,11 +3,13 @@ from __future__ import annotations
 import argparse, hashlib, json
 from pathlib import Path
 from typing import Sequence
+from research.crisis_lab import acquisition as acq
 from . import survivor_freeze
 
 SCHEMA_VERSION="0.1.0"
 DEFAULT_PROTOCOL_PATH=Path("docs/research/historical-strategy-search/HSSE-004B-BLIND-OOS-PROTOCOL-v0.1.0.json")
 MAX_BYTES=2*1024*1024
+REPO_ROOT=Path(__file__).resolve().parents[2]
 
 class HSSEBlindError(RuntimeError): pass
 
@@ -42,13 +44,36 @@ def load_protocol(path:Path=DEFAULT_PROTOCOL_PATH):
     if (f.get("freeze_id")!="HSSE-004A-SURVIVOR-FREEZE-001" or f.get("survivor_count")!=6
         or f.get("relative_path")!="docs/research/historical-strategy-search/HSSE-004A-SURVIVOR-FREEZE-v0.1.0.json"):
         raise HSSEBlindError("freeze binding is invalid")
-    freeze_path=(path.resolve().parents[3]/f["relative_path"]).resolve()
+    freeze_path=(REPO_ROOT/f["relative_path"]).resolve()
+    if not freeze_path.is_relative_to(REPO_ROOT):
+        raise HSSEBlindError("survivor freeze path escapes repository root")
     try: fp=freeze_path.read_bytes()
     except OSError: raise HSSEBlindError("cannot read bound survivor freeze") from None
     if _git_blob_sha(fp)!=f.get("git_blob_sha"): raise HSSEBlindError("survivor freeze Git blob binding mismatch")
     try: fr=survivor_freeze.validate_freeze(freeze_path)
     except survivor_freeze.HSSEFreezeError as exc: raise HSSEBlindError(str(exc)) from None
     if fr["survivor_count"]!=6 or fr["blind_oos_accessed"] is not False: raise HSSEBlindError("survivor freeze is not pristine")
+    reg=d.get("acquisition_register")
+    if (not isinstance(reg,dict)
+        or reg.get("relative_path")!="docs/research/historical-strategy-search/HSSE-004B-DATA-ACQUISITION-REGISTER-v0.1.0.json"
+        or reg.get("git_blob_sha")!="4ecb2821d06a6aa6bc5735ada36ec0ac740a1f3e"
+        or reg.get("event_count")!=1):
+        raise HSSEBlindError("Blind acquisition register binding is invalid")
+    register_path=(REPO_ROOT/reg["relative_path"]).resolve()
+    if not register_path.is_relative_to(REPO_ROOT):
+        raise HSSEBlindError("Blind acquisition register path escapes repository root")
+    try: register_bytes=register_path.read_bytes()
+    except OSError: raise HSSEBlindError("cannot read bound Blind acquisition register") from None
+    if _git_blob_sha(register_bytes)!=reg["git_blob_sha"]:
+        raise HSSEBlindError("Blind acquisition register Git blob binding mismatch")
+    try:
+        registration=acq.load_acquisition_register(register_path)
+        plan=acq.plan_event(registration,"HSSE-BLIND-OOS-001")
+    except acq.AcquisitionError as exc:
+        raise HSSEBlindError(str(exc)) from None
+    if (len(registration.get("events",[]))!=1 or plan.get("designation")!="BLIND_HOLDOUT"
+        or plan.get("replay_eligible") is not True or len(plan.get("datasets",[]))!=6):
+        raise HSSEBlindError("Blind acquisition register scope is invalid")
     if (d.get("event_id")!="HSSE-BLIND-OOS-001" or d.get("designation")!="BLIND_HOLDOUT"
         or d.get("acquisition_start_utc")!="2022-11-01T00:00:00Z"
         or d.get("analysis_start_utc")!="2023-01-01T00:00:00Z"

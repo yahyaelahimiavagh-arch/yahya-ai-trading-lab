@@ -46,7 +46,12 @@
       "plots",
       "strategy_metrics",
       "pnl"
-    ]
+    ],
+    "acquisition_register": {
+      "relative_path": "docs/research/historical-strategy-search/HSSE-004B-DATA-ACQUISITION-REGISTER-v0.1.0.json",
+      "git_blob_sha": "4ecb2821d06a6aa6bc5735ada36ec0ac740a1f3e",
+      "event_count": 1
+    }
   },
   "execution": {
     "execution_count_per_frozen_survivor": 1,
