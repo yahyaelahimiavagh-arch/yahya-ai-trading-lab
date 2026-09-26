@@ -61,7 +61,8 @@
       "status": "NEW",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
-      "p10_evidence_effect": "NONE"
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
     },
     {
       "candidate_id": "RIE-CAND-0002",
@@ -116,7 +117,8 @@
       "status": "NEW",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
-      "p10_evidence_effect": "NONE"
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
     },
     {
       "candidate_id": "RIE-CAND-0003",
@@ -176,7 +178,8 @@
       "status": "NEW",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
-      "p10_evidence_effect": "NONE"
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
     },
     {
       "candidate_id": "RIE-CAND-0004",
@@ -230,7 +233,8 @@
       "status": "NEW",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
-      "p10_evidence_effect": "NONE"
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
     },
     {
       "candidate_id": "RIE-CAND-0005",
@@ -292,7 +296,8 @@
       "status": "NEW",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
-      "p10_evidence_effect": "NONE"
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
     },
     {
       "candidate_id": "RIE-CAND-0006",
@@ -349,7 +354,8 @@
       "status": "NEW",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
-      "p10_evidence_effect": "NONE"
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
     },
     {
       "candidate_id": "RIE-CAND-0007",
@@ -406,7 +412,8 @@
       "status": "NEW",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
-      "p10_evidence_effect": "NONE"
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
     },
     {
       "candidate_id": "RIE-CAND-0008",
@@ -457,7 +464,8 @@
       "status": "NEW",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
-      "p10_evidence_effect": "NONE"
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
     },
     {
       "candidate_id": "RIE-CAND-0009",
@@ -512,7 +520,8 @@
       "status": "NEW",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
-      "p10_evidence_effect": "NONE"
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
     },
     {
       "candidate_id": "RIE-CAND-0010",
@@ -570,7 +579,8 @@
       "status": "NEW",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
-      "p10_evidence_effect": "NONE"
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
     },
     {
       "candidate_id": "RIE-CAND-0011",
@@ -621,7 +631,8 @@
       "status": "NEW",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
-      "p10_evidence_effect": "NONE"
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
     },
     {
       "candidate_id": "RIE-CAND-0012",
@@ -675,7 +686,8 @@
       "status": "NEW",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
-      "p10_evidence_effect": "NONE"
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
     },
     {
       "candidate_id": "RIE-CAND-0013",
@@ -730,7 +742,8 @@
       "status": "NEW",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
-      "p10_evidence_effect": "NONE"
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
     },
     {
       "candidate_id": "RIE-CAND-0014",
@@ -785,7 +798,8 @@
       "status": "NEW",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
-      "p10_evidence_effect": "NONE"
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
     },
     {
       "candidate_id": "RIE-CAND-0015",
@@ -842,7 +856,8 @@
       "status": "NEW",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
-      "p10_evidence_effect": "NONE"
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
     },
     {
       "candidate_id": "RIE-CAND-0016",
@@ -900,7 +915,8 @@
       "status": "NEW",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
-      "p10_evidence_effect": "NONE"
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
     },
     {
       "candidate_id": "RIE-CAND-0017",
@@ -957,7 +973,8 @@
       "status": "NEW",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
-      "p10_evidence_effect": "NONE"
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
     },
     {
       "candidate_id": "RIE-CAND-0018",
@@ -1015,7 +1032,8 @@
       "status": "NEW",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
-      "p10_evidence_effect": "NONE"
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
     },
     {
       "candidate_id": "RIE-CAND-0019",
@@ -1074,7 +1092,8 @@
       "status": "NEW",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
-      "p10_evidence_effect": "NONE"
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
     },
     {
       "candidate_id": "RIE-CAND-0020",
@@ -1094,8 +1113,8 @@
           "Shaun Ng"
         ],
         "provenance_notes": [
-          "Paper page states accompanying public code exists; exact code commit is not frozen yet.",
-          "Reported performance is untrusted until independent YATL reproduction."
+          "Paper identity is arXiv:2009.12155v1; exact PDF bytes remain unfrozen and reported performance is untrusted.",
+          "The accompanying public implementation is frozen in RIE-003 at commit d2e66e405183349f52556a18d387bb1dfc900db5 with exact relevant Git blob identities."
         ]
       },
       "technique_family": "TREND",
@@ -1104,18 +1123,27 @@
         "ETHUSDT"
       ],
       "timeframes": [
-        "1d"
+        "1h"
       ],
-      "hypothesis": "Systematic trend following can capture persistent cryptocurrency trends across long historical windows.",
-      "entry_rules": [],
-      "exit_rules": [],
-      "stop_rules": [],
-      "sizing_rules": [],
+      "hypothesis": "Systematic moving-average trend following can capture persistent cryptocurrency trends after realistic Spot execution costs.",
+      "entry_rules": [
+        "Enter long when the completed-bar short moving average crosses above the completed-bar long moving average."
+      ],
+      "exit_rules": [
+        "Exit to cash when the completed-bar short moving average crosses below the completed-bar long moving average; never open a short position."
+      ],
+      "stop_rules": [
+        "No protective stop or target is added to this source-derived crossover search; exit is signal-driven only."
+      ],
+      "sizing_rules": [
+        "Use fixed YATL research quantity 0.001 in long-only Spot research."
+      ],
       "lookbacks": [
-        "Exact trend signal and portfolio rules will be extracted from paper plus code before reproduction."
+        "Search source-code windows n1,n2 in range(1,1000,10) hours with n1<n2 separately for SMA, EMA and DEMA."
       ],
       "cost_assumptions": [
-        "Reproduce with YATL fee and adverse-slippage model before search readiness."
+        "Base search costs: 10 bps fee and 5 bps adverse slippage per execution.",
+        "Stress costs: 20 bps fee and 10 bps adverse slippage per execution."
       ],
       "reported_metrics": [],
       "implementation": {
@@ -1123,15 +1151,23 @@
         "uri": "https://github.com/Globe-Research/bittrends"
       },
       "known_limitations": [
-        "Paper/code environment may differ materially from YATL costs and execution."
+        "The source paper studied BTCUSD Bitstamp and assumed negligible trading costs; YATL adapts to BTCUSDT/ETHUSDT Binance Spot with explicit costs.",
+        "The source forward-filled missing hourly data; YATL never fills or interpolates admitted source gaps.",
+        "Paper-reported profitability is not used as YATL evidence."
       ],
       "leakage_risks": [
-        "Freeze exact public-code commit and data boundaries before REPRODUCIBLE status."
+        "All parameter and family selection must remain inside 2020-01-01 through 2023-01-01 Development data.",
+        "Blind OOS beginning 2023-01-01 cannot be read or used for selection.",
+        "Every SMA/EMA/DEMA parameter trial counts toward multiple testing."
       ],
-      "status": "NEW",
+      "status": "READY_FOR_TRAIN_SEARCH",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
-      "p10_evidence_effect": "NONE"
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": {
+        "relative_path": "reproduction-packets/RIE-CAND-0020-v0.1.0.json",
+        "git_blob_sha": "13f5d0f27a8a2ef4de81182886f4e4f0e4f0d95b"
+      }
     },
     {
       "candidate_id": "RIE-CAND-0021",
@@ -1187,7 +1223,8 @@
       "status": "NEW",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
-      "p10_evidence_effect": "NONE"
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
     },
     {
       "candidate_id": "RIE-CAND-0022",
@@ -1240,7 +1277,8 @@
       "status": "NEW",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
-      "p10_evidence_effect": "NONE"
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
     },
     {
       "candidate_id": "RIE-CAND-0023",
@@ -1298,7 +1336,8 @@
       "status": "NEW",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
-      "p10_evidence_effect": "NONE"
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
     },
     {
       "candidate_id": "RIE-CAND-0024",
@@ -1356,7 +1395,8 @@
       "status": "NEW",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
-      "p10_evidence_effect": "NONE"
+      "p10_evidence_effect": "NONE",
+      "reproduction_packet": null
     }
   ],
   "research_only": true,

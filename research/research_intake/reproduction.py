@@ -163,6 +163,7 @@ def validate_packet(path: Path) -> dict[str, object]:
             "commit_sha",
             "license",
             "files",
+            "snapshot_sha256",
         ),
     ):
         raise ReproductionPacketError("implementation binding schema is invalid")
@@ -189,6 +190,23 @@ def validate_packet(path: Path) -> dict[str, object]:
             or GIT_SHA_RE.fullmatch(item["blob_sha"]) is None
         ):
             raise ReproductionPacketError("implementation blob SHA is invalid")
+    snapshot_sha = impl["snapshot_sha256"]
+    if not isinstance(snapshot_sha, str) or SHA256_RE.fullmatch(snapshot_sha) is None:
+        raise ReproductionPacketError("implementation snapshot SHA-256 is invalid")
+    snapshot = {
+        "schema": "YATL_EXTERNAL_REPOSITORY_SNAPSHOT",
+        "schema_version": "0.1.0",
+        "repository": impl["repository"],
+        "commit_sha": impl["commit_sha"],
+        "files": impl["files"],
+    }
+    calculated_snapshot_sha = _sha256(
+        (_json(snapshot) + "\n").encode("utf-8")
+    )
+    if calculated_snapshot_sha != snapshot_sha:
+        raise ReproductionPacketError(
+            "implementation snapshot SHA-256 does not match bound files"
+        )
 
     method = record["source_method"]
     if not _exact(
@@ -287,6 +305,7 @@ def validate_packet(path: Path) -> dict[str, object]:
             "candidate_status",
             "implementation_frozen",
             "source_bytes_frozen",
+            "readiness_basis",
             "ready_for_train_search",
             "blockers",
         ),
@@ -304,18 +323,37 @@ def validate_packet(path: Path) -> dict[str, object]:
         raise ReproductionPacketError("source_bytes_frozen must be boolean")
     if type(readiness["ready_for_train_search"]) is not bool:
         raise ReproductionPacketError("ready_for_train_search must be boolean")
+    if readiness["readiness_basis"] not in {
+        "FROZEN_SOURCE",
+        "FROZEN_IMPLEMENTATION",
+        "NOT_READY",
+    }:
+        raise ReproductionPacketError("readiness basis is invalid")
     blockers = _string_list(readiness["blockers"], "readiness blockers")
     if source["freeze_status"] == "PENDING_BYTES":
         if readiness["source_bytes_frozen"] is not False:
             raise ReproductionPacketError("pending source bytes must remain unfrozen")
-        if readiness["ready_for_train_search"] is not False:
+        if readiness["ready_for_train_search"] is True:
+            if (
+                readiness["readiness_basis"] != "FROZEN_IMPLEMENTATION"
+                or readiness["implementation_frozen"] is not True
+                or search["status"] != "FROZEN"
+                or readiness["candidate_status"] != "READY_FOR_TRAIN_SEARCH"
+                or blockers
+            ):
+                raise ReproductionPacketError(
+                    "implementation-based readiness is not fully frozen"
+                )
+        elif not blockers:
             raise ReproductionPacketError(
-                "candidate cannot be train-ready before source freeze"
+                "pending non-ready source requires a readiness blocker"
             )
-        if not blockers:
-            raise ReproductionPacketError(
-                "pending source freeze requires a readiness blocker"
-            )
+    if readiness["candidate_status"] == "READY_FOR_TRAIN_SEARCH" and (
+        readiness["ready_for_train_search"] is not True
+    ):
+        raise ReproductionPacketError(
+            "READY_FOR_TRAIN_SEARCH status requires ready_for_train_search"
+        )
 
     safety = (
         record["research_only"] is True

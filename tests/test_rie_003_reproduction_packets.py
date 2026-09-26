@@ -27,15 +27,24 @@ class RIE003ReproductionPacketTests(unittest.TestCase):
             "d2e66e405183349f52556a18d387bb1dfc900db5",
         )
         self.assertEqual(result["implementation_file_count"], 4)
-        self.assertEqual(result["candidate_status"], "NEW")
-        self.assertFalse(result["ready_for_train_search"])
+        self.assertEqual(result["candidate_status"], "READY_FOR_TRAIN_SEARCH")
+        self.assertTrue(result["ready_for_train_search"])
         self.assertFalse(result["p10_write_allowed"])
         self.assertEqual(result["strategy_evidence_effect"], "NONE")
         self.assertTrue(result["p11_locked"])
 
-    def test_pending_source_bytes_cannot_claim_ready_status(self):
+    def test_pending_source_can_be_ready_only_from_frozen_implementation(self):
         record = json.loads(PACKET.read_text(encoding="utf-8"))
-        record["readiness"]["ready_for_train_search"] = True
+        record["readiness"]["implementation_frozen"] = False
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "packet.json"
+            path.write_text(json.dumps(record), encoding="utf-8")
+            with self.assertRaises(rp.ReproductionPacketError):
+                rp.validate_packet(path)
+
+    def test_ready_candidate_requires_frozen_train_search(self):
+        record = json.loads(PACKET.read_text(encoding="utf-8"))
+        record["train_search"]["status"] = "PLANNED"
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp) / "packet.json"
             path.write_text(json.dumps(record), encoding="utf-8")
