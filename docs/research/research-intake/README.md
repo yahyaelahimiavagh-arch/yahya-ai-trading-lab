@@ -74,3 +74,24 @@ RIE validation:
 
 External claims become YATL evidence only after independent YATL testing through
 the later HSSE / OOS / Crisis / Forward pipeline.
+
+## RIE-003 — Reproduction packets
+
+RIE-003 binds promising candidates to exact source and implementation
+identities before any historical search. A packet may freeze implementation
+code while leaving source bytes pending, but that state is explicitly blocked
+from `REPRODUCIBLE` or `READY_FOR_TRAIN_SEARCH`.
+
+First packet:
+- `reproduction-packets/RIE-CAND-0020-v0.1.0.json` — trend-following paper/code
+  binding at exact public implementation commit, with paper/code discrepancies,
+  YATL long-only adaptation and future Train-only search boundary recorded.
+
+Validate with:
+
+```bash
+uv run --locked python -m research.research_intake.reproduction validate \
+  --packet docs/research/research-intake/reproduction-packets/RIE-CAND-0020-v0.1.0.json
+```
+
+No reproduction packet is permission to execute a trade or mutate P10.
