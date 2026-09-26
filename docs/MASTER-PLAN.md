@@ -1961,10 +1961,22 @@ Forward مستقل و با protocol جدید بررسی می‌شود. real-forw
 3. **RIE-003 — Reproduction Packets**: تبدیل candidateهای برتر به specification
    دقیق قابل‌پیاده‌سازی، بدون performance trust.
 4. **HSSE-001 — Search Protocol & Data Boundaries**: **IMPLEMENTED / PR CANDIDATE** — Development تا 2023-01 فقط search surface؛ Blind OOS 2023-01 تا 2025-01 sealed؛ Final historical audit 2025-01 تا 2026-07 sealed؛ search budget و anti-leakage rules فریز.
-5. **HSSE-002 — Deterministic Search Runner**: اجرای bounded trial matrix با
-   fee/slippage و artifact کامل تمام trialها.
-6. **HSSE-003 — Survivor Ranking & Robustness**: ranking چندمعیاره، stability،
-   cost sensitivity و complexity control.
+5. **HSSE-002 — Deterministic Search Runner — CANONICAL COMPLETE 2026-09-26**:
+   Final HEAD `2b6354b5ea491b45ce460b76361da9d24e5e3b0d` روی Development اجرا شد.
+   هر سه family دقیقاً 4,950 trial و در مجموع 14,850 trial را ثبت کردند؛
+   Blind OOS و audit holdout خوانده نشدند. Development precheck فقط 16 trial را
+   عبور داد: SMA=1، EMA=8، DEMA=7. Search index SHA-256:
+   `ebcb31c2e17a82e417d7a947db0f1b3b5295a256e2f93e6ff8b981666e51e269`.
+   result SHA-256:
+   `a79ee4e92edb24d04b14b5b1f058658ae6e8264ee1c7783dd219088977e11eed`.
+   این 16 مورد هنوز survivor نیستند و ranking_performed=false /
+   survivor_selected=false باقی ماند.
+6. **HSSE-003 — Survivor Ranking & Robustness — ACTIVE / PREREGISTERED**:
+   ورودی فقط همان سه ledger immutable HSSE-002 است. هر 16 precheck-pass با
+   Decimal-256 economics دوباره محاسبه می‌شوند، immediate parameter neighbors
+   برای جلوگیری از single-point spike بررسی می‌شوند، سپس Pareto +
+   deterministic tie-break ranking اجرا می‌شود. هیچ Blind OOS در این فاز
+   خوانده نمی‌شود.
 7. **HSSE-004 — Frozen Blind OOS**: اجرای survivorهای فریز‌شده روی blind data.
 8. **HSSE-005 — Crisis/Regime Certification**: اتصال survivorهای OOS به CRL.
 9. **HSSE-006 — Independent Audit**: recomputation، trial ledger audit، leakage
