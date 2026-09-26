@@ -1985,8 +1985,13 @@ Forward مستقل و با protocol جدید بررسی می‌شود. real-forw
    همین شش proposal و تمام signal/execution/cost semantics قبل از هر Blind OOS
    access immutable می‌شوند. بعد از freeze هیچ parameter/family/survivor-set
    تغییر یا blind-failure retuning مجاز نیست.
-8. **HSSE-004B — Frozen Blind OOS**: فقط پس از HSSE-004A validation، acquisition
-   ساختاری و سپس تک‌اجرای frozen survivorها روی 2023-01-01 تا 2025-01-01.
+8. **HSSE-004B — Frozen Blind OOS — PREREGISTERED / ENGINEERING ACTIVE**:
+   event جداگانه `HSSE-BLIND-OOS-001` با acquisition از 2022-11-01 (warm-up only)
+   تا 2025-01-01 ثبت شد. Analysis فقط 2023-01-01 تا 2025-01-01 است. هر شش
+   survivor دقیقاً یک‌بار و بدون rerank/retune اجرا می‌شوند. state هر symbol در
+   کل دو سال پیوسته است؛ quarter boundary reset ندارد و quarterly gate از تغییر
+   equity همان run پیوسته محاسبه می‌شود. قبل از replay فقط structural quality
+   مجاز است.
 
 9. **HSSE-005 — Crisis/Regime Certification**: اتصال survivorهای OOS به CRL.
 10. **HSSE-006 — Independent Audit**: recomputation، trial ledger audit، leakage
