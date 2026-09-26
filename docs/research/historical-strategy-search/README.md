@@ -100,3 +100,21 @@ plateau gates. This rejects isolated parameter spikes.
 Candidates that pass both exact gates and neighbor robustness enter a Pareto
 front and deterministic tie-break ranking. The output is only a set of proposed
 HSSE-004 survivors; no survivor is frozen here and no Blind OOS is read.
+
+## HSSE-004A — Survivor Freeze
+
+HSSE-003 produced six proposed survivors without reading Blind OOS. HSSE-004A
+freezes those exact parameter pairs before any Blind OOS acquisition or replay:
+
+- EMA(11,511)
+- EMA(11,491)
+- EMA(11,471)
+- DEMA(121,131)
+- DEMA(91,191)
+- DEMA(111,161)
+
+The freeze binds the HSSE-003 result/artifact digests, signal semantics,
+execution/cost model, quantity, Blind OOS window and pass/fail gate. After this
+freeze, the survivor set cannot be changed in response to Blind OOS outcomes.
+
+HSSE-004A performs no network access and no historical replay.
