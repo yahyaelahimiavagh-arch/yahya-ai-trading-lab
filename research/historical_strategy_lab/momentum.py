@@ -43,7 +43,7 @@ from research.crisis_lab import controls, replay
 from . import walk_forward as hsl1
 
 
-IMPLEMENTATION_ID = "HSL-004A-MOMENTUM/0.1.1"
+IMPLEMENTATION_ID = "HSL-004A-MOMENTUM/0.1.2"
 SCHEMA_VERSION = "0.1.0"
 DEFAULT_PROTOCOL_PATH = Path(
     "docs/research/historical-strategy-lab/"
@@ -643,7 +643,7 @@ def _run_cell(
         maximum_drawdown_fraction,
     )
 
-    realized = sum(trade_pnls, Decimal(0))
+    realized = hsl1._sum_decimals(trade_pnls)
     if realized != final_snapshot.realized_pnl_quote:
         raise HSLMomentumError(
             "HSL-004A closed-trade accounting disagrees with ledger"
@@ -651,8 +651,8 @@ def _run_cell(
 
     wins = [item for item in trade_pnls if item > 0]
     losses = [item for item in trade_pnls if item < 0]
-    gross_profit = sum(wins, Decimal(0))
-    gross_loss = -sum(losses, Decimal(0))
+    gross_profit = hsl1._sum_decimals(wins)
+    gross_loss = -hsl1._sum_decimals(losses)
     completed = len(trade_pnls)
     with localcontext() as arithmetic:
         arithmetic.prec = DECIMAL_PRECISION

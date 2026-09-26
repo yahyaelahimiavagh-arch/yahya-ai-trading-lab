@@ -50,6 +50,16 @@ class HSL004BTests(unittest.TestCase):
         setup = hsl4b.LongSetup("100", normalized, "101")
         self.assertEqual(setup.invalidation_price, normalized)
 
+    def test_trade_accounting_uses_shared_ledger_precision_sum(self):
+        source = inspect.getsource(hsl4b._run_cell)
+        self.assertIn("hsl1._sum_decimals(pnls)", source)
+        self.assertIn("hsl1._sum_decimals(wins)", source)
+        self.assertIn("hsl1._sum_decimals(losses)", source)
+        self.assertEqual(
+            hsl4b.IMPLEMENTATION_ID,
+            "HSL-004B-VOLATILITY-EXPANSION/0.1.2",
+        )
+
     def test_aggregate_can_qualify_without_live_authority(self):
         protocol, _ = hsl4b.load_protocol()
         cells = [
