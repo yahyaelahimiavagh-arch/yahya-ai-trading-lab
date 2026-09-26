@@ -19,9 +19,12 @@ from . import survivor_ranking as hsse3
 from . import trend_ma as hsse2
 from . import survivor_freeze
 
-IMPLEMENTATION_ID="HSSE-004B-FROZEN-BLIND-OOS/0.1.0"
+IMPLEMENTATION_ID="HSSE-004B-FROZEN-BLIND-OOS/0.1.1"
 SCHEMA_VERSION="0.1.0"
 HOUR_MS=60*60*1000
+REPO_ROOT=Path(__file__).resolve().parents[2]
+CORPUS_BINDING_PATH=REPO_ROOT/"docs/research/historical-strategy-search/HSSE-004B-BLIND-CORPUS-BINDING-v0.1.0.json"
+CORPUS_BINDING_GIT_BLOB_SHA="0547b5e3c8f13ec04b1d6697ccb2a45ba4d707c6"
 
 class HSSEBlindReplayError(RuntimeError): pass
 
@@ -53,6 +56,41 @@ def _time_ms(v,label):
     except ValueError: raise HSSEBlindReplayError(f"{label} is invalid") from None
     if dt.tzinfo!=timezone.utc: raise HSSEBlindReplayError(f"{label} is not UTC")
     return int(dt.timestamp()*1000)
+
+def _git_blob_sha(payload:bytes)->str:
+    return hashlib.sha1(b"blob "+str(len(payload)).encode("ascii")+b"\0"+payload).hexdigest()
+
+def _load_corpus_binding():
+    try:
+        payload=CORPUS_BINDING_PATH.read_bytes()
+    except OSError:
+        raise HSSEBlindReplayError("cannot read bound Blind corpus identity") from None
+    if _git_blob_sha(payload)!=CORPUS_BINDING_GIT_BLOB_SHA:
+        raise HSSEBlindReplayError("Blind corpus binding Git blob mismatch")
+    try:
+        record=json.loads(payload.decode("utf-8"))
+    except (UnicodeDecodeError,json.JSONDecodeError):
+        raise HSSEBlindReplayError("Blind corpus binding is invalid JSON") from None
+    if (record.get("schema")!="YATL_HSSE_BLIND_CORPUS_BINDING"
+        or record.get("binding_id")!="HSSE-004B-BLIND-CORPUS-BINDING-001"
+        or record.get("status")!="BOUND_AFTER_STRUCTURAL_ADMISSION_BEFORE_STRATEGY_REPLAY"
+        or record.get("event_id")!="HSSE-BLIND-OOS-001"
+        or record.get("no_parameter_change") is not True
+        or record.get("no_reranking") is not True
+        or record.get("no_retuning") is not True
+        or record.get("no_hidden_retry") is not True
+        or record.get("p10_write_allowed") is not False
+        or record.get("p11_locked") is not True):
+        raise HSSEBlindReplayError("Blind corpus binding invariants are invalid")
+    acq_rec=record.get("acquisition"); q=record.get("quality")
+    if not isinstance(acq_rec,dict) or not isinstance(q,dict):
+        raise HSSEBlindReplayError("Blind corpus binding is incomplete")
+    if (acq_rec.get("manifest_file_sha256")!="978d8f51e6feeba7a313d9f4a9be1061ca8848e3bd709ae33ede4bc186b41c04"
+        or q.get("manifest_file_sha256")!="e466c8249f8d9d70e0664b839093ffd9b564405427a3698dfdf7e6f9c6a0f8fd"
+        or q.get("replay_admitted") is not True
+        or q.get("market_outcomes_exposed") is not False):
+        raise HSSEBlindReplayError("Blind corpus binding identity is invalid")
+    return record
 
 def _load_blind_corpus(root:Path, rel:str, sha:str)->BlindCorpus:
     try:
@@ -235,6 +273,10 @@ def _write_result(root:Path,record):
 
 def run(*,runtime_root:Path,quality_manifest:str,quality_manifest_sha256:str,protocol_path:Path=blind_protocol.DEFAULT_PROTOCOL_PATH):
     protocol,protocol_sha,freeze_validation=blind_protocol.load_protocol(protocol_path)
+    corpus_binding=_load_corpus_binding()
+    bound_quality=corpus_binding["quality"]
+    if quality_manifest!=bound_quality["manifest_relative_path"] or quality_manifest_sha256!=bound_quality["manifest_file_sha256"]:
+        raise HSSEBlindReplayError("requested Blind corpus does not match immutable binding")
     freeze_path=Path(protocol["freeze"]["relative_path"])
     freeze=json.loads(freeze_path.read_text(encoding="utf-8"))
     src=freeze["source_hsse003"]

@@ -43,6 +43,15 @@ class HSSE004BTests(unittest.TestCase):
             path=Path(t)/"p.json"; path.write_text(json.dumps(p),encoding="utf-8")
             with self.assertRaises(blind_protocol.HSSEBlindError): blind_protocol.load_protocol(path)
 
+    def test_blind_corpus_binding_is_exact_and_pre_replay(self):
+        path=ROOT/"docs/research/historical-strategy-search/HSSE-004B-BLIND-CORPUS-BINDING-v0.1.0.json"
+        record=json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(record["acquisition"]["manifest_file_sha256"],"978d8f51e6feeba7a313d9f4a9be1061ca8848e3bd709ae33ede4bc186b41c04")
+        self.assertEqual(record["quality"]["manifest_file_sha256"],"e466c8249f8d9d70e0664b839093ffd9b564405427a3698dfdf7e6f9c6a0f8fd")
+        self.assertTrue(record["quality"]["replay_admitted"])
+        self.assertFalse(record["quality"]["market_outcomes_exposed"])
+        self.assertEqual(record["allowed_next_action"],"ONE_TIME_HSSE004B_FROZEN_SURVIVOR_REPLAY")
+
     def test_runner_has_no_network_or_live_execution_authority(self):
         src=inspect.getsource(blind_oos)
         for forbidden in ("requests","httpx","aiohttp","websockets","urllib.request","/api/v3/order","/fapi","/dapi","API_KEY","API_SECRET","os.environ","os.getenv","RiskAuthorization"):
