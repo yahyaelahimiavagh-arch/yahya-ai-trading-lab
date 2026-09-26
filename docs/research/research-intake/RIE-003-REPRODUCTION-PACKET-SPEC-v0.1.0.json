@@ -1,0 +1,47 @@
+{
+  "schema": "YATL_RIE_003_REPRODUCTION_PACKET_SPEC",
+  "schema_version": "0.1.0",
+  "purpose": "Bind a research candidate to immutable source and implementation identities before any train search.",
+  "source_freeze_states": [
+    "PENDING_BYTES",
+    "FROZEN"
+  ],
+  "minimum_implementation_binding": [
+    "repository",
+    "repository_uri",
+    "exact_commit_sha",
+    "relevant_file_blob_shas",
+    "license"
+  ],
+  "required_method_extraction": [
+    "market_data",
+    "signal_families",
+    "paper_parameter_domain",
+    "observed_code_grid",
+    "entry_rule",
+    "exit_rule",
+    "optimization_objective",
+    "walk_forward",
+    "source_cost_model",
+    "source_gap_handling",
+    "paper_code_discrepancies"
+  ],
+  "rules": [
+    "A source with unavailable bytes may remain PENDING_BYTES but cannot be REPRODUCIBLE or READY_FOR_TRAIN_SEARCH.",
+    "Paper/code discrepancies must be recorded rather than silently reconciled.",
+    "External reported returns are not YATL strategy evidence.",
+    "Any YATL long-only adaptation must be identified explicitly as an adaptation rather than exact source replication.",
+    "Parameter and family search is Train-only; OOS is not used for selection.",
+    "All searched families and parameter trials count toward multiple-testing control."
+  ],
+  "research_only": true,
+  "p10_read": false,
+  "p10_write_allowed": false,
+  "p10_evidence_effect": "NONE",
+  "trade_permission": false,
+  "order_endpoint": false,
+  "quantity_authority": false,
+  "risk_authorization_mutation": false,
+  "ai_direct_execution": false,
+  "p11_locked": true
+}
