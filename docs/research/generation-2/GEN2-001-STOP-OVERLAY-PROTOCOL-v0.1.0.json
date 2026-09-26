@@ -110,5 +110,23 @@
   "p10_read": false,
   "p10_write_allowed": false,
   "p11_locked": true,
-  "research_only": true
+  "research_only": true,
+  "bindings": {
+    "method_extraction": {
+      "relative_path": "docs/research/research-intake/gen2-method-extractions/RIE-CAND-0030-v0.1.0.json",
+      "git_blob_sha": "d1170118b9cf6b44c9059d66335b0dee43fc6d68"
+    },
+    "survivor_freeze": {
+      "relative_path": "docs/research/historical-strategy-search/HSSE-004A-SURVIVOR-FREEZE-v0.1.0.json",
+      "git_blob_sha": "bb1b0f9c25a013e766558419f6fa08bf2a1f70c2"
+    },
+    "hsse_search_protocol": {
+      "relative_path": "docs/research/historical-strategy-search/HSSE-001-SEARCH-PROTOCOL-v0.1.0.json",
+      "git_blob_sha": "a0057088995ac3ab26d8316972fc86b821556bc5"
+    },
+    "development_quality_manifest": {
+      "relative_path": "quality/event-catalog-v0.1.0/CRL-CONTROL-DEV-POOL-001/event-quality-74ea7a7084bb138122ee5d82.json",
+      "file_sha256": "74ea7a7084bb138122ee5d823c790853ad55cb57e1378a876bec6d3f1537167e"
+    }
+  }
 }
