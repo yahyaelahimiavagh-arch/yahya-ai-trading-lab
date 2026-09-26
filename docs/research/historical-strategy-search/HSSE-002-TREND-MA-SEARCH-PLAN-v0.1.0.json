@@ -1,0 +1,95 @@
+{
+  "schema": "YATL_HSSE_SEARCH_PLAN",
+  "schema_version": "0.1.0",
+  "plan_id": "HSSE-002-TREND-MA-SEARCH-001",
+  "registered_date_utc": "2026-09-26",
+  "status": "REGISTERED_BEFORE_HSSE002_SEARCH_OUTCOMES",
+  "candidate_id": "RIE-CAND-0020",
+  "candidate_fingerprint_sha256": "8b6cf70d9159804e45674de39d8799ac594ef6fed22dcf3e5073a8d5539be98a",
+  "bindings": {
+    "registry_relative_path": "docs/research/research-intake/CANDIDATE-REGISTRY-v0.1.0.json",
+    "registry_git_blob_sha": "bc9152419433f0cc0b7f4c207ef75da92ae32d3b",
+    "reproduction_packet_relative_path": "docs/research/research-intake/reproduction-packets/RIE-CAND-0020-v0.1.0.json",
+    "reproduction_packet_git_blob_sha": "13f5d0f27a8a2ef4de81182886f4e4f0e4f0d95b",
+    "hsse_protocol_relative_path": "docs/research/historical-strategy-search/HSSE-001-SEARCH-PROTOCOL-v0.1.0.json",
+    "hsse_protocol_git_blob_sha": "a0057088995ac3ab26d8316972fc86b821556bc5"
+  },
+  "trial_matrix": {
+    "family_order": [
+      "TREND_MA_SMA",
+      "TREND_MA_EMA",
+      "TREND_MA_DEMA"
+    ],
+    "window_values": {
+      "start": 1,
+      "stop_exclusive": 1000,
+      "step": 10,
+      "count": 100
+    },
+    "pair_constraint": "n1<n2",
+    "trials_per_family": 4950,
+    "total_trials": 14850,
+    "ordering": "family_order, then n1 ascending, then n2 ascending",
+    "hidden_trials_forbidden": true,
+    "failed_trials_retained": true
+  },
+  "signal_semantics": {
+    "timeframe": "1h",
+    "price_field": "close",
+    "sma": "Simple rolling arithmetic mean over contiguous completed 1h closes.",
+    "ema": "Pandas-compatible adjust=False recursion alpha=2/(N+1), reset after an admitted 1h source gap.",
+    "dema": "2*EMA(price,N)-EMA(EMA(price,N),N), reset after an admitted 1h source gap.",
+    "post_gap_warmup": "A signal is unavailable until the contiguous run length is at least max(n1,n2).",
+    "entry": "At completed-bar t, enter long only on short_MA(t)>long_MA(t) and short_MA(t-1)<=long_MA(t-1).",
+    "exit": "At completed-bar t, exit to cash only on short_MA(t)<long_MA(t) and short_MA(t-1)>=long_MA(t-1).",
+    "fill": "Execute at the next contiguous 1h candle open; if that fill candle is absent or outside the scored fold, the signal is not filled.",
+    "fold_state": "Reset portfolio/position at every Development evaluation fold; indicator history remains point-in-time and may use earlier Development candles.",
+    "terminal": "Mark open positions to the final scored close; do not force an exit."
+  },
+  "numeric_policy": {
+    "search_signal_math": "PYTHON_BINARY64",
+    "search_economics_math": "PYTHON_BINARY64",
+    "rationale": "HSSE-002 is a broad Development search surface. HSSE-003 must exact-recompute every proposed survivor before any freeze.",
+    "threshold_borderline_policy": "A trial within 1e-9 absolute distance of a hard numeric gate cannot be accepted without HSSE-003 exact recomputation.",
+    "exact_recompute_required_before_survivor_freeze": true
+  },
+  "execution_semantics": {
+    "quantity": "0.001",
+    "initial_equity_quote": "10000",
+    "base_fee_bps": 10,
+    "base_adverse_slippage_bps": 5,
+    "stress_fee_bps": 20,
+    "stress_adverse_slippage_bps": 10,
+    "mode": "LONG_ONLY_SPOT_RESEARCH",
+    "next_open": true,
+    "shorting": false,
+    "futures": false,
+    "leverage": false
+  },
+  "data_scope": {
+    "corpus_id": "CRL-CONTROL-DEV-POOL-001",
+    "warmup_start_utc": "2019-12-18T00:00:00Z",
+    "scored_start_utc": "2020-07-01T00:00:00Z",
+    "scored_end_exclusive_utc": "2023-01-01T00:00:00Z",
+    "development_only": true,
+    "blind_oos_read_allowed": false,
+    "audit_holdout_read_allowed": false
+  },
+  "artifact_policy": {
+    "one_jsonl_ledger_per_family": true,
+    "every_trial_recorded": true,
+    "content_addressed_immutable": true,
+    "aggregate_index_required": true,
+    "top_performer_printed_to_cli": false
+  },
+  "research_only": true,
+  "p10_read": false,
+  "p10_write_allowed": false,
+  "p10_evidence_effect": "NONE",
+  "trade_permission": false,
+  "order_endpoint": false,
+  "quantity_authority": false,
+  "risk_authorization_mutation": false,
+  "ai_direct_execution": false,
+  "p11_locked": true
+}

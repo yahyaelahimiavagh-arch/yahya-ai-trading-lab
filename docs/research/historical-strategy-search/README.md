@@ -66,3 +66,17 @@ After the survivor freeze:
   the survivor.
 
 P10 is not read or mutated. P11 remains locked.
+
+## HSSE-002 — Deterministic Search Runner
+
+The first frozen search plan is
+`HSSE-002-TREND-MA-SEARCH-PLAN-v0.1.0.json`.
+
+SMA, EMA and DEMA are three independent multiple-testing families. Each family
+searches the exact public-code step-10 grid `range(1,1000,10)` with
+`n1<n2`: 4,950 trials per family and 14,850 total.
+
+The entire search is Development-only. Binary64 is permitted only for this
+high-throughput discovery layer; every proposed survivor must be independently
+recomputed with canonical exact accounting in HSSE-003 before survivor freeze.
+Paper-reported returns remain external context and never become YATL evidence.
