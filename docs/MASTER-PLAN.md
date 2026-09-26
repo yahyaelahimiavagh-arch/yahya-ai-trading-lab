@@ -1985,8 +1985,18 @@ Forward مستقل و با protocol جدید بررسی می‌شود. real-forw
    همین شش proposal و تمام signal/execution/cost semantics قبل از هر Blind OOS
    access immutable می‌شوند. بعد از freeze هیچ parameter/family/survivor-set
    تغییر یا blind-failure retuning مجاز نیست.
-8. **HSSE-004B — Frozen Blind OOS**: فقط پس از HSSE-004A validation، acquisition
-   ساختاری و سپس تک‌اجرای frozen survivorها روی 2023-01-01 تا 2025-01-01.
+8. **HSSE-004B — Frozen Blind OOS — CANONICAL COMPLETE 2026-09-26**:
+   event `HSSE-BLIND-OOS-001` با acquisition از 2022-11-01 (warm-up only)
+   و Blind analysis از 2023-01-01 تا 2025-01-01 اجرا شد. corpus structural quality
+   را 6/6 PASS کرد و سپس هر شش survivor دقیقاً یک‌بار، بدون rerank/retune/retry،
+   adjudicate شدند. نتیجه canonical: **6 PASS / 0 FAIL**؛ artifact SHA-256
+   `a768ae266fa318f027872a8fdd652b43d996171b0bac226c25c2d428613b139e`
+   و result SHA-256
+   `2515a47573daaac6fdf9771adaf70f348ca7b03d7f7a5d4abc634328c031bb01`.
+   هر شش مورد PF>2، stress-net مثبت و 75% positive calendar quarters داشتند.
+   این شش PASS شش edge مستقل محسوب نمی‌شوند: سه EMA و سه DEMA خوشه‌های
+   هم‌بسته‌اند. مرحله بعد **HSSE-005 Crisis/Regime Certification** است؛ Audit
+   Holdout همچنان sealed و Forward promotion همچنان ممنوع است.
 
 9. **HSSE-005 — Crisis/Regime Certification**: اتصال survivorهای OOS به CRL.
 10. **HSSE-006 — Independent Audit**: recomputation، trial ledger audit، leakage
