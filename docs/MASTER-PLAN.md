@@ -1815,6 +1815,39 @@ high قبلی 20h بشکند، close در 25٪ بالایی candle باشد و e
 HSL-001 حفظ می‌شوند. parameter search و outcome-driven retuning ممنوع‌اند؛
 P4/P10 دست‌نخورده و P11 LOCKED است.
 
+### HSL-004B — Canonical Historical Outcome — NOT QUALIFIED — 2026-09-26
+
+Canonical HSL-004B replay روی Final HEAD
+`4ccf16e5c809bfb32043d26e6cdac52aa34479a1` و همان quality manifest
+پذیرفته‌شده اجرا شد. artifact immutable:
+
+`historical-strategy-lab/technique-library/volatility-expansion-v0.1.0/hsl-004b-d1acde6fa48c9e027bc9c9b2.json`
+
+SHA-256 فایل:
+`d1acde6fa48c9e027bc9c9b27110a5e9c0802aafc898d1c51750f4f2a8933a32`
+
+result SHA-256:
+`28e56d64716f811631cac8120bdf3deeb473051c2ef11fa39fab156d9072056b`
+
+Outcome رسمی:
+- 36 completed trades؛ BTCUSDT=22 و ETHUSDT=14؛
+- wins=9، losses=27، win rate=25٪؛
+- total net PnL after costs≈-8.248171 quote؛
+- expectancy≈-0.229116 quote/trade؛
+- profit factor≈0.181324؛
+- positive OOS cells=1/10=10٪؛
+- qualification=`NOT_QUALIFIED_HSL_RESEARCH`.
+
+Failure reasons:
+`TOTAL_NET_PNL_NOT_POSITIVE`,
+`EXPECTANCY_NOT_POSITIVE`,
+`PROFIT_FACTOR_GATE_FAILED`,
+`POSITIVE_OOS_CELL_FRACTION_GATE_FAILED`.
+
+Artifact SHA روی VPS byte-for-byte با manifest SHA تطبیق داده شد. نتیجه منفی
+حفظ می‌شود و HSL-004B پس از outcome retune نمی‌شود. P10 write/evidence effect
+ندارد، P11 LOCKED و Live authorization=false باقی می‌ماند.
+
 ### مسیر بعد از HSL-004B — Research Intake + Historical Strategy Search Engine
 
 پس از بستن canonical outcome HSL-004B، مدل توسعه Past از ساخت بی‌پایان candidateهای
@@ -1927,8 +1960,7 @@ Forward مستقل و با protocol جدید بررسی می‌شود. real-forw
    و ثبت بدون اجرای production.
 3. **RIE-003 — Reproduction Packets**: تبدیل candidateهای برتر به specification
    دقیق قابل‌پیاده‌سازی، بدون performance trust.
-4. **HSSE-001 — Search Protocol & Data Boundaries**: train/validation/holdout،
-   search-budget و anti-leakage rules.
+4. **HSSE-001 — Search Protocol & Data Boundaries**: **IMPLEMENTED / PR CANDIDATE** — Development تا 2023-01 فقط search surface؛ Blind OOS 2023-01 تا 2025-01 sealed؛ Final historical audit 2025-01 تا 2026-07 sealed؛ search budget و anti-leakage rules فریز.
 5. **HSSE-002 — Deterministic Search Runner**: اجرای bounded trial matrix با
    fee/slippage و artifact کامل تمام trialها.
 6. **HSSE-003 — Survivor Ranking & Robustness**: ranking چندمعیاره، stability،
