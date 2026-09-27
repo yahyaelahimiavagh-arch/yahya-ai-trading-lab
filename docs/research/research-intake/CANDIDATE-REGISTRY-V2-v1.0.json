@@ -1,0 +1,4668 @@
+{
+  "schema": "YATL_CANDIDATE_REGISTRY_V2",
+  "schema_version": "1.0",
+  "registry_id": "AF-02B-CANDIDATE-REGISTRY-V2-001",
+  "migration_state": "BOUNDED_LEGACY_MIGRATION",
+  "migrated_from": {
+    "path": "docs/research/research-intake/CANDIDATE-REGISTRY-GEN2-v0.1.0.json",
+    "git_blob_sha": "cd2e2c1eade63989db574465245f3e28482ad7c1",
+    "legacy_candidate_count": 31
+  },
+  "migration_policy_ref": "docs/research/alpha-factory/AF-02A-CANDIDATE-REGISTRY-V2-SCHEMA-v1.0.md",
+  "candidate_count": 31,
+  "safety": {
+    "performance_authorized_by_migration": false,
+    "fresh_oos_read_authorized": false,
+    "recent_reserve_read_authorized": false,
+    "p10_read_authorized": false,
+    "p10_write_authorized": false,
+    "p11_locked": true,
+    "live_master_lock": "OFF"
+  },
+  "candidates": [
+    {
+      "candidate_id": "RIE-CAND-0001",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "Momentum in the Cryptocurrency Market: A Comprehensive Analysis under Realistic Assumptions",
+      "short_hypothesis": "An asset's own positive trailing return can persist enough to support a long-or-cash momentum rule after realistic costs.",
+      "source": {
+        "source_id": "RIE-SRC-0001",
+        "source_type": "PAPER",
+        "title": "Momentum in the Cryptocurrency Market: A Comprehensive Analysis under Realistic Assumptions",
+        "authors": [
+          "Chulwoo Han",
+          "Byeongguk Kang",
+          "Jehyeon Ryu"
+        ],
+        "publication_date": "2023-12-26",
+        "doi_or_uri": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4675565",
+        "source_tier": "A",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_BOUND",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "NOT_STARTED",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Source examines broader momentum designs than current YATL Spot scope."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "SOURCE_BOUND",
+      "progression_blocker": "ADAPTATION_NOT_FROZEN",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-TREND",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "quote_assets": [
+          "USDT"
+        ],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "1d"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "TIME_SERIES_MOMENTUM",
+        "candidate_ordinal": 1,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0002",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "Cryptocurrency Volume-Weighted Time Series Momentum",
+      "short_hypothesis": "Volume-weighted market information can improve time-series momentum selection versus price-only momentum.",
+      "source": {
+        "source_id": "RIE-SRC-0002",
+        "source_type": "PAPER",
+        "title": "Cryptocurrency Volume-Weighted Time Series Momentum",
+        "authors": [
+          "Zih-Chun Huang",
+          "Ivan Sangiorgi",
+          "Andrew Urquhart"
+        ],
+        "publication_date": "2024-12-04",
+        "doi_or_uri": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4825389",
+        "source_tier": "A",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_BOUND",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "NOT_STARTED",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Cross-sectional universe exceeds current BTC/ETH scope."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "SOURCE_BOUND",
+      "progression_blocker": "ADAPTATION_NOT_FROZEN",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-VOLUME",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "CRYPTO_CROSS_SECTION"
+        ],
+        "quote_assets": [],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "1d"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        },
+        {
+          "dependency": "VOLUME",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        },
+        {
+          "dependency": "MULTI_ASSET",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "VOLUME_WEIGHTED_MOMENTUM",
+        "candidate_ordinal": 2,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0003",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "Cross-sectional Momentum in Cryptocurrency Markets",
+      "short_hypothesis": "Recent 30-day winners can continue to outperform over the next 7 days and may support a long-only winner portfolio.",
+      "source": {
+        "source_id": "RIE-SRC-0003",
+        "source_type": "PAPER",
+        "title": "Cross-sectional Momentum in Cryptocurrency Markets",
+        "authors": [
+          "Leigh Drogen",
+          "Corey Hoffstein",
+          "Kevin Otte"
+        ],
+        "publication_date": "2023-01-11",
+        "doi_or_uri": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4322637",
+        "source_tier": "A",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_BOUND",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "NOT_STARTED",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Current YATL universe has only BTC/ETH, so cross-sectional breadth is limited."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "SOURCE_BOUND",
+      "progression_blocker": "ADAPTATION_NOT_FROZEN",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-TREND",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "CRYPTO_CROSS_SECTION"
+        ],
+        "quote_assets": [],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "1d"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        },
+        {
+          "dependency": "MULTI_ASSET",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "TIME_SERIES_MOMENTUM",
+        "candidate_ordinal": 3,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0004",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "Cross-Sectional Dispersion and the State Dependence of Cryptocurrency Momentum",
+      "short_hypothesis": "High lagged cross-sectional dispersion can identify states in which momentum reliability deteriorates and exposure should be reduced.",
+      "source": {
+        "source_id": "RIE-SRC-0004",
+        "source_type": "PAPER",
+        "title": "Cross-Sectional Dispersion and the State Dependence of Cryptocurrency Momentum",
+        "authors": [
+          "Cong Zhang",
+          "Olorato MacDonald Makgolo"
+        ],
+        "publication_date": "2026-04-25",
+        "doi_or_uri": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6648082",
+        "source_tier": "A",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_BOUND",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "NOT_STARTED",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Requires a dynamic multi-asset universe."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "SOURCE_BOUND",
+      "progression_blocker": "ADAPTATION_NOT_FROZEN",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-REGIME",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "CRYPTO_CROSS_SECTION"
+        ],
+        "quote_assets": [],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "1d"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        },
+        {
+          "dependency": "MULTI_ASSET",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "REGIME_AWARE",
+        "candidate_ordinal": 4,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0005",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "Up or down? Short-term reversal, momentum, and liquidity effects in cryptocurrency markets",
+      "short_hypothesis": "Highly liquid large cryptocurrencies may exhibit one-day momentum even when illiquid coins show reversal.",
+      "source": {
+        "source_id": "RIE-SRC-0005",
+        "source_type": "PAPER",
+        "title": "Up or down? Short-term reversal, momentum, and liquidity effects in cryptocurrency markets",
+        "authors": [
+          "Adam Zaremba",
+          "Mehmet Huseyin Bilgin",
+          "Huaigang Long",
+          "Aleksander Mercik",
+          "Jan J. Szczygielski"
+        ],
+        "publication_date": null,
+        "doi_or_uri": "https://www.sciencedirect.com/science/article/pii/S1057521921002349",
+        "source_tier": "A",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_BOUND",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "NOT_STARTED",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Paper's cross-sectional liquidity split must be mapped carefully to BTC/ETH."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "SOURCE_BOUND",
+      "progression_blocker": "ADAPTATION_NOT_FROZEN",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-TREND",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "quote_assets": [
+          "USDT"
+        ],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "1d"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "TIME_SERIES_MOMENTUM",
+        "candidate_ordinal": 5,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0006",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "Intraday return predictability in the cryptocurrency markets: Momentum, reversal, or both",
+      "short_hypothesis": "Intraday return continuation can be conditional on market state and may provide a short-horizon long signal.",
+      "source": {
+        "source_id": "RIE-SRC-0006",
+        "source_type": "PAPER",
+        "title": "Intraday return predictability in the cryptocurrency markets: Momentum, reversal, or both",
+        "authors": [
+          "Zhuzhu Wen",
+          "Elie Bouri",
+          "Yahua Xu",
+          "Yang Zhao"
+        ],
+        "publication_date": null,
+        "doi_or_uri": "https://www.sciencedirect.com/science/article/pii/S1062940822000833",
+        "source_tier": "A",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_BOUND",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "NOT_STARTED",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Current HSL data granularity may be insufficient for the paper's high-frequency design."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "SOURCE_BOUND",
+      "progression_blocker": "ADAPTATION_NOT_FROZEN",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-TREND",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "quote_assets": [
+          "USDT"
+        ],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "intraday"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "TIME_SERIES_MOMENTUM",
+        "candidate_ordinal": 6,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0007",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "Intraday return predictability in the cryptocurrency markets: Momentum, reversal, or both",
+      "short_hypothesis": "Intraday overreaction can create short-horizon reversal opportunities after extreme moves.",
+      "source": {
+        "source_id": "RIE-SRC-0006",
+        "source_type": "PAPER",
+        "title": "Intraday return predictability in the cryptocurrency markets: Momentum, reversal, or both",
+        "authors": [
+          "Zhuzhu Wen",
+          "Elie Bouri",
+          "Yahua Xu",
+          "Yang Zhao"
+        ],
+        "publication_date": null,
+        "doi_or_uri": "https://www.sciencedirect.com/science/article/pii/S1062940822000833",
+        "source_tier": "A",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_BOUND",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "NOT_STARTED",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Long-only Spot adaptation can only exploit negative-shock rebound side."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "SOURCE_BOUND",
+      "progression_blocker": "ADAPTATION_NOT_FROZEN",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-MEANREV",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "quote_assets": [
+          "USDT"
+        ],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "intraday"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "MEAN_REVERSION",
+        "candidate_ordinal": 7,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0008",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "The effectiveness of technical trading rules in cryptocurrency markets",
+      "short_hypothesis": "Variable-length moving-average technical rules can identify persistent Bitcoin trends better than a fixed naive rule.",
+      "source": {
+        "source_id": "RIE-SRC-0007",
+        "source_type": "PAPER",
+        "title": "The effectiveness of technical trading rules in cryptocurrency markets",
+        "authors": [],
+        "publication_date": null,
+        "doi_or_uri": "https://www.sciencedirect.com/science/article/pii/S1544612319300315",
+        "source_tier": "A",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_BOUND",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "NOT_STARTED",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Paper uses high-frequency Bitcoin data and may not transfer to ETH."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "SOURCE_BOUND",
+      "progression_blocker": "ADAPTATION_NOT_FROZEN",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-TREND",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "BTCUSDT"
+        ],
+        "quote_assets": [
+          "USDT"
+        ],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "intraday"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "TREND",
+        "candidate_ordinal": 8,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0009",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "The profitability of technical trading rules in the Bitcoin market",
+      "short_hypothesis": "Trading-range breakouts around support/resistance can forecast continuation during strongly trending Bitcoin regimes.",
+      "source": {
+        "source_id": "RIE-SRC-0008",
+        "source_type": "PAPER",
+        "title": "The profitability of technical trading rules in the Bitcoin market",
+        "authors": [],
+        "publication_date": null,
+        "doi_or_uri": "https://www.sciencedirect.com/science/article/pii/S1544612319303770",
+        "source_tier": "A",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_BOUND",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "NOT_STARTED",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Historical period predates current market microstructure."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "SOURCE_BOUND",
+      "progression_blocker": "ADAPTATION_NOT_FROZEN",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-BREAKOUT",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "BTCUSDT"
+        ],
+        "quote_assets": [
+          "USDT"
+        ],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "1d"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "BREAKOUT",
+        "candidate_ordinal": 9,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0010",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "Reversal in Cryptocurrency Returns",
+      "short_hypothesis": "Recent 8-10 week losers may mean-revert, especially after high-volatility formation periods.",
+      "source": {
+        "source_id": "RIE-SRC-0009",
+        "source_type": "PAPER",
+        "title": "Reversal in Cryptocurrency Returns",
+        "authors": [
+          "Patrick Kiefer",
+          "Michael Nowotny"
+        ],
+        "publication_date": "2026-05-03",
+        "doi_or_uri": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6703978",
+        "source_tier": "A",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_BOUND",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "NOT_STARTED",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Original design is long-short; YATL Spot can test only the long loser leg unless scope changes."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "SOURCE_BOUND",
+      "progression_blocker": "ADAPTATION_NOT_FROZEN",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-MEANREV",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "CRYPTO_CROSS_SECTION"
+        ],
+        "quote_assets": [],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "1w"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        },
+        {
+          "dependency": "MULTI_ASSET",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "MEAN_REVERSION",
+        "candidate_ordinal": 10,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0011",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "Cryptocurrency market risk-managed momentum strategies",
+      "short_hypothesis": "Volatility-managed exposure can improve conventional cryptocurrency momentum by scaling risk across changing regimes.",
+      "source": {
+        "source_id": "RIE-SRC-0010",
+        "source_type": "PAPER",
+        "title": "Cryptocurrency market risk-managed momentum strategies",
+        "authors": [],
+        "publication_date": null,
+        "doi_or_uri": "https://www.sciencedirect.com/science/article/pii/S1544612325011377",
+        "source_tier": "A",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "BLOCKED_REPRODUCIBILITY",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "BLOCKED_ADAPTATION_SPECIFICATION",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Original portfolio construction may not map directly to BTC/ETH Spot."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": [
+          "exact risk-scaling estimator horizon",
+          "exact target/scaling constant",
+          "exact update convention",
+          "paper-specific crypto adaptation details"
+        ]
+      },
+      "lifecycle_state": "BLOCKED_REPRODUCIBILITY",
+      "progression_blocker": "SOURCE_RULE_MISSING",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-REGIME",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "CRYPTO_CROSS_SECTION"
+        ],
+        "quote_assets": [],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "1w"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        },
+        {
+          "dependency": "MULTI_ASSET",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "REGIME_AWARE",
+        "candidate_ordinal": 11,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0012",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "Trend-based Forecast of Cryptocurrency Returns",
+      "short_hypothesis": "Price-based trend signals may be most useful at shorter horizons in cryptocurrency markets.",
+      "source": {
+        "source_id": "RIE-SRC-0011",
+        "source_type": "PAPER",
+        "title": "Trend-based Forecast of Cryptocurrency Returns",
+        "authors": [
+          "Xilong Tan",
+          "Yubo Tao"
+        ],
+        "publication_date": "2023-04-16",
+        "doi_or_uri": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4222864",
+        "source_tier": "A",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_BOUND",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "NOT_STARTED",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Broad universe evidence may not transfer to BTC/ETH."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "SOURCE_BOUND",
+      "progression_blocker": "ADAPTATION_NOT_FROZEN",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-TREND",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "CRYPTO_CROSS_SECTION"
+        ],
+        "quote_assets": [],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "1d"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        },
+        {
+          "dependency": "MULTI_ASSET",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "TREND",
+        "candidate_ordinal": 12,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0013",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "Trend-based Forecast of Cryptocurrency Returns",
+      "short_hypothesis": "Volume-based trend signals may add predictive value at longer horizons where price-only signals weaken.",
+      "source": {
+        "source_id": "RIE-SRC-0011",
+        "source_type": "PAPER",
+        "title": "Trend-based Forecast of Cryptocurrency Returns",
+        "authors": [
+          "Xilong Tan",
+          "Yubo Tao"
+        ],
+        "publication_date": "2023-04-16",
+        "doi_or_uri": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4222864",
+        "source_tier": "A",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_BOUND",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "NOT_STARTED",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Requires reliable historical volume and universe data."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "SOURCE_BOUND",
+      "progression_blocker": "ADAPTATION_NOT_FROZEN",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-VOLUME",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "CRYPTO_CROSS_SECTION"
+        ],
+        "quote_assets": [],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "1w",
+          "1mo"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        },
+        {
+          "dependency": "VOLUME",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        },
+        {
+          "dependency": "MULTI_ASSET",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "VOLUME_WEIGHTED_MOMENTUM",
+        "candidate_ordinal": 13,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0014",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "Low-volatility strategies for highly liquid cryptocurrencies",
+      "short_hypothesis": "Concentrating on historically low-volatility liquid cryptocurrencies with a stop-loss can improve risk-adjusted outcomes.",
+      "source": {
+        "source_id": "RIE-SRC-0012",
+        "source_type": "PAPER",
+        "title": "Low-volatility strategies for highly liquid cryptocurrencies",
+        "authors": [],
+        "publication_date": null,
+        "doi_or_uri": "https://www.sciencedirect.com/science/article/pii/S1544612321004116",
+        "source_tier": "A",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_BOUND",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "NOT_STARTED",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Current BTC/ETH universe is too small for the source's portfolio selection design."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "SOURCE_BOUND",
+      "progression_blocker": "ADAPTATION_NOT_FROZEN",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-REGIME",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "CRYPTO_CROSS_SECTION"
+        ],
+        "quote_assets": [],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "1mo"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        },
+        {
+          "dependency": "MULTI_ASSET",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "VOLATILITY",
+        "candidate_ordinal": 14,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0015",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "Econometric Modelling and Algorithmic Trading of Bitcoin: ARIMA-GARCH Volatility Analysis and Backtested Strategy Evaluation",
+      "short_hypothesis": "RSI extremes may identify Bitcoin mean-reversion opportunities after costs.",
+      "source": {
+        "source_id": "RIE-SRC-0013",
+        "source_type": "PAPER",
+        "title": "Econometric Modelling and Algorithmic Trading of Bitcoin: ARIMA-GARCH Volatility Analysis and Backtested Strategy Evaluation",
+        "authors": [
+          "Tejas Paramashiva"
+        ],
+        "publication_date": "2026-02-22",
+        "doi_or_uri": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6467818",
+        "source_tier": "A",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_BOUND",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "NOT_STARTED",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Single recent sample and coursework context require strong independent replication."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "SOURCE_BOUND",
+      "progression_blocker": "ADAPTATION_NOT_FROZEN",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-MEANREV",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "BTCUSDT"
+        ],
+        "quote_assets": [
+          "USDT"
+        ],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "1d"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "MEAN_REVERSION",
+        "candidate_ordinal": 15,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0016",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "Econometric Modelling and Algorithmic Trading of Bitcoin: ARIMA-GARCH Volatility Analysis and Backtested Strategy Evaluation",
+      "short_hypothesis": "A 20/50 moving-average crossover may capture medium-term Bitcoin trend changes.",
+      "source": {
+        "source_id": "RIE-SRC-0013",
+        "source_type": "PAPER",
+        "title": "Econometric Modelling and Algorithmic Trading of Bitcoin: ARIMA-GARCH Volatility Analysis and Backtested Strategy Evaluation",
+        "authors": [
+          "Tejas Paramashiva"
+        ],
+        "publication_date": "2026-02-22",
+        "doi_or_uri": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6467818",
+        "source_tier": "A",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_BOUND",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "NOT_STARTED",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Single recent sample and coursework context require strong independent replication."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "SOURCE_BOUND",
+      "progression_blocker": "ADAPTATION_NOT_FROZEN",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-TREND",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "BTCUSDT"
+        ],
+        "quote_assets": [
+          "USDT"
+        ],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "1d"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "TREND",
+        "candidate_ordinal": 16,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0017",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "区块链量化投资系列课程(2) - 认识数字货币",
+      "short_hypothesis": "A long-only dual-moving-average trend rule with price and slope confirmation can avoid large downtrends.",
+      "source": {
+        "source_id": "RIE-SRC-0014",
+        "source_type": "LECTURE",
+        "title": "区块链量化投资系列课程(2) - 认识数字货币",
+        "authors": [
+          "FMZ community"
+        ],
+        "publication_date": null,
+        "doi_or_uri": "https://www.fmz.com/bbs-topic/2211",
+        "source_tier": "C",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_BOUND",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "NOT_STARTED",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Educational community source; historical profitability claims are not research-grade."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "SOURCE_BOUND",
+      "progression_blocker": "ADAPTATION_NOT_FROZEN",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-TREND",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "CRYPTO_SPOT"
+        ],
+        "quote_assets": [],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "1h"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "TREND",
+        "candidate_ordinal": 17,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0018",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "数字货币高频策略详细入门",
+      "short_hypothesis": "Sub-10-second signed trade-flow and price acceleration may indicate very short-lived directional pressure.",
+      "source": {
+        "source_id": "RIE-SRC-0015",
+        "source_type": "STRATEGY_LIBRARY",
+        "title": "数字货币高频策略详细入门",
+        "authors": [
+          "FMZ community"
+        ],
+        "publication_date": "2023-03-10",
+        "doi_or_uri": "https://www.fmz.com/bbs-topic/9976",
+        "source_tier": "C",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_BOUND",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "NOT_STARTED",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Requires tick/aggTrade data not present in current HSL corpus.",
+          "Latency sensitivity may dominate edge."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "SOURCE_BOUND",
+      "progression_blocker": "ADAPTATION_NOT_FROZEN",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-TREND",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "CRYPTO_SPOT"
+        ],
+        "quote_assets": [],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "tick"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "TIME_SERIES_MOMENTUM",
+        "candidate_ordinal": 18,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0019",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "数字货币中的Lead-Lag套利介绍（3）",
+      "short_hypothesis": "Price changes across multiple exchanges may lead a target venue and provide a short-horizon confirmation signal.",
+      "source": {
+        "source_id": "RIE-SRC-0016",
+        "source_type": "STRATEGY_LIBRARY",
+        "title": "数字货币中的Lead-Lag套利介绍（3）",
+        "authors": [
+          "FMZ community"
+        ],
+        "publication_date": null,
+        "doi_or_uri": "https://www.fmz.com/bbs-topic/10563",
+        "source_tier": "C",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_BOUND",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "NOT_STARTED",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Requires synchronized multi-exchange feeds and latency modeling.",
+          "Source discusses leveraged/live components that are outside YATL scope."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "SOURCE_BOUND",
+      "progression_blocker": "ADAPTATION_NOT_FROZEN",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-REGIME",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "quote_assets": [
+          "USDT"
+        ],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "tick"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "REGIME_AWARE",
+        "candidate_ordinal": 19,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0020",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "A Decade of Evidence of Trend Following Investing in Cryptocurrencies",
+      "short_hypothesis": "Systematic moving-average trend following can capture persistent cryptocurrency trends after realistic Spot execution costs.",
+      "source": {
+        "source_id": "RIE-SRC-0017",
+        "source_type": "PAPER",
+        "title": "A Decade of Evidence of Trend Following Investing in Cryptocurrencies",
+        "authors": [
+          "Evans Rozario",
+          "Samuel Holt",
+          "James West",
+          "Shaun Ng"
+        ],
+        "publication_date": "2020-09-25",
+        "doi_or_uri": "https://arxiv.org/abs/2009.12155",
+        "source_tier": "B",
+        "source_bytes_frozen": false,
+        "implementation_found": true,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_METHOD_SPECIFIED",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "SPECIFIED",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "The source paper studied BTCUSD Bitstamp and assumed negligible trading costs; YATL adapts to BTCUSDT/ETHUSDT Binance Spot with explicit costs.",
+          "The source forward-filled missing hourly data; YATL never fills or interpolates admitted source gaps.",
+          "Paper-reported profitability is not used as YATL evidence."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "METHOD_SPECIFIED",
+      "progression_blocker": "NONE",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-TREND",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "quote_assets": [
+          "USDT"
+        ],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "1h"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "TREND",
+        "candidate_ordinal": 20,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0021",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "Systematic Trend-Following with Adaptive Portfolio Construction: Enhancing Risk-Adjusted Alpha in Cryptocurrency Markets",
+      "short_hypothesis": "A multi-component 6-hour trend system with volatility-adaptive trailing stops and adaptive asset selection may improve robustness across regimes.",
+      "source": {
+        "source_id": "RIE-SRC-0018",
+        "source_type": "PAPER",
+        "title": "Systematic Trend-Following with Adaptive Portfolio Construction: Enhancing Risk-Adjusted Alpha in Cryptocurrency Markets",
+        "authors": [
+          "Duc Bui",
+          "Thanh Nguyen"
+        ],
+        "publication_date": "2026-02-12",
+        "doi_or_uri": "https://arxiv.org/abs/2602.11708",
+        "source_tier": "A",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_BOUND",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "NOT_STARTED",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Source includes long-short allocation; YATL must isolate a Spot long-only hypothesis.",
+          "Complexity creates substantial multiple-testing risk."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "SOURCE_BOUND",
+      "progression_blocker": "ADAPTATION_NOT_FROZEN",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-TREND",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "CRYPTO_CROSS_SECTION"
+        ],
+        "quote_assets": [],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "6h"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        },
+        {
+          "dependency": "MULTI_ASSET",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "TREND",
+        "candidate_ordinal": 21,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0022",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "Detecting Volatility Regimes in Crypto Markets using Realized Volatility Structure and Normalized Momentum",
+      "short_hypothesis": "The ratio/structure of short- versus long-horizon realized volatility combined with normalized directional momentum can classify expansion, neutral and contraction regimes.",
+      "source": {
+        "source_id": "RIE-SRC-0019",
+        "source_type": "PAPER",
+        "title": "Detecting Volatility Regimes in Crypto Markets using Realized Volatility Structure and Normalized Momentum",
+        "authors": [
+          "Kaustuv Banerjee"
+        ],
+        "publication_date": "2025-12-14",
+        "doi_or_uri": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5920642",
+        "source_tier": "A",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "BLOCKED_SOURCE",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "BLOCKED_ADAPTATION_SPECIFICATION",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "This is a control/filter hypothesis, not a standalone trading strategy."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": [
+          "short realized-volatility horizon",
+          "long realized-volatility horizon",
+          "normalized-momentum equation",
+          "regime thresholds",
+          "state update semantics"
+        ]
+      },
+      "lifecycle_state": "BLOCKED_SOURCE",
+      "progression_blocker": "SOURCE_RULE_MISSING",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-REGIME",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "BTCUSDT"
+        ],
+        "quote_assets": [
+          "USDT"
+        ],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "intraday"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "REGIME_AWARE",
+        "candidate_ordinal": 22,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0023",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "Intraday price forecasts using candlestick patterns in cryptocurrency markets",
+      "short_hypothesis": "A bullish Harami pattern may contain short-horizon positive return information in cryptocurrency markets.",
+      "source": {
+        "source_id": "RIE-SRC-0020",
+        "source_type": "PAPER",
+        "title": "Intraday price forecasts using candlestick patterns in cryptocurrency markets",
+        "authors": [
+          "Stefanie Moser",
+          "Alexander Brauneis"
+        ],
+        "publication_date": null,
+        "doi_or_uri": "https://www.sciencedirect.com/science/article/pii/S1059056026002716",
+        "source_tier": "A",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_BOUND",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "NOT_STARTED",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Pattern evidence is cross-sectional across many exchanges/pairs, not BTC/ETH-specific."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "SOURCE_BOUND",
+      "progression_blocker": "ADAPTATION_NOT_FROZEN",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-MEANREV",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "CRYPTO_CROSS_SECTION"
+        ],
+        "quote_assets": [],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "1h"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        },
+        {
+          "dependency": "MULTI_ASSET",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "MEAN_REVERSION",
+        "candidate_ordinal": 23,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0024",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "Intraday price forecasts using candlestick patterns in cryptocurrency markets",
+      "short_hypothesis": "A Hikkake pattern may contain short-horizon directional information in cryptocurrency markets.",
+      "source": {
+        "source_id": "RIE-SRC-0020",
+        "source_type": "PAPER",
+        "title": "Intraday price forecasts using candlestick patterns in cryptocurrency markets",
+        "authors": [
+          "Stefanie Moser",
+          "Alexander Brauneis"
+        ],
+        "publication_date": null,
+        "doi_or_uri": "https://www.sciencedirect.com/science/article/pii/S1059056026002716",
+        "source_tier": "A",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_BOUND",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "NOT_STARTED",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Pattern evidence is broad and may decay after costs."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "SOURCE_BOUND",
+      "progression_blocker": "ADAPTATION_NOT_FROZEN",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-BREAKOUT",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "CRYPTO_CROSS_SECTION"
+        ],
+        "quote_assets": [],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "1h"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        },
+        {
+          "dependency": "MULTI_ASSET",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "BREAKOUT",
+        "candidate_ordinal": 24,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0025",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "Momentum has its moments",
+      "short_hypothesis": "Scaling a frozen trend/momentum exposure down when only lagged realized volatility is high may preserve more of the trend edge while reducing crash sensitivity.",
+      "source": {
+        "source_id": "RIE-SRC-0021",
+        "source_type": "PAPER",
+        "title": "Momentum has its moments",
+        "authors": [
+          "Pedro Barroso",
+          "Pedro Santa-Clara"
+        ],
+        "publication_date": "2015-04-01",
+        "doi_or_uri": "https://www.sciencedirect.com/science/article/pii/S0304405X14002566",
+        "source_tier": "A",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_METHOD_SPECIFIED",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "IMPLEMENTED",
+        "tested_object_id": "GEN2-ADAPT-0002-VOL-SCALING",
+        "protocol_ref": "docs/research/generation-2/GEN2-002-VOL-SCALING-PROTOCOL-v0.1.0.json",
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Original evidence is equity momentum rather than BTC/ETH Spot.",
+          "Source strategy can use leverage; YATL adaptation forbids leverage."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "INVALIDATED_BEFORE_ECONOMICS",
+      "progression_blocker": "REQUIRED_DATA_NOT_ADMITTED",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-REGIME",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "quote_assets": [
+          "USDT"
+        ],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "1h",
+          "4h"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "REGIME_AWARE",
+        "candidate_ordinal": 25,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [
+        {
+          "evidence_id": "GEN2-002-CANONICAL-RESULT-001",
+          "stage": "DEVELOPMENT",
+          "artifact_ref": "generation-2/gen2-002/vol-scaling-25ac8f5fbee4fb9e75f79c7e.json",
+          "artifact_sha256": "25ac8f5fbee4fb9e75f79c7e769a3cc1b0c046ede0536c8f91a6d4eba5a0a701",
+          "code_head_sha": "3e8e5167414b26fb72ed80a620a74f6bdc60d38e",
+          "protocol_id": "GEN2-002-VOL-SCALING-001",
+          "protocol_sha256": "e9fd7c18c5b8e9cb92f9f63ef03cf81d49b638bc38bdb28092c5ddb00a4f4ffa",
+          "executed_at_utc": null,
+          "outcome_state": "INVALIDATED_BEFORE_ECONOMIC_EVALUATION",
+          "canonical": true,
+          "evidence_partition": "DEVELOPMENT",
+          "read_boundaries": [
+            "KNOWN_DEVELOPMENT_ONLY"
+          ],
+          "p10_read": false,
+          "p10_write": false,
+          "fresh_oos_read": false,
+          "recent_reserve_read": false
+        }
+      ],
+      "failure_closeout": {
+        "failure_classification": "DATA_BLOCKED",
+        "secondary_failure_mechanisms": [
+          "INCOMPLETE_VOLATILITY_WINDOW"
+        ],
+        "what_failed": [
+          "The frozen 183-day volatility estimator was structurally unavailable at 40 symbol-month boundaries."
+        ],
+        "what_did_not_fail": [
+          "No economic performance claim was evaluated."
+        ],
+        "claim_disproved": "The frozen estimator could be formed on the admitted Development corpus exactly as preregistered.",
+        "claims_not_tested": [
+          "Volatility scaling has no economic edge."
+        ],
+        "possible_conditional_edge": null,
+        "possible_data_or_execution_artifact": true,
+        "salvage_review_result": "NEGATIVE_EVIDENCE_RETAINED_NO_SAME_EVIDENCE_ESTIMATOR_RESCUE",
+        "new_candidate_required": true,
+        "child_candidate_ids": []
+      },
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0026",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "Momentum Crashes",
+      "short_hypothesis": "A panic-state detector based only on lagged market decline and lagged volatility can identify states where trend/momentum exposure should be reduced before rebound-driven whipsaw.",
+      "source": {
+        "source_id": "RIE-SRC-0022",
+        "source_type": "PAPER",
+        "title": "Momentum Crashes",
+        "authors": [
+          "Kent Daniel",
+          "Tobias J. Moskowitz"
+        ],
+        "publication_date": null,
+        "doi_or_uri": "https://www.nber.org/papers/w20439",
+        "source_tier": "A",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_BOUND",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "NOT_STARTED",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Original paper studies momentum portfolios across traditional assets rather than BTC/ETH Spot.",
+          "Dynamic mean/variance forecasting is more complex than the first YATL implementation should be."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "SOURCE_BOUND",
+      "progression_blocker": "ADAPTATION_NOT_FROZEN",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-REGIME",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "quote_assets": [
+          "USDT"
+        ],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "1h",
+          "4h"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "REGIME_AWARE",
+        "candidate_ordinal": 26,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0027",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "Downside risk and the performance of volatility-managed portfolios",
+      "short_hypothesis": "Downside-only realized volatility may be a better exposure-control signal than total volatility for a long-only crypto trend strategy because negative-return variation is more directly related to adverse states.",
+      "source": {
+        "source_id": "RIE-SRC-0023",
+        "source_type": "PAPER",
+        "title": "Downside risk and the performance of volatility-managed portfolios",
+        "authors": [
+          "Feifei Wang",
+          "Xuemin Sterling Yan"
+        ],
+        "publication_date": "2021-10-01",
+        "doi_or_uri": "https://www.sciencedirect.com/science/article/pii/S0378426621001576",
+        "source_tier": "A",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_METHOD_SPECIFIED",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "IMPLEMENTED",
+        "tested_object_id": "GEN2-ADAPT-0003-DOWNSIDE-VOL-SCALING",
+        "protocol_ref": "docs/research/generation-2/GEN2-003-DOWNSIDE-VOL-SCALING-PROTOCOL-v0.1.0.json",
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Source evidence is from equity factors/anomalies, not crypto.",
+          "Downside volatility may react too late at 1h frequency."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "REJECTED_NEGATIVE_EVIDENCE",
+      "progression_blocker": "NONE",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-REGIME",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "quote_assets": [
+          "USDT"
+        ],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "1h",
+          "4h"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "VOLATILITY",
+        "candidate_ordinal": 27,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [
+        {
+          "evidence_id": "GEN2-003-CANONICAL-RESULT-001",
+          "stage": "DEVELOPMENT",
+          "artifact_ref": "generation-2/gen2-003/downside-vol-scaling-c9e864aa24e4b722671001af.json",
+          "artifact_sha256": "c9e864aa24e4b722671001af42f2165e608078fe7865bebdc02f8d26d4fa2255",
+          "code_head_sha": "e64320998221068e824d1f87ccdd36582fb20616",
+          "protocol_id": "GEN2-003-DOWNSIDE-VOL-SCALING-001",
+          "protocol_sha256": "2821e5dbcbdbb503ba7e68627ef3eeee1454f9ee268d5af2a5cc564954d5c3bc",
+          "executed_at_utc": null,
+          "outcome_state": "CANONICAL_COMPLETE_ZERO_PROPOSALS",
+          "canonical": true,
+          "evidence_partition": "DEVELOPMENT",
+          "read_boundaries": [
+            "KNOWN_DEVELOPMENT_ONLY"
+          ],
+          "p10_read": false,
+          "p10_write": false,
+          "fresh_oos_read": false,
+          "recent_reserve_read": false
+        }
+      ],
+      "failure_closeout": {
+        "failure_classification": "REDUNDANT_EDGE",
+        "secondary_failure_mechanisms": [
+          "ESTIMATOR_AVAILABILITY_LIMITATION"
+        ],
+        "what_failed": [
+          "Downside-volatility scaling did not outperform the registered total-volatility comparator.",
+          "The valid-new-scale-decision fraction was below 0.50 for all six references."
+        ],
+        "what_did_not_fail": [
+          "Directional entry/trade preservation.",
+          "Downside-scaled base/stress economics versus unscaled control.",
+          "Median drawdown improvement versus control."
+        ],
+        "claim_disproved": "Downside-volatility scaling provided incremental superiority over total-volatility scaling under the frozen GEN2-003 protocol.",
+        "claims_not_tested": [
+          "Broader volatility sizing has no value.",
+          "The six underlying trend references have no edge.",
+          "A separately preregistered conditional-edge system cannot work."
+        ],
+        "possible_conditional_edge": false,
+        "possible_data_or_execution_artifact": true,
+        "salvage_review_result": "OBSERVATION_RETAINED_NO_POST_HOC_PROMOTION",
+        "new_candidate_required": true,
+        "child_candidate_ids": []
+      },
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0028",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "A hidden Markov model to detect regime changes in cryptoasset markets",
+      "short_hypothesis": "A small hidden-state model using only point-in-time BTC/ETH return and volatility features can separate bull, stable and bear regimes sufficiently to gate a frozen trend strategy.",
+      "source": {
+        "source_id": "RIE-SRC-0024",
+        "source_type": "PAPER",
+        "title": "A hidden Markov model to detect regime changes in cryptoasset markets",
+        "authors": [
+          "Paolo Giudici",
+          "Iman Abu Hashish"
+        ],
+        "publication_date": "2020-06-04",
+        "doi_or_uri": "https://onlinelibrary.wiley.com/doi/full/10.1002/qre.2673",
+        "source_tier": "A",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_METHOD_SPECIFIED",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "BLOCKED_ADAPTATION_SPECIFICATION",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Hidden-state labels can swap across fits and require deterministic canonicalization.",
+          "Model estimation adds substantial instability and complexity."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": [
+          "Observation feature choice",
+          "BTC-only versus BTC/ETH versus multi-venue architecture",
+          "Timeframe",
+          "Training/refit schedule",
+          "Deterministic initialization/convergence/failure behavior",
+          "Training-only state-label canonicalization",
+          "Probability-to-eligibility/exposure mapping",
+          "State-count policy",
+          "Missing-data/exchange-availability behavior",
+          "Conditional-edge detector metrics",
+          "Cost mapping and opportunity-preservation gates"
+        ]
+      },
+      "lifecycle_state": "METHOD_SPECIFIED",
+      "progression_blocker": "ADAPTATION_NOT_FROZEN",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-REGIME",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "quote_assets": [
+          "USDT"
+        ],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "1h",
+          "4h"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        },
+        {
+          "dependency": "MULTI_VENUE",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "REGIME_AWARE",
+        "candidate_ordinal": 28,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0029",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "Exploring the predictability of cryptocurrencies via Bayesian hidden Markov models",
+      "short_hypothesis": "A four-state crypto regime model may add useful state information beyond price-only trend by combining series momentum with point-in-time financial stress predictors.",
+      "source": {
+        "source_id": "RIE-SRC-0025",
+        "source_type": "PAPER",
+        "title": "Exploring the predictability of cryptocurrencies via Bayesian hidden Markov models",
+        "authors": [
+          "Constandina Koki",
+          "Stefanos Leonardos",
+          "Georgios Piliouras"
+        ],
+        "publication_date": "2022-01-01",
+        "doi_or_uri": "https://www.sciencedirect.com/science/article/pii/S0275531921001756",
+        "source_tier": "A",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_BOUND",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "NOT_STARTED",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Requires external macro/financial data not currently in the minimal Binance-only research path.",
+          "Bayesian NHHM is materially more complex than deterministic filters."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "SOURCE_BOUND",
+      "progression_blocker": "ADAPTATION_NOT_FROZEN",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-REGIME",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "quote_assets": [
+          "USDT"
+        ],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "1h",
+          "4h"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        },
+        {
+          "dependency": "EXTERNAL_CONTEXT",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "REGIME_AWARE",
+        "candidate_ordinal": 29,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0030",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "Stop-loss rules and momentum payoffs in cryptocurrencies",
+      "short_hypothesis": "A simple point-in-time stop-loss overlay may reduce the downside of a long-only crypto momentum/trend position without suppressing most ordinary trend entries.",
+      "source": {
+        "source_id": "RIE-SRC-0026",
+        "source_type": "PAPER",
+        "title": "Stop-loss rules and momentum payoffs in cryptocurrencies",
+        "authors": [
+          "Mohsin Sadaqat",
+          "Hilal Anwar Butt"
+        ],
+        "publication_date": null,
+        "doi_or_uri": "https://www.sciencedirect.com/science/article/pii/S2214635023000473",
+        "source_tier": "A",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_METHOD_SPECIFIED",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "IMPLEMENTED",
+        "tested_object_id": "GEN2-ADAPT-0001-STOP-OVERLAY",
+        "protocol_ref": "docs/research/generation-2/GEN2-001-STOP-OVERLAY-PROTOCOL-v0.1.0.json",
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Source studies a broad cross-section of 147 cryptocurrencies, not just BTC/ETH.",
+          "Stops can increase turnover and slippage."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "REJECTED_NEGATIVE_EVIDENCE",
+      "progression_blocker": "NONE",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-REGIME",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "quote_assets": [
+          "USDT"
+        ],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "1h",
+          "4h"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "REGIME_AWARE",
+        "candidate_ordinal": 30,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [
+        {
+          "evidence_id": "GEN2-001-CANONICAL-RESULT-001",
+          "stage": "DEVELOPMENT",
+          "artifact_ref": "generation-2/gen2-001/stop-overlay-56e6b743f32c306fcbbdfd83.json",
+          "artifact_sha256": "56e6b743f32c306fcbbdfd8305873ac8b1a519eb32c0931160f66b6f58a4493e",
+          "code_head_sha": null,
+          "protocol_id": "GEN2-001-STOP-OVERLAY-001",
+          "protocol_sha256": "ffe495d07ab36ebf1c60265355aa41cb0c5b5946cfa7f3a454c6cf35517234d2",
+          "executed_at_utc": null,
+          "outcome_state": "CANONICAL_COMPLETE_ZERO_PROPOSALS",
+          "canonical": true,
+          "evidence_partition": "DEVELOPMENT",
+          "read_boundaries": [
+            "KNOWN_DEVELOPMENT_ONLY"
+          ],
+          "p10_read": false,
+          "p10_write": false,
+          "fresh_oos_read": false,
+          "recent_reserve_read": false
+        }
+      ],
+      "failure_closeout": {
+        "failure_classification": "UNKNOWN_FAILURE_MECHANISM",
+        "secondary_failure_mechanisms": [
+          "REGISTERED_STOP_OVERLAY_DID_NOT_IMPROVE_ECONOMICS"
+        ],
+        "what_failed": [
+          "The preregistered stop-overlay candidate produced zero proposals."
+        ],
+        "what_did_not_fail": [
+          "This result does not test all possible stop-loss concepts."
+        ],
+        "claim_disproved": "This preregistered long-only stop-overlay threshold set qualified for promotion.",
+        "claims_not_tested": [
+          "All stop-loss concepts are invalid."
+        ],
+        "possible_conditional_edge": null,
+        "possible_data_or_execution_artifact": false,
+        "salvage_review_result": "NEGATIVE_EVIDENCE_RETAINED_NO_SAME_EVIDENCE_REFINEMENT",
+        "new_candidate_required": true,
+        "child_candidate_ids": []
+      },
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    },
+    {
+      "candidate_id": "RIE-CAND-0031",
+      "schema_version": "1.0",
+      "created_at_utc": null,
+      "origin_type": "EXTERNAL_SOURCE",
+      "title": "Dynamic time series momentum of cryptocurrencies",
+      "short_hypothesis": "Crypto momentum duration and structural turning points may be state-dependent; a dynamic but preregistered momentum-duration signal may reduce fixed-horizon whipsaw.",
+      "source": {
+        "source_id": "RIE-SRC-0027",
+        "source_type": "PAPER",
+        "title": "Dynamic time series momentum of cryptocurrencies",
+        "authors": [
+          "Oliver Borgards"
+        ],
+        "publication_date": "2021-07-01",
+        "doi_or_uri": "https://www.sciencedirect.com/science/article/pii/S1062940821000590",
+        "source_tier": "A",
+        "source_bytes_frozen": false,
+        "implementation_found": false,
+        "performance_claims_are_yatl_evidence": false
+      },
+      "source_method_state": "SOURCE_BOUND",
+      "adaptation": {
+        "adaptation_required": true,
+        "adaptation_state": "NOT_STARTED",
+        "tested_object_id": null,
+        "protocol_ref": null,
+        "source_replication_claim": false,
+        "source_to_yatl_gaps": [
+          "Dynamic structural rules can hide many degrees of freedom if not reproduced exactly.",
+          "Source scope spans twenty cryptocurrencies and multiple frequencies."
+        ],
+        "frozen_choices": [],
+        "unresolved_choices": []
+      },
+      "lifecycle_state": "SOURCE_BOUND",
+      "progression_blocker": "ADAPTATION_NOT_FROZEN",
+      "economic_taxonomy": {
+        "alpha_family_id": "AF-TREND",
+        "economic_mechanism_id": "LEGACY_UNCLASSIFIED",
+        "edge_scope": "UNKNOWN_EDGE_SCOPE",
+        "edge_attribution": "MIXED_OR_UNRESOLVED",
+        "common_factor_cluster_id": null,
+        "duplicate_of_candidate_id": null
+      },
+      "market_scope": {
+        "assets": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "quote_assets": [
+          "USDT"
+        ],
+        "venues": [
+          "UNSPECIFIED_LEGACY"
+        ],
+        "venue_scope_type": "MARKET_WIDE_UNTESTED",
+        "timeframes": [
+          "1h",
+          "4h"
+        ],
+        "directionality": "LONG_OR_CASH_CURRENT_YATL_SCOPE",
+        "spot_only": true
+      },
+      "data_dependencies": [
+        {
+          "dependency": "PRICE_OHLC",
+          "availability_state": "UNASSESSED",
+          "point_in_time_admitted": false,
+          "provenance_ref": null
+        }
+      ],
+      "opportunity_profile": {
+        "holding_horizon_class": "UNASSESSED",
+        "expected_opportunity_frequency": "UNASSESSED",
+        "expected_turnover_class": "UNASSESSED",
+        "expected_active_exposure_class": "UNASSESSED",
+        "capacity_sensitivity": "UNASSESSED",
+        "liquidity_sensitivity": "UNASSESSED",
+        "implementation_complexity": "UNASSESSED",
+        "observed_opportunity_count": null,
+        "observed_turnover": null,
+        "observed_active_exposure": null,
+        "observed_capacity_warning": null
+      },
+      "regime_hypothesis": "UNKNOWN",
+      "conditional_edge": null,
+      "trial_budget": {
+        "research_generation_id": "LEGACY_GEN2_INTAKE",
+        "hypothesis_family_id": "TIME_SERIES_MOMENTUM",
+        "candidate_ordinal": 31,
+        "maximum_registered_trials": null,
+        "trials_spent": null,
+        "hidden_trials_forbidden": true,
+        "post_outcome_expansion_forbidden": true
+      },
+      "selection_bias": {
+        "effective_family_id": null,
+        "related_candidates": [],
+        "multiple_testing_accounting_required": true,
+        "accounting_ref": null
+      },
+      "evidence_ledger": [],
+      "failure_closeout": null,
+      "benchmarks": {
+        "causal_control_candidate_id": null,
+        "cash_benchmark_state": "UNASSESSED",
+        "buy_and_hold_benchmark_state": "UNASSESSED",
+        "simple_family_baseline_state": "UNASSESSED",
+        "incremental_comparator_ids": []
+      },
+      "capacity_and_dependency": {
+        "early_capacity_screen_state": "UNASSESSED",
+        "venue_dependency_state": "UNASSESSED",
+        "quote_asset_dependency_state": "UNASSESSED",
+        "market_impact_model_state": "UNASSESSED"
+      },
+      "decay_monitoring": {
+        "baseline_window_ref": null,
+        "monitored_metrics": [],
+        "warning_state": "NOT_STARTED",
+        "retirement_state": "NOT_STARTED",
+        "last_review_utc": null
+      },
+      "authorization": {
+        "performance_run_allowed": false,
+        "fresh_oos_read_allowed": false,
+        "crisis_run_allowed": false,
+        "forward_run_allowed": false,
+        "p10_read_allowed": false,
+        "p10_write_allowed": false,
+        "tiny_live_candidate": false,
+        "live_authorized": false,
+        "ai_direct_execution_allowed": false,
+        "order_endpoint_allowed": false,
+        "leverage_allowed": false,
+        "short_allowed": false
+      },
+      "migration_notes": [
+        "Migrated conservatively from CANDIDATE-REGISTRY-GEN2-v0.1.0.json.",
+        "Unknown v2 fields remain UNASSESSED/null rather than inferred.",
+        "Legacy source text and candidate identity are preserved."
+      ]
+    }
+  ]
+}
