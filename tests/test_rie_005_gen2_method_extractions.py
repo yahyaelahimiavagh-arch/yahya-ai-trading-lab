@@ -10,11 +10,20 @@ class RIE005Gen2MethodExtractionTests(unittest.TestCase):
         return json.loads((BASE/f"{cid}-v0.1.0.json").read_text(encoding="utf-8"))
 
     def test_blocked_candidates_cannot_run(self):
-        for cid in ("RIE-CAND-0011","RIE-CAND-0022","RIE-CAND-0027"):
+        for cid in ("RIE-CAND-0011","RIE-CAND-0022"):
             r=self.load(cid)
             self.assertTrue(r["status"].startswith("NOT_READY"))
             self.assertFalse(r["performance_run_allowed"])
             self.assertTrue(r["blockers"])
+
+    def test_0027_method_specified_but_implementation_gate_required(self):
+        r=self.load("RIE-CAND-0027")
+        self.assertEqual(r["status"],"METHOD_SPECIFIED_BEFORE_YATL_PERFORMANCE")
+        self.assertEqual(r["candidate_id"],"RIE-CAND-0027")
+        self.assertFalse(r["performance_run_allowed"])
+        self.assertFalse(r["source"]["performance_claims_are_yatl_evidence"])
+        self.assertTrue(r["source_to_yatl_gaps"]["source_initial_training_months_not_available_in_current_gen2_development"])
+        self.assertIn("Do not claim source replication; any YATL test is an internal adaptation.",r["prohibited_inference"])
 
     def test_stop_overlay_is_method_ready_but_not_runnable(self):
         r=self.load("RIE-CAND-0030")
