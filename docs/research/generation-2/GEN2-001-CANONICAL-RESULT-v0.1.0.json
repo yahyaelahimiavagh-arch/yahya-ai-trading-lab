@@ -1,0 +1,122 @@
+{
+  "schema": "YATL_GEN2_COMPONENT_ACCEPTANCE",
+  "schema_version": "0.1.0",
+  "acceptance_id": "GEN2-001-CANONICAL-RESULT-001",
+  "component_id": "GEN2-ADAPT-0001-STOP-OVERLAY",
+  "source_candidate_id": "RIE-CAND-0030",
+  "status": "CANONICAL_COMPLETE_ZERO_PROPOSALS",
+  "protocol_id": "GEN2-001-STOP-OVERLAY-001",
+  "protocol_sha256": "ffe495d07ab36ebf1c60265355aa41cb0c5b5946cfa7f3a454c6cf35517234d2",
+  "implementation_id": "GEN2-001-STOP-OVERLAY/0.1.0",
+  "development_condition_count": 36,
+  "artifact": {
+    "relative_path": "generation-2/gen2-001/stop-overlay-56e6b743f32c306fcbbdfd83.json",
+    "file_sha256": "56e6b743f32c306fcbbdfd8305873ac8b1a519eb32c0931160f66b6f58a4493e"
+  },
+  "proposal_count": 0,
+  "proposal_thresholds_percent": [],
+  "threshold_results": [
+    {
+      "threshold_percent": 10,
+      "status": "FAIL",
+      "total_stop_fills": 20,
+      "activated_reference_strategies": 3,
+      "median_base_net_delta_quote": "0",
+      "median_stress_net_delta_quote": "0",
+      "median_drawdown_delta_fraction": "0",
+      "failure_reasons": [
+        "AGGREGATE_BASE_NET_NOT_IMPROVED",
+        "AGGREGATE_STRESS_NET_NOT_IMPROVED",
+        "MEDIAN_BASE_NET_DELTA_NOT_POSITIVE",
+        "MEDIAN_STRESS_NET_DELTA_NOT_POSITIVE",
+        "MEDIAN_DRAWDOWN_DELTA_NOT_NEGATIVE"
+      ]
+    },
+    {
+      "threshold_percent": 20,
+      "status": "FAIL",
+      "total_stop_fills": 0,
+      "activated_reference_strategies": 0,
+      "median_base_net_delta_quote": "0",
+      "median_stress_net_delta_quote": "0",
+      "median_drawdown_delta_fraction": "0",
+      "failure_reasons": [
+        "STOP_ACTIVATION_REFERENCE_COUNT",
+        "STOP_ACTIVATION_FILL_COUNT",
+        "AGGREGATE_BASE_NET_NOT_IMPROVED",
+        "AGGREGATE_STRESS_NET_NOT_IMPROVED",
+        "MEDIAN_BASE_NET_DELTA_NOT_POSITIVE",
+        "MEDIAN_STRESS_NET_DELTA_NOT_POSITIVE",
+        "MEDIAN_DRAWDOWN_DELTA_NOT_NEGATIVE"
+      ]
+    },
+    {
+      "threshold_percent": 30,
+      "status": "FAIL",
+      "total_stop_fills": 0,
+      "activated_reference_strategies": 0,
+      "median_base_net_delta_quote": "0",
+      "median_stress_net_delta_quote": "0",
+      "median_drawdown_delta_fraction": "0",
+      "failure_reasons": [
+        "STOP_ACTIVATION_REFERENCE_COUNT",
+        "STOP_ACTIVATION_FILL_COUNT",
+        "AGGREGATE_BASE_NET_NOT_IMPROVED",
+        "AGGREGATE_STRESS_NET_NOT_IMPROVED",
+        "MEDIAN_BASE_NET_DELTA_NOT_POSITIVE",
+        "MEDIAN_STRESS_NET_DELTA_NOT_POSITIVE",
+        "MEDIAN_DRAWDOWN_DELTA_NOT_NEGATIVE"
+      ]
+    },
+    {
+      "threshold_percent": 40,
+      "status": "FAIL",
+      "total_stop_fills": 0,
+      "activated_reference_strategies": 0,
+      "median_base_net_delta_quote": "0",
+      "median_stress_net_delta_quote": "0",
+      "median_drawdown_delta_fraction": "0",
+      "failure_reasons": [
+        "STOP_ACTIVATION_REFERENCE_COUNT",
+        "STOP_ACTIVATION_FILL_COUNT",
+        "AGGREGATE_BASE_NET_NOT_IMPROVED",
+        "AGGREGATE_STRESS_NET_NOT_IMPROVED",
+        "MEDIAN_BASE_NET_DELTA_NOT_POSITIVE",
+        "MEDIAN_STRESS_NET_DELTA_NOT_POSITIVE",
+        "MEDIAN_DRAWDOWN_DELTA_NOT_NEGATIVE"
+      ]
+    },
+    {
+      "threshold_percent": 50,
+      "status": "FAIL",
+      "total_stop_fills": 0,
+      "activated_reference_strategies": 0,
+      "median_base_net_delta_quote": "0",
+      "median_stress_net_delta_quote": "0",
+      "median_drawdown_delta_fraction": "0",
+      "failure_reasons": [
+        "STOP_ACTIVATION_REFERENCE_COUNT",
+        "STOP_ACTIVATION_FILL_COUNT",
+        "AGGREGATE_BASE_NET_NOT_IMPROVED",
+        "AGGREGATE_STRESS_NET_NOT_IMPROVED",
+        "MEDIAN_BASE_NET_DELTA_NOT_POSITIVE",
+        "MEDIAN_STRESS_NET_DELTA_NOT_POSITIVE",
+        "MEDIAN_DRAWDOWN_DELTA_NOT_NEGATIVE"
+      ]
+    }
+  ],
+  "interpretation": [
+    "The 10% stop was economically active but did not improve aggregate base or stress economics and did not improve median drawdown.",
+    "The 20-50% stops were effectively inactive on this Development strategy family.",
+    "No threshold qualifies for promotion or combination.",
+    "This result does not imply all stop-loss concepts are invalid; it rejects only this preregistered long-only overlay and threshold set on this frozen family."
+  ],
+  "rerun_for_selection_forbidden": true,
+  "threshold_refinement_on_same_evidence_forbidden": true,
+  "candidate_retained_as_negative_evidence": true,
+  "fresh_oos_read": false,
+  "p10_read": false,
+  "p10_write_allowed": false,
+  "p11_locked": true,
+  "research_only": true
+}

@@ -1,0 +1,55 @@
+{
+  "schema": "YATL_GEN2_MASTER_PROTOCOL",
+  "schema_version": "0.1.0",
+  "protocol_id": "GEN2-MASTER-001",
+  "status": "REGISTERED_BEFORE_GEN2_PERFORMANCE_RUNS",
+  "objective": "Produce at least one independently auditable, crisis-robust, non-starved, after-cost BTCUSDT/ETHUSDT Spot strategy architecture that survives a fresh OOS evaluation; otherwise close Generation 2 with GEN2_NO_ROBUST_EDGE_FOUND.",
+  "completion_states": [
+    "GEN2_FORWARD_CANDIDATE",
+    "GEN2_NO_ROBUST_EDGE_FOUND"
+  ],
+  "scope_limits": {
+    "primary_hypotheses_max": 8,
+    "combination_architectures_max": 3,
+    "combinations_require_standalone_evidence": true,
+    "hidden_trials_forbidden": true,
+    "post_outcome_budget_expansion_forbidden": true
+  },
+  "evidence_map": {
+    "known_development": {
+      "range": "2020-01-01T00:00:00Z/2025-01-01T00:00:00Z",
+      "note": "Contains previously observed Generation-1 development/blind/crisis material and can never again be called fresh OOS."
+    },
+    "fresh_oos": {
+      "range": "2025-01-01T00:00:00Z/2026-07-01T00:00:00Z",
+      "status": "SEALED_UNTIL_GEN2_SURVIVOR_FREEZE"
+    },
+    "recent_reserve": {
+      "range": "2026-07-01T00:00:00Z/open",
+      "status": "SEALED"
+    }
+  },
+  "phases": [
+    "G2-01_LITERATURE_AND_REPRODUCTION",
+    "G2-02_STANDALONE_DEVELOPMENT",
+    "G2-03_CONTROLLED_SEARCH",
+    "G2-04_EXACT_RECOMPUTE_AND_ROBUSTNESS",
+    "G2-05_SURVIVOR_FREEZE",
+    "G2-06_FRESH_OOS",
+    "G2-07_CRISIS_REGIME_CERTIFICATION",
+    "G2-08_INDEPENDENT_AUDIT",
+    "G2-09_FINAL_VERDICT"
+  ],
+  "stop_rules": [
+    "A failed candidate is retained and cannot be rescued by post-outcome parameter changes on the same evidence.",
+    "If no preregistered hypothesis survives its required gates, Generation 2 terminates with GEN2_NO_ROBUST_EDGE_FOUND.",
+    "Fresh OOS failure cannot be retuned against the same OOS.",
+    "No Forward promotion occurs automatically from historical results."
+  ],
+  "p10_independent": true,
+  "p10_read": false,
+  "p10_write_allowed": false,
+  "p11_locked": true,
+  "live_master_lock": "OFF",
+  "research_only": true
+}

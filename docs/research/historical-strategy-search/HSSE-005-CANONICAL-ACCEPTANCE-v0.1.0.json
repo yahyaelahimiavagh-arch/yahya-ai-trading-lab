@@ -1,0 +1,71 @@
+{
+  "schema": "YATL_HSSE_CRISIS_REGIME_CANONICAL_ACCEPTANCE",
+  "schema_version": "0.1.0",
+  "record_id": "HSSE-005-CANONICAL-ACCEPTANCE-001",
+  "accepted_date_utc": "2026-09-26",
+  "status": "CANONICAL_COMPLETE_ZERO_PASS",
+  "implementation_id": "HSSE-005-CRISIS-REGIME-CERTIFICATION/0.1.0",
+  "branch_head": "1eb64adbcdedf8292d1247b0afff0ff02aaacc43",
+  "protocol_sha256": "6e47906e9674419ca8487cb9e44cc8026fa7f395cc92cffed75317aa1e4b15bf",
+  "source_hsse004b_result_sha256": "2515a47573daaac6fdf9771adaf70f348ca7b03d7f7a5d4abc634328c031bb01",
+  "result": {
+    "artifact_relative_path": "historical-strategy-search/hsse-005/crisis-regime-d6b581128e47568ec26b5ec9.json",
+    "artifact_file_sha256": "d6b581128e47568ec26b5ec9a35511064936b08b264bfb6091232e379f1f1719",
+    "result_sha256": "b2dfc1554fe9e724cf709d3695553a6945e3ebae45b24238fc96ac7fffe868be",
+    "pass_count": 0,
+    "fail_count": 6,
+    "passed_frozen_ids": [],
+    "reranking_performed": false,
+    "retuning_performed": false,
+    "hidden_retry_performed": false,
+    "audit_holdout_read": false,
+    "recent_reserve_read": false
+  },
+  "cross_candidate_diagnostics": {
+    "minimum_pairwise_base_unit_pnl_correlation": "0.82758973988403772",
+    "maximum_pairwise_base_unit_pnl_correlation": "0.99854295737619836",
+    "sign_agreement_fraction_range": [
+      "0.875",
+      "1.0"
+    ],
+    "interpretation": "The six survivors are highly correlated and behave as a small number of closely related exposures rather than six independent edges."
+  },
+  "common_failure_pattern": {
+    "positive_unit_fraction_base": "0.25",
+    "positive_unit_fraction_stress": "0.25",
+    "failed_gate_reasons": [
+      "BASE_POSITIVE_UNIT_FRACTION",
+      "STRESS_POSITIVE_UNIT_FRACTION",
+      "BASE_MEDIAN_NOT_POSITIVE",
+      "STRESS_MEDIAN_NOT_POSITIVE"
+    ],
+    "units_with_broad_positive_behavior": [
+      "HSSE005-U002",
+      "HSSE005-U006"
+    ],
+    "units_with_broad_negative_behavior": [
+      "HSSE005-U001",
+      "HSSE005-U004",
+      "HSSE005-U005",
+      "HSSE005-U007",
+      "HSSE005-U008"
+    ],
+    "note": "Some survivors were inactive or flat in HSSE005-U003. HSSE005-U006 can show positive mark-to-market economics with zero completed trades because a scored entry or carried open position may remain open at the unit end."
+  },
+  "decision": {
+    "current_generation_status": "REJECTED_AT_HSSE005_CRISIS_REGIME_CERTIFICATION",
+    "all_six_retained_as_negative_evidence": true,
+    "retune_same_generation": false,
+    "survivor_replacement_same_generation": false,
+    "proceed_to_hsse006_for_promotion": false,
+    "hsse006_if_used": "AUDIT_THE_REJECTION_AND_PIPELINE_INTEGRITY_ONLY",
+    "audit_holdout_must_remain_sealed": true,
+    "required_next_research_action": "FORM_NEW_HYPOTHESES_OR_FAMILIES_IN_RESEARCH_THEN_REENTER_CONTROLLED_DEVELOPMENT_SEARCH",
+    "no_automatic_forward_promotion": true
+  },
+  "research_only": true,
+  "p10_read": false,
+  "p10_write_allowed": false,
+  "p10_evidence_effect": "NONE",
+  "p11_locked": true
+}

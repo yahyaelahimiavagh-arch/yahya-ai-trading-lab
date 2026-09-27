@@ -1,0 +1,176 @@
+{
+  "schema": "YATL_HSSE_SURVIVOR_RANKING_PROTOCOL",
+  "schema_version": "0.1.0",
+  "protocol_id": "HSSE-003-SURVIVOR-RANKING-001",
+  "registered_date_utc": "2026-09-26",
+  "status": "REGISTERED_AFTER_HSSE002_OUTCOME_BEFORE_HSSE003_RECOMPUTE",
+  "purpose": "Verify the immutable HSSE-002 trial ledger, exact-recompute every Development precheck survivor with canonical Decimal economics, reject parameter spikes through preregistered immediate-neighbor robustness, and deterministically produce at most the registered survivor caps for a later HSSE-004 freeze.",
+  "input_search": {
+    "implementation_id": "HSSE-002-TREND-MA-SEARCH/0.1.0",
+    "candidate_id": "RIE-CAND-0020",
+    "final_head_sha": "2b6354b5ea491b45ce460b76361da9d24e5e3b0d",
+    "plan_sha256": "4fba0dd3c6ae13d30b2e5af55c239736a406c27ce0052ef1de88bd43535eb7b8",
+    "result_sha256": "a79ee4e92edb24d04b14b5b1f058658ae6e8264ee1c7783dd219088977e11eed",
+    "index": {
+      "relative_path": "historical-strategy-search/hsse-002/search-index-ebcb31c2e17a82e417d7a947.json",
+      "file_sha256": "ebcb31c2e17a82e417d7a947db0f1b3b5295a256e2f93e6ff8b981666e51e269"
+    },
+    "ledgers": [
+      {
+        "family": "TREND_MA_SMA",
+        "relative_path": "historical-strategy-search/hsse-002/development-ledger-trend_ma_sma-e254dab2cf0982742bd7f837.jsonl",
+        "file_sha256": "e254dab2cf0982742bd7f837c93d9f84f68d0f5b1658b90ffb4180c51e16f6cf",
+        "trial_count": 4950,
+        "development_precheck_pass_count": 1
+      },
+      {
+        "family": "TREND_MA_EMA",
+        "relative_path": "historical-strategy-search/hsse-002/development-ledger-trend_ma_ema-80efb9dacfafff82aae90244.jsonl",
+        "file_sha256": "80efb9dacfafff82aae902445f4f81b34768066982210bf1bdf200289168a426",
+        "trial_count": 4950,
+        "development_precheck_pass_count": 8
+      },
+      {
+        "family": "TREND_MA_DEMA",
+        "relative_path": "historical-strategy-search/hsse-002/development-ledger-trend_ma_dema-0048406a8824d42b3e7ebfa9.jsonl",
+        "file_sha256": "0048406a8824d42b3e7ebfa9745be830d9fe44744e3df585457de5a70d4c4910",
+        "trial_count": 4950,
+        "development_precheck_pass_count": 7
+      }
+    ],
+    "total_trial_count": 14850,
+    "development_precheck_pass_count": 16
+  },
+  "exact_recompute": {
+    "candidate_set": "ONLY_HSSE002_DEVELOPMENT_PRECHECK_PASS",
+    "expected_candidate_count": 16,
+    "signal_semantics": "REUSE_FROZEN_HSSE002_SOURCE_FIDELITY_BINARY64_MOVING_AVERAGE_SIGNALS",
+    "economic_arithmetic": "DECIMAL_256",
+    "price_inputs": "ORIGINAL_CANONICAL_DECIMAL_STRINGS",
+    "next_open_execution": true,
+    "base_fee_bps": "10",
+    "base_adverse_slippage_bps": "5",
+    "stress_fee_bps": "20",
+    "stress_adverse_slippage_bps": "10",
+    "quantity": "0.001",
+    "initial_equity_quote": "10000",
+    "terminal_open_position": "MARK_TO_MARKET_WITH_CANONICAL_LIQUIDATION_COSTS; DO_NOT_FORCE_EXIT",
+    "drawdown_equity": "CANONICAL_LIQUIDATION_VALUE_AT_EACH_SCORED_PRIMARY_CLOSE",
+    "binary64_search_result_is_authoritative": false,
+    "exact_recompute_is_authoritative": true
+  },
+  "exact_gate": {
+    "minimum_completed_trades_total": 60,
+    "minimum_completed_trades_per_symbol": 20,
+    "require_positive_total_net_pnl_after_base_costs": true,
+    "require_positive_expectancy_after_base_costs": true,
+    "minimum_profit_factor_after_base_costs": "1.10",
+    "minimum_positive_development_cell_fraction": "0.60",
+    "maximum_drawdown_fraction": "0.10",
+    "maximum_single_trade_share_of_positive_pnl": "0.35",
+    "cost_stress_requires_positive_net_pnl": true,
+    "cost_stress_requires_positive_expectancy": true
+  },
+  "neighbor_robustness": {
+    "grid_step": 10,
+    "neighborhood": "IMMEDIATE_AXIAL_SAME_FAMILY",
+    "offsets": [
+      [
+        -10,
+        0
+      ],
+      [
+        10,
+        0
+      ],
+      [
+        0,
+        -10
+      ],
+      [
+        0,
+        10
+      ]
+    ],
+    "valid_neighbor_rule": "n1 and n2 must both be registered grid values and n1<n2",
+    "minimum_valid_neighbors": 2,
+    "neighbor_pass_rules": {
+      "require_positive_total_net_pnl_after_base_costs": true,
+      "require_positive_expectancy_after_base_costs": true,
+      "minimum_profit_factor_after_base_costs": "1.02",
+      "minimum_positive_development_cell_fraction": "0.50",
+      "cost_stress_requires_positive_net_pnl": true
+    },
+    "minimum_neighbor_pass_fraction": "0.50",
+    "rationale": "A surviving parameter pair must lie in a locally useful plateau rather than exist as a single isolated spike."
+  },
+  "ranking": {
+    "input": "EXACT_GATE_AND_NEIGHBOR_ROBUSTNESS_PASS_ONLY",
+    "pareto_dimensions": [
+      {
+        "metric": "median_development_cell_net_return_after_costs",
+        "direction": "MAXIMIZE"
+      },
+      {
+        "metric": "lower_quartile_development_cell_net_return_after_costs",
+        "direction": "MAXIMIZE"
+      },
+      {
+        "metric": "profit_factor_after_costs",
+        "direction": "MAXIMIZE"
+      },
+      {
+        "metric": "maximum_drawdown_fraction",
+        "direction": "MINIMIZE"
+      },
+      {
+        "metric": "stress_total_net_pnl_after_costs_quote",
+        "direction": "MAXIMIZE"
+      },
+      {
+        "metric": "neighbor_pass_fraction",
+        "direction": "MAXIMIZE"
+      }
+    ],
+    "deterministic_tiebreakers": [
+      "higher_lower_quartile_cell_return",
+      "higher_median_cell_return",
+      "higher_profit_factor",
+      "lower_maximum_drawdown",
+      "lower_family_complexity",
+      "lower_trade_concentration",
+      "family_lexical",
+      "n1_ascending",
+      "n2_ascending"
+    ],
+    "family_complexity": {
+      "TREND_MA_SMA": 1,
+      "TREND_MA_EMA": 2,
+      "TREND_MA_DEMA": 3
+    },
+    "family_survivor_cap": 3,
+    "overall_survivor_cap": 12,
+    "survivor_count_is_a_cap_not_a_quota": true,
+    "no_candidate_pass_is_valid": true
+  },
+  "output": {
+    "one_content_addressed_json": true,
+    "retain_all_16_exact_recomputations": true,
+    "retain_neighbor_evidence": true,
+    "proposed_survivors_are_not_frozen_hsse004_candidates": true,
+    "ranking_performed": true,
+    "blind_oos_read": false,
+    "audit_holdout_read": false
+  },
+  "research_only": true,
+  "p10_read": false,
+  "p10_write_allowed": false,
+  "p10_evidence_effect": "NONE",
+  "live_master_lock": "OFF",
+  "trade_permission": false,
+  "order_endpoint": false,
+  "quantity_authority": false,
+  "risk_authorization_mutation": false,
+  "ai_direct_execution": false,
+  "p11_locked": true
+}

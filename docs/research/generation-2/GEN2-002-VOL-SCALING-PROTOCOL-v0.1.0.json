@@ -1,0 +1,249 @@
+{
+  "schema": "YATL_GEN2_VOLATILITY_SCALING_PROTOCOL",
+  "schema_version": "0.1.0",
+  "protocol_id": "GEN2-002-VOL-SCALING-001",
+  "status": "REGISTERED_BEFORE_GEN2_VOL_SCALING_OUTCOMES",
+  "source_candidate_id": "RIE-CAND-0025",
+  "tested_object_id": "GEN2-ADAPT-0002-VOL-SCALING",
+  "tested_object_type": "YATL_INTERNAL_ADAPTATION",
+  "research_question": "Can a source-motivated lagged inverse-volatility exposure scaler improve after-cost economics and drawdown behavior across the frozen Generation-1 trend family without changing directional signals or starving opportunities?",
+  "source_basis": {
+    "source_method": "Scale the unscaled momentum portfolio inversely with realized volatility estimated from the previous six months / 126 trading sessions, targeting 12% annualized volatility.",
+    "source_target_annualized_volatility": "0.12",
+    "source_risk_window_trading_days": 126,
+    "source_decision_frequency": "MONTHLY",
+    "source_leverage_allowed": true,
+    "yatl_replication_claim": false,
+    "yatl_adaptation": "Use the same 12% inverse-volatility idea with a 24/7 crypto calendar, completed lagged UTC days, monthly scale updates, and a hard scale cap of 1.0 because leverage is forbidden."
+  },
+  "generation_budget": {
+    "primary_hypothesis_ordinal": 2,
+    "counts_toward_primary_hypothesis_budget": true,
+    "primary_hypotheses_max": 8,
+    "combination_architecture": false,
+    "post_outcome_budget_expansion_forbidden": true
+  },
+  "reference_strategies": {
+    "source_freeze": "HSSE-004A-SURVIVOR-FREEZE-001",
+    "selection_rule": "Use all six survivors in immutable freeze order; no survivor is selected or excluded using HSSE-005 outcomes or GEN2-001 outcomes.",
+    "frozen_ids": [
+      "HSSE004A-SURV-001",
+      "HSSE004A-SURV-002",
+      "HSSE004A-SURV-003",
+      "HSSE004A-SURV-004",
+      "HSSE004A-SURV-005",
+      "HSSE004A-SURV-006"
+    ],
+    "signal_parameters_immutable": true
+  },
+  "development_scope": {
+    "corpus_id": "CRL-CONTROL-DEV-POOL-001",
+    "estimator_warmup_start_utc": "2020-01-01T00:00:00Z",
+    "scored_analysis_start_utc": "2020-08-01T00:00:00Z",
+    "analysis_end_exclusive_utc": "2023-01-01T00:00:00Z",
+    "selection_only": true,
+    "hsse_004b_2023_2024_read_allowed": false,
+    "hsse_005_outcomes_used_for_selection": false,
+    "gen2_001_outcomes_used_for_parameter_selection": false,
+    "fresh_oos_read_allowed": false,
+    "recent_reserve_read_allowed": false,
+    "development_folds": [
+      {
+        "fold_id": "GEN2-D001",
+        "evaluation_start_utc": "2020-08-01T00:00:00Z",
+        "evaluation_end_exclusive_utc": "2021-01-01T00:00:00Z"
+      },
+      {
+        "fold_id": "GEN2-D002",
+        "evaluation_start_utc": "2021-01-01T00:00:00Z",
+        "evaluation_end_exclusive_utc": "2021-07-01T00:00:00Z"
+      },
+      {
+        "fold_id": "GEN2-D003",
+        "evaluation_start_utc": "2021-07-01T00:00:00Z",
+        "evaluation_end_exclusive_utc": "2022-01-01T00:00:00Z"
+      },
+      {
+        "fold_id": "GEN2-D004",
+        "evaluation_start_utc": "2022-01-01T00:00:00Z",
+        "evaluation_end_exclusive_utc": "2022-07-01T00:00:00Z"
+      },
+      {
+        "fold_id": "GEN2-D005",
+        "evaluation_start_utc": "2022-07-01T00:00:00Z",
+        "evaluation_end_exclusive_utc": "2023-01-01T00:00:00Z"
+      }
+    ]
+  },
+  "volatility_estimator": {
+    "input_series": "Unscaled control strategy gross mark-to-market daily returns for the same frozen reference strategy.",
+    "daily_return_construction": "For each accepted 1h interval, define gross control strategy return as r_h = prior_bar_position * (close_h / close_{h-1} - 1), with prior_bar_position in {0,1}. For each complete UTC day compound r_day = product_h(1 + r_h) - 1. Flat hours therefore contribute zero return.",
+    "window_completed_utc_days": 183,
+    "annualization_days": 365,
+    "equation": "sigma_ann_t = sqrt((365 / 183) * sum_{j=1}^{183}(r_control_daily,t-j^2))",
+    "decision_lag": "At a UTC month boundary, only the 183 complete UTC days ending before that boundary are eligible.",
+    "update_frequency": "MONTHLY_AT_UTC_BOUNDARY_WITH_NEXT_OPEN_EFFECT",
+    "missing_data": "Require the full accepted 183-day window; do not interpolate, forward-fill, or silently shorten the estimator. An incomplete window invalidates the affected condition.",
+    "zero_variance": "If all 183 eligible control-strategy daily returns are exactly zero, define the uncapped inverse-volatility weight as +infinity and the YATL capped scale as 1.0.",
+    "fee_slippage_excluded_from_risk_estimator": true
+  },
+  "scaling_rule": {
+    "target_annualized_volatility": "0.12",
+    "raw_scale_equation": "raw_scale_t = target_annualized_volatility / sigma_ann_t",
+    "yatl_scale_equation": "scale_t = min(1.0, raw_scale_t)",
+    "scale_cap": "1.0",
+    "positive_scale_floor": null,
+    "leverage_forbidden": true,
+    "short_forbidden": true,
+    "directional_signal_creation_forbidden": true,
+    "alternate_targets_forbidden": true,
+    "alternate_windows_forbidden": true,
+    "ewma_variants_forbidden": true
+  },
+  "execution": {
+    "timeframe": "1h",
+    "mode": "LONG_ONLY_SPOT_RESEARCH",
+    "base_quantity": "0.001",
+    "initial_equity_quote": "10000",
+    "base_fee_bps": 10,
+    "base_adverse_slippage_bps": 5,
+    "stress_fee_bps": 20,
+    "stress_adverse_slippage_bps": 10,
+    "entry_logic": "Unmodified frozen underlying survivor entry logic. A valid entry is never suppressed by the scaler; target quantity equals base_quantity * current monthly scale.",
+    "ordinary_exit_logic": "Unmodified frozen underlying survivor exit logic closes the entire currently held scaled quantity.",
+    "month_boundary_rebalance": "If a long is open when a new monthly scale becomes known at a UTC month boundary, rebalance only the quantity delta at the first contiguous 1h open strictly after the scale-decision timestamp. Charge fee and adverse slippage on the delta notional. Until that fill, the previous month's scale remains effective.",
+    "rebalance_is_not_directional_trade": "Monthly resize events are cost-bearing exposure adjustments, not new strategy entries/exits for completed-trade counts.",
+    "gap_handling": "Never interpolate or forward-fill accepted source gaps. Missing required fill bars invalidate the affected condition rather than fabricating a fill."
+  },
+  "trial_matrix": {
+    "conditions": [
+      "CONTROL_UNSCALED",
+      "VOL_SCALED_12PCT_NO_LEVERAGE"
+    ],
+    "reference_strategy_count": 6,
+    "conditions_per_strategy": 2,
+    "total_conditions": 12,
+    "target_count": 1,
+    "window_count": 1,
+    "cap_count": 1,
+    "hidden_trials_forbidden": true,
+    "failed_trials_retained": true,
+    "post_outcome_trial_budget_expansion_forbidden": true
+  },
+  "required_metrics": [
+    "net_pnl_after_costs_base",
+    "net_pnl_after_costs_stress",
+    "expectancy_base",
+    "profit_factor_base",
+    "maximum_drawdown_fraction",
+    "completed_trades",
+    "underlying_entry_signals",
+    "monthly_rebalance_count",
+    "total_rebalance_notional",
+    "scaled_entry_count",
+    "mean_active_scale",
+    "median_active_scale",
+    "minimum_active_scale",
+    "notional_exposure_ratio_vs_control",
+    "active_exposure_hours_fraction_vs_control",
+    "per_fold_metrics",
+    "per_symbol_metrics"
+  ],
+  "opportunity_preservation": {
+    "directional_entry_signal_count_must_equal_control": true,
+    "completed_directional_trade_count_must_equal_control": true,
+    "active_exposure_hours_fraction_vs_control_minimum": "1.0",
+    "notional_exposure_ratio_vs_control_minimum": "0.25",
+    "interpretation": "A scaler that preserves timestamps but reduces aggregate active notional below 25% of control is treated as economically starved and cannot be proposed."
+  },
+  "proposal_gate": {
+    "unit_of_selection": "single frozen scaler across all six reference strategies",
+    "scaler_activation_required": true,
+    "minimum_reference_strategies_with_scale_below_one": 4,
+    "minimum_scaled_entry_or_rebalance_events_total": 6,
+    "opportunity_preservation_must_pass": true,
+    "aggregate_scaled_base_net_must_be_positive": true,
+    "aggregate_scaled_stress_net_must_be_positive": true,
+    "aggregate_base_net_must_exceed_control": true,
+    "aggregate_stress_net_must_exceed_control": true,
+    "median_reference_strategy_base_net_delta_must_be_positive": true,
+    "median_reference_strategy_stress_net_delta_must_be_positive": true,
+    "median_reference_strategy_drawdown_delta_must_be_negative": true,
+    "at_least_reference_strategies_with_nonworse_drawdown": 4,
+    "all_metrics_finite": true,
+    "zero_proposals_is_valid": true
+  },
+  "interpretation_rules": [
+    "This is standalone component evidence for GEN2-ADAPT-0002, not a replication of the equity paper and not a complete Generation-2 strategy qualification.",
+    "The six reference survivors are a correlated frozen trend family; passing across them is family robustness evidence, not six independent edge confirmations.",
+    "The source's one-month, three-month and EWMA robustness variants are documented provenance only and are not authorized trials in GEN2-002.",
+    "If the single preregistered scaler fails, its target/window/cap may not be retuned on the same Development evidence.",
+    "A proposal does not unlock 2023-2024 known diagnostics, Fresh OOS, recent reserve, P10, P11, or Live execution automatically.",
+    "No combination with GEN2-001 or another candidate is permitted from this protocol alone."
+  ],
+  "no_rerank_after_outcomes": true,
+  "no_retune_after_outcomes": true,
+  "implementation_gate": {
+    "status_at_registration": "PENDING_IMPLEMENTATION",
+    "run_may_execute_only_after": [
+      "Deterministic GEN2-002 implementation is committed on this branch.",
+      "Protocol-specific unit/safety tests pass on the implementation Final HEAD.",
+      "Implementation binds this protocol without changing its target/window/cap/trial matrix."
+    ],
+    "protocol_mutation_to_unlock_run_forbidden": true
+  },
+  "p10_read": false,
+  "p10_write_allowed": false,
+  "p11_locked": true,
+  "live_master_lock": "OFF",
+  "research_only": true,
+  "safety_boundary": {
+    "paper_research_only": true,
+    "spot_only": true,
+    "futures": false,
+    "short": false,
+    "leverage": false,
+    "live_execution": false,
+    "order_endpoint": false,
+    "ai_direct_execution": false
+  },
+  "bindings": {
+    "method_extraction": {
+      "relative_path": "docs/research/research-intake/gen2-method-extractions/RIE-CAND-0025-v0.1.0.json",
+      "git_blob_sha": "5359f85e8151d77f2343ea2f6c0732eadee4546c"
+    },
+    "survivor_freeze": {
+      "relative_path": "docs/research/historical-strategy-search/HSSE-004A-SURVIVOR-FREEZE-v0.1.0.json",
+      "git_blob_sha": "bb1b0f9c25a013e766558419f6fa08bf2a1f70c2"
+    },
+    "gen2_master_protocol": {
+      "relative_path": "docs/research/generation-2/GEN2-MASTER-PROTOCOL-v0.1.0.json",
+      "git_blob_sha": "d943ee673067fa5150adba6b896e04037b959545"
+    },
+    "hsse_search_protocol": {
+      "relative_path": "docs/research/historical-strategy-search/HSSE-001-SEARCH-PROTOCOL-v0.1.0.json",
+      "git_blob_sha": "a0057088995ac3ab26d8316972fc86b821556bc5"
+    },
+    "development_quality_manifest": {
+      "relative_path": "quality/event-catalog-v0.1.0/CRL-CONTROL-DEV-POOL-001/event-quality-74ea7a7084bb138122ee5d82.json",
+      "file_sha256": "74ea7a7084bb138122ee5d823c790853ad55cb57e1378a876bec6d3f1537167e"
+    }
+  },
+  "evidence_attribution": {
+    "source_candidate_status_remains": "NEW",
+    "source_candidate_is_not_claimed_reproduced": true,
+    "source_performance_claims_are_yatl_evidence": false,
+    "development_results_may_only_evidence_the_yatl_adaptation": true,
+    "source_role": "HYPOTHESIS_AND_METHOD_PROVENANCE",
+    "method_extraction_role": "FREEZE_EXACT_CORE_SOURCE_RULE_AND_EXPLICIT_YATL_ADAPTATION_GAPS",
+    "tested_object_type": "YATL_INTERNAL_ADAPTATION"
+  },
+  "pre_performance_binding_amendment": {
+    "status": "BOUND_BEFORE_ANY_GEN2_002_PERFORMANCE_OUTCOME",
+    "reason": "Implementation binding refinement only: explicitly freeze Development folds, HSSE-001 protocol identity, and the already-used CRL Development quality manifest.",
+    "parameter_changes": false,
+    "target_window_cap_changes": false,
+    "trial_budget_changes": false,
+    "outcome_accessed": false
+  }
+}

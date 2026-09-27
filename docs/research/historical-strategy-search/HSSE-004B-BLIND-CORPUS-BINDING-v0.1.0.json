@@ -1,0 +1,43 @@
+{
+  "schema": "YATL_HSSE_BLIND_CORPUS_BINDING",
+  "schema_version": "0.1.0",
+  "binding_id": "HSSE-004B-BLIND-CORPUS-BINDING-001",
+  "registered_date_utc": "2026-09-26",
+  "status": "BOUND_AFTER_STRUCTURAL_ADMISSION_BEFORE_STRATEGY_REPLAY",
+  "event_id": "HSSE-BLIND-OOS-001",
+  "designation": "BLIND_HOLDOUT",
+  "acquisition": {
+    "retrieved_at_utc": "2026-09-26T20:55:39Z",
+    "manifest_relative_path": "manifests/event-catalog-v0.1.0/HSSE-BLIND-OOS-001/event-acquisition-978d8f51e6feeba7a313d9f4.json",
+    "manifest_file_sha256": "978d8f51e6feeba7a313d9f4a9be1061ca8848e3bd709ae33ede4bc186b41c04",
+    "overall_status": "COMPLETE",
+    "dataset_count": 6,
+    "failure_count": 0,
+    "market_outcomes_exposed": false
+  },
+  "quality": {
+    "manifest_relative_path": "quality/event-catalog-v0.1.0/HSSE-BLIND-OOS-001/event-quality-e466c8249f8d9d70e0664b83.json",
+    "manifest_file_sha256": "e466c8249f8d9d70e0664b839093ffd9b564405427a3698dfdf7e6f9c6a0f8fd",
+    "overall_status": "PASS",
+    "dataset_count": 6,
+    "pass_count": 6,
+    "fail_count": 0,
+    "replay_admitted": true,
+    "market_outcomes_exposed": false
+  },
+  "analysis_window": {
+    "warmup_start_utc": "2022-11-01T00:00:00Z",
+    "analysis_start_utc": "2023-01-01T00:00:00Z",
+    "analysis_end_exclusive_utc": "2025-01-01T00:00:00Z"
+  },
+  "allowed_next_action": "ONE_TIME_HSSE004B_FROZEN_SURVIVOR_REPLAY",
+  "no_parameter_change": true,
+  "no_reranking": true,
+  "no_retuning": true,
+  "no_hidden_retry": true,
+  "research_only": true,
+  "p10_read": false,
+  "p10_write_allowed": false,
+  "p10_evidence_effect": "NONE",
+  "p11_locked": true
+}

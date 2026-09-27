@@ -1,0 +1,46 @@
+{
+  "schema": "YATL_GEN2_METHOD_EXTRACTION",
+  "schema_version": "0.1.0",
+  "candidate_id": "RIE-CAND-0022",
+  "source": {
+    "title": "Detecting Volatility Regimes in Crypto Markets using Realized Volatility Structure and Normalized Momentum",
+    "author": [
+      "Kaustuv Banerjee"
+    ],
+    "doi": "10.2139/ssrn.5920642",
+    "uri": "https://ssrn.com/abstract=5920642",
+    "publication_year": 2026,
+    "access_state": "ABSTRACT_ONLY_IN_CURRENT_RESEARCH_ENVIRONMENT",
+    "source_bytes_frozen": false,
+    "implementation_found": false
+  },
+  "extracted_method": {
+    "source_universe": "High-frequency BTC data, 2024 and 2025 YTD.",
+    "purpose": "Strategy-agnostic market-regime classification rather than return forecasting.",
+    "regimes": [
+      "Expansion",
+      "Neutral",
+      "Contraction"
+    ],
+    "visible_inputs": [
+      "short-horizon realized volatility",
+      "long-horizon realized volatility",
+      "normalized directional momentum"
+    ],
+    "exact_formulas_available": false,
+    "exact_windows_available": false,
+    "exact_thresholds_available": false
+  },
+  "blockers": [
+    "The SSRN PDF endpoint is not retrievable in the current environment; accessible material exposes the abstract but not exact equations/thresholds.",
+    "No inspectable implementation/code was found.",
+    "Source bytes are not frozen."
+  ],
+  "status": "NOT_READY_PENDING_EXACT_METHOD",
+  "performance_claims_trusted": false,
+  "performance_run_allowed": false,
+  "p10_read": false,
+  "p10_write_allowed": false,
+  "p11_locked": true,
+  "research_only": true
+}
