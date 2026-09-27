@@ -2281,3 +2281,66 @@ green Final HEAD.
 and tests are `WORK_REQUIRED`. A generic “ادامه/بریم” does not silently cross
 this gate.**
 
+### Blind-Spot Audit + Conditional Edge Track — 2026-09-27
+
+YATL از این checkpoint به بعد هر failure را معادل NO_EDGE تلقی نمی‌کند.
+
+مرجع authoritative:
+docs/research/alpha-factory/BLIND-SPOT-AND-CONDITIONAL-EDGE-GOVERNANCE-v1.0.md
+
+هر rejection مهم باید failure mechanism را طبقه‌بندی کند:
+NO_EDGE، CONDITIONAL_EDGE، OVERFIT، DATA_BLOCKED، EXECUTION_LIMITED،
+CAPACITY_LIMITED، REGIME_MISMATCH، REDUNDANT_EDGE،
+IMPLEMENTATION_INVALIDATED، INSUFFICIENT_EVIDENCE یا
+UNKNOWN_FAILURE_MECHANISM.
+
+دو مسیر اقتصادی رسمی وجود دارد:
+
+- ALL_REGIME_EDGE: ادعای edge در مجموعه regimeهای preregistered و نیازمند عبور
+  از gateهای کامل robustness.
+- REGIME_CONDITIONAL_EDGE: ادعای edge فقط داخل operating envelope از پیش
+  ثبت‌شده. بیرون envelope معیار اصلی detection، containment، capital
+  preservation و safe re-entry است، نه الزاماً profitability.
+- UNKNOWN_EDGE_SCOPE: حالت پیش‌فرض تا زمانی که evidence کافی وجود ندارد.
+
+تغییر برچسب پس از failure اجازه rescue همان candidate نیست. هر detector،
+operating envelope، threshold، sizing یا logic جدید باید candidate ID و protocol
+جدید با evidence budget جدید بگیرد. negative evidence قبلی حذف نمی‌شود.
+
+برای conditional edge، metrics اجباری شامل false activation/deactivation،
+recognition lag، missed-opportunity cost، loss-before-shutdown، re-entry lag و
+false re-entry است.
+
+شش survivor تاریخی HSSE-004A همچنان ALL_REGIME certified نیستند و failure
+قبلی crisis/regime آنها حفظ می‌شود. در عین حال فرضیه استفاده شرطی/normal-regime
+از آنها به‌عنوان research path جدید مجاز است، اما هنوز اثبات یا Live-authorized
+نیست.
+
+هر rejection و generation closeout باید Blind-Spot / Assumption Review داشته
+باشد:
+ASSUMPTION -> WHY WE BELIEVE IT -> WHAT IF FALSE? -> TEST -> EVIDENCE -> STATUS.
+
+Audit باید حداقل multiple testing، opportunity starvation، opportunity cost
+فیلترها، detector delay، strategy decay، venue/quote dependence، execution،
+capacity، benchmark choice، common-factor correlation و signal/sizing/execution
+attribution را بررسی کند.
+
+### Work Token Conservation
+
+به‌دلیل محدودیت توکن Work، Work mode منبع اجرایی محدود تلقی می‌شود و default
+نیست.
+
+کارهای governance، protocol design، assumption audit، rejection review،
+candidate classification، queue decision، narrow source extraction و ویرایش
+محدود مستندات تا جای ممکن در CHAT_DIRECTOR انجام می‌شوند.
+
+WORK_REQUIRED فقط برای implementation قابل‌توجه، bulk dataset work، تحلیل
+عددی سنگین، repository-wide migration، artifact orchestration سنگین یا
+testing/build workflowی که واقعاً از Work سود می‌برد استفاده می‌شود.
+
+قبل از هر WORK GATE، Director ابتدا باید بررسی کند آیا همان کار با خطای قابل‌قبول
+در CHAT_DIRECTOR قابل انجام است یا نه. اگر بله، Work مصرف نمی‌شود.
+
+Astra همچنان فقط برای corpus-scale synthesis طبق thresholdهای قبلی استفاده
+می‌شود.
+
