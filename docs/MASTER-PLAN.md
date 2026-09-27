@@ -2421,7 +2421,7 @@ historical archive inventory باید جداگانه freeze و hash شود.
 
 Search-space اولیه در
 `MCF-PROD-001-FAMILY-DOMAIN-PLAN-v1.0.json`
-قبل از outcome فریز شده و raw Cartesian upper bound آن 8,176 candidate است.
+قبل از outcome فریز شده و raw Cartesian upper bound آن 9,176 candidate و expected structurally-valid count آن 8,640 است.
 
 هیچ survivor quota وجود ندارد. صفر survivor نتیجه معتبر است.
 Fresh OOS، recent reserve و P10 همچنان untouched هستند.
