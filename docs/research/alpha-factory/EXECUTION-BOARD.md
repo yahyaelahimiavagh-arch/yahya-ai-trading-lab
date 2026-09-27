@@ -62,27 +62,27 @@ AF-03A performed zero performance runs.
 Because 0027's original source-method blocker is now resolved, the preregistered
 availability-skip rule returns priority to 0027.
 
-## IMPLEMENTATION ACCEPTED — GEN2-003 / RIE-CAND-0027
+### CANONICAL CLOSED — GEN2-003 / RIE-CAND-0027
 
-Protocol frozen:
-- `RIE-CAND-0027` → `GEN2-003-DOWNSIDE-VOL-SCALING-001`;
-- source-style downside-volatility scaler;
-- source-style total-volatility comparator;
-- control;
-- 18 registered conditions;
-- no leverage / no short / no hidden grid.
+State:
+- downside-volatility scaler vs total-volatility comparator;
+- single canonical Development run complete;
+- `FAIL / 0 proposals`;
+- all six opportunity failures were `VALID_SCALE_DECISION_FRACTION_LOW`;
+- directional entries/trades were preserved;
+- downside scaling improved control economics and median drawdown;
+- total-volatility comparator outperformed downside scaling in base and stress;
+- primary Blind-Spot classification: `REDUNDANT_EDGE`;
+- secondary mechanism: `ESTIMATOR_AVAILABILITY_LIMITATION`;
+- no same-evidence rescue, threshold relaxation, estimator retune, or post-hoc
+  total-vol promotion.
 
-Implementation is merged on main and accepted.
+Canonical closeout:
+- `GEN2-003-CANONICAL-RESULT-v0.1.0.json`;
+- `GEN2-003-CANONICAL-CLOSEOUT-v0.1.0.md`;
+- artifact SHA-256 `c9e864aa24e4b722671001af42f2165e608078fe7865bebdc02f8d26d4fa2255`.
 
-Pre-run blind-spot review:
-- `GEN2-003-PRE-RUN-BLIND-SPOT-REVIEW-v0.1.0.md`;
-- PASS before Development outcome;
-- interpretation frozen as sizing/risk-layer evidence;
-- failure cannot automatically classify the underlying trend family as NO_EDGE.
-
-Next allowed action:
-- ONE canonical GEN2-003 Development run under Director/manual-runtime supervision.
-- Fresh OOS / recent reserve / P10 remain outside this run.
+Fresh OOS / recent reserve / P10 remained untouched.
 
 ## PARALLEL DESIGN LANE — AF-01 / AF-02
 
@@ -179,16 +179,14 @@ No work unit remains in an ambiguous “almost done” state.
 
 ## Current immediate queue
 
-1. AF-00 closeout + Final-HEAD CI.
-2. GEN2-002 closeout remains immutable.
-3. AF-03A source unblock sprint (0011 / 0022 / 0027).
-4. GEN2 next eligible protocol if blockers remain.
-5. AF-01 data design.
-6. AF-02 Registry v2.
-7. AF-03B independent Alpha Sweep #2.
-8. AF-04 standalone Development.
-9. AF-06 independence/cluster gate.
-10. AF-07+ only when unlocked.
+1. GEN2-001 / GEN2-002 / GEN2-003 canonical outcomes remain immutable.
+2. RIE-CAND-0028 exact source/method assessment.
+3. AF-01 Opportunity Data Design.
+4. AF-02 Registry v2 design.
+5. AF-03B independent Alpha Sweep #2.
+6. AF-04 standalone Development for the next preregistered candidate.
+7. AF-06 independence/cluster gate when survivors exist.
+8. AF-07+ only when unlocked.
 
 ## Execution mode checkpoint
 
@@ -196,10 +194,12 @@ Authoritative matrix:
 `EXECUTION-MODE-MATRIX-v1.0.md`
 
 Current package:
-- **GEN2-003 single canonical Development run**
-- Mode: `CHAT_DIRECTOR + MANUAL_VPS`
-- Pre-run blind-spot review: **PASS**
-- Work is not required for this evidence-spending step.
+- **RIE-CAND-0028 exact source/method assessment**
+- Mode: `CHAT_DIRECTOR`
+- Goal: determine whether the pre-existing 3-state HMM regime candidate is
+  reproducible enough for a bounded preregistration.
+- No performance run is authorized during source/method assessment.
+- Work is not required unless later implementation becomes substantial.
 
 Upcoming required-mode gates:
 1. **AF-01B Opportunity data implementation** → `⚠️ WORK GATE`
