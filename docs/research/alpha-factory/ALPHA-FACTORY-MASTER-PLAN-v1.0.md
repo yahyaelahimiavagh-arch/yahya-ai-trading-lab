@@ -627,3 +627,58 @@ The Director dashboard for Alpha Factory must eventually report:
 
 The principal progress metric is **validated independent edge count and capacity**,
 not code volume, test count or number of backtests.
+
+## 13. Execution-mode routing — Chat / Work / Astra
+
+Authoritative routing matrix:
+
+`docs/research/alpha-factory/EXECUTION-MODE-MATRIX-v1.0.md`
+
+Alpha Factory is intentionally split into smaller work packages. Each package is
+routed to one of four execution classes:
+
+- `CHAT_DIRECTOR` — protocol, decisions, narrow repo edits, blocker handling,
+  canonical-run supervision;
+- `WORK_REQUIRED` — substantial multi-file/dataset/browser execution;
+- `ASTRA_REQUIRED` — corpus-scale synthesis across very large research/evidence
+  contexts;
+- `WORK_AND_ASTRA_REQUIRED` — both large execution scope and large-context
+  synthesis.
+
+### Mandatory pre-stage warning
+
+The Director must warn Yahya **before** entering any Work/Astra-required package.
+A generic `ادامه` or `بریم` cannot silently cross such a gate.
+
+Required warnings:
+
+- `⚠️ WORK GATE` before `WORK_REQUIRED`;
+- `⚠️ ASTRA GATE` before `ASTRA_REQUIRED`;
+- `⚠️ WORK + ASTRA GATE` before `WORK_AND_ASTRA_REQUIRED`.
+
+Execution begins only after the required-mode warning has been shown and Yahya
+continues in the appropriate mode.
+
+### Conditional Astra thresholds
+
+Astra is reserved for corpus-scale work, not ordinary hard problems. Important
+automatic triggers include:
+
+- >=50 materially distinct deep-reviewed sources since the prior corpus synthesis;
+- >=25 new reproducible methods since the prior corpus synthesis;
+- >=100 registered candidates for global mechanism clustering;
+- >=20 survivor variants for global independence synthesis;
+- >=10 independent edge clusters for large portfolio-architecture synthesis;
+- >=3 completed research generations for multi-generation failure synthesis.
+
+When such a threshold is reached, the relevant package becomes
+`ASTRA_GATE_PENDING` and the Director warning is mandatory before proceeding.
+
+### Important exception: sealed evidence
+
+Fresh OOS and other scarce canonical evidence are **not** handed to autonomous
+Work/Astra execution merely because those modes are available. Their actual
+opening/run/adjudication remains directly Director-supervised. Work/Astra may
+prepare supporting analysis/audit packs but may not silently spend sealed
+evidence or promote a candidate.
+
