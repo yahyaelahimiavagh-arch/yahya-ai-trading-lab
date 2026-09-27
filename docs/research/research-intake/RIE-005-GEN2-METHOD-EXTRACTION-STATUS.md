@@ -1,6 +1,6 @@
 # RIE-005 — Generation-2 Method Extraction Status
 
-Status: **ACTIVE / GEN2-001 CLOSED NEGATIVE / GEN2-002 CLOSED INVALIDATED / AF-03A COMPLETE / RIE-CAND-0027 METHOD SPECIFIED**
+Status: **ACTIVE / AF-03A COMPLETE / RIE-CAND-0027 PREREGISTERED AS GEN2-003 / IMPLEMENTATION NOT STARTED**
 
 The preregistered reproduction queue is executed in order. A candidate may be
 temporarily bypassed only for a documented source-access/reproducibility blocker
@@ -13,7 +13,7 @@ inherit priority from that bypass.
 |---|---|---|
 | RIE-CAND-0011 | BLOCKED_REPRODUCIBILITY | Conventional crypto momentum construction is exposed, but this paper's exact risk-scaling implementation is still not sufficiently bound to reproduce without importing assumptions from another source. |
 | RIE-CAND-0022 | BLOCKED_SOURCE | Three regime concepts are exposed, but exact RV horizons, normalized-momentum equation, thresholds and update semantics remain unavailable. |
-| RIE-CAND-0027 | METHOD_SPECIFIED / NEXT ELIGIBLE | Full source text exposes downside-volatility equations, lag semantics and real-time expanding-window scaling. YATL adaptation protocol is still required before any performance run. |
+| RIE-CAND-0027 | PREREGISTERED / GEN2-003 | Source method is exact enough and `GEN2-003-DOWNSIDE-VOL-SCALING-001` is frozen before performance. Deterministic implementation/tests are still required. |
 | RIE-CAND-0030 | CANONICAL COMPLETE / 0 PROPOSALS | GEN2-001 executed exactly once on registered Development evidence and remains negative evidence. |
 | RIE-CAND-0025 | CANONICAL INVALIDATED / 0 PROPOSALS | GEN2-002 was invalidated before economic evaluation due structurally incomplete frozen 183-day estimator windows; no rescue is allowed on the same evidence. |
 
@@ -87,15 +87,31 @@ Because `RIE-CAND-0027` was bypassed only while blocked and is now
 `RIE-CAND-0028` (3-state HMM) remains Queue B and must not pre-empt 0027 merely
 because 0027 was previously blocked.
 
+## GEN2-003 preregistration
+
+Protocol:
+`docs/research/generation-2/GEN2-003-DOWNSIDE-VOL-SCALING-PROTOCOL-v0.1.0.json`
+
+Frozen design:
+- six unchanged HSSE-004A reference strategies;
+- control + source-style total-vol comparator + downside-vol candidate;
+- 18 conditions total;
+- source-style monthly inverse-lagged-volatility normalization;
+- expanding normalization from the existing GEN2 warmup;
+- hard no-leverage scale cap = 1.0;
+- no target-vol grid, EWMA grid, fixed-weight grid or alternate training-window trial;
+- explicit gap-safe scale carry behavior;
+- opportunity-preservation and valid-scale-decision gates;
+- Fresh OOS/recent reserve/P10 not read.
+
 ## Next allowed action
 
-Prepare a fresh preregistered YATL adaptation protocol for
-`RIE-CAND-0027`.
+Deterministic GEN2-003 implementation + protocol-specific tests.
 
-No performance run is authorized until:
-1. the adaptation choices are frozen before outcomes;
-2. deterministic implementation/tests exist;
-3. Final HEAD CI is green.
+**Execution routing: WORK_REQUIRED.**
+
+No performance run is authorized until implementation is complete and its Final
+HEAD CI is green.
 
 P10 remains untouched. Fresh OOS and recent reserve remain sealed.
 P11 remains locked. `LIVE_MASTER_LOCK=OFF`.
