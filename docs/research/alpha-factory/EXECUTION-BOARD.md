@@ -190,3 +190,33 @@ No work unit remains in an ambiguous “almost done” state.
 8. AF-04 standalone Development.
 9. AF-06 independence/cluster gate.
 10. AF-07+ only when unlocked.
+
+## Execution mode checkpoint
+
+Authoritative matrix:
+`EXECUTION-MODE-MATRIX-v1.0.md`
+
+Current package:
+- **AF-00A Governance closeout**
+- Mode: `CHAT_DIRECTOR`
+- Required-mode warning: none
+
+Upcoming required-mode gates:
+1. **AF-01B Opportunity data implementation** → `⚠️ WORK GATE`
+2. **AF-02B Registry migration/classification** → `⚠️ WORK GATE`
+3. **AF-03C Deep Alpha Sweep** → `⚠️ WORK GATE`
+4. **AF-03D Corpus Synthesis Checkpoint** → `⚠️ WORK + ASTRA GATE` when threshold fires
+5. **AF-10B Corpus-scale independent audit** → `⚠️ WORK + ASTRA GATE`
+
+The Director must show the relevant warning before execution begins. A generic
+continue command does not cross these gates.
+
+Astra threshold counters to track:
+- deep-reviewed sources since prior Astra synthesis;
+- reproducible methods since prior Astra synthesis;
+- total registered candidates;
+- survivor variants;
+- independent mechanism clusters;
+- completed generations;
+- negative-evidence records.
+
