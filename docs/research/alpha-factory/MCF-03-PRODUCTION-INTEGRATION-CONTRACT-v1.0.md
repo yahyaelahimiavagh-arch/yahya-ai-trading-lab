@@ -52,6 +52,16 @@ Every candidate evaluation binds:
 
 A candidate never chooses its own symbol set.
 
+Membership-transition semantics are frozen:
+- a newly eligible symbol starts candidate strategy state FLAT at the first
+  scored bar after the monthly membership boundary;
+- admitted pre-membership history may be used only for point-in-time feature
+  warmup;
+- when a symbol leaves membership, no new entry is allowed and any open
+  candidate research position is forced to exit at the next observed eligible
+  open after the boundary, with normal registered costs;
+- membership is otherwise fixed until the next UTC month boundary.
+
 ## 5. Development clock
 
 Scored period:
@@ -77,7 +87,14 @@ No same-bar fill.
 If a required bar is absent:
 - no interpolation;
 - no synthetic fill;
-- state behavior follows the candidate/family gap policy frozen before outcome.
+- any feature whose required lookback intersects a missing expected bar is
+  UNKNOWN until a complete required lookback is re-established;
+- UNKNOWN cannot create a new entry;
+- an order intended for a missing immediate next bar is cancelled, not delayed
+  to a later favorable bar;
+- an already-open research position may remain open across a source gap and is
+  next marked on the next observed bar, preserving the price jump;
+- source gaps remain explicit in availability masks and diagnostics.
 
 ## 7. Comparable per-symbol accounting
 
@@ -151,9 +168,12 @@ Candidate requirements:
 - no fold may be missing solely because a losing period was dropped;
 - symbol entry/exit follows point-in-time membership within each fold.
 
-Fold metrics are reset for reporting, while feature history may use earlier
-Development/warmup bars point-in-time. Strategy state reset semantics must be
-explicitly versioned and identical across candidates.
+Fold boundaries are reporting slices only.
+
+Canonical candidate state is continuous across all six scored folds and is not
+reset at fold boundaries. Feature history may use earlier Development/warmup
+bars point-in-time. Fold PnL/return metrics are sliced from that one continuous
+canonical path.
 
 ## 12. Result series required for MCF-04
 
