@@ -4,8 +4,8 @@
   "generation_id": "MCF-PROD-001",
   "state": "FROZEN_BEFORE_STRATEGY_OUTCOME",
   "target_raw_candidate_range": [
-    8000,
-    12000
+    7500,
+    8500
   ],
   "hard_maximum_raw_candidates": 12000,
   "exact_candidate_count_must_be_known_before_performance": true,
@@ -23,7 +23,7 @@
     "CRASH_REBOUND",
     "VOLUME_CONFIRMED_DIRECTION",
     "SESSION_TIME_EFFECT",
-    "RELATIVE_STRENGTH",
+    "LIQUIDITY_CONDITIONED_ENTRY",
     "LEAD_LAG",
     "PRICE_VOLUME_INTERACTION",
     "SIMPLE_STATISTICAL_DEVIATION",
@@ -36,6 +36,8 @@
   "notes": [
     "Exact parameter domains are frozen in family manifests before any performance run.",
     "Families may be omitted only for pre-performance implementation/data blockers and those blockers are recorded.",
-    "Candidate count is breadth infrastructure, not evidence strength."
-  ]
+    "Candidate count is breadth infrastructure, not evidence strength.",
+    "The frozen domain plan has an 8,176 raw Cartesian upper bound and 7,748 expected structurally-valid combinations under its declarative constraints."
+  ],
+  "expected_preperformance_structurally_valid_count": 7748
 }
