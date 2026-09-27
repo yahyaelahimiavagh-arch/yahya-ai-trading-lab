@@ -3,10 +3,10 @@
   "schema_version": "1.0",
   "generation_id": "MCF-PROD-001",
   "state": "FROZEN_BEFORE_PERFORMANCE",
-  "raw_cartesian_upper_bound": 8176,
+  "raw_cartesian_upper_bound": 9176,
   "target_after_structural_constraints": [
-    7500,
-    8000
+    8500,
+    9000
   ],
   "hard_generation_cap": 12000,
   "families": [
@@ -43,7 +43,8 @@
         "fast_window < slow_window"
       ],
       "raw_max": 128,
-      "attribution": "SIGNAL_ALPHA"
+      "attribution": "SIGNAL_ALPHA",
+      "rule_definition": "Long when fast close-MA crosses above slow close-MA; exit when it crosses below."
     },
     {
       "id": "MCF-P1-F02",
@@ -86,7 +87,8 @@
         "exit_window < entry_window"
       ],
       "raw_max": 640,
-      "attribution": "SIGNAL_ALPHA"
+      "attribution": "SIGNAL_ALPHA",
+      "rule_definition": "Long on close breakout above lagged rolling high plus frozen buffer; exit on close below lagged rolling low using exit_window."
     },
     {
       "id": "MCF-P1-F03",
@@ -126,14 +128,15 @@
         ],
         "trend_filter": [
           "NONE",
-          "LONG_TERM_UP_ONLY"
+          "MA200_UP_ONLY"
         ]
       },
       "constraints": [
         "exit_z < entry_z"
       ],
       "raw_max": 1280,
-      "attribution": "SIGNAL_ALPHA"
+      "attribution": "SIGNAL_ALPHA",
+      "rule_definition": "Long when close z-score versus lagged rolling mean is <= -entry_z; exit when z-score recovers to >= -exit_z. Optional MA200_UP_ONLY requires lagged close above 200-bar MA."
     },
     {
       "id": "MCF-P1-F04",
@@ -176,7 +179,8 @@
       },
       "constraints": [],
       "raw_max": 1536,
-      "attribution": "TIMING_ALPHA"
+      "attribution": "TIMING_ALPHA",
+      "rule_definition": "Long only after lagged lookback drawdown reaches drop_fraction and price subsequently rebounds rebound_fraction from the post-drop local low; exit at max_hold_bars or recovery rule, whichever occurs first."
     },
     {
       "id": "MCF-P1-F05",
@@ -217,7 +221,8 @@
       },
       "constraints": [],
       "raw_max": 1200,
-      "attribution": "SIGNAL_ALPHA"
+      "attribution": "SIGNAL_ALPHA",
+      "rule_definition": "Long when lagged return exceeds return_threshold and completed-bar volume exceeds volume_multiple times its lagged rolling mean; exit when directional condition fails."
     },
     {
       "id": "MCF-P1-F06",
@@ -258,7 +263,8 @@
         "session_start_utc + session_length_hours <= 24"
       ],
       "raw_max": 720,
-      "attribution": "TIMING_ALPHA"
+      "attribution": "TIMING_ALPHA",
+      "rule_definition": "Entries allowed only in frozen UTC session; long when lagged return over return_lookback exceeds threshold; exit outside session or when condition fails."
     },
     {
       "id": "MCF-P1-F07",
@@ -292,7 +298,8 @@
       },
       "constraints": [],
       "raw_max": 240,
-      "attribution": "TIMING_ALPHA"
+      "attribution": "TIMING_ALPHA",
+      "rule_definition": "Long directional rule using positive lagged return over signal_lookback only when the symbol's point-in-time liquidity percentile is >= liquidity_rank_floor; exit when directional condition fails or eligibility is lost."
     },
     {
       "id": "MCF-P1-F08",
@@ -329,7 +336,8 @@
       },
       "constraints": [],
       "raw_max": 288,
-      "attribution": "SIGNAL_ALPHA"
+      "attribution": "SIGNAL_ALPHA",
+      "rule_definition": "For non-peer target symbols, use lagged completed return of BTCUSDT or ETHUSDT peer; MOMENTUM follows peer sign beyond threshold, REVERSAL takes the opposite long/cash response; target-specific parameters are forbidden."
     },
     {
       "id": "MCF-P1-F09",
@@ -370,7 +378,8 @@
       },
       "constraints": [],
       "raw_max": 1200,
-      "attribution": "SIGNAL_ALPHA"
+      "attribution": "SIGNAL_ALPHA",
+      "rule_definition": "Long when positive lagged price return exceeds threshold and lagged volume exceeds volume_multiple times its rolling mean; exit when joint condition fails."
     },
     {
       "id": "MCF-P1-F10",
@@ -409,77 +418,89 @@
         "exit_z < entry_z"
       ],
       "raw_max": 384,
-      "attribution": "SIGNAL_ALPHA"
+      "attribution": "SIGNAL_ALPHA",
+      "rule_definition": "Long on negative lagged close z-score <= -entry_z; exit on recovery to >= -exit_z; no trend filter."
     },
     {
       "id": "MCF-P1-F11",
-      "family": "EXIT_OVERLAY",
+      "family": "TRADE_COUNT_CONFIRMED_DIRECTION",
       "timeframes": [
         "1h",
         "4h"
       ],
       "domains": {
-        "base_template": [
-          "TREND_SIMPLE",
-          "BREAKOUT_SIMPLE",
-          "MEANREV_SIMPLE",
-          "VOLUME_SIMPLE"
-        ],
-        "max_hold_bars": [
+        "return_lookback": [
+          3,
           6,
           12,
           24,
           48,
-          72,
-          96,
-          168,
-          336
+          96
         ],
-        "exit_variant": [
-          "SIGNAL_ONLY",
-          "TIME_ONLY",
-          "SIGNAL_OR_TIME",
-          "TRAILING_SIMPLE",
-          "BREAK_EVEN_AFTER_GAIN"
+        "return_threshold": [
+          "0",
+          "0.0025",
+          "0.005",
+          "0.01"
+        ],
+        "trade_count_window": [
+          6,
+          12,
+          24,
+          48,
+          96
+        ],
+        "trade_count_multiple": [
+          "1.0",
+          "1.25",
+          "1.5",
+          "2.0",
+          "3.0"
         ]
       },
       "constraints": [],
-      "raw_max": 320,
-      "attribution": "TIMING_ALPHA"
+      "raw_max": 1200,
+      "attribution": "SIGNAL_ALPHA",
+      "rule_definition": "Long when lagged return exceeds return_threshold and completed-bar trade count exceeds trade_count_multiple times its lagged rolling mean; exit when joint condition fails."
     },
     {
       "id": "MCF-P1-F12",
-      "family": "SIZING_OVERLAY",
+      "family": "RANGE_COMPRESSION_BREAKOUT",
       "timeframes": [
         "1h",
         "4h"
       ],
       "domains": {
-        "base_template": [
-          "TREND_SIMPLE",
-          "BREAKOUT_SIMPLE",
-          "MEANREV_SIMPLE",
-          "VOLUME_SIMPLE"
+        "compression_window": [
+          12,
+          24,
+          48,
+          96
         ],
-        "vol_window": [
+        "compression_quantile": [
+          "0.25",
+          "0.40",
+          "0.50"
+        ],
+        "breakout_window": [
           12,
           24,
           48,
           96,
-          168,
-          336
+          192
         ],
-        "max_scale": [
-          "0.25",
-          "0.40",
-          "0.50",
-          "0.65",
-          "0.80"
+        "range_expansion_multiple": [
+          "1.0",
+          "1.25",
+          "1.5"
         ]
       },
-      "constraints": [],
-      "raw_max": 240,
-      "attribution": "SIZING_ALPHA"
+      "constraints": [
+        "compression_window <= breakout_window"
+      ],
+      "raw_max": 360,
+      "attribution": "SIGNAL_ALPHA",
+      "rule_definition": "Long when lagged realized OHLC range is in a low-range compression state defined by the frozen rolling quantile and price then breaks the lagged breakout channel with current completed range >= range_expansion_multiple times lagged median range; exit on channel re-entry."
     }
   ],
   "implementation_rules": {
@@ -500,5 +521,5 @@
     "p11_locked": true,
     "live_master_lock": "OFF"
   },
-  "expected_structurally_valid_count": 7748
+  "expected_structurally_valid_count": 8748
 }
