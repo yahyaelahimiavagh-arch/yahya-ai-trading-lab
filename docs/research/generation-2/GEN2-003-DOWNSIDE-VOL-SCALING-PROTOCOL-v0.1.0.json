@@ -1,0 +1,289 @@
+{
+  "schema": "YATL_GEN2_DOWNSIDE_VOLATILITY_SCALING_PROTOCOL",
+  "schema_version": "0.1.0",
+  "protocol_id": "GEN2-003-DOWNSIDE-VOL-SCALING-001",
+  "status": "REGISTERED_BEFORE_GEN2_003_PERFORMANCE",
+  "source_candidate_id": "RIE-CAND-0027",
+  "tested_object_id": "GEN2-ADAPT-0003-DOWNSIDE-VOL-SCALING",
+  "tested_object_type": "YATL_INTERNAL_ADAPTATION",
+  "research_question": "Can a source-motivated lagged downside-volatility exposure scaler improve after-cost economics and drawdown behavior across the frozen Generation-1 trend family, and outperform a source-style total-volatility scaler, without changing directional signals or starving opportunities?",
+  "source_basis": {
+    "source_downside_equation": "sigma_Down,t = sqrt(sum_j(f_j^2 * I[f_j < 0]))",
+    "source_total_equation": "sigma_Total,t = sqrt(sum_j(f_j^2))",
+    "source_managed_return": "f_sigma,t = c / sigma_(t-1) * f_t",
+    "source_lag": "MONTH_T_USES_VOLATILITY_COMPLETED_IN_MONTH_T_MINUS_1",
+    "source_sparse_negative_rule": "If fewer than three negative daily returns occur in a month, downside volatility uses negative daily returns from that month and the prior month.",
+    "source_real_time_initial_training_months": 120,
+    "source_real_time_window": "EXPANDING",
+    "yatl_replication_claim": false,
+    "yatl_adaptation": "Retain source monthly inverse-lagged-volatility logic and expanding real-time scale normalization, use the existing GEN2 Development warmup instead of the unavailable 120-month equity history, impose scale<=1 because leverage is forbidden, and define explicit gap-safe carry behavior before any outcome."
+  },
+  "generation_budget": {
+    "primary_hypothesis_ordinal": 3,
+    "counts_toward_primary_hypothesis_budget": true,
+    "primary_hypotheses_max": 8,
+    "combination_architecture": false,
+    "source_style_total_vol_comparator_is_part_of_same_hypothesis": true,
+    "post_outcome_budget_expansion_forbidden": true
+  },
+  "reference_strategies": {
+    "source_freeze": "HSSE-004A-SURVIVOR-FREEZE-001",
+    "selection_rule": "Use all six survivors in immutable freeze order; do not select/exclude using HSSE-005, GEN2-001 or GEN2-002 outcomes.",
+    "frozen_ids": [
+      "HSSE004A-SURV-001",
+      "HSSE004A-SURV-002",
+      "HSSE004A-SURV-003",
+      "HSSE004A-SURV-004",
+      "HSSE004A-SURV-005",
+      "HSSE004A-SURV-006"
+    ],
+    "signal_parameters_immutable": true
+  },
+  "development_scope": {
+    "corpus_id": "CRL-CONTROL-DEV-POOL-001",
+    "estimator_warmup_start_utc": "2020-01-01T00:00:00Z",
+    "scored_analysis_start_utc": "2020-08-01T00:00:00Z",
+    "analysis_end_exclusive_utc": "2023-01-01T00:00:00Z",
+    "selection_only": true,
+    "hsse_004b_2023_2024_read_allowed": false,
+    "hsse_005_outcomes_used_for_selection": false,
+    "gen2_001_outcomes_used_for_parameter_selection": false,
+    "gen2_002_outcomes_used_for_parameter_selection": false,
+    "gen2_002_structural_gap_lesson_used_only_for_missing_data_fail_safe_design": true,
+    "fresh_oos_read_allowed": false,
+    "recent_reserve_read_allowed": false,
+    "development_folds": [
+      {
+        "fold_id": "GEN2-D001",
+        "evaluation_start_utc": "2020-08-01T00:00:00Z",
+        "evaluation_end_exclusive_utc": "2021-01-01T00:00:00Z"
+      },
+      {
+        "fold_id": "GEN2-D002",
+        "evaluation_start_utc": "2021-01-01T00:00:00Z",
+        "evaluation_end_exclusive_utc": "2021-07-01T00:00:00Z"
+      },
+      {
+        "fold_id": "GEN2-D003",
+        "evaluation_start_utc": "2021-07-01T00:00:00Z",
+        "evaluation_end_exclusive_utc": "2022-01-01T00:00:00Z"
+      },
+      {
+        "fold_id": "GEN2-D004",
+        "evaluation_start_utc": "2022-01-01T00:00:00Z",
+        "evaluation_end_exclusive_utc": "2022-07-01T00:00:00Z"
+      },
+      {
+        "fold_id": "GEN2-D005",
+        "evaluation_start_utc": "2022-07-01T00:00:00Z",
+        "evaluation_end_exclusive_utc": "2023-01-01T00:00:00Z"
+      }
+    ]
+  },
+  "control_return_series": {
+    "input": "Frozen unscaled control strategy gross mark-to-market return stream for the same reference strategy.",
+    "hourly_return": "For each observable contiguous 1h interval, r_h = prior_bar_position * (close_h / close_prev - 1), prior_bar_position in {0,1}.",
+    "daily_return": "For each UTC day with observable exposed PnL, compound r_day = product_h(1+r_h)-1. Flat observable hours contribute zero.",
+    "monthly_return": "For each estimator/training-valid UTC month, compound the observable control hourly returns for that month.",
+    "gap_semantics": "An admitted source gap while the strategy is exposed makes the affected UTC day and month unavailable for estimator/training use. A gap while flat does not fabricate PnL; canonical post-gap signal warmup/reset semantics still apply.",
+    "fees_and_slippage_excluded_from_risk_estimator": true
+  },
+  "monthly_volatility_estimators": {
+    "total": {
+      "equation": "sigma_total,m = sqrt(sum_{d in month m}(r_day^2))",
+      "required_input": "Estimator-valid daily control returns from completed UTC month m."
+    },
+    "downside": {
+      "equation": "sigma_down,m = sqrt(sum_{d in month m}(r_day^2 * I[r_day < 0]))",
+      "sparse_negative_day_rule": "If month m has fewer than 3 negative valid daily returns, use negative valid daily returns from months m and m-1 together.",
+      "required_input": "Completed prior UTC month(s) only."
+    },
+    "zero_volatility": "A zero estimator is unavailable for inverse scaling; do not divide by zero."
+  },
+  "expanding_scale_normalization": {
+    "first_historical_managed_month": "2020-02-01T00:00:00Z",
+    "minimum_valid_training_pairs": 6,
+    "rationale": "With registered warmup starting 2020-01-01, February-July 2020 provides at most six pre-score monthly managed-return pairs before the fixed 2020-08-01 scored boundary. No alternate warmup length is searched.",
+    "training_pair_for_variant": "For historical month m before decision month t, pair control monthly return f_m with lagged sigma_variant,m-1 and define z_m = f_m / sigma_variant,m-1 when both are valid.",
+    "scale_constant": "c_variant,t = stdev({f_m valid before t}) / stdev({z_m valid before t}) using the same deterministic population-standard-deviation convention in numerator and denominator.",
+    "update_frequency": "MONTHLY_AT_UTC_BOUNDARY",
+    "estimation_window": "EXPANDING_FROM_REGISTERED_WARMUP",
+    "unavailable_constant": "If fewer than 6 valid pairs exist or the denominator standard deviation is zero, no new scale is computed."
+  },
+  "scaling_rules": {
+    "total_comparator": {
+      "raw_scale": "raw_total_t = c_total,t / sigma_total,t-1",
+      "scale": "scale_total_t = min(1.0, raw_total_t)"
+    },
+    "downside_candidate": {
+      "raw_scale": "raw_down_t = c_down,t / sigma_down,t-1",
+      "scale": "scale_down_t = min(1.0, raw_down_t)"
+    },
+    "scale_cap": "1.0",
+    "positive_scale_floor": null,
+    "leverage_forbidden": true,
+    "short_forbidden": true,
+    "directional_signal_creation_forbidden": true,
+    "target_volatility_grid_forbidden": true,
+    "alternate_training_window_grid_forbidden": true,
+    "ewma_variants_forbidden": true,
+    "fixed_weight_combination_trials_forbidden": true
+  },
+  "missing_data_behavior": {
+    "interpolation_forbidden": true,
+    "forward_fill_prices_forbidden": true,
+    "estimator_imputation_forbidden": true,
+    "monthly_decision_when_estimator_or_constant_unavailable": "Do not fabricate a new scale. Carry the previous valid scale for that variant. Before the first valid scale exists, use scale=1.0.",
+    "carry_forward_is_not_an_estimator_observation": true,
+    "required_reporting": [
+      "valid_new_scale_decisions",
+      "carried_scale_decisions",
+      "unavailable_estimator_months",
+      "unavailable_training_constant_months",
+      "exposed_gap_days"
+    ]
+  },
+  "execution": {
+    "timeframe": "1h",
+    "mode": "LONG_ONLY_SPOT_RESEARCH",
+    "base_quantity": "0.001",
+    "initial_equity_quote": "10000",
+    "base_fee_bps": 10,
+    "base_adverse_slippage_bps": 5,
+    "stress_fee_bps": 20,
+    "stress_adverse_slippage_bps": 10,
+    "entry_logic": "Unmodified frozen underlying survivor entry logic. Target quantity equals base_quantity * current variant scale.",
+    "ordinary_exit_logic": "Unmodified frozen underlying survivor exit logic closes the currently held scaled quantity.",
+    "month_boundary_rebalance": "When a newly computed monthly scale differs while long, rebalance only quantity delta at first contiguous 1h open strictly after decision timestamp and charge costs on delta notional. Carry-forward months do not rebalance solely because the estimator was unavailable.",
+    "rebalance_is_not_directional_trade": true,
+    "missing_required_fill_bar": "Invalidate the affected execution event; never fabricate a fill."
+  },
+  "trial_matrix": {
+    "conditions": [
+      "CONTROL_UNSCALED",
+      "SOURCE_STYLE_TOTAL_VOL_SCALED_NO_LEVERAGE",
+      "SOURCE_STYLE_DOWNSIDE_VOL_SCALED_NO_LEVERAGE"
+    ],
+    "reference_strategy_count": 6,
+    "conditions_per_strategy": 3,
+    "total_conditions": 18,
+    "hidden_trials_forbidden": true,
+    "failed_trials_retained": true,
+    "post_outcome_trial_budget_expansion_forbidden": true
+  },
+  "required_metrics": [
+    "net_pnl_after_costs_base",
+    "net_pnl_after_costs_stress",
+    "expectancy_base",
+    "profit_factor_base",
+    "maximum_drawdown_fraction",
+    "completed_trades",
+    "underlying_entry_signals",
+    "monthly_rebalance_count",
+    "total_rebalance_notional",
+    "scaled_entry_count",
+    "mean_active_scale",
+    "median_active_scale",
+    "minimum_active_scale",
+    "notional_exposure_ratio_vs_control",
+    "active_exposure_hours_fraction_vs_control",
+    "valid_new_scale_decision_fraction",
+    "carried_scale_decision_count",
+    "unavailable_estimator_month_count",
+    "per_fold_metrics",
+    "per_symbol_metrics",
+    "downside_minus_control_deltas",
+    "downside_minus_total_comparator_deltas"
+  ],
+  "opportunity_preservation": {
+    "directional_entry_signal_count_must_equal_control": true,
+    "completed_directional_trade_count_must_equal_control": true,
+    "active_exposure_hours_fraction_vs_control_minimum": "1.0",
+    "notional_exposure_ratio_vs_control_minimum": "0.25",
+    "minimum_valid_new_scale_decision_fraction": "0.50",
+    "interpretation": "The risk layer cannot qualify by suppressing direction, starving aggregate notional below 25% of control, or acting mostly as a carried/uncomputed scale."
+  },
+  "proposal_gate": {
+    "unit_of_selection": "single frozen downside-volatility adaptation across all six reference strategies",
+    "downside_scaler_activation_required": true,
+    "minimum_reference_strategies_with_downside_scale_below_one": 4,
+    "minimum_downside_scaled_entry_or_rebalance_events_total": 6,
+    "opportunity_preservation_must_pass": true,
+    "aggregate_downside_base_net_must_be_positive": true,
+    "aggregate_downside_stress_net_must_be_positive": true,
+    "aggregate_downside_base_net_must_exceed_control": true,
+    "aggregate_downside_stress_net_must_exceed_control": true,
+    "aggregate_downside_base_net_must_exceed_total_comparator": true,
+    "aggregate_downside_stress_net_must_exceed_total_comparator": true,
+    "median_reference_strategy_base_net_delta_vs_control_must_be_positive": true,
+    "median_reference_strategy_stress_net_delta_vs_control_must_be_positive": true,
+    "median_reference_strategy_drawdown_delta_vs_control_must_be_negative": true,
+    "at_least_reference_strategies_with_nonworse_drawdown_vs_control": 4,
+    "all_metrics_finite": true,
+    "zero_proposals_is_valid": true
+  },
+  "interpretation_rules": [
+    "This tests a YATL internal adaptation of the source downside-volatility method; it is not a source replication.",
+    "The total-volatility condition is a source-style comparator inside the same preregistered hypothesis, not a rescue of GEN2-002.",
+    "GEN2-002's structural invalidation may inform explicit fail-safe missing-data engineering, but its economic outcome was not computed and cannot be used for parameter selection.",
+    "The six reference survivors are a correlated frozen trend family; passing across them is family robustness evidence, not six independent edges.",
+    "If the downside scaler fails, no training-window, scale cap, missing-data policy, fixed-weight mix, target volatility, EWMA, or threshold variant may be tried on the same Development evidence under GEN2-003.",
+    "A proposal does not unlock Fresh OOS, recent reserve, P10, P11 or Live execution automatically."
+  ],
+  "no_rerank_after_outcomes": true,
+  "no_retune_after_outcomes": true,
+  "implementation_gate": {
+    "status_at_registration": "PENDING_IMPLEMENTATION",
+    "run_may_execute_only_after": [
+      "Deterministic GEN2-003 implementation is committed.",
+      "Protocol-specific unit/safety tests pass on the implementation Final HEAD.",
+      "Implementation binds this protocol without changing trial matrix, warmup, scale normalization, missing-data policy, caps, or proposal gates."
+    ],
+    "protocol_mutation_to_unlock_run_forbidden": true
+  },
+  "p10_read": false,
+  "p10_write_allowed": false,
+  "p11_locked": true,
+  "live_master_lock": "OFF",
+  "research_only": true,
+  "safety_boundary": {
+    "paper_research_only": true,
+    "spot_only": true,
+    "futures": false,
+    "short": false,
+    "leverage": false,
+    "live_execution": false,
+    "order_endpoint": false,
+    "ai_direct_execution": false
+  },
+  "bindings": {
+    "method_extraction": {
+      "relative_path": "docs/research/research-intake/gen2-method-extractions/RIE-CAND-0027-v0.1.0.json",
+      "git_blob_sha": "80d31e5f6c58d1f0bba3fb5156d07bb4c2ca56c4"
+    },
+    "survivor_freeze": {
+      "relative_path": "docs/research/historical-strategy-search/HSSE-004A-SURVIVOR-FREEZE-v0.1.0.json",
+      "git_blob_sha": "bb1b0f9c25a013e766558419f6fa08bf2a1f70c2"
+    },
+    "gen2_master_protocol": {
+      "relative_path": "docs/research/generation-2/GEN2-MASTER-PROTOCOL-v0.1.0.json",
+      "git_blob_sha": "d943ee673067fa5150adba6b896e04037b959545"
+    },
+    "hsse_search_protocol": {
+      "relative_path": "docs/research/historical-strategy-search/HSSE-001-SEARCH-PROTOCOL-v0.1.0.json",
+      "git_blob_sha": "a0057088995ac3ab26d8316972fc86b821556bc5"
+    },
+    "development_quality_manifest": {
+      "relative_path": "quality/event-catalog-v0.1.0/CRL-CONTROL-DEV-POOL-001/event-quality-74ea7a7084bb138122ee5d82.json",
+      "file_sha256": "74ea7a7084bb138122ee5d823c790853ad55cb57e1378a876bec6d3f1537167e"
+    }
+  },
+  "evidence_attribution": {
+    "source_candidate_status": "METHOD_SPECIFIED",
+    "source_candidate_is_not_claimed_reproduced": true,
+    "source_performance_claims_are_yatl_evidence": false,
+    "development_results_may_only_evidence_the_yatl_adaptation": true,
+    "source_role": "HYPOTHESIS_AND_EXACT_METHOD_PROVENANCE",
+    "tested_object_type": "YATL_INTERNAL_ADAPTATION"
+  }
+}
