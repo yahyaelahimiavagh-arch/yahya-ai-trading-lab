@@ -2213,3 +2213,35 @@ PAPER / RESEARCH ONLY، `LIVE_MASTER_LOCK=OFF`، no Futures execution،
 no leverage، no short، no live execution، no order endpoint، no AI direct
 execution، P10 independent/untouched و P11 LOCKED باقی می‌مانند.
 
+### Execution Routing — Chat / Work / Astra — 2026-09-27
+
+Alpha Factory از این checkpoint به work packageهای کوچک‌تر تقسیم شده است و
+نوع اجرای هر بسته قبل از شروع مشخص می‌شود.
+
+مرجع authoritative:
+`docs/research/alpha-factory/EXECUTION-MODE-MATRIX-v1.0.md`
+
+کلاس‌ها:
+- `CHAT_DIRECTOR`: تصمیم، protocol، blocker، اجرای canonical تحت نظارت؛
+- `WORK_REQUIRED`: کار چندمرحله‌ای روی فایل‌ها، datasetها و artifactهای متعدد؛
+- `ASTRA_REQUIRED`: synthesis در مقیاس corpus بزرگ؛
+- `WORK_AND_ASTRA_REQUIRED`: هر دو نیاز همزمان.
+
+**قانون هشدار اجباری:** قبل از ورود به هر work package که Work یا Astra لازم
+دارد، Director باید قبل از شروع اجرا به Yahya هشدار دهد. دستورهای عمومی
+«ادامه» یا «بریم» به‌تنهایی اجازه عبور خاموش از این gate را نمی‌دهند.
+
+هشدارهای استاندارد:
+- `⚠️ WORK GATE`
+- `⚠️ ASTRA GATE`
+- `⚠️ WORK + ASTRA GATE`
+
+Astra فقط برای مسئله سخت استفاده نمی‌شود؛ trigger آن corpus-scale بودن است.
+نمونه thresholdها: 50 source عمیق جدید، 25 method قابل‌بازتولید جدید،
+100 candidate برای clustering سراسری، 20 survivor variant، 10 independent edge
+cluster یا 3 نسل پژوهشی کامل.
+
+Fresh OOS و evidenceهای sealed حتی در Work/Astra به‌صورت autonomous مصرف
+نمی‌شوند؛ بازکردن و اجرای canonical آن‌ها همچنان Director-supervised باقی
+می‌ماند.
+
