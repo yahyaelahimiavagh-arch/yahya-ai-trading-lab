@@ -1,0 +1,525 @@
+{
+  "schema": "YATL_MCF_PRODUCTION_FAMILY_DOMAIN_PLAN",
+  "schema_version": "1.0",
+  "generation_id": "MCF-PROD-001",
+  "state": "FROZEN_BEFORE_PERFORMANCE",
+  "raw_cartesian_upper_bound": 9176,
+  "target_after_structural_constraints": [
+    8400,
+    8800
+  ],
+  "hard_generation_cap": 12000,
+  "families": [
+    {
+      "id": "MCF-P1-F01",
+      "family": "TREND_CROSSOVER",
+      "timeframes": [
+        "1h",
+        "4h"
+      ],
+      "domains": {
+        "fast_window": [
+          4,
+          6,
+          8,
+          12,
+          16,
+          24,
+          32,
+          48
+        ],
+        "slow_window": [
+          24,
+          32,
+          48,
+          64,
+          96,
+          128,
+          192,
+          256
+        ]
+      },
+      "constraints": [
+        "fast_window < slow_window"
+      ],
+      "raw_max": 128,
+      "attribution": "SIGNAL_ALPHA",
+      "rule_definition": "Long when fast close-MA crosses above slow close-MA; exit when it crosses below."
+    },
+    {
+      "id": "MCF-P1-F02",
+      "family": "BREAKOUT_CHANNEL",
+      "timeframes": [
+        "1h",
+        "4h"
+      ],
+      "domains": {
+        "entry_window": [
+          6,
+          12,
+          18,
+          24,
+          36,
+          48,
+          72,
+          96,
+          144,
+          192
+        ],
+        "exit_window": [
+          3,
+          6,
+          12,
+          18,
+          24,
+          36,
+          48,
+          72
+        ],
+        "breakout_buffer_fraction": [
+          "0",
+          "0.001",
+          "0.0025",
+          "0.005"
+        ]
+      },
+      "constraints": [
+        "exit_window < entry_window"
+      ],
+      "raw_max": 640,
+      "attribution": "SIGNAL_ALPHA",
+      "rule_definition": "Long on close breakout above lagged rolling high plus frozen buffer; exit on close below lagged rolling low using exit_window."
+    },
+    {
+      "id": "MCF-P1-F03",
+      "family": "SHORT_HORIZON_MEAN_REVERSION",
+      "timeframes": [
+        "1h",
+        "4h"
+      ],
+      "domains": {
+        "lookback": [
+          6,
+          12,
+          18,
+          24,
+          36,
+          48,
+          72,
+          96,
+          144,
+          192
+        ],
+        "entry_z": [
+          "0.75",
+          "1.0",
+          "1.25",
+          "1.5",
+          "1.75",
+          "2.0",
+          "2.5",
+          "3.0"
+        ],
+        "exit_z": [
+          "0",
+          "0.25",
+          "0.5",
+          "0.75"
+        ],
+        "trend_filter": [
+          "NONE",
+          "MA200_UP_ONLY"
+        ]
+      },
+      "constraints": [
+        "exit_z < entry_z"
+      ],
+      "raw_max": 1280,
+      "attribution": "SIGNAL_ALPHA",
+      "rule_definition": "Long when close z-score versus lagged rolling mean is <= -entry_z; exit when z-score recovers to >= -exit_z. Optional MA200_UP_ONLY requires lagged close above 200-bar MA."
+    },
+    {
+      "id": "MCF-P1-F04",
+      "family": "CRASH_REBOUND",
+      "timeframes": [
+        "1h",
+        "4h"
+      ],
+      "domains": {
+        "drop_lookback": [
+          6,
+          12,
+          24,
+          48,
+          72,
+          96
+        ],
+        "drop_fraction": [
+          "0.02",
+          "0.03",
+          "0.04",
+          "0.05",
+          "0.07",
+          "0.10",
+          "0.15",
+          "0.20"
+        ],
+        "rebound_fraction": [
+          "0",
+          "0.01",
+          "0.02",
+          "0.04"
+        ],
+        "max_hold_bars": [
+          6,
+          12,
+          24,
+          48
+        ]
+      },
+      "constraints": [],
+      "raw_max": 1536,
+      "attribution": "TIMING_ALPHA",
+      "rule_definition": "Long only after lagged lookback drawdown reaches drop_fraction and price subsequently rebounds rebound_fraction from the post-drop local low; exit at max_hold_bars or recovery rule, whichever occurs first."
+    },
+    {
+      "id": "MCF-P1-F05",
+      "family": "VOLUME_CONFIRMED_DIRECTION",
+      "timeframes": [
+        "1h",
+        "4h"
+      ],
+      "domains": {
+        "return_lookback": [
+          3,
+          6,
+          12,
+          24,
+          48,
+          96
+        ],
+        "return_threshold": [
+          "0",
+          "0.0025",
+          "0.005",
+          "0.01"
+        ],
+        "volume_window": [
+          6,
+          12,
+          24,
+          48,
+          96
+        ],
+        "volume_multiple": [
+          "1.0",
+          "1.25",
+          "1.5",
+          "2.0",
+          "3.0"
+        ]
+      },
+      "constraints": [],
+      "raw_max": 1200,
+      "attribution": "SIGNAL_ALPHA",
+      "rule_definition": "Long when lagged return exceeds return_threshold and completed-bar volume exceeds volume_multiple times its lagged rolling mean; exit when directional condition fails."
+    },
+    {
+      "id": "MCF-P1-F06",
+      "family": "SESSION_TIME_EFFECT",
+      "timeframes": [
+        "15m",
+        "1h"
+      ],
+      "domains": {
+        "session_start_utc": [
+          0,
+          4,
+          8,
+          12,
+          16,
+          20
+        ],
+        "session_length_hours": [
+          4,
+          8,
+          12
+        ],
+        "return_lookback": [
+          1,
+          2,
+          4,
+          8,
+          16
+        ],
+        "return_threshold": [
+          "0",
+          "0.001",
+          "0.0025",
+          "0.005"
+        ]
+      },
+      "constraints": [
+        "session_start_utc + session_length_hours <= 24"
+      ],
+      "raw_max": 720,
+      "attribution": "TIMING_ALPHA",
+      "rule_definition": "Entries allowed only in frozen UTC session; long when lagged return over return_lookback exceeds threshold; exit outside session or when condition fails."
+    },
+    {
+      "id": "MCF-P1-F07",
+      "family": "LIQUIDITY_CONDITIONED_ENTRY",
+      "timeframes": [
+        "1h",
+        "4h"
+      ],
+      "domains": {
+        "liquidity_window": [
+          12,
+          24,
+          48,
+          96,
+          168,
+          336
+        ],
+        "liquidity_rank_floor": [
+          "0.25",
+          "0.40",
+          "0.50",
+          "0.60",
+          "0.75"
+        ],
+        "signal_lookback": [
+          6,
+          12,
+          24,
+          48
+        ]
+      },
+      "constraints": [],
+      "raw_max": 240,
+      "attribution": "TIMING_ALPHA",
+      "rule_definition": "Long directional rule using positive lagged return over signal_lookback only when the symbol's point-in-time liquidity percentile is >= liquidity_rank_floor; exit when directional condition fails or eligibility is lost."
+    },
+    {
+      "id": "MCF-P1-F08",
+      "family": "LEAD_LAG",
+      "timeframes": [
+        "1h",
+        "4h"
+      ],
+      "domains": {
+        "peer": [
+          "BTCUSDT",
+          "ETHUSDT"
+        ],
+        "lag_bars": [
+          1,
+          2,
+          3,
+          4,
+          6,
+          12
+        ],
+        "peer_return_threshold": [
+          "0",
+          "0.0025",
+          "0.005",
+          "0.01",
+          "0.02",
+          "0.04"
+        ],
+        "response_mode": [
+          "MOMENTUM",
+          "REVERSAL"
+        ]
+      },
+      "constraints": [],
+      "raw_max": 288,
+      "attribution": "SIGNAL_ALPHA",
+      "rule_definition": "For non-peer target symbols, use lagged completed return of BTCUSDT or ETHUSDT peer; MOMENTUM follows peer sign beyond threshold, REVERSAL takes the opposite long/cash response; target-specific parameters are forbidden."
+    },
+    {
+      "id": "MCF-P1-F09",
+      "family": "PRICE_VOLUME_INTERACTION",
+      "timeframes": [
+        "1h",
+        "4h"
+      ],
+      "domains": {
+        "price_lookback": [
+          3,
+          6,
+          12,
+          24,
+          48,
+          96
+        ],
+        "volume_window": [
+          6,
+          12,
+          24,
+          48,
+          96
+        ],
+        "volume_multiple": [
+          "1.0",
+          "1.25",
+          "1.5",
+          "2.0",
+          "3.0"
+        ],
+        "price_threshold": [
+          "0",
+          "0.0025",
+          "0.005",
+          "0.01"
+        ]
+      },
+      "constraints": [],
+      "raw_max": 1200,
+      "attribution": "SIGNAL_ALPHA",
+      "rule_definition": "Long when positive lagged price return exceeds threshold and lagged volume exceeds volume_multiple times its rolling mean; exit when joint condition fails."
+    },
+    {
+      "id": "MCF-P1-F10",
+      "family": "SIMPLE_STATISTICAL_DEVIATION",
+      "timeframes": [
+        "1h",
+        "4h"
+      ],
+      "domains": {
+        "lookback": [
+          6,
+          12,
+          18,
+          24,
+          36,
+          48,
+          72,
+          96
+        ],
+        "entry_z": [
+          "0.75",
+          "1.0",
+          "1.25",
+          "1.5",
+          "2.0",
+          "2.5"
+        ],
+        "exit_z": [
+          "0",
+          "0.25",
+          "0.5",
+          "1.0"
+        ]
+      },
+      "constraints": [
+        "exit_z < entry_z"
+      ],
+      "raw_max": 384,
+      "attribution": "SIGNAL_ALPHA",
+      "rule_definition": "Long on negative lagged close z-score <= -entry_z; exit on recovery to >= -exit_z; no trend filter."
+    },
+    {
+      "id": "MCF-P1-F11",
+      "family": "TRADE_COUNT_CONFIRMED_DIRECTION",
+      "timeframes": [
+        "1h",
+        "4h"
+      ],
+      "domains": {
+        "return_lookback": [
+          3,
+          6,
+          12,
+          24,
+          48,
+          96
+        ],
+        "return_threshold": [
+          "0",
+          "0.0025",
+          "0.005",
+          "0.01"
+        ],
+        "trade_count_window": [
+          6,
+          12,
+          24,
+          48,
+          96
+        ],
+        "trade_count_multiple": [
+          "1.0",
+          "1.25",
+          "1.5",
+          "2.0",
+          "3.0"
+        ]
+      },
+      "constraints": [],
+      "raw_max": 1200,
+      "attribution": "SIGNAL_ALPHA",
+      "rule_definition": "Long when lagged return exceeds return_threshold and completed-bar trade count exceeds trade_count_multiple times its lagged rolling mean; exit when joint condition fails."
+    },
+    {
+      "id": "MCF-P1-F12",
+      "family": "RANGE_COMPRESSION_BREAKOUT",
+      "timeframes": [
+        "1h",
+        "4h"
+      ],
+      "domains": {
+        "compression_window": [
+          12,
+          24,
+          48,
+          96
+        ],
+        "compression_quantile": [
+          "0.25",
+          "0.40",
+          "0.50"
+        ],
+        "breakout_window": [
+          12,
+          24,
+          48,
+          96,
+          192
+        ],
+        "range_expansion_multiple": [
+          "1.0",
+          "1.25",
+          "1.5"
+        ]
+      },
+      "constraints": [
+        "compression_window <= breakout_window"
+      ],
+      "raw_max": 360,
+      "attribution": "SIGNAL_ALPHA",
+      "rule_definition": "Long when lagged realized OHLC range is in a low-range compression state defined by the frozen rolling quantile and price then breaks the lagged breakout channel with current completed range >= range_expansion_multiple times lagged median range; exit on channel re-entry."
+    }
+  ],
+  "implementation_rules": {
+    "exact_manifest_candidate_count_known_before_performance": true,
+    "structural_invalid_candidates_recorded": true,
+    "unsupported_operator_blocks_family_preperformance": true,
+    "no_parameter_domain_expansion_after_outcome": true,
+    "no_symbol_specific_parameter_tuning": true,
+    "no_family_survivor_quota": true,
+    "structural_count_must_reconcile_to_frozen_domain_math": true
+  },
+  "safety": {
+    "paper_research_only": true,
+    "fresh_oos_read": false,
+    "recent_reserve_read": false,
+    "p10_read": false,
+    "p10_write": false,
+    "p11_locked": true,
+    "live_master_lock": "OFF"
+  },
+  "expected_structurally_valid_count": 8640
+}

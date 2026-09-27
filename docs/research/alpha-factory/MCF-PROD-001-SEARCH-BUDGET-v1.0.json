@@ -1,0 +1,44 @@
+{
+  "schema": "YATL_MCF_PRODUCTION_SEARCH_BUDGET",
+  "schema_version": "1.0",
+  "generation_id": "MCF-PROD-001",
+  "state": "FROZEN_BEFORE_STRATEGY_OUTCOME",
+  "target_raw_candidate_range": [
+    8400,
+    9200
+  ],
+  "hard_maximum_raw_candidates": 12000,
+  "exact_candidate_count_must_be_known_before_performance": true,
+  "minimum_executable_mechanism_families": 8,
+  "maximum_single_family_fraction": "0.20",
+  "maximum_combined_trend_breakout_fraction": "0.25",
+  "survivor_quota": null,
+  "zero_survivors_valid": true,
+  "hidden_trials_forbidden": true,
+  "post_outcome_domain_expansion_forbidden": true,
+  "allowed_initial_families": [
+    "TREND_CROSSOVER",
+    "BREAKOUT_CHANNEL",
+    "SHORT_HORIZON_MEAN_REVERSION",
+    "CRASH_REBOUND",
+    "VOLUME_CONFIRMED_DIRECTION",
+    "SESSION_TIME_EFFECT",
+    "LIQUIDITY_CONDITIONED_ENTRY",
+    "LEAD_LAG",
+    "PRICE_VOLUME_INTERACTION",
+    "SIMPLE_STATISTICAL_DEVIATION",
+    "TRADE_COUNT_CONFIRMED_DIRECTION",
+    "RANGE_COMPRESSION_BREAKOUT"
+  ],
+  "initially_blocked_families": [
+    "MULTI_VENUE_DISLOCATION"
+  ],
+  "notes": [
+    "Exact parameter domains are frozen in family manifests before any performance run.",
+    "Families may be omitted only for pre-performance implementation/data blockers and those blockers are recorded.",
+    "Candidate count is breadth infrastructure, not evidence strength.",
+    "The frozen diversified domain plan has a 9,176 raw Cartesian upper bound and 8,640 expected structurally-valid combinations under its declarative constraints.",
+    "SIZING_OVERLAY and EXIT_OVERLAY are excluded from MCF-PROD-001 to avoid ambiguous same-evidence salvage lineage from prior Generation results."
+  ],
+  "expected_preperformance_structurally_valid_count": 8640
+}

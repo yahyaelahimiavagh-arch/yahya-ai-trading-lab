@@ -305,3 +305,104 @@ gap-aware research API and bulk data plumbing.
 
 No Work is required for per-candidate execution after the shared foundation is
 built.
+
+
+## Production Readiness checkpoint — 2026-09-27
+
+### AF-01B — IMPLEMENTATION ACCEPTED / MERGED
+
+Merged main:
+`d6b0c2662d7c92123a099fd1e9cf79d16c0f3b5e`
+
+Final reviewed implementation HEAD:
+`7a34dc9a2d30d95b8d6461dc07f60bf2d32f9437`
+
+Final Actions:
+`36341399844` — green.
+
+Director hardening before merge:
+- stale interval eligibility blocked;
+- MULTI_ASSET requires all policy-required intervals.
+
+Authoritative closeout:
+`AF-01B-IMPLEMENTATION-CLOSEOUT-v1.0.md`
+
+### MCF-PROD-001 — PRE-OUTCOME GOVERNANCE FROZEN
+
+Development boundary:
+- population: 2020-01-01 through 2023-01-01 exclusive;
+- scored search: 2020-03-01 through 2023-01-01 exclusive;
+- Fresh OOS/recent reserve/P10 remain unread.
+
+Production universe:
+- Binance Spot / USDT;
+- dynamic monthly top-50 by lagged trailing-30d quote volume;
+- 60d minimum admitted history;
+- 99.5% trailing continuity;
+- ordinary Spot only;
+- unresolved product classification blocked.
+
+Search budget:
+- target raw candidates: 8,000–12,000;
+- hard cap: 12,000;
+- 12 initial mechanism families;
+- no survivor quota;
+- zero survivors valid;
+- no family may dominate the generation.
+
+Frozen domain-plan:
+- 9,176 raw Cartesian combinations before structural filtering;
+- 8,640 expected structurally-valid combinations before any performance.
+
+### AF-01C — NEXT DATA PACKAGE
+
+Bulk population plan frozen:
+`AF-01C-BULK-POPULATION-PLAN-v1.0.md`
+
+Archive adapter implementation contract frozen:
+`AF-01C-ARCHIVE-ADAPTER-IMPLEMENTATION-CONTRACT-v1.0.md`
+
+Important historical-universe rule:
+current `exchangeInfo` may not serve as the sole historical symbol inventory.
+The adapter must freeze an auditable historical archive-object inventory or stop
+with `HISTORICAL_SYMBOL_INVENTORY_UNPROVEN`.
+
+### MCF-03 — LOCKED UNTIL IMPLEMENTED
+
+Contract:
+`MCF-03-PRODUCTION-INTEGRATION-CONTRACT-v1.0.md`
+
+Adds:
+- dynamic point-in-time universe binding;
+- normalized per-symbol accounting;
+- exact F0-F3 production runner;
+- daily return artifacts for statistical adjudication.
+
+### MCF-04 — LOCKED UNTIL IMPLEMENTED
+
+Contract:
+`MCF-04-STATISTICAL-ADJUDICATION-CONTRACT-v1.0.md`
+
+Adds severe filters:
+- 50%+ local neighbor stability;
+- Deflated Sharpe confidence >= 0.95;
+- family PBO <= 0.20;
+- required bootstrap reality-check diagnostic;
+- |rho| >= 0.80 common-factor clustering;
+- one deterministic representative per qualifying cluster.
+
+No MCF-PROD-001 performance may be exposed before MCF-03 and MCF-04 are
+implementation-accepted.
+
+### Parallel execution route
+
+1. Implement AF-01C historical archive adapter — WORK_REQUIRED.
+2. Implement MCF-03 + MCF-04 production runner/statistical layer — WORK_REQUIRED.
+3. Pilot AF-01C adapter.
+4. Director-supervised VPS bulk population — MANUAL_VPS / BATCH_RUNTIME.
+5. Freeze exact generated candidate count/spec SHAs before performance.
+6. Run MCF-PROD-001 Development.
+7. Apply F0-F7 and freeze only qualifying independent representatives.
+8. Fresh OOS remains sealed until step 7 completes.
+
+No production performance run is authorized by this checkpoint alone.

@@ -1,0 +1,80 @@
+{
+  "schema": "YATL_MCF_PRODUCTION_UNIVERSE_EVIDENCE_POLICY",
+  "schema_version": "1.0",
+  "policy_id": "MCF-PROD-001-UNIVERSE-EVIDENCE",
+  "state": "FROZEN_BEFORE_DATA_POPULATION_AND_STRATEGY_OUTCOME",
+  "evidence": {
+    "partition": "DEVELOPMENT",
+    "population_start_utc": "2020-01-01T00:00:00Z",
+    "scored_search_start_utc": "2020-03-01T00:00:00Z",
+    "development_end_exclusive_utc": "2023-01-01T00:00:00Z",
+    "fresh_oos_read_allowed": false,
+    "recent_reserve_read_allowed": false,
+    "p10_read_allowed": false,
+    "p10_write_allowed": false
+  },
+  "venue": "BINANCE_SPOT",
+  "quote_asset": "USDT",
+  "canonical_base_interval": "15m",
+  "derived_intervals": [
+    "1h",
+    "4h",
+    "1d"
+  ],
+  "membership": {
+    "mode": "MONTHLY_LAGGED_LIQUIDITY_RANK",
+    "reconstitution": "UTC_MONTH_START",
+    "rank_metric": "TRAILING_30D_QUOTE_VOLUME",
+    "rank_metric_uses_only_completed_bars": true,
+    "maximum_members": 50,
+    "if_fewer_than_maximum": "USE_ALL_ELIGIBLE",
+    "minimum_admitted_history_days": 60,
+    "continuity_window_days": 30,
+    "minimum_continuity_fraction": "0.995",
+    "official_listing_timestamp_required": false,
+    "current_listing_status_required": false,
+    "ordinary_spot_required": true,
+    "known_leveraged_token_excluded": true,
+    "unresolved_product_classification": "BLOCK_PRODUCTION_ELIGIBILITY"
+  },
+  "family_specific_scope": {
+    "directional_single_asset": {
+      "allowed_intervals": [
+        "1h",
+        "4h"
+      ],
+      "stablecoin_base_policy": "ALLOWED_UNLESS_FAMILY_EXPLICITLY_BLOCKS"
+    },
+    "session_time": {
+      "allowed_intervals": [
+        "15m",
+        "1h"
+      ]
+    },
+    "cross_asset": {
+      "allowed_intervals": [
+        "1h",
+        "4h"
+      ],
+      "point_in_time_common_membership_required": true
+    }
+  },
+  "rationale": [
+    "Top-50 is a compute/capacity control chosen before strategy outcomes, not from PnL.",
+    "Monthly reconstitution reduces universe-churn degrees of freedom.",
+    "Thirty-day lagged quote volume is observable point-in-time and avoids current-liquidity lookahead.",
+    "Sixty days of admitted history supports bounded medium-horizon families without requiring pre-2020 population.",
+    "99.5% continuity is strict enough to expose substantial source gaps while allowing sparse documented archive gaps."
+  ],
+  "safety": {
+    "paper_research_only": true,
+    "futures": false,
+    "leverage": false,
+    "short": false,
+    "live_execution": false,
+    "order_endpoint": false,
+    "ai_direct_execution": false,
+    "p11_locked": true,
+    "live_master_lock": "OFF"
+  }
+}
