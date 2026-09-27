@@ -208,3 +208,32 @@ Astra threshold counters to track:
 - completed generations;
 - negative-evidence records.
 
+## Cross-cutting governance — Blind spots / conditional edges
+
+Authoritative document:
+BLIND-SPOT-AND-CONDITIONAL-EDGE-GOVERNANCE-v1.0.md
+
+Rules now active for future research closeouts:
+- gate failure is not automatically NO_EDGE;
+- every meaningful rejection receives a failure classification;
+- rejection closeout includes a salvage review;
+- new conditional logic requires a new candidate/protocol and cannot rescue the
+  failed candidate on spent evidence;
+- candidates may ultimately be ALL_REGIME_EDGE or REGIME_CONDITIONAL_EDGE;
+- conditional edges require explicit operating-envelope and detector metrics;
+- crisis failure remains negative evidence even when a conditional-edge
+  hypothesis is opened.
+
+The six HSSE-004A survivors remain NOT all-regime certified. Their possible
+normal-regime/conditional use is an untested future hypothesis, not approval.
+
+### Work conservation
+
+Default mode for governance/review/design remains CHAT_DIRECTOR.
+
+Do not invoke Work merely because a task touches multiple documentation files.
+Use Work for substantial implementation, bulk data, large numerical analysis,
+repository-wide migration, or heavy test/build execution.
+
+Before each Work gate, first ask whether Chat can complete the task safely.
+
