@@ -26,7 +26,7 @@ from research.historical_strategy_search import trend_ma as hsse2
 from yatl.backtest.costs import DECIMAL_PRECISION
 from yatl.data import INTERVAL_MILLISECONDS
 
-IMPLEMENTATION_ID = "GEN2-002-VOL-SCALING/0.1.0"
+IMPLEMENTATION_ID = "GEN2-002-VOL-SCALING/0.1.1"
 SCHEMA_VERSION = "0.1.0"
 HOUR_MS = INTERVAL_MILLISECONDS["1h"]
 DAY_MS = 24 * HOUR_MS
@@ -41,6 +41,15 @@ MAX_BOUND_BYTES = 4 * 1024 * 1024
 
 class Gen2VolError(RuntimeError):
     """GEN2-002 violated a frozen research or accounting boundary."""
+
+
+class IncompleteVolatilityWindow(Gen2VolError):
+    """Registered 183-day estimator window is structurally incomplete."""
+
+    def __init__(self, *, boundary_ms: int, missing_days: Sequence[int]):
+        self.boundary_ms = boundary_ms
+        self.missing_days = tuple(missing_days)
+        super().__init__("incomplete 183-day volatility window")
 
 
 @dataclass(slots=True)
@@ -553,12 +562,17 @@ def _scale_from_returns(
     annualization_days: int = 365,
     target: Decimal = Decimal("0.12"),
 ) -> Decimal:
-    values = []
-    for offset in range(window_days, 0, -1):
-        day = boundary_ms - offset * DAY_MS
-        if day not in daily_returns:
-            raise Gen2VolError("incomplete 183-day volatility window")
-        values.append(daily_returns[day])
+    days = tuple(
+        boundary_ms - offset * DAY_MS
+        for offset in range(window_days, 0, -1)
+    )
+    missing = tuple(day for day in days if day not in daily_returns)
+    if missing:
+        raise IncompleteVolatilityWindow(
+            boundary_ms=boundary_ms,
+            missing_days=missing,
+        )
+    values = [daily_returns[day] for day in days]
     with localcontext() as ctx:
         ctx.prec = DECIMAL_PRECISION
         sumsq = Decimal(0)
@@ -589,6 +603,46 @@ def _scale_schedule(
         boundary: _scale_from_returns(daily, boundary_ms=boundary)
         for boundary in _month_boundaries(scored_start_ms, end_ms)
     }
+
+
+def _utc_text(ms: int) -> str:
+    return datetime.fromtimestamp(ms / 1000, tz=timezone.utc).strftime(
+        "%Y-%m-%dT%H:%M:%SZ"
+    )
+
+
+def _volatility_window_gaps(
+    *,
+    exact_series: Mapping[str, hsse3.ExactSeries],
+    warmup_start_ms: int,
+    scored_start_ms: int,
+    end_ms: int,
+) -> list[dict[str, object]]:
+    """Return structural gaps that make the frozen 183-day estimator invalid."""
+    invalid: list[dict[str, object]] = []
+    boundaries = _month_boundaries(scored_start_ms, end_ms)
+    for symbol in sorted(exact_series):
+        exact = exact_series[symbol]
+        zero_positions = (0,) * len(exact.times)
+        daily = _daily_control_returns(
+            exact=exact,
+            positions=zero_positions,
+            warmup_start_ms=warmup_start_ms,
+        )
+        for boundary in boundaries:
+            days = tuple(
+                boundary - offset * DAY_MS
+                for offset in range(183, 0, -1)
+            )
+            missing = tuple(day for day in days if day not in daily)
+            if missing:
+                invalid.append({
+                    "symbol": symbol,
+                    "boundary_utc": _utc_text(boundary),
+                    "missing_day_count": len(missing),
+                    "missing_days_utc": [_utc_text(day) for day in missing],
+                })
+    return invalid
 
 
 def _simulate_cell(
@@ -977,6 +1031,73 @@ def run(*, runtime_root: Path, protocol_path: Path = DEFAULT_PROTOCOL_PATH) -> d
     scored_start_ms = _time_ms(scope["scored_analysis_start_utc"], "scored start")
     end_ms = _time_ms(scope["analysis_end_exclusive_utc"], "analysis end")
     policy = protocol["execution"]
+
+    invalid_windows = _volatility_window_gaps(
+        exact_series=exact_series,
+        warmup_start_ms=warmup_start_ms,
+        scored_start_ms=scored_start_ms,
+        end_ms=end_ms,
+    )
+    if invalid_windows:
+        record = {
+            "schema": "YATL_GEN2_VOL_SCALING_RESULT",
+            "schema_version": SCHEMA_VERSION,
+            "implementation_id": IMPLEMENTATION_ID,
+            "protocol_id": protocol["protocol_id"],
+            "protocol_sha256": protocol_sha,
+            "source_candidate_id": "RIE-CAND-0025",
+            "tested_object_id": "GEN2-ADAPT-0002-VOL-SCALING",
+            "tested_object_type": "YATL_INTERNAL_ADAPTATION",
+            "source_candidate_claimed_reproduced": False,
+            "source_performance_claims_used_as_evidence": False,
+            "development_corpus_id": "CRL-CONTROL-DEV-POOL-001",
+            "condition_count": 12,
+            "status": "FAIL",
+            "evaluation_status": "INVALIDATED_BEFORE_ECONOMIC_EVALUATION",
+            "performance_outcome_computed": False,
+            "proposal_count": 0,
+            "proposal_ids": [],
+            "failure_reasons": ["INCOMPLETE_VOLATILITY_WINDOW"],
+            "invalid_window_count": len(invalid_windows),
+            "invalid_windows": invalid_windows,
+            "aggregate_scaled_base_net_quote": None,
+            "aggregate_control_base_net_quote": None,
+            "aggregate_scaled_stress_net_quote": None,
+            "aggregate_control_stress_net_quote": None,
+            "median_base_net_delta_quote": None,
+            "median_stress_net_delta_quote": None,
+            "median_drawdown_delta_fraction": None,
+            "hsse_004b_2023_2024_read": False,
+            "hsse_005_outcomes_used_for_selection": False,
+            "fresh_oos_read": False,
+            "recent_reserve_read": False,
+            "reranking_performed": False,
+            "retuning_performed": False,
+            "research_only": True,
+            "p10_read": False,
+            "p10_write_allowed": False,
+            "p11_locked": True,
+        }
+        artifact_rel, artifact_sha = _write_result(runtime_root, record)
+        return {
+            "implementation_id": IMPLEMENTATION_ID,
+            "protocol_sha256": protocol_sha,
+            "condition_count": 12,
+            "status": "FAIL",
+            "evaluation_status": "INVALIDATED_BEFORE_ECONOMIC_EVALUATION",
+            "performance_outcome_computed": False,
+            "proposal_count": 0,
+            "proposal_ids": [],
+            "failure_reasons": ["INCOMPLETE_VOLATILITY_WINDOW"],
+            "invalid_window_count": len(invalid_windows),
+            "artifact_relative_path": artifact_rel,
+            "artifact_file_sha256": artifact_sha,
+            "fresh_oos_read": False,
+            "research_only": True,
+            "p10_write_allowed": False,
+            "p11_locked": True,
+        }
+
     cache: dict[tuple[str, str, int], object] = {}
     scale_cache: dict[tuple[str, str, int, int], dict[int, Decimal]] = {}
 
