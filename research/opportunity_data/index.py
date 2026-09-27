@@ -42,13 +42,19 @@ class UniverseIndex:
                              and any(r.close_time_ms < t_ms for r in d.rows)}))
 
     def dependency_available(self, symbol: str, t_ms: int, dependency: str,
-                             *, companions: tuple[str, ...] = ()) -> bool:
+                             *, companions: tuple[str, ...] = (),
+                             required_intervals: tuple[str, ...] = ()) -> bool:
         if dependency not in SUPPORTED | BLOCKED:
             raise OpportunityError("unknown dependency")
         if dependency in BLOCKED or not self.intervals_at(symbol, t_ms):
             return False
         if dependency == "MULTI_ASSET":
-            return bool(companions) and all(s != symbol and self.intervals_at(s, t_ms) for s in companions)
+            return bool(companions) and all(
+                s != symbol
+                and self.intervals_at(s, t_ms)
+                and all(interval in self.intervals_at(s, t_ms) for interval in required_intervals)
+                for s in companions
+            )
         return True
 
     def mcf_data_binding(self, symbol: str, t_ms: int, policy: UniversePolicy,
@@ -63,7 +69,8 @@ class UniverseIndex:
                        quality_identities=tuple(sorted(d.quality_sha256 for d in data)),
                        symbol_eligible=eligibility.production_research_eligible,
                        dependency_availability={dep: self.dependency_available(
-                           symbol, t_ms, dep, companions=companions)
+                           symbol, t_ms, dep, companions=companions,
+                           required_intervals=policy.required_intervals)
                            for dep in policy.required_dependencies},
                        eligibility_sha256=eligibility.identity_sha256)
         return payload | {"binding_sha256": digest(payload)}
@@ -82,7 +89,9 @@ class UniverseIndex:
         data = tuple(d for d in self.datasets if d.symbol == symbol)
         companion_data = tuple(d for d in self.datasets if d.symbol in companions and d.symbol != symbol)
         if ("MULTI_ASSET" in policy.required_dependencies
-                and not self.dependency_available(symbol, t_ms, "MULTI_ASSET", companions=companions)):
+                and not self.dependency_available(
+                    symbol, t_ms, "MULTI_ASSET", companions=companions,
+                    required_intervals=policy.required_intervals)):
             companion_data = ()
         return check(record, data, policy, t_ms, liquidity=liquidity, companion=companion_data)
 
