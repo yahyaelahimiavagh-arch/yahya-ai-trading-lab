@@ -428,5 +428,45 @@
       "prefer_chat_director_when_safe": true,
       "work_escalation_requires_material_execution_need": true
     }
+  },
+  "mass_canonical_candidate_factory": {
+    "authoritative_document": "docs/research/alpha-factory/MASS-CANONICAL-CANDIDATE-FACTORY-v1.0.md",
+    "engineering_capacity_target_candidates": 100000,
+    "hard_candidate_ceiling": false,
+    "staged_scale_targets": [
+      1000,
+      10000,
+      100000
+    ],
+    "survivor_quota": null,
+    "zero_survivors_valid": true,
+    "candidate_identity_outcome_independent": true,
+    "one_pr_per_candidate_forbidden": true,
+    "required_filter_cascade": [
+      "F0_STRUCTURAL_VALIDITY",
+      "F1_OPPORTUNITY_VALIDITY",
+      "F2_AFTER_COST_DEVELOPMENT",
+      "F3_TEMPORAL_ROBUSTNESS",
+      "F4_NEIGHBOR_STABILITY",
+      "F5_MULTIPLE_TESTING",
+      "F6_DUPLICATION_CLUSTERING",
+      "F7_MECHANISM_SURVIVOR_FREEZE",
+      "F8_FRESH_OOS",
+      "F9_EDGE_SCOPE_CERTIFICATION",
+      "F10_AUDIT_FORWARD"
+    ],
+    "required_scale_accounting": [
+      "raw_candidate_count",
+      "effective_trial_count",
+      "economic_mechanism_count",
+      "common_factor_cluster_count",
+      "independent_family_count"
+    ],
+    "historical_compute_acceleration_allowed": true,
+    "forward_calendar_time_compression_forbidden": true,
+    "exact_recompute_required_before_oos": true,
+    "hidden_trial_generation_forbidden": true,
+    "negative_evidence_retained": true,
+    "work_per_candidate_forbidden": true
   }
 }
