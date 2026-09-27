@@ -677,7 +677,7 @@ def _simulate_cell(
             or exact.times[fi] != exact.times[i] + HOUR_MS
         ):
             missing_fills += 1
-            continue
+            raise Gen2VolError("required GEN2-002 fill bar is missing")
         reference = Decimal(exact.opens[fi])
         next_scale = boundary_scale if boundary_scale is not None else current_scale
 

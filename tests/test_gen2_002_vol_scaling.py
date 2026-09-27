@@ -2,7 +2,7 @@ import json
 import math
 import unittest
 from array import array
-from decimal import Decimal
+from decimal import Decimal, localcontext
 from pathlib import Path
 
 from research.generation_2 import vol_scaling as g2
@@ -30,7 +30,9 @@ class Gen2VolScalingTests(unittest.TestCase):
         boundary=20000*g2.DAY_MS
         daily={boundary-i*g2.DAY_MS:Decimal("0.01") for i in range(1,184)}
         scale=g2._scale_from_returns(daily,boundary_ms=boundary)
-        expected=Decimal("0.12")/(Decimal(365)*Decimal("0.0001")).sqrt()
+        with localcontext() as ctx:
+            ctx.prec=hsse3.DECIMAL_PRECISION
+            expected=Decimal("0.12")/(Decimal(365)*Decimal("0.0001")).sqrt()
         self.assertEqual(scale,expected)
         low={boundary-i*g2.DAY_MS:Decimal("0.0001") for i in range(1,184)}
         self.assertEqual(g2._scale_from_returns(low,boundary_ms=boundary),Decimal(1))
@@ -40,6 +42,26 @@ class Gen2VolScalingTests(unittest.TestCase):
         daily={boundary-i*g2.DAY_MS:Decimal("0.01") for i in range(1,184) if i!=17}
         with self.assertRaises(g2.Gen2VolError):
             g2._scale_from_returns(daily,boundary_ms=boundary)
+
+    def test_required_fill_gap_fails_closed(self):
+        times=(0,g2.HOUR_MS,2*g2.HOUR_MS,4*g2.HOUR_MS)
+        opens=("100","100","100","100")
+        closes=("100","100","101","102")
+        signal=hsse2.SearchSeries("BTCUSDT",times,tuple(map(float,opens)),tuple(map(float,closes)))
+        exact=hsse3.ExactSeries("BTCUSDT",times,opens,closes)
+        short=array("d",[math.nan,1,2,2])
+        long=array("d",[math.nan,2,1,1])
+        policy={
+            "base_quantity":"0.001","initial_equity_quote":"10000",
+            "base_fee_bps":10,"base_adverse_slippage_bps":5,
+            "stress_fee_bps":20,"stress_adverse_slippage_bps":10,
+        }
+        with self.assertRaises(g2.Gen2VolError):
+            g2._simulate_cell(
+                signal=signal,exact=exact,short_values=short,long_values=long,
+                start_ms=0,end_ms=5*g2.HOUR_MS,policy=policy,scaled=True,
+                scale_schedule={0:Decimal("0.5")},
+            )
 
     def test_variable_quantity_accounting_keeps_one_directional_cycle(self):
         a=g2._new_account(Decimal("10000"))
