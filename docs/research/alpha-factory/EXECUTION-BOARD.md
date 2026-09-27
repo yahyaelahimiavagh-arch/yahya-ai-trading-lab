@@ -62,16 +62,16 @@ AF-03A performed zero performance runs.
 Because 0027's original source-method blocker is now resolved, the preregistered
 availability-skip rule returns priority to 0027.
 
-## OPEN NEXT — GEN2-003 candidate specification
+## PREREGISTERED — GEN2-003 / RIE-CAND-0027
 
-Next eligible candidate:
-- `RIE-CAND-0027`;
-- downside-volatility exposure scaling;
-- exact source estimator and real-time lag semantics are now method-specified;
-- YATL must create a fresh long-only/no-leverage adaptation protocol before any
-  Development run;
-- no performance is authorized until the adaptation, missing-data semantics,
-  opportunity-preservation gates and bounded comparison set are frozen.
+Protocol frozen:
+- `RIE-CAND-0027` → `GEN2-003-DOWNSIDE-VOL-SCALING-001`;
+- source-style downside-volatility scaler;
+- source-style total-volatility comparator;
+- control;
+- 18 registered conditions;
+- no leverage / no short / no hidden grid;
+- performance still blocked by implementation gate.
 
 ## PARALLEL DESIGN LANE — AF-01 / AF-02
 
@@ -185,9 +185,9 @@ Authoritative matrix:
 `EXECUTION-MODE-MATRIX-v1.0.md`
 
 Current package:
-- **GEN2-003 / RIE-CAND-0027 adaptation specification**
-- Mode: `CHAT_DIRECTOR`
-- Required-mode warning: none
+- **GEN2-003 deterministic implementation + tests**
+- Mode: `WORK_REQUIRED`
+- Required-mode warning: `⚠️ WORK GATE`
 
 Upcoming required-mode gates:
 1. **AF-01B Opportunity data implementation** → `⚠️ WORK GATE`
