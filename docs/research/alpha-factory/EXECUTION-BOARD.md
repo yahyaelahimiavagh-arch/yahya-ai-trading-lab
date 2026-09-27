@@ -350,8 +350,9 @@ Search budget:
 - zero survivors valid;
 - no family may dominate the generation.
 
-Frozen domain-plan upper bound:
-- 8,176 raw Cartesian combinations before structural filtering.
+Frozen domain-plan:
+- 9,176 raw Cartesian combinations before structural filtering;
+- 8,640 expected structurally-valid combinations before any performance.
 
 ### AF-01C — NEXT DATA PACKAGE
 
