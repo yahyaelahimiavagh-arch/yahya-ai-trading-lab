@@ -15,7 +15,7 @@ answer four questions:
 
 ## Current position
 
-### OPEN NOW — AF-00 Closeout
+### CLOSED — AF-00 Governance Closeout
 
 Objective:
 - establish Alpha Factory as the authoritative program layer;
@@ -50,40 +50,28 @@ State:
 - 0 proposals;
 - no same-evidence target/window/EWMA rescue.
 
-## NEXT — AF-03A Source Unblock Sprint
+## CLOSED — AF-03A Source Unblock Sprint
 
-Candidates:
-1. `RIE-CAND-0011`
-2. `RIE-CAND-0022`
-3. `RIE-CAND-0027`
+Closeout:
+- `RIE-CAND-0011` → `BLOCKED_REPRODUCIBILITY`
+- `RIE-CAND-0022` → `BLOCKED_SOURCE`
+- `RIE-CAND-0027` → `METHOD_SPECIFIED`
 
-Scope:
-- one bounded reproduction/source-access attempt each;
-- source/equation/specification work only;
-- no trading-performance selection;
-- no guessed rules.
+AF-03A performed zero performance runs.
 
-Possible closeout states:
-- `METHOD_SPECIFIED` → eligible for a new protocol;
-- `BLOCKED_SOURCE`;
-- `BLOCKED_REPRODUCIBILITY`.
+Because 0027's original source-method blocker is now resolved, the preregistered
+availability-skip rule returns priority to 0027.
 
-If all three remain blocked, the preregistered Generation queue may proceed to
-the next eligible candidate, currently `RIE-CAND-0028`.
+## OPEN NEXT — GEN2-003 candidate specification
 
-## THEN — GEN2 next eligible protocol
-
-Expected candidate if Queue A blockers remain:
-- `RIE-CAND-0028`;
-- bounded 3-state crypto HMM;
-- trend entries remain external/frozen;
-- regime layer may gate/reduce exposure only according to a newly preregistered
-  point-in-time policy;
-- no OOS access before freeze.
-
-This is **not yet authorized for performance** until its reproduction packet,
-data dependencies, state canonicalization, training/update policy and bounded
-trial matrix are frozen.
+Next eligible candidate:
+- `RIE-CAND-0027`;
+- downside-volatility exposure scaling;
+- exact source estimator and real-time lag semantics are now method-specified;
+- YATL must create a fresh long-only/no-leverage adaptation protocol before any
+  Development run;
+- no performance is authorized until the adaptation, missing-data semantics,
+  opportunity-preservation gates and bounded comparison set are frozen.
 
 ## PARALLEL DESIGN LANE — AF-01 / AF-02
 
@@ -197,7 +185,7 @@ Authoritative matrix:
 `EXECUTION-MODE-MATRIX-v1.0.md`
 
 Current package:
-- **AF-00A Governance closeout**
+- **GEN2-003 / RIE-CAND-0027 adaptation specification**
 - Mode: `CHAT_DIRECTOR`
 - Required-mode warning: none
 
