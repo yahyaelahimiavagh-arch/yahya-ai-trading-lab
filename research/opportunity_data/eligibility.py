@@ -94,6 +94,9 @@ def check(lifecycle: Lifecycle, datasets: tuple[AdmittedDataset, ...], policy: U
         window_start = (t_ms // cadence - policy.warmup_bars) * cadence
         history = [r for r in data.rows if r.close_time_ms < t_ms
                    and r.open_time_ms >= window_start]
+        latest_expected_open = (t_ms // cadence) * cadence - cadence
+        if latest_expected_open < 0 or not any(r.open_time_ms == latest_expected_open for r in data.rows):
+            reasons.append("STALE_INTERVAL:" + interval)
         if len(history) < policy.warmup_bars:
             reasons.append("INSUFFICIENT_HISTORY:" + interval)
         if policy.maximum_gap_rate is not None and policy.warmup_bars:
@@ -104,9 +107,35 @@ def check(lifecycle: Lifecycle, datasets: tuple[AdmittedDataset, ...], policy: U
         if dep in BLOCKED:
             reasons.append("BLOCKED_DEPENDENCY:" + dep)
         elif dep == "MULTI_ASSET":
-            if not companion or not all(c.venue == lifecycle.venue and c.interval in valid
-                                        and any(r.close_time_ms < t_ms for r in c.rows) for c in companion):
+            if not companion:
                 reasons.append("MISSING_MULTI_ASSET")
+            else:
+                by_symbol: dict[str, dict[str, AdmittedDataset]] = {}
+                for c in companion:
+                    c.validate_binding()
+                    if c.venue != lifecycle.venue:
+                        reasons.append("MISSING_MULTI_ASSET")
+                        by_symbol = {}
+                        break
+                    by_symbol.setdefault(c.symbol, {})[c.interval] = c
+                for symbol_data in by_symbol.values():
+                    for interval in policy.required_intervals:
+                        c = symbol_data.get(interval)
+                        if c is None:
+                            reasons.append("MISSING_MULTI_ASSET")
+                            break
+                        cadence = CADENCE_MS[interval]
+                        latest_expected_open = (t_ms // cadence) * cadence - cadence
+                        window_start = (t_ms // cadence - policy.warmup_bars) * cadence
+                        history = [r for r in c.rows if r.close_time_ms < t_ms
+                                   and r.open_time_ms >= window_start]
+                        if (latest_expected_open < 0
+                                or not any(r.open_time_ms == latest_expected_open for r in c.rows)
+                                or len(history) < policy.warmup_bars):
+                            reasons.append("MISSING_MULTI_ASSET")
+                            break
+                if not by_symbol:
+                    reasons.append("MISSING_MULTI_ASSET")
         elif not valid:
             reasons.append("MISSING_DEPENDENCY:" + dep)
     if policy.minimum_trailing_quote_volume is not None:
