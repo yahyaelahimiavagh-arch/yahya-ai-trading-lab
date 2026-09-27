@@ -39,9 +39,40 @@ class Gen2VolScalingTests(unittest.TestCase):
 
     def test_scale_fails_closed_on_missing_day(self):
         boundary=20000*g2.DAY_MS
+        missing_day=boundary-17*g2.DAY_MS
         daily={boundary-i*g2.DAY_MS:Decimal("0.01") for i in range(1,184) if i!=17}
-        with self.assertRaises(g2.Gen2VolError):
+        with self.assertRaises(g2.IncompleteVolatilityWindow) as caught:
             g2._scale_from_returns(daily,boundary_ms=boundary)
+        self.assertEqual(caught.exception.boundary_ms,boundary)
+        self.assertEqual(caught.exception.missing_days,(missing_day,))
+
+    def test_structural_gap_invalidates_frozen_window_before_economics(self):
+        boundary=20000*g2.DAY_MS
+        warmup=boundary-200*g2.DAY_MS
+        missing_open=boundary-17*g2.DAY_MS+5*g2.HOUR_MS
+        times=tuple(
+            t for t in range(warmup,boundary,g2.HOUR_MS)
+            if t!=missing_open
+        )
+        exact=hsse3.ExactSeries(
+            "BTCUSDT",
+            times,
+            ("100",)*len(times),
+            ("100",)*len(times),
+        )
+        invalid=g2._volatility_window_gaps(
+            exact_series={"BTCUSDT":exact},
+            warmup_start_ms=warmup,
+            scored_start_ms=boundary,
+            end_ms=boundary+g2.DAY_MS,
+        )
+        self.assertEqual(len(invalid),1)
+        self.assertEqual(invalid[0]["symbol"],"BTCUSDT")
+        self.assertEqual(invalid[0]["boundary_utc"],g2._utc_text(boundary))
+        self.assertIn(
+            g2._utc_text(boundary-17*g2.DAY_MS),
+            invalid[0]["missing_days_utc"],
+        )
 
     def test_volatility_state_resets_at_registered_warmup_boundary(self):
         times=tuple(i*g2.HOUR_MS for i in range(8))
