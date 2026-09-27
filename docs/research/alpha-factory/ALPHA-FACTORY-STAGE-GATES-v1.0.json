@@ -30,7 +30,8 @@
         "PROGRAM_DOCS_PRESENT",
         "FROZEN_PROTOCOLS_UNCHANGED",
         "FINAL_HEAD_CI_GREEN"
-      ]
+      ],
+      "execution_route": "CHAT_DIRECTOR"
     },
     {
       "stage_id": "AF-01",
@@ -47,7 +48,8 @@
         "GAP_POLICY",
         "CAPACITY_METADATA_SPEC",
         "SEALED_OOS_ISOLATION_TEST"
-      ]
+      ],
+      "execution_route": "MIXED_CHAT_THEN_WORK"
     },
     {
       "stage_id": "AF-02",
@@ -63,7 +65,8 @@
         "ALL_ACTIVE_CANDIDATES_CLASSIFIED",
         "DUPLICATION_FINGERPRINTS",
         "FAMILY_LEVEL_REPORTING"
-      ]
+      ],
+      "execution_route": "MIXED_CHAT_THEN_WORK_WITH_CONDITIONAL_ASTRA"
     },
     {
       "stage_id": "AF-03",
@@ -79,7 +82,8 @@
         "METHOD_SPEC_OR_EXPLICIT_BLOCKER",
         "NO_GUESSED_RULES",
         "NO_PERFORMANCE_BASED_QUEUE_REORDERING"
-      ]
+      ],
+      "execution_route": "MIXED_AUTOMATION_WORK_WITH_THRESHOLD_ASTRA"
     },
     {
       "stage_id": "AF-04",
@@ -96,7 +100,8 @@
         "FULL_TRIAL_LEDGER",
         "OPPORTUNITY_SCORECARD",
         "NEGATIVE_OR_SURVIVOR_CLOSEOUT"
-      ]
+      ],
+      "execution_route": "CHAT_PROTOCOL_WORK_IMPLEMENTATION_MANUAL_CANONICAL_RUN"
     },
     {
       "stage_id": "AF-05",
@@ -112,7 +117,8 @@
         "NEIGHBOR_STABILITY",
         "REPRODUCIBLE_RANKING",
         "SURVIVOR_DIGEST_FROZEN"
-      ]
+      ],
+      "execution_route": "WORK_THEN_CHAT_FREEZE"
     },
     {
       "stage_id": "AF-06",
@@ -129,7 +135,8 @@
         "TRADE_OVERLAP_REPORT",
         "REGIME_COVERAGE_MAP",
         "OPPORTUNITY_COVERAGE_MAP"
-      ]
+      ],
+      "execution_route": "WORK_WITH_CONDITIONAL_ASTRA"
     },
     {
       "stage_id": "AF-07",
@@ -145,7 +152,8 @@
         "BOUNDED_TRIAL_BUDGET",
         "MARGINAL_EDGE_REPORT",
         "PORTFOLIO_SURVIVOR_OR_REJECTION"
-      ]
+      ],
+      "execution_route": "CHAT_PROTOCOL_WORK_IMPLEMENTATION_CONDITIONAL_ASTRA"
     },
     {
       "stage_id": "AF-08",
@@ -160,7 +168,8 @@
         "ONE_CANONICAL_FRESH_OOS_ADJUDICATION",
         "NO_SAME_OOS_RETUNE",
         "OOS_SURVIVOR_OR_REJECTION"
-      ]
+      ],
+      "execution_route": "CHAT_DIRECTOR_MANUAL_SEALED_EVIDENCE"
     },
     {
       "stage_id": "AF-09",
@@ -177,7 +186,8 @@
         "LIQUIDITY_STRESS",
         "BOUNDED_FAILURE_PROFILE",
         "CERTIFIED_OR_REJECTED"
-      ]
+      ],
+      "execution_route": "WORK_IMPLEMENTATION_CHAT_CERTIFICATION"
     },
     {
       "stage_id": "AF-10",
@@ -195,7 +205,8 @@
         "LEAKAGE_AUDIT",
         "ECONOMICS_RECOMPUTE",
         "P10_ISOLATION_AUDIT"
-      ]
+      ],
+      "execution_route": "WORK_AND_ASTRA_REQUIRED"
     },
     {
       "stage_id": "AF-11",
@@ -212,7 +223,8 @@
         "OPPORTUNITY_COUNT_GATE",
         "EXECUTION_QUALITY_REPORT",
         "FORWARD_CANDIDATE_OR_REJECT"
-      ]
+      ],
+      "execution_route": "CHAT_PROTOCOL_WORK_TOOLING_CHAT_ADJUDICATION"
     },
     {
       "stage_id": "AF-12",
@@ -229,7 +241,8 @@
         "CAPACITY_DECAY_CURVE",
         "DRAWDOWN_AT_SCALE",
         "PORTFOLIO_CAPACITY_BOTTLENECKS"
-      ]
+      ],
+      "execution_route": "WORK_WITH_CONDITIONAL_ASTRA"
     },
     {
       "stage_id": "AF-13",
@@ -242,7 +255,8 @@
         "FAILURE_MECHANISM_RECORDED",
         "NEW_LOGIC_GETS_NEW_CANDIDATE_ID",
         "OLD_EVIDENCE_NOT_OVERWRITTEN"
-      ]
+      ],
+      "execution_route": "CHAT_WITH_CONDITIONAL_ASTRA"
     }
   ],
   "alpha_families": [
@@ -335,5 +349,25 @@
     "FORWARD_PAPER",
     "CAPACITY_RESEARCH",
     "FUTURE_SEPARATELY_AUTHORIZED_TINY_LIVE"
-  ]
+  ],
+  "execution_routing": {
+    "authoritative_matrix": "docs/research/alpha-factory/EXECUTION-MODE-MATRIX-v1.0.md",
+    "required_modes": [
+      "CHAT_DIRECTOR",
+      "WORK_REQUIRED",
+      "ASTRA_REQUIRED",
+      "WORK_AND_ASTRA_REQUIRED"
+    ],
+    "mandatory_pre_stage_warning": true,
+    "generic_continue_does_not_cross_required_mode_gate": true,
+    "sealed_evidence_manual_director_supervision": true,
+    "astra_thresholds": {
+      "deep_reviewed_sources_since_prior_synthesis": 50,
+      "reproducible_methods_since_prior_synthesis": 25,
+      "global_candidate_count_for_cluster_synthesis": 100,
+      "survivor_variants_for_global_synthesis": 20,
+      "independent_mechanism_clusters_for_large_portfolio_synthesis": 10,
+      "completed_generations_for_failure_synthesis": 3
+    }
+  }
 }
