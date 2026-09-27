@@ -1,0 +1,47 @@
+{
+  "schema": "YATL_GEN2_COMPONENT_ACCEPTANCE",
+  "schema_version": "0.1.0",
+  "acceptance_id": "GEN2-002-CANONICAL-RESULT-001",
+  "component_id": "GEN2-ADAPT-0002-VOL-SCALING",
+  "source_candidate_id": "RIE-CAND-0025",
+  "status": "CANONICAL_INVALIDATED_BEFORE_ECONOMIC_EVALUATION",
+  "protocol_id": "GEN2-002-VOL-SCALING-001",
+  "protocol_sha256": "e9fd7c18c5b8e9cb92f9f63ef03cf81d49b638bc38bdb28092c5ddb00a4f4ffa",
+  "implementation_id": "GEN2-002-VOL-SCALING/0.1.1",
+  "final_head_sha": "3e8e5167414b26fb72ed80a620a74f6bdc60d38e",
+  "final_head_actions_run_id": 36307964173,
+  "final_head_actions_conclusion": "success",
+  "development_condition_count": 12,
+  "evaluation_status": "INVALIDATED_BEFORE_ECONOMIC_EVALUATION",
+  "performance_outcome_computed": false,
+  "artifact": {
+    "relative_path": "generation-2/gen2-002/vol-scaling-25ac8f5fbee4fb9e75f79c7e.json",
+    "file_sha256": "25ac8f5fbee4fb9e75f79c7e769a3cc1b0c046ede0536c8f91a6d4eba5a0a701",
+    "byte_size": 8492
+  },
+  "proposal_count": 0,
+  "proposal_ids": [],
+  "failure_reasons": [
+    "INCOMPLETE_VOLATILITY_WINDOW"
+  ],
+  "invalid_window_count": 40,
+  "interpretation": [
+    "The preregistered scaler required a full 183 completed UTC-day estimator window at every monthly decision boundary.",
+    "The admitted CRL Development corpus contains structurally missing days caused by CRL-003-verified source gaps, so the frozen estimator could not be formed at 40 symbol-month boundaries.",
+    "No interpolation, forward-fill, silent window shortening, alternate volatility target, alternate lookback, EWMA rescue, leverage, or hidden retry is authorized.",
+    "Because the frozen estimator was structurally unavailable, no economic performance outcome was computed and no proposal was produced.",
+    "This is retained negative evidence for GEN2-002 and does not imply that all volatility-scaling concepts are invalid."
+  ],
+  "same_evidence_estimator_relaxation_forbidden": true,
+  "same_evidence_window_change_forbidden": true,
+  "same_evidence_target_change_forbidden": true,
+  "rerun_for_selection_forbidden": true,
+  "candidate_retained_as_negative_evidence": true,
+  "fresh_oos_read": false,
+  "recent_reserve_read": false,
+  "p10_read": false,
+  "p10_write_allowed": false,
+  "p11_locked": true,
+  "live_master_lock": "OFF",
+  "research_only": true
+}
