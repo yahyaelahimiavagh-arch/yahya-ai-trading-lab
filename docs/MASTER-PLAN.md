@@ -2081,3 +2081,135 @@ otherwise rescue this candidate. This does **not** establish that all volatility
 scaling is invalid; it closes only this preregistered GEN2-002 adaptation on this
 frozen evidence. P10 remains untouched; Fresh OOS and recent reserve remain
 sealed; P11 remains locked; LIVE_MASTER_LOCK=OFF.
+
+## YATL Alpha Factory — Authoritative Program Layer — 2026-09-27
+
+از این checkpoint، هدف تحقیقاتی YATL فقط «پیداکردن یا تعمیر یک strategy» نیست.
+برنامه بالادستی رسمی پروژه **Alpha Factory** است: یک pipeline برای کشف، رد،
+اعتبارسنجی، تفکیک و در نهایت ترکیب edgeهای واقعاً مستقل و قابل‌مقیاس.
+
+مرجع تفصیلی:
+`docs/research/alpha-factory/ALPHA-FACTORY-MASTER-PLAN-v1.0.md`
+
+قرارداد machine-readable مراحل:
+`docs/research/alpha-factory/ALPHA-FACTORY-STAGE-GATES-v1.0.json`
+
+این لایه، protocolهای frozen قبلی را بازنویسی نمی‌کند. GEN2-MASTER-001 و تمام
+outcomeهای canonical قبلی immutable evidence باقی می‌مانند. Generation 2 یکی از
+research trackهای Alpha Factory است.
+
+### هدف شمالی
+
+هدف YATL از این پس:
+
+**کشف چند منبع مستقل opportunity/alpha که پس از fee/slippage ارزش اقتصادی مثبت
+داشته باشند، روی داده واقعاً ندیده‌شده دوام بیاورند، در بحران رفتار قابل‌فهم و
+کنترل‌شده داشته باشند، فرصت معامله را با محافظه‌کاری افراطی نابود نکنند، و در
+صورت اثبات edge قابلیت رشد ظرفیت سرمایه داشته باشند.**
+
+معیار اصلی پیشرفت:
+**validated independent edge count + opportunity coverage + capacity**؛
+نه تعداد backtest، تعداد تست، تعداد خطوط کد یا تعداد parameter variant.
+
+### معماری سه‌لایه
+
+1. **Alpha Discovery Plane** — کشف hypothesis، data expansion، source binding،
+   method extraction، Development search و family diversity.
+2. **Adjudication Plane** — exact recompute، anti-leakage، false-discovery control،
+   robustness، cost stress، independence/correlation، Fresh OOS، crisis و audit.
+3. **Forward & Capital Plane** — Paper/shadow forward، execution quality،
+   opportunity realization و capacity research؛ بدون Live authority.
+
+### نقشه مرحله‌ای ثابت
+
+| Stage | نام | هدف | وضعیت |
+|---|---|---|---|
+| AF-00 | Program Governance | قفل معماری، lifecycle، stage gates | **ACTIVE / IMPLEMENTED IN PR** |
+| AF-01 | Opportunity Data Foundation | universe point-in-time، gap policy، liquidity/capacity metadata | PENDING |
+| AF-02 | Alpha Taxonomy & Registry v2 | family/mechanism/capacity classification | PENDING |
+| AF-03 | Research Intake / Opportunity Sweep | ساخت hypothesisهای مستقل با provenance | PENDING |
+| AF-04 | Standalone Alpha Development | تست هر edge به‌تنهایی قبل از combination | PENDING |
+| AF-05 | Robust Search / False Discovery | multiple-testing، neighbor stability، trial ledger | PENDING |
+| AF-06 | Independence & Opportunity Gate | correlation، overlap، regime coverage، cluster count | PENDING |
+| AF-07 | Portfolio / Ensemble Lab | ترکیب فقط componentهای standalone-qualified | LOCKED |
+| AF-08 | Fresh OOS | یک adjudication روی evidence sealed | SEALED |
+| AF-09 | Crisis / Regime Certification | failure-map و stress certification | LOCKED |
+| AF-10 | Independent Audit | provenance/code/trial/leakage/economics audit | LOCKED |
+| AF-11 | Forward Opportunity Validation | real-time Paper/shadow evidence | LOCKED |
+| AF-12 | Capacity & Capital Scaling | deployable capital / impact / net-dollar PnL | LOCKED |
+| AF-13 | Adaptive Research Loop | نسل جدید hypothesis بدون rescue tuning | CONTINUOUS |
+
+### خانواده‌های Alpha
+
+Registry جدید باید candidateها را حداقل در این خانواده‌ها تفکیک کند:
+
+- AF-TREND — trend / time-series momentum
+- AF-BREAKOUT — breakout / volatility expansion
+- AF-MEANREV — mean reversion
+- AF-CRASHREB — panic / dislocation / rebound
+- AF-VOLUME — volume-conditioned edge
+- AF-LIQUIDITY — liquidity / spread / impact proxies
+- AF-TIME — session / weekday / recurring time effects
+- AF-RELATIVE — relative-strength / lead-lag / cross-asset information
+- AF-REGIME — deterministic/probabilistic regime logic
+- AF-EVENT — point-in-time external/event context
+- AF-MICRO — microstructure only after trustworthy historical data exists
+
+چند parameter variant از یک mechanism، چند edge مستقل محسوب نمی‌شوند.
+
+### Candidate lifecycle اجباری
+
+`DISCOVERED → SOURCE_BOUND → METHOD_SPECIFIED → PREREGISTERED → IMPLEMENTED →
+DEVELOPMENT_EVALUATED → DEVELOPMENT_SURVIVOR/REJECTED → FROZEN_FOR_OOS →
+OOS_SURVIVOR/OOS_REJECTED → CRISIS_CERTIFIED → INDEPENDENT_AUDIT_PASS →
+FORWARD_CANDIDATE`
+
+Blockerها نیز state رسمی‌اند:
+`BLOCKED_SOURCE`, `BLOCKED_DATA`, `BLOCKED_REPRODUCIBILITY`,
+`INVALIDATED_BEFORE_ECONOMICS`.
+
+### Opportunity-preservation rule
+
+YATL نباید به سیستمی تبدیل شود که با «تقریباً هیچ معامله‌ای نکردن» gateها را
+پاس کند. هر candidate باید قبل از outcome، opportunity profile خود را تعریف کند.
+برای overlayها و risk-layerها حداقل signal count، completed trades، active exposure،
+notional utilization و starvation بررسی می‌شود. Sparse بودن فقط وقتی معتبر است
+که بخشی از hypothesis اصلی و از قبل ثبت‌شده باشد.
+
+### Scale principle
+
+هدف بلندمدت فقط درصد بازده بالا نیست. هر edge مستقل باید در نهایت از نظر:
+**edge quality، breadth، persistence، capacity، diversification، execution و
+compounding** ارزیابی شود.
+
+هیچ wealth target تضمین‌شده نیست. Alpha Factory به‌جای وعده نتیجه، زیرساختی
+می‌سازد که در صورت کشف edge قوی، ظرفیت رشد آن در یک سیستم تک‌استراتژی کوچک
+محبوس نشود.
+
+### ترتیب اجرایی فوری
+
+ترتیب بعدی پروژه از این checkpoint:
+
+1. **AF-00 closeout** — docs + machine-readable gates + CI.
+2. **GEN2-002 canonical closeout** — outcome فعلی حفظ؛ no rescue.
+3. **AF-03A Source Unblock Sprint** — فقط یک تلاش bounded برای
+   RIE-CAND-0011 / 0022 / 0027؛ هیچ rule حدس زده نمی‌شود.
+4. **GEN2 queue continuation** — اگر blockerها باقی ماندند، candidate بعدی eligible
+   در queue با protocol تازه؛ Queue B از 0028 شروع می‌شود.
+5. **AF-01 Opportunity Data Design** — قبل از universe expansion، policy و
+   point-in-time eligibility فریز شود.
+6. **AF-02 Registry v2** — family/mechanism/capacity/opportunity fields.
+7. **AF-03B Independent Alpha Sweep #2** — عمداً خارج از trend-overlay cluster،
+   با اولویت mean reversion، volume/liquidity، time effects، crash/rebound و
+   relative/lead-lag.
+8. **AF-04 Standalone Development** — هنوز combination ممنوع.
+9. **AF-06 Independence Gate** — survivorها به edge-cluster واقعی تبدیل شوند.
+10. AF-07 به بعد فقط پس از standalone evidence باز می‌شود.
+
+### Safety / authority unchanged
+
+این برنامه هیچ authorization جدیدی ایجاد نمی‌کند:
+PAPER / RESEARCH ONLY، `LIVE_MASTER_LOCK=OFF`، no Futures execution،
+no leverage، no short، no live execution، no order endpoint، no AI direct
+execution، P10 independent/untouched و P11 LOCKED باقی می‌مانند.
+
