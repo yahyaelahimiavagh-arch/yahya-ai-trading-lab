@@ -25,6 +25,7 @@ from research.mass_candidate_factory.models import guard_root
 
 START = 1577836800000
 END = 1672531200000
+CADENCE = 900_000
 STATES = frozenset({"MONTHLY_SUCCESS", "DAILY_FALLBACK_SUCCESS", "MISSING_ARCHIVE",
                     "MISSING_CHECKSUM", "CHECKSUM_MISMATCH", "INVALID_ZIP",
                     "INVALID_MEMBER", "INVALID_SCHEMA", "TIMESTAMP_ANOMALY",
@@ -93,12 +94,59 @@ def verify_plan(p: dict, snapshot: dict) -> None:
             or p.get("population_end_exclusive_ms") != END or p.get("interval") != "15m"):
         raise OpportunityError("plan/inventory binding invalid")
     known = {x["key"]: x for x in snapshot["objects"]}
+    identities = [(x["symbol"], x["month"]) for x in p["periods"]]
+    if len(set(identities)) != len(identities):
+        raise OpportunityError("duplicate planned period")
     for entry in p["periods"]:
         if not re.fullmatch(r"20(?:20|21|22)-(?:0[1-9]|1[0-2])", entry["month"]):
             raise OpportunityError("outside Development range")
+        if (entry["monthly"] and (entry["monthly"]["cadence"] != "monthly"
+                                   or entry["monthly"]["period"] != entry["month"])):
+            raise OpportunityError("invalid monthly plan selection")
+        daily_keys = [x["key"] for x in entry["daily"]]
+        if (daily_keys != sorted(set(daily_keys))
+                or any(x["cadence"] != "daily" for x in entry["daily"])):
+            raise OpportunityError("invalid daily plan selection")
         for item in ([entry["monthly"]] if entry["monthly"] else []) + entry["daily"]:
             if known.get(item["key"]) != item or item["symbol"] != entry["symbol"] or not item["period"].startswith(entry["month"]):
                 raise OpportunityError("unregistered plan object")
+
+
+def _bound_entry(p: dict, snapshot: dict, entry: dict) -> dict:
+    verify_plan(p, snapshot)
+    if sum(item == entry for item in p["periods"]) != 1:
+        raise OpportunityError("object absent/ambiguous in frozen plan")
+    selected = ([entry["monthly"]["key"]] if entry["monthly"] else []) + [item["key"] for item in entry["daily"]]
+    return dict(inventory_sha256=p["inventory_sha256"], plan_sha256=p["plan_sha256"],
+                entry_sha256=digest(entry), selected_object_keys=selected)
+
+
+def _verify_record_binding(root: Path, record: dict, entry: dict, binding: dict) -> None:
+    if (any(record.get(key) != value for key, value in binding.items())
+            or record.get("identity") != f"{entry['symbol']}-{entry['month']}"
+            or record.get("inventory_object_key") != (entry["monthly"]["key"] if entry["monthly"] else None)):
+        raise OpportunityError("ledger belongs to a different inventory/plan/object selection")
+    attempted = {x.get("object_key") for x in record.get("attempts", ()) if x.get("object_key")}
+    if not attempted.issubset(set(binding["selected_object_keys"])) or not record.get("attempts"):
+        raise OpportunityError("ledger contains unselected archive object")
+    expected_monthly = entry["monthly"]["key"] if entry["monthly"] else None
+    if record["attempts"][0].get("object_key") != expected_monthly:
+        raise OpportunityError("ledger monthly object changed")
+    if record.get("state") == "MONTHLY_SUCCESS" and len(record["attempts"]) != 1:
+        raise OpportunityError("monthly ledger has unexpected fallback")
+    if record.get("state") == "DAILY_FALLBACK_SUCCESS" and (
+        len(record["attempts"]) != 1 + len(entry["daily"])
+        or {x.get("object_key") for x in record["attempts"][1:]} != {x["key"] for x in entry["daily"]}
+    ):
+        raise OpportunityError("daily fallback ledger object set changed")
+    for attempt in record["attempts"]:
+        evidence_ref = attempt.get("boundary_evidence_ref")
+        if evidence_ref:
+            if attempt.get("object_key") != expected_monthly or entry["monthly"] is None:
+                raise OpportunityError("historical evidence bound to wrong object")
+            _, current_sha = _boundary_evidence(root, entry["monthly"], evidence_ref)
+            if current_sha != attempt.get("boundary_evidence_sha256"):
+                raise OpportunityError("historical boundary evidence collision")
 
 
 def _archive(item: dict) -> ArchiveObject:
@@ -127,9 +175,47 @@ def _extract(payload: bytes, member_name: str) -> tuple[bytes | None, str | None
         return None, "INVALID_ZIP"
 
 
-def _read_object(root: Path, item: dict, fetcher, *, retrieved_ms: int) -> tuple[dict, tuple]:
+def _boundary_evidence(root: Path, item: dict, relative: str | None) -> tuple[dict | None, str | None]:
+    if relative is None:
+        return None, None
+    try:
+        raw = development_path(root, relative).read_bytes()
+        doc = json.loads(raw)
+    except (OSError, ValueError) as exc:
+        raise OpportunityError("missing historical boundary evidence") from exc
+    ref = sha256(raw)
+    if (canonical(doc) != raw or not relative.endswith(f"{ref}.json")
+            or doc.get("schema") != "AF-01C-HISTORICAL-BOUNDARY/1"
+            or doc.get("object_key") != item["key"] or doc.get("symbol") != item["symbol"]
+            or doc.get("reviewed") is not True
+            or doc.get("source_type") != "INDEPENDENT_HISTORICAL_LISTING_EVENT"
+            or not isinstance(doc.get("source_reference"), str)
+            or not doc["source_reference"] or "exchangeinfo" in doc["source_reference"].lower()
+            or not isinstance(doc.get("source_artifact_ref"), str)
+            or not isinstance(doc.get("source_artifact_sha256"), str)
+            or not doc["source_artifact_ref"].endswith(f"{doc['source_artifact_sha256']}.txt")
+            or any(type(doc.get(k)) is not int for k in ("listing_time_ms", "delisting_time_ms")
+                   if doc.get(k) is not None)):
+        raise OpportunityError("invalid independent historical boundary evidence")
+    try:
+        source = development_path(root, doc["source_artifact_ref"]).read_bytes()
+    except OSError as exc:
+        raise OpportunityError("missing independent historical source artifact") from exc
+    if sha256(source) != doc["source_artifact_sha256"]:
+        raise OpportunityError("independent historical source artifact collision")
+    if doc.get("listing_time_ms") is None and doc.get("delisting_time_ms") is None:
+        raise OpportunityError("historical boundary event missing")
+    return doc, ref
+
+
+def _read_object(root: Path, item: dict, fetcher, *, retrieved_ms: int,
+                 boundary_evidence_ref: str | None = None) -> tuple[dict, tuple]:
     archive = _archive(item)
+    evidence, evidence_sha = _boundary_evidence(root, item, boundary_evidence_ref)
     refs = dict(source_url=archive.url, checksum_ref=archive.checksum_url)
+    if evidence_sha:
+        refs["boundary_evidence_ref"] = boundary_evidence_ref
+        refs["boundary_evidence_sha256"] = evidence_sha
     try:
         checksum = fetcher.fetch(archive.checksum_url, max_bytes=4096)
     except AcquisitionError:
@@ -173,6 +259,26 @@ def _read_object(root: Path, item: dict, fetcher, *, retrieved_ms: int) -> tuple
     refs["gap_count"] = gap_map(rows, item["symbol"], "15m", "AF-01C/object").gap_count
     if refs["gap_count"]:
         return dict(state="SOURCE_GAP", **refs), ()
+    expected_first, expected_end = beginning, ending
+    if evidence:
+        listing = evidence.get("listing_time_ms")
+        delisting = evidence.get("delisting_time_ms")
+        if listing is not None:
+            if not beginning < listing < ending:
+                raise OpportunityError("listing event outside archive period")
+            expected_first = ((listing + CADENCE - 1) // CADENCE) * CADENCE
+        if delisting is not None:
+            if not beginning < delisting < ending or (listing is not None and delisting <= listing):
+                raise OpportunityError("delisting event outside archive period")
+            expected_end = ((delisting - CADENCE) // CADENCE) * CADENCE + CADENCE
+    refs["coverage"] = dict(period_first_ms=beginning, period_end_exclusive_ms=ending,
+                            first_open_ms=rows[0].open_time_ms, last_open_ms=rows[-1].open_time_ms,
+                            expected_first_open_ms=expected_first,
+                            expected_last_open_ms=expected_end-CADENCE,
+                            independent_boundary_evidence_sha256=evidence_sha)
+    if (expected_first >= expected_end or rows[0].open_time_ms != expected_first
+            or rows[-1].open_time_ms != expected_end-CADENCE):
+        return dict(state="SOURCE_GAP", anomaly="archive boundary coverage incomplete", **refs), ()
     refs["artifact_refs"] = {
         "checksum": f"objects/checksum-{sha256(checksum)}.txt",
         "zip": f"objects/zip-{observed}.zip",
@@ -208,11 +314,14 @@ def _ordinary_evidence(root: Path, symbol: str, relative: str | None) -> str | N
     return sha256(raw)
 
 
-def acquire_period(root: Path, entry: dict, fetcher=None, *, retrieved_ms: int, allow_daily_fallback: bool = False) -> dict:
+def acquire_period(root: Path, entry: dict, fetcher=None, *, plan_doc: dict, inventory: dict,
+                   retrieved_ms: int, allow_daily_fallback: bool = False,
+                   boundary_evidence_ref: str | None = None) -> dict:
     try:
         guard_root(root)
     except ValueError as exc:
         raise OpportunityError("unsafe runtime root") from exc
+    binding = _bound_entry(plan_doc, inventory, entry)
     symbol, month = entry.get("symbol"), entry.get("month")
     if (not isinstance(symbol, str) or not re.fullmatch(r"[A-Z0-9]+USDT", symbol)
             or not isinstance(month, str) or not re.fullmatch(r"20(?:20|21|22)-(?:0[1-9]|1[0-2])", month)
@@ -230,13 +339,17 @@ def acquire_period(root: Path, entry: dict, fetcher=None, *, retrieved_ms: int, 
         raw = {k: v for k, v in record.items() if k != "record_sha256"}
         if digest(raw) != record.get("record_sha256") or record.get("identity") != identity:
             raise OpportunityError("immutable ledger collision")
+        _verify_record_binding(root, record, entry, binding)
+        if record.get("requested_boundary_evidence_ref") != boundary_evidence_ref:
+            raise OpportunityError("ledger boundary evidence changed")
         for relative, expected in record.get("artifact_hashes", {}).items():
             path = development_path(root, relative)
             if not path.is_file() or sha256(path.read_bytes()) != expected:
                 raise OpportunityError("completed artifact collision")
         return record
     monthly = entry["monthly"]
-    outcome, rows = _read_object(root, monthly, fetcher, retrieved_ms=retrieved_ms) if monthly else (dict(state="MISSING_ARCHIVE"), ())
+    outcome, rows = _read_object(root, monthly, fetcher, retrieved_ms=retrieved_ms,
+                                 boundary_evidence_ref=boundary_evidence_ref) if monthly else (dict(state="MISSING_ARCHIVE"), ())
     attempts = [dict(object_key=monthly["key"] if monthly else None, **outcome)]
     if outcome["state"] != "MONTHLY_SUCCESS" and allow_daily_fallback:
         daily_rows, daily_success = [], True
@@ -278,8 +391,7 @@ def acquire_period(root: Path, entry: dict, fetcher=None, *, retrieved_ms: int, 
         relative = None
     beginning, ending = object_bounds(dict(cadence="monthly", period=entry["month"]))
     gap_count = gap_map(rows, entry["symbol"], "15m", "AF-01C/object").gap_count if rows else 0
-    # A monthly archive may legitimately start late/end early for a new/delisted pair;
-    # preserve its observed coverage and gaps rather than inventing empty candles.
+    # No missing archive edges are inferred away without independent evidence.
     hashes = {}
     for attempt in attempts:
         for label, ref in attempt.get("artifact_refs", {}).items():
@@ -292,7 +404,8 @@ def acquire_period(root: Path, entry: dict, fetcher=None, *, retrieved_ms: int, 
             hashes[ref] = expected
     if relative:
         hashes[relative] = sha256(_canonical_csv(rows))
-    base = dict(identity=identity, inventory_object_key=monthly["key"] if monthly else None,
+    base = dict(identity=identity, **binding, requested_boundary_evidence_ref=boundary_evidence_ref,
+                inventory_object_key=monthly["key"] if monthly else None,
                 symbol=entry["symbol"], period=entry["month"], interval="15m",
                 requested_start_ms=beginning, requested_end_ms=ending,
                 state=outcome["state"], fallback_state="EXPLICIT" if allow_daily_fallback and len(attempts) > 1 else "NOT_REQUESTED",
@@ -306,7 +419,8 @@ def acquire_period(root: Path, entry: dict, fetcher=None, *, retrieved_ms: int, 
     return record
 
 
-def reconcile(root: Path, p: dict) -> dict:
+def reconcile(root: Path, p: dict, inventory: dict) -> dict:
+    verify_plan(p, inventory)
     records = []
     for entry in p["periods"]:
         path = root / "ledger" / f"{entry['symbol']}-{entry['month']}.json"
@@ -315,6 +429,7 @@ def reconcile(root: Path, p: dict) -> dict:
         record = json.loads(path.read_bytes())
         if digest({k: v for k, v in record.items() if k != "record_sha256"}) != record.get("record_sha256"):
             raise OpportunityError("ledger record digest mismatch")
+        _verify_record_binding(root, record, entry, _bound_entry(p, inventory, entry))
         if record["state"] not in STATES or record["identity"] != f"{entry['symbol']}-{entry['month']}":
             raise OpportunityError("invalid final object state")
         for relative, expected in record.get("artifact_hashes", {}).items():
@@ -332,9 +447,9 @@ def reconcile(root: Path, p: dict) -> dict:
     return result | {"reconciliation_sha256": digest(result)}
 
 
-def build_lifecycle(root: Path, p: dict, symbol: str, *, retrieved_ms: int,
+def build_lifecycle(root: Path, p: dict, inventory: dict, symbol: str, *, retrieved_ms: int,
                     ordinary_evidence_ref: str | None = None) -> dict:
-    reconcile(root, p)
+    reconcile(root, p, inventory)
     records = [json.loads((root / "ledger" / f"{e['symbol']}-{e['month']}.json").read_bytes())
                for e in p["periods"] if e["symbol"] == symbol]
     if not records or any(x["state"] not in ("MONTHLY_SUCCESS", "DAILY_FALLBACK_SUCCESS") for x in records):

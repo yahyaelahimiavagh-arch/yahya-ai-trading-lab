@@ -91,28 +91,28 @@ class AF01C(unittest.TestCase):
         with self.assertRaises(OpportunityError):
             plan(inv, ("BTCUSDT",), ("2023-01",))
         url = "https://data.binance.vision/" + self.btc
-        raw = zip_csv("BTCUSDT-15m-2020-01.csv", [candle(1577836800000), candle(1577837700000)])
+        raw = zip_csv("BTCUSDT-15m-2020-01.csv", [candle(1577836800000 + i * 900000) for i in range(31 * 96)])
         f = Fetcher({url: raw, url + ".CHECKSUM": f"{sha256(raw)}  BTCUSDT-15m-2020-01.zip\n".encode()})
-        rec = acquire_period(self.root, p["periods"][0], f, retrieved_ms=1790539200000)
+        rec = acquire_period(self.root, p["periods"][0], f, plan_doc=p, inventory=inv, retrieved_ms=1790539200000)
         self.assertEqual(rec["state"], "MONTHLY_SUCCESS")
-        self.assertEqual(acquire_period(self.root, p["periods"][0], Fetcher({}), retrieved_ms=1790539200000), rec)
-        self.assertEqual(reconcile(self.root, p)["source_gap_count"], 0)
+        self.assertEqual(acquire_period(self.root, p["periods"][0], Fetcher({}), plan_doc=p, inventory=inv, retrieved_ms=1790539200000), rec)
+        self.assertEqual(reconcile(self.root, p, inv)["source_gap_count"], 0)
         evidence = canonical(dict(symbol="BTCUSDT", classification="ORDINARY_SPOT_CONFIRMED", reviewed=True,
                                   source_type="INDEPENDENT_HISTORICAL_PRODUCT_RECORD", source_reference="fixture:product-record"))
         evidence_ref = f"classification/record-{sha256(evidence)}.json"
         from research.opportunity_data.storage import save_artifact
         save_artifact(self.root, evidence_ref, evidence)
-        result = build_lifecycle(self.root, p, "BTCUSDT", retrieved_ms=1790539200000,
+        result = build_lifecycle(self.root, p, inv, "BTCUSDT", retrieved_ms=1790539200000,
                                  ordinary_evidence_ref=evidence_ref)
         self.assertEqual(result["gap_count"], 0)
         self.assertIsNone(result["listing_time_ms"])
         self.assertIsNone(result["delisting_time_ms"])
         self.assertEqual(result["index_sha256"], build_lifecycle(
-            self.root, p, "BTCUSDT", retrieved_ms=1790539200000,
+            self.root, p, inv, "BTCUSDT", retrieved_ms=1790539200000,
             ordinary_evidence_ref=evidence_ref)["index_sha256"])
         (self.root / rec["canonical_ref"]).write_bytes(b"collision")
         with self.assertRaises(OpportunityError):
-            acquire_period(self.root, p["periods"][0], Fetcher({}), retrieved_ms=1790539200000)
+            acquire_period(self.root, p["periods"][0], Fetcher({}), plan_doc=p, inventory=inv, retrieved_ms=1790539200000)
 
     def test_checksum_zip_member_and_explicit_fallback(self):
         inv = self.inventory()
@@ -120,11 +120,11 @@ class AF01C(unittest.TestCase):
         monthly = "https://data.binance.vision/" + self.eth
         raw = zip_csv("wrong.csv", [candle(1577836800000)])
         self.assertEqual(acquire_period(self.root / "bad-member", p["periods"][0], Fetcher({
-            monthly: raw, monthly + ".CHECKSUM": sha256(raw).encode()}), retrieved_ms=1790539200000)["state"], "INVALID_MEMBER")
+            monthly: raw, monthly + ".CHECKSUM": sha256(raw).encode()}), plan_doc=p, inventory=inv, retrieved_ms=1790539200000)["state"], "INVALID_MEMBER")
         self.assertEqual(acquire_period(self.root / "bad-sum", p["periods"][0], Fetcher({
-            monthly: raw, monthly + ".CHECKSUM": b"0" * 64}), retrieved_ms=1790539200000)["state"], "CHECKSUM_MISMATCH")
+            monthly: raw, monthly + ".CHECKSUM": b"0" * 64}), plan_doc=p, inventory=inv, retrieved_ms=1790539200000)["state"], "CHECKSUM_MISMATCH")
         self.assertEqual(acquire_period(self.root / "bad-zip", p["periods"][0], Fetcher({
-            monthly: b"bad", monthly + ".CHECKSUM": sha256(b"bad").encode()}), retrieved_ms=1790539200000)["state"], "INVALID_ZIP")
+            monthly: b"bad", monthly + ".CHECKSUM": sha256(b"bad").encode()}), plan_doc=p, inventory=inv, retrieved_ms=1790539200000)["state"], "INVALID_ZIP")
         mapping = {}
         for day, key in enumerate(self.daily):
             url = "https://data.binance.vision/" + key
@@ -133,20 +133,20 @@ class AF01C(unittest.TestCase):
                           [candle(stamp + i * 900000) for i in range(96)])
             mapping[url] = raw
             mapping[url + ".CHECKSUM"] = sha256(raw).encode()
-        rec = acquire_period(self.root / "fallback", p["periods"][0], Fetcher(mapping),
+        rec = acquire_period(self.root / "fallback", p["periods"][0], Fetcher(mapping), plan_doc=p, inventory=inv,
                              retrieved_ms=1790539200000, allow_daily_fallback=True)
         self.assertEqual(rec["state"], "DAILY_FALLBACK_SUCCESS")
         self.assertEqual(rec["fallback_state"], "EXPLICIT")
         self.assertEqual(rec["row_count"], 31 * 96)
         self.assertEqual(rec["gap_count"], 0)
         pilot_root = self.root / "fallback"
-        self.assertEqual(reconcile(pilot_root, p)["source_gap_count"], 0)
+        self.assertEqual(reconcile(pilot_root, p, inv)["source_gap_count"], 0)
         evidence = canonical(dict(symbol="ETHUSDT", classification="ORDINARY_SPOT_CONFIRMED", reviewed=True,
                                   source_type="INDEPENDENT_HISTORICAL_PRODUCT_RECORD", source_reference="fixture:product-record"))
         evidence_ref = f"classification/record-{sha256(evidence)}.json"
         from research.opportunity_data.storage import save_artifact
         save_artifact(pilot_root, evidence_ref, evidence)
-        admitted = build_lifecycle(pilot_root, p, "ETHUSDT", retrieved_ms=1790539200000,
+        admitted = build_lifecycle(pilot_root, p, inv, "ETHUSDT", retrieved_ms=1790539200000,
                                    ordinary_evidence_ref=evidence_ref)
         self.assertEqual(admitted["classification"], "ORDINARY_SPOT_CONFIRMED")
         self.assertEqual(admitted["gap_count"], 0)
@@ -156,11 +156,11 @@ class AF01C(unittest.TestCase):
     def test_safety_unresolved_and_source_gap(self):
         inv = self.inventory()
         p = plan(inv, ("BTCUSDT",), ("2020-01",))
-        rec = acquire_period(self.root, p["periods"][0], Fetcher({}), retrieved_ms=1790539200000)
+        rec = acquire_period(self.root, p["periods"][0], Fetcher({}), plan_doc=p, inventory=inv, retrieved_ms=1790539200000)
         self.assertEqual(rec["state"], "MISSING_CHECKSUM")
-        self.assertEqual(reconcile(self.root, p)["source_gap_count"], 1)
+        self.assertEqual(reconcile(self.root, p, inv)["source_gap_count"], 1)
         with self.assertRaises(OpportunityError):
-            build_lifecycle(self.root, p, "BTCUSDT", retrieved_ms=1790539200000)
+            build_lifecycle(self.root, p, inv, "BTCUSDT", retrieved_ms=1790539200000)
         with self.assertRaises(OpportunityError):
             plan(inv, ("BTCUSDT",) * 11, ("2020-01",))
         from research.opportunity_data.archive_adapter import classify
@@ -171,7 +171,7 @@ class AF01C(unittest.TestCase):
             with self.assertRaises(OpportunityError):
                 development_path(self.root, name)
             with self.assertRaises(OpportunityError):
-                acquire_period(self.root / name, p["periods"][0], Fetcher({}), retrieved_ms=1790539200000)
+                acquire_period(self.root / name, p["periods"][0], Fetcher({}), plan_doc=p, inventory=inv, retrieved_ms=1790539200000)
             self.assertFalse((self.root / name).exists())
 
     def test_transport_and_malformed_listing_fail_closed(self):
@@ -198,13 +198,116 @@ class AF01C(unittest.TestCase):
         p = plan(inv, ("BTCUSDT",), ("2020-01",))
         url = "https://data.binance.vision/" + self.btc
         raw = zip_csv("BTCUSDT-15m-2020-01.csv", [candle(1577836800000), candle(1577838600000)])
-        rec = acquire_period(self.root, p["periods"][0], Fetcher({url: raw, url + ".CHECKSUM": sha256(raw).encode()}),
+        rec = acquire_period(self.root, p["periods"][0], Fetcher({url: raw, url + ".CHECKSUM": sha256(raw).encode()}), plan_doc=p, inventory=inv,
                              retrieved_ms=1790539200000)
         self.assertEqual(rec["state"], "SOURCE_GAP")
         self.assertEqual(rec["admission_state"], "BLOCKED")
-        self.assertEqual(reconcile(self.root, p)["source_gap_count"], 1)
+        self.assertEqual(reconcile(self.root, p, inv)["source_gap_count"], 1)
         with self.assertRaises(OpportunityError):
-            build_lifecycle(self.root, p, "BTCUSDT", retrieved_ms=1790539200000)
+            build_lifecycle(self.root, p, inv, "BTCUSDT", retrieved_ms=1790539200000)
+
+    def test_stale_ledger_rejected_for_new_plan_and_inventory(self):
+        inv = self.inventory()
+        first = plan(inv, ("BTCUSDT",), ("2020-01",))
+        entry = first["periods"][0]
+        rec = acquire_period(self.root, entry, Fetcher({}), plan_doc=first, inventory=inv,
+                             retrieved_ms=1790539200000)
+        self.assertEqual(rec["state"], "MISSING_CHECKSUM")
+        expanded = plan(inv, ("BTCUSDT", "ETHUSDT"), ("2020-01",))
+        self.assertEqual(expanded["periods"][0], entry)
+        with self.assertRaisesRegex(OpportunityError, "different inventory/plan"):
+            acquire_period(self.root, entry, Fetcher({}), plan_doc=expanded, inventory=inv,
+                           retrieved_ms=1790539200000)
+        with self.assertRaisesRegex(OpportunityError, "different inventory/plan"):
+            reconcile(self.root, expanded, inv)
+        changed = dict(inv)
+        changed["objects"] = [*inv["objects"], dict(key="data/spot/monthly/klines/XRPUSDT/15m/XRPUSDT-15m-2020-01.zip",
+                                                   cadence="monthly", symbol="XRPUSDT", interval="15m", period="2020-01")]
+        changed["objects"] = sorted(changed["objects"], key=lambda x: x["key"])
+        from research.opportunity_data.models import digest
+        changed["normalized_inventory_sha256"] = digest(dict(schema="AF-01C-INVENTORY/1", objects=changed["objects"]))
+        new_plan = plan(changed, ("BTCUSDT",), ("2020-01",))
+        with self.assertRaisesRegex(OpportunityError, "different inventory/plan"):
+            acquire_period(self.root, new_plan["periods"][0], Fetcher({}), plan_doc=new_plan,
+                           inventory=changed, retrieved_ms=1790539200000)
+        with self.assertRaisesRegex(OpportunityError, "different inventory/plan"):
+            reconcile(self.root, new_plan, changed)
+        eth = plan(inv, ("ETHUSDT",), ("2020-01",))
+        eth_root = self.root / "selected-objects"
+        acquire_period(eth_root, eth["periods"][0], Fetcher({}), plan_doc=eth, inventory=inv,
+                       retrieved_ms=1790539200000)
+        import copy
+        altered = copy.deepcopy(eth)
+        altered["periods"][0]["daily"] = altered["periods"][0]["daily"][:-1]
+        altered["plan_sha256"] = digest({k: v for k, v in altered.items() if k != "plan_sha256"})
+        with self.assertRaisesRegex(OpportunityError, "different inventory/plan"):
+            acquire_period(eth_root, altered["periods"][0], Fetcher({}), plan_doc=altered,
+                           inventory=inv, retrieved_ms=1790539200000)
+        with self.assertRaisesRegex(OpportunityError, "different inventory/plan"):
+            reconcile(eth_root, altered, inv)
+
+    def test_monthly_edges_fail_closed_and_independent_history_exception(self):
+        inv = self.inventory()
+        p = plan(inv, ("BTCUSDT",), ("2020-01",))
+        entry = p["periods"][0]
+        url = "https://data.binance.vision/" + self.btc
+        start = 1577836800000
+        for label, rows in (("missing-start", [candle(start + i * 900000) for i in range(2, 31 * 96)]),
+                            ("missing-end", [candle(start), candle(start + 900000)])):
+            raw = zip_csv("BTCUSDT-15m-2020-01.csv", rows)
+            mapping = {url: raw, url + ".CHECKSUM": sha256(raw).encode()}
+            root = self.root / label
+            rec = acquire_period(root, entry, Fetcher(mapping), plan_doc=p, inventory=inv,
+                                 retrieved_ms=1790539200000)
+            self.assertEqual(rec["state"], "SOURCE_GAP")
+            self.assertEqual(rec["attempts"][0]["anomaly"], "archive boundary coverage incomplete")
+            self.assertEqual(rec["gap_count"], 0)  # no interior gap does not rescue an edge
+            source = b"Fixture independent historical listing/delisting notice\n"
+            source_ref = f"boundary/source-{sha256(source)}.txt"
+            event = dict(schema="AF-01C-HISTORICAL-BOUNDARY/1", object_key=self.btc,
+                         symbol="BTCUSDT", reviewed=True,
+                         source_type="INDEPENDENT_HISTORICAL_LISTING_EVENT",
+                         source_reference="fixture:historical-event",
+                         source_artifact_ref=source_ref, source_artifact_sha256=sha256(source),
+                         listing_time_ms=start + 2 * 900000 if label == "missing-start" else None,
+                         delisting_time_ms=None if label == "missing-start" else start + 2 * 900000)
+            evidence = canonical(event)
+            ref = f"boundary/evidence-{sha256(evidence)}.json"
+            from research.opportunity_data.storage import save_artifact
+            accepted_root = self.root / (label + "-evidenced")
+            accepted_root.mkdir()
+            save_artifact(accepted_root, source_ref, source)
+            save_artifact(accepted_root, ref, evidence)
+            accepted = acquire_period(accepted_root, entry, Fetcher(mapping), plan_doc=p, inventory=inv,
+                                      boundary_evidence_ref=ref, retrieved_ms=1790539200000)
+            self.assertEqual(accepted["state"], "MONTHLY_SUCCESS")
+            self.assertEqual(reconcile(accepted_root, p, inv)["source_gap_count"], 0)
+            (accepted_root / source_ref).write_bytes(b"tampered source")
+            with self.assertRaises(OpportunityError):
+                reconcile(accepted_root, p, inv)
+            with self.assertRaises(OpportunityError):
+                acquire_period(accepted_root, entry, Fetcher({}), plan_doc=p, inventory=inv,
+                               retrieved_ms=1790539200000)
+
+    def test_partial_month_explicit_daily_fallback(self):
+        inv = self.inventory()
+        p = plan(inv, ("ETHUSDT",), ("2020-01",))
+        monthly_url = "https://data.binance.vision/" + self.eth
+        raw = zip_csv("ETHUSDT-15m-2020-01.csv", [candle(1577836800000), candle(1577837700000)])
+        mapping = {monthly_url: raw, monthly_url + ".CHECKSUM": sha256(raw).encode()}
+        for day, key in enumerate(self.daily):
+            url = "https://data.binance.vision/" + key
+            start = 1577836800000 + day * 86400000
+            daily = zip_csv(key.rsplit("/", 1)[-1].replace(".zip", ".csv"),
+                            [candle(start + i * 900000) for i in range(96)])
+            mapping[url] = daily
+            mapping[url + ".CHECKSUM"] = sha256(daily).encode()
+        rec = acquire_period(self.root, p["periods"][0], Fetcher(mapping), plan_doc=p, inventory=inv,
+                             retrieved_ms=1790539200000, allow_daily_fallback=True)
+        self.assertEqual(rec["attempts"][0]["state"], "SOURCE_GAP")
+        self.assertEqual(rec["state"], "DAILY_FALLBACK_SUCCESS")
+        self.assertEqual(rec["fallback_state"], "EXPLICIT")
+        self.assertEqual(rec["row_count"], 31 * 96)
 
 
 if __name__ == "__main__":

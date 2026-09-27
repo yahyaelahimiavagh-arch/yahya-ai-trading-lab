@@ -27,6 +27,7 @@ def main(argv=None) -> int:
     pilot.add_argument("--plan", required=True)
     pilot.add_argument("--inventory", required=True)
     pilot.add_argument("--daily-fallback", action="store_true")
+    pilot.add_argument("--boundary-evidence-map", help="Development-root JSON mapping SYMBOL-YYYY-MM to immutable evidence ref")
     for name in ("reconcile", "population-status", "build-lifecycle"):
         command = commands.add_parser(name)
         command.add_argument("--plan", required=True)
@@ -55,13 +56,20 @@ def main(argv=None) -> int:
                 if p["state"] != "AF01C_ENGINEERING_PILOT_NO_SELECTION" or len(p["periods"]) > 30:
                     raise OpportunityError("CLI only permits bounded engineering pilot")
                 if args.command == "pilot-acquire":
-                    result = [acquire_period(root, entry, retrieved_ms=int(now.timestamp()*1000),
-                                             allow_daily_fallback=args.daily_fallback) for entry in p["periods"]]
+                    evidence = (json.loads(development_path(root, args.boundary_evidence_map).read_bytes())
+                                if args.boundary_evidence_map else {})
+                    if not isinstance(evidence, dict) or any(not isinstance(x, str) for x in evidence.values()):
+                        raise OpportunityError("invalid boundary evidence map")
+                    result = [acquire_period(root, entry, plan_doc=p, inventory=inv,
+                                             retrieved_ms=int(now.timestamp()*1000),
+                                             allow_daily_fallback=args.daily_fallback,
+                                             boundary_evidence_ref=evidence.get(f"{entry['symbol']}-{entry['month']}"))
+                              for entry in p["periods"]]
                 elif args.command == "build-lifecycle":
-                    result = build_lifecycle(root, p, args.symbol, retrieved_ms=int(now.timestamp()*1000),
+                    result = build_lifecycle(root, p, inv, args.symbol, retrieved_ms=int(now.timestamp()*1000),
                                              ordinary_evidence_ref=args.ordinary_evidence_ref)
                 else:
-                    result = reconcile(root, p)
+                    result = reconcile(root, p, inv)
         print(json.dumps(result, sort_keys=True, default=str))
         return 0
     except (InventoryUnproven, OpportunityError, OSError, ValueError) as exc:
