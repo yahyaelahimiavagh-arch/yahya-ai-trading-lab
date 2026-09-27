@@ -62,7 +62,7 @@ AF-03A performed zero performance runs.
 Because 0027's original source-method blocker is now resolved, the preregistered
 availability-skip rule returns priority to 0027.
 
-## PREREGISTERED — GEN2-003 / RIE-CAND-0027
+## IMPLEMENTATION ACCEPTED — GEN2-003 / RIE-CAND-0027
 
 Protocol frozen:
 - `RIE-CAND-0027` → `GEN2-003-DOWNSIDE-VOL-SCALING-001`;
@@ -70,8 +70,19 @@ Protocol frozen:
 - source-style total-volatility comparator;
 - control;
 - 18 registered conditions;
-- no leverage / no short / no hidden grid;
-- performance still blocked by implementation gate.
+- no leverage / no short / no hidden grid.
+
+Implementation is merged on main and accepted.
+
+Pre-run blind-spot review:
+- `GEN2-003-PRE-RUN-BLIND-SPOT-REVIEW-v0.1.0.md`;
+- PASS before Development outcome;
+- interpretation frozen as sizing/risk-layer evidence;
+- failure cannot automatically classify the underlying trend family as NO_EDGE.
+
+Next allowed action:
+- ONE canonical GEN2-003 Development run under Director/manual-runtime supervision.
+- Fresh OOS / recent reserve / P10 remain outside this run.
 
 ## PARALLEL DESIGN LANE — AF-01 / AF-02
 
@@ -185,9 +196,10 @@ Authoritative matrix:
 `EXECUTION-MODE-MATRIX-v1.0.md`
 
 Current package:
-- **GEN2-003 deterministic implementation + tests**
-- Mode: `WORK_REQUIRED`
-- Required-mode warning: `⚠️ WORK GATE`
+- **GEN2-003 single canonical Development run**
+- Mode: `CHAT_DIRECTOR + MANUAL_VPS`
+- Pre-run blind-spot review: **PASS**
+- Work is not required for this evidence-spending step.
 
 Upcoming required-mode gates:
 1. **AF-01B Opportunity data implementation** → `⚠️ WORK GATE`
