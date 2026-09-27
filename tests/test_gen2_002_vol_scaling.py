@@ -43,6 +43,17 @@ class Gen2VolScalingTests(unittest.TestCase):
         with self.assertRaises(g2.Gen2VolError):
             g2._scale_from_returns(daily,boundary_ms=boundary)
 
+    def test_volatility_state_resets_at_registered_warmup_boundary(self):
+        times=tuple(i*g2.HOUR_MS for i in range(8))
+        signal=hsse2.SearchSeries("BTCUSDT",times,(100.0,)*8,(100.0,)*8)
+        short=array("d",[1,2,2,2,2,2,2,2])
+        long=array("d",[2,1,1,1,1,1,1,1])
+        states=g2._control_positions(
+            signal=signal,short_values=short,long_values=long,
+            reset_ms=3*g2.HOUR_MS,
+        )
+        self.assertEqual(states[:5],(0,0,0,0,0))
+
     def test_required_fill_gap_fails_closed(self):
         times=(0,g2.HOUR_MS,2*g2.HOUR_MS,4*g2.HOUR_MS)
         opens=("100","100","100","100")
@@ -62,6 +73,28 @@ class Gen2VolScalingTests(unittest.TestCase):
                 start_ms=0,end_ms=5*g2.HOUR_MS,policy=policy,scaled=True,
                 scale_schedule={0:Decimal("0.5")},
             )
+
+    def test_signal_at_fold_end_is_retained_unfilled_not_called_data_gap(self):
+        times=tuple(i*g2.HOUR_MS for i in range(5))
+        opens=("100",)*5
+        closes=("100",)*5
+        signal=hsse2.SearchSeries("BTCUSDT",times,tuple(map(float,opens)),tuple(map(float,closes)))
+        exact=hsse3.ExactSeries("BTCUSDT",times,opens,closes)
+        short=array("d",[math.nan,1,1,2,2])
+        long=array("d",[math.nan,2,2,1,1])
+        policy={
+            "base_quantity":"0.001","initial_equity_quote":"10000",
+            "base_fee_bps":10,"base_adverse_slippage_bps":5,
+            "stress_fee_bps":20,"stress_adverse_slippage_bps":10,
+        }
+        r=g2._simulate_cell(
+            signal=signal,exact=exact,short_values=short,long_values=long,
+            start_ms=0,end_ms=4*g2.HOUR_MS,policy=policy,scaled=True,
+            scale_schedule={0:Decimal("0.5")},
+        )
+        self.assertEqual(r["underlying_entry_signals"],1)
+        self.assertEqual(r["entry_fills"],0)
+        self.assertEqual(r["missing_fill_events"],1)
 
     def test_variable_quantity_accounting_keeps_one_directional_cycle(self):
         a=g2._new_account(Decimal("10000"))

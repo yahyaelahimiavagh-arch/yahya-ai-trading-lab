@@ -450,12 +450,19 @@ def _control_positions(
     signal: hsse2.SearchSeries,
     short_values,
     long_values,
+    reset_ms: int,
 ) -> tuple[int, ...]:
     n = len(signal.times)
     states = [0] * n
+    start = bisect.bisect_left(signal.times, reset_ms)
+    if start >= n:
+        raise Gen2VolError("volatility-state reset is outside series")
     position = False
-    for i in range(1, n):
-        if i >= 2 and signal.times[i] == signal.times[i - 1] + HOUR_MS:
+    for i in range(start, n):
+        if (
+            i >= start + 2
+            and signal.times[i] == signal.times[i - 1] + HOUR_MS
+        ):
             vals = (
                 short_values[i - 1],
                 long_values[i - 1],
@@ -671,9 +678,11 @@ def _simulate_cell(
             continue
 
         fi = i + 1
+        if fi >= end:
+            missing_fills += 1
+            continue
         if (
-            fi >= end
-            or fi >= len(exact.times)
+            fi >= len(exact.times)
             or exact.times[fi] != exact.times[i] + HOUR_MS
         ):
             missing_fills += 1
@@ -839,6 +848,7 @@ def _aggregate_condition(
                 signal=signal_series[symbol],
                 short_values=cache[(symbol, family, n1)],
                 long_values=cache[(symbol, family, n2)],
+                reset_ms=warmup_start_ms,
             )
             scale_cache[scale_key] = _scale_schedule(
                 exact=exact_series[symbol],
