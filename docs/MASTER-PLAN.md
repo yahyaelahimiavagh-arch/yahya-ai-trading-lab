@@ -2393,3 +2393,35 @@ Work-token policy:
 - نه Work per candidate؛
 - batch execution روی VPS/runtime.
 
+
+
+### Alpha Factory Production Readiness — 2026-09-27
+
+AF-01B point-in-time Opportunity Data Foundation روی main پذیرفته شد.
+
+مسیر بعدی قبل از اولین Mass Development run:
+
+1. AF-01C historical archive inventory/acquisition adapter؛
+2. archive-backed broad Spot/USDT Development population؛
+3. MCF-03 dynamic-universe production runner؛
+4. MCF-04 severe statistical/neighbor/common-factor adjudication؛
+5. MCF-PROD-001 با حدود 8k–12k raw candidate؛
+6. فقط survivorهای frozen بعد از F0–F7 حق نزدیک‌شدن به Fresh OOS دارند.
+
+Development نسل اول فقط از بازه شناخته‌شده
+2020-03-01 تا 2023-01-01 استفاده می‌کند و داده بعد از آن را برای این run باز
+نمی‌کند.
+
+Universe اولیه point-in-time و ماهانه بازسازی می‌شود:
+حداکثر 50 عضو بر اساس trailing 30d quote volume گذشته، با حداقل 60 روز سابقه
+admitted و continuity حداقل 99.5%.
+
+current exchangeInfo به‌تنهایی historical-universe source محسوب نمی‌شود؛
+historical archive inventory باید جداگانه freeze و hash شود.
+
+Search-space اولیه در
+`MCF-PROD-001-FAMILY-DOMAIN-PLAN-v1.0.json`
+قبل از outcome فریز شده و raw Cartesian upper bound آن 8,176 candidate است.
+
+هیچ survivor quota وجود ندارد. صفر survivor نتیجه معتبر است.
+Fresh OOS، recent reserve و P10 همچنان untouched هستند.
