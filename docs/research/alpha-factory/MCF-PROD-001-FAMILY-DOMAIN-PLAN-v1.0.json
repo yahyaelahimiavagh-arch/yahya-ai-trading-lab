@@ -5,8 +5,8 @@
   "state": "FROZEN_BEFORE_PERFORMANCE",
   "raw_cartesian_upper_bound": 9176,
   "target_after_structural_constraints": [
-    8500,
-    9000
+    8400,
+    8800
   ],
   "hard_generation_cap": 12000,
   "families": [
@@ -521,5 +521,5 @@
     "p11_locked": true,
     "live_master_lock": "OFF"
   },
-  "expected_structurally_valid_count": 8748
+  "expected_structurally_valid_count": 8640
 }
