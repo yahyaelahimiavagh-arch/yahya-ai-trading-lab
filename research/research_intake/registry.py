@@ -60,11 +60,23 @@ STATUSES = frozenset(
         "REPRODUCIBLE",
         "REJECTED_SOURCE",
         "READY_FOR_TRAIN_SEARCH",
+        "BLOCKED_REPRODUCIBILITY",
+        "BLOCKED_SOURCE",
+        "PREREGISTERED",
     }
 )
 IMPLEMENTATION_AVAILABILITY = frozenset(
     {"NONE", "PSEUDOCODE", "CODE", "NOTEBOOK"}
 )
+
+# AF-03A records bounded intake transitions, not executable reproduction packets.
+AF03A_TRANSITIONS = {
+    "RIE-CAND-0011": ("BLOCKED_REPRODUCIBILITY", "BLOCKED_REPRODUCIBILITY"),
+    "RIE-CAND-0022": ("BLOCKED_SOURCE", "BLOCKED_SOURCE"),
+    "RIE-CAND-0027": ("PREREGISTERED", "METHOD_SPECIFIED"),
+}
+AF03A_CLOSEOUT = "docs/research/research-intake/AF-03A-SOURCE-UNBLOCK-SPRINT-v0.1.0.md"
+GEN2_003_PROTOCOL = "docs/research/generation-2/GEN2-003-DOWNSIDE-VOL-SCALING-PROTOCOL-v0.1.0.json"
 
 
 class ResearchIntakeError(RuntimeError):
@@ -247,6 +259,52 @@ def _validate_implementation(record: object) -> dict[str, object]:
     return dict(record)
 
 
+def _validate_af03a_packet(candidate_id: str, status: str, packet: object) -> None:
+    expected = AF03A_TRANSITIONS.get(candidate_id)
+    if expected is None or status != expected[0]:
+        raise ResearchIntakeError("AF-03A candidate transition is invalid")
+    if status in {"BLOCKED_REPRODUCIBILITY", "BLOCKED_SOURCE"}:
+        if not _exact_keys(packet, (
+            "state", "closeout_ref", "known_exact_details", "missing_details"
+        )):
+            raise ResearchIntakeError("AF-03A blocked packet schema is invalid")
+        _text_list(packet["known_exact_details"], "known exact details", required=True)
+        _text_list(packet["missing_details"], "missing details", required=True)
+    else:
+        if not _exact_keys(packet, (
+            "state", "closeout_ref", "source_full_text_url", "source_equations",
+            "lag_rule", "sparse_negative_return_rule", "real_time_rule",
+            "yatl_adaptation_required", "performance_authorized", "protocol"
+        )):
+            raise ResearchIntakeError("AF-03A preregistration schema is invalid")
+        _https_uri(packet["source_full_text_url"], "AF-03A full text URL")
+        equations = packet["source_equations"]
+        if not _exact_keys(equations, (
+            "total_volatility", "downside_volatility", "managed_return"
+        )):
+            raise ResearchIntakeError("AF-03A source equations schema is invalid")
+        for name in ("total_volatility", "downside_volatility", "managed_return"):
+            _text(equations[name], "AF-03A " + name)
+        for name in ("lag_rule", "sparse_negative_return_rule", "real_time_rule"):
+            _text(packet[name], "AF-03A " + name)
+        protocol = packet["protocol"]
+        if (
+            packet["yatl_adaptation_required"] is not True
+            or packet["performance_authorized"] is not False
+            or not _exact_keys(protocol, (
+                "protocol_id", "relative_path", "performance_authorized",
+                "implementation_required"
+            ))
+            or protocol["protocol_id"] != "GEN2-003-DOWNSIDE-VOL-SCALING-001"
+            or protocol["relative_path"] != GEN2_003_PROTOCOL
+            or protocol["performance_authorized"] is not False
+            or protocol["implementation_required"] is not True
+        ):
+            raise ResearchIntakeError("AF-03A implementation gate is invalid")
+    if packet["state"] != expected[1] or packet["closeout_ref"] != AF03A_CLOSEOUT:
+        raise ResearchIntakeError("AF-03A state/closeout binding is invalid")
+
+
 def _validate_candidate(candidate: object) -> dict[str, object]:
     keys = (
         "candidate_id",
@@ -307,8 +365,19 @@ def _validate_candidate(candidate: object) -> dict[str, object]:
     _text_list(candidate["known_limitations"], "known limitations")
     _text_list(candidate["leakage_risks"], "leakage risks")
 
+    status = candidate["status"]
+    if status not in STATUSES:
+        raise ResearchIntakeError("candidate status is invalid")
     packet_ref = candidate["reproduction_packet"]
-    if packet_ref is not None:
+    # The original 24-candidate registry is an immutable pre-AF-03A snapshot.
+    af03a = candidate_id in AF03A_TRANSITIONS and not (
+        status == "NEW" and packet_ref is None
+    )
+    if af03a:
+        _validate_af03a_packet(candidate_id, status, packet_ref)
+    elif status in {"BLOCKED_REPRODUCIBILITY", "BLOCKED_SOURCE", "PREREGISTERED"}:
+        raise ResearchIntakeError("unregistered AF-03A candidate transition")
+    if packet_ref is not None and not af03a:
         if not _exact_keys(packet_ref, ("relative_path", "git_blob_sha")):
             raise ResearchIntakeError("reproduction packet reference is invalid")
         relative = _text(
@@ -331,9 +400,6 @@ def _validate_candidate(candidate: object) -> dict[str, object]:
         ):
             raise ResearchIntakeError("reproduction packet Git blob SHA is invalid")
 
-    status = candidate["status"]
-    if status not in STATUSES:
-        raise ResearchIntakeError("candidate status is invalid")
     duplicate_of = candidate["duplicate_of"]
     if duplicate_of is not None and (
         not isinstance(duplicate_of, str)
@@ -450,7 +516,10 @@ def validate_registry(path: Path) -> dict[str, object]:
     packet_count = 0
     for item in validated:
         packet_ref = item["reproduction_packet"]
-        if packet_ref is None:
+        if packet_ref is None or (
+            item["candidate_id"] in AF03A_TRANSITIONS
+            and item["status"] == AF03A_TRANSITIONS[item["candidate_id"]][0]
+        ):
             continue
         packet_path = target.parent / packet_ref["relative_path"]
         if packet_path.is_symlink():

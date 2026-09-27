@@ -1,37 +1,82 @@
 {
   "schema": "YATL_GEN2_METHOD_EXTRACTION",
   "schema_version": "0.1.0",
+  "extraction_id": "RIE-CAND-0027-METHOD-EXTRACTION-001",
   "candidate_id": "RIE-CAND-0027",
+  "status": "METHOD_SPECIFIED_BEFORE_YATL_PERFORMANCE",
   "source": {
     "title": "Downside risk and the performance of volatility-managed portfolios",
-    "author": [
+    "authors": [
       "Feifei Wang",
       "Xuemin Sterling Yan"
     ],
-    "doi": "10.1016/j.jbankfin.2021.106198",
-    "uri": "https://www.sciencedirect.com/science/article/pii/S0378426621001576",
+    "journal": "Journal of Banking & Finance",
+    "volume": 131,
+    "article": "106198",
     "publication_year": 2021,
-    "access_state": "PARTIAL_PUBLIC_METHOD_TEXT",
+    "doi": "10.1016/j.jbankfin.2021.106198",
+    "publisher_url": "https://www.sciencedirect.com/science/article/pii/S0378426621001576",
+    "author_full_text_url": "https://www.lehigh.edu/~xuy219/research/Downside.pdf",
     "source_bytes_frozen": false,
-    "implementation_found": false
+    "implementation_found": false,
+    "performance_claims_are_yatl_evidence": false
   },
-  "extracted_method": {
-    "concept": "Scale exposure by lagged downside volatility rather than lagged total volatility.",
-    "downside_definition_visible": "Downside volatility is estimated from negative returns; related literature/current accessible text indicates a zero threshold.",
-    "motivation": "High downside volatility may predict both high future volatility and lower future returns.",
-    "real_time_note": "The paper reports improved real-time behavior from fixed-weight strategies versus repeatedly estimated weights.",
-    "exact_yatl_ready_formula": false
+  "exact_source_method": {
+    "base_frequency": "MONTHLY_PORTFOLIO_RETURN_WITH_DAILY_REALIZED_VOLATILITY_INPUTS",
+    "total_volatility_equation": "sigma_Total,t = sqrt(sum_{j=1}^{N_t}(f_j^2))",
+    "downside_volatility_equation": "sigma_Down,t = sqrt(sum_{j=1}^{N_t}(f_j^2 * I[f_j < 0]))",
+    "sparse_negative_day_rule": "If fewer than three negative daily returns occur in month t, downside volatility is measured using negative daily returns over both month t and month t-1.",
+    "managed_return_equation": "f_Down_sigma,t = c_tilde* / sigma_Down,t-1 * f_t",
+    "total_managed_comparator_equation": "f_Total_sigma,t = c* / sigma_Total,t-1 * f_t",
+    "lag_semantics": "Month-t managed return uses realized volatility completed in month t-1; no month-t return enters its own scale.",
+    "scale_constant_definition": "Choose the scaling constant so the original and volatility-managed return series have the same volatility over the estimation sample.",
+    "real_time_evaluation": {
+      "initial_training_months": 120,
+      "estimation_window": "EXPANDING",
+      "update_frequency": "MONTHLY",
+      "procedure": "At the beginning of each OOS month t, estimate the real-time scaling parameter from the training period ending before t, then construct the managed portfolio for t."
+    },
+    "fixed_weight_robustness": {
+      "relative_managed_weights_percent": [
+        10,
+        25,
+        50,
+        75,
+        90
+      ],
+      "role": "REAL_TIME_ROBUSTNESS_COMBINATION_ANALYSIS",
+      "yatl_trial_authorized_by_this_extraction": false
+    },
+    "source_prefers_volatility_over_variance": true
   },
-  "blockers": [
-    "Exact estimator horizon, normalization constant and fixed-weight real-time implementation needed for a faithful YATL specification are not fully exposed in accessible text.",
-    "No inspectable implementation/code was found.",
-    "Source bytes are not frozen."
+  "source_to_yatl_gaps": {
+    "source_market": "EQUITY_FACTORS_AND_ANOMALY_PORTFOLIOS",
+    "yatl_market": "BTCUSDT_ETHUSDT_LONG_ONLY_SPOT",
+    "source_can_imply_leverage": true,
+    "yatl_leverage_forbidden": true,
+    "source_initial_training_months_not_available_in_current_gen2_development": true,
+    "required_yatl_adaptations": [
+      "Map source monthly/daily calendar to completed UTC crypto calendar observations.",
+      "Define one fixed minimum expanding-history requirement using only the already-registered GEN2 Development warmup; do not search alternate warmups.",
+      "Cap exposure scale at 1.0.",
+      "Define missing-data behavior without interpolation or hidden deletion of bad outcomes.",
+      "Define cost-bearing quantity rebalance semantics.",
+      "Retain a total-volatility source-style comparator because downside-vs-total is part of the source hypothesis.",
+      "Add opportunity-preservation gates so reduced exposure cannot pass merely by starving the strategy."
+    ]
+  },
+  "prohibited_inference": [
+    "Do not copy source-reported performance into YATL evidence.",
+    "Do not infer a crypto-specific target volatility; this source method does not require one.",
+    "Do not add target-volatility, EWMA, downside-threshold, or fixed-weight trial grids.",
+    "Do not use HSSE-005 event-level outcomes, Fresh OOS, recent reserve, or P10 to choose adaptation parameters.",
+    "Do not claim source replication; any YATL test is an internal adaptation."
   ],
-  "status": "NOT_READY_PENDING_EXACT_METHOD",
-  "performance_claims_trusted": false,
+  "af03a_closeout": "docs/research/research-intake/AF-03A-SOURCE-UNBLOCK-SPRINT-v0.1.0.md",
   "performance_run_allowed": false,
+  "research_only": true,
   "p10_read": false,
   "p10_write_allowed": false,
   "p11_locked": true,
-  "research_only": true
+  "live_master_lock": "OFF"
 }
