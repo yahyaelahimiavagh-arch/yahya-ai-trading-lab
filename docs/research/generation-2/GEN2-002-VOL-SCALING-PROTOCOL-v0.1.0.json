@@ -46,7 +46,34 @@
     "hsse_005_outcomes_used_for_selection": false,
     "gen2_001_outcomes_used_for_parameter_selection": false,
     "fresh_oos_read_allowed": false,
-    "recent_reserve_read_allowed": false
+    "recent_reserve_read_allowed": false,
+    "development_folds": [
+      {
+        "fold_id": "GEN2-D001",
+        "evaluation_start_utc": "2020-08-01T00:00:00Z",
+        "evaluation_end_exclusive_utc": "2021-01-01T00:00:00Z"
+      },
+      {
+        "fold_id": "GEN2-D002",
+        "evaluation_start_utc": "2021-01-01T00:00:00Z",
+        "evaluation_end_exclusive_utc": "2021-07-01T00:00:00Z"
+      },
+      {
+        "fold_id": "GEN2-D003",
+        "evaluation_start_utc": "2021-07-01T00:00:00Z",
+        "evaluation_end_exclusive_utc": "2022-01-01T00:00:00Z"
+      },
+      {
+        "fold_id": "GEN2-D004",
+        "evaluation_start_utc": "2022-01-01T00:00:00Z",
+        "evaluation_end_exclusive_utc": "2022-07-01T00:00:00Z"
+      },
+      {
+        "fold_id": "GEN2-D005",
+        "evaluation_start_utc": "2022-07-01T00:00:00Z",
+        "evaluation_end_exclusive_utc": "2023-01-01T00:00:00Z"
+      }
+    ]
   },
   "volatility_estimator": {
     "input_series": "Unscaled control strategy gross mark-to-market daily returns for the same frozen reference strategy.",
@@ -192,6 +219,14 @@
     "gen2_master_protocol": {
       "relative_path": "docs/research/generation-2/GEN2-MASTER-PROTOCOL-v0.1.0.json",
       "git_blob_sha": "d943ee673067fa5150adba6b896e04037b959545"
+    },
+    "hsse_search_protocol": {
+      "relative_path": "docs/research/historical-strategy-search/HSSE-001-SEARCH-PROTOCOL-v0.1.0.json",
+      "git_blob_sha": "a0057088995ac3ab26d8316972fc86b821556bc5"
+    },
+    "development_quality_manifest": {
+      "relative_path": "quality/event-catalog-v0.1.0/CRL-CONTROL-DEV-POOL-001/event-quality-74ea7a7084bb138122ee5d82.json",
+      "file_sha256": "74ea7a7084bb138122ee5d823c790853ad55cb57e1378a876bec6d3f1537167e"
     }
   },
   "evidence_attribution": {
@@ -202,5 +237,13 @@
     "source_role": "HYPOTHESIS_AND_METHOD_PROVENANCE",
     "method_extraction_role": "FREEZE_EXACT_CORE_SOURCE_RULE_AND_EXPLICIT_YATL_ADAPTATION_GAPS",
     "tested_object_type": "YATL_INTERNAL_ADAPTATION"
+  },
+  "pre_performance_binding_amendment": {
+    "status": "BOUND_BEFORE_ANY_GEN2_002_PERFORMANCE_OUTCOME",
+    "reason": "Implementation binding refinement only: explicitly freeze Development folds, HSSE-001 protocol identity, and the already-used CRL Development quality manifest.",
+    "parameter_changes": false,
+    "target_window_cap_changes": false,
+    "trial_budget_changes": false,
+    "outcome_accessed": false
   }
 }

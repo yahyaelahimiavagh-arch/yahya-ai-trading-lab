@@ -97,6 +97,12 @@ class Gen2ProtocolsTests(unittest.TestCase):
         self.assertTrue(r["no_retune_after_outcomes"])
         self.assertEqual(r["implementation_gate"]["status_at_registration"],"PENDING_IMPLEMENTATION")
         self.assertTrue(r["implementation_gate"]["protocol_mutation_to_unlock_run_forbidden"])
+        self.assertEqual(len(r["development_scope"]["development_folds"]),5)
+        self.assertEqual(r["development_scope"]["development_folds"][0]["evaluation_start_utc"],"2020-08-01T00:00:00Z")
+        self.assertEqual(r["bindings"]["hsse_search_protocol"]["git_blob_sha"],"a0057088995ac3ab26d8316972fc86b821556bc5")
+        self.assertEqual(r["bindings"]["development_quality_manifest"]["file_sha256"],"74ea7a7084bb138122ee5d823c790853ad55cb57e1378a876bec6d3f1537167e")
+        self.assertFalse(r["pre_performance_binding_amendment"]["outcome_accessed"])
+        self.assertFalse(r["pre_performance_binding_amendment"]["parameter_changes"])
 
 if __name__=="__main__":
     unittest.main()
