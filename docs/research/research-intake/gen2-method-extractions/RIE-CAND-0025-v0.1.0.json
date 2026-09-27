@@ -1,0 +1,101 @@
+{
+  "schema": "YATL_GEN2_METHOD_EXTRACTION",
+  "schema_version": "0.1.0",
+  "candidate_id": "RIE-CAND-0025",
+  "source": {
+    "title": "Momentum has its moments",
+    "authors": [
+      "Pedro Barroso",
+      "Pedro Santa-Clara"
+    ],
+    "doi": "10.1016/j.jfineco.2014.11.010",
+    "publisher_uri": "https://www.sciencedirect.com/science/article/pii/S0304405X14002566",
+    "publication_year": 2015,
+    "access_state": "PUBLIC_METHOD_TEXT_SUFFICIENT_FOR_CORE_VOLATILITY_SCALING_RULE",
+    "source_bytes_frozen": false,
+    "official_replication_package_listed": true,
+    "official_replication_package_bytes_accessible_in_current_environment": false,
+    "method_text_evidence": [
+      {
+        "role": "PUBLISHER_CORE_METHOD",
+        "uri": "https://www.sciencedirect.com/science/article/pii/S0304405X14002566",
+        "note": "Publisher page exposes the six-month realized-volatility scaling concept, target-constant-volatility construction, and transaction-cost discussion."
+      },
+      {
+        "role": "PUBLIC_EXACT_EQUATION_TRANSCRIPTION",
+        "uri": "https://www.readkong.com/page/momentum-has-its-moments-cid-3-pedro-barrosoy-and-pedro-5988789",
+        "note": "Public text transcription exposes equations (5) and (6), the 126-session window, 12% annualized target, and source weight range."
+      },
+      {
+        "role": "AUTHOR_REPLICATION_PACKAGE_LISTING",
+        "uri": "https://sites.google.com/site/pedromsbarroso/",
+        "note": "Author page lists an official replication package; the linked Drive object is not accessible in the current environment."
+      }
+    ]
+  },
+  "extracted_method": {
+    "source_strategy_context": "US equity winner-minus-loser (WML) momentum, long-short and self-financing.",
+    "decision_frequency": "MONTHLY",
+    "risk_input": "Daily returns of the unscaled WML momentum strategy.",
+    "risk_window_trading_days": 126,
+    "risk_window_description": "Previous six months / 126 trading sessions.",
+    "variance_forecast_equation": "sigma_hat_sq_t = 21 * sum_{j=0}^{125}(r_WML,d_{t-1-j}^2) / 126",
+    "scaling_equation": "r_scaled_t = (target / sigma_hat_t) * r_WML_t",
+    "target_annualized_volatility": "0.12",
+    "lag_semantics": "Only realized daily strategy returns available before the new monthly exposure decision enter the forecast.",
+    "source_leverage_behavior": "UNCONSTRAINED_SELF_FINANCING_SCALING",
+    "reported_weight_range": [
+      "0.13",
+      "2.00"
+    ],
+    "alternative_estimators_reported_as_robustness_only": [
+      "one-month realized variance",
+      "three-month realized variance",
+      "EWMA half-life 1 month",
+      "EWMA half-life 3 months",
+      "EWMA half-life 6 months"
+    ],
+    "source_transaction_cost_detail": "The public text discusses turnover/transaction-cost robustness but does not expose a fixed bps cost model equivalent to YATL."
+  },
+  "reproducibility_assessment": {
+    "core_risk_scaling_method_exact_enough": true,
+    "full_source_replication_claim_allowed": false,
+    "reasons_full_replication_not_claimed": [
+      "The source trades an equity long-short WML factor; YATL is BTCUSDT/ETHUSDT long-only Spot.",
+      "The source permits scale weights above 1; YATL forbids leverage.",
+      "The source uses exchange trading sessions and a 126-session six-month window; crypto is 24/7 and requires an explicit calendar adaptation.",
+      "Source bytes and the official replication package are not frozen in the current evidence store."
+    ],
+    "classification": "METHOD_EXTRACTED_FOR_EXPLICIT_YATL_ADAPTATION"
+  },
+  "yatl_adaptation_draft": {
+    "tested_object_id": "GEN2-ADAPT-0002-VOL-SCALING",
+    "tested_object_type": "YATL_INTERNAL_ADAPTATION",
+    "registered_protocol_id": "GEN2-002-VOL-SCALING-001",
+    "mode": "LONG_ONLY_SPOT_EXPOSURE_SCALING",
+    "underlying_entry_exit_authority": "All directional entry/exit signals remain the frozen underlying reference strategy.",
+    "crypto_calendar_window_days": 183,
+    "crypto_annualization_days": 365,
+    "target_annualized_volatility": "0.12",
+    "scale_cap": "1.0",
+    "scale_floor": "0",
+    "no_short": true,
+    "no_leverage": true,
+    "no_new_directional_entries": true,
+    "monthly_update": true,
+    "opportunity_preservation_required": true,
+    "source_fidelity": "ADAPTED_SCALER: preserves lagged inverse-volatility scaling and the source 12% target, while replacing equity trading sessions with completed UTC crypto days and capping exposure at 1 because YATL forbids leverage."
+  },
+  "unresolved": [
+    "Official source/replication-package bytes are not frozen.",
+    "This extraction does not authorize alternative windows, EWMA variants, volatility targets, leverage, or post-outcome tuning.",
+    "Implementation must exactly model cost-bearing monthly exposure rebalances before any Development performance run."
+  ],
+  "status": "METHOD_EXACT_ADAPTATION_PROTOCOL_REGISTERED",
+  "performance_claims_trusted": false,
+  "performance_run_allowed": false,
+  "p10_read": false,
+  "p10_write_allowed": false,
+  "p11_locked": true,
+  "research_only": true
+}

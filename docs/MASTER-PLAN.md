@@ -2046,3 +2046,21 @@ economics and median improvement gates. 20/30/40/50% never activated. No stop
 threshold is promoted; no same-evidence threshold refinement/retry is allowed.
 Generation 2 continues to the next preregistered hypothesis. P10 untouched; Fresh
 OOS sealed; P11 locked.
+
+17. **GEN2-002 Volatility Scaling — METHOD EXTRACTED / PREREGISTERED / ZERO PERFORMANCE RUNS**:
+`RIE-CAND-0025` core method is exact enough for adaptation: monthly inverse-volatility
+scaling from the previous six months / 126 trading sessions with a 12% annualized
+target. YATL does **not** claim source replication because the paper is equity WML
+long-short and can use leverage. The frozen YATL object is
+`GEN2-ADAPT-0002-VOL-SCALING` (primary hypothesis #2): all six HSSE-004A reference
+strategies unchanged, 183 completed UTC crypto days, 365-day annualization, monthly
+updates, `scale=min(1,0.12/sigma_ann)`, no short/no leverage, explicit cost-bearing
+monthly rebalances, and 12 total conditions (6 × control/scaled). Directional
+entry/trade counts must match control and aggregate notional exposure must remain
+at least 25% of control to prevent economic starvation. Development estimator
+warm-up begins 2020-01-01; scored selection is 2020-08-01 through 2023-01-01
+exclusive. 2023-2024 known diagnostics, HSSE-005 outcomes, Fresh OOS and recent
+reserve are not used for selection. No alternate target/window/EWMA trial is
+authorized after outcome. Performance remains blocked until deterministic
+implementation + tests have a passing Final HEAD. P10 untouched; Fresh OOS sealed;
+P11 locked; LIVE_MASTER_LOCK=OFF.

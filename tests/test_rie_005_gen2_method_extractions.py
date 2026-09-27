@@ -25,6 +25,21 @@ class RIE005Gen2MethodExtractionTests(unittest.TestCase):
         self.assertTrue(r["yatl_adaptation_draft"]["no_short"])
         self.assertTrue(r["yatl_adaptation_draft"]["no_leverage"])
 
+    def test_0025_core_method_is_exact_but_yatl_object_is_adaptation(self):
+        r=self.load("RIE-CAND-0025")
+        self.assertEqual(r["status"],"METHOD_EXACT_ADAPTATION_PROTOCOL_REGISTERED")
+        self.assertEqual(r["extracted_method"]["risk_window_trading_days"],126)
+        self.assertEqual(r["extracted_method"]["target_annualized_volatility"],"0.12")
+        self.assertEqual(r["extracted_method"]["decision_frequency"],"MONTHLY")
+        self.assertTrue(r["reproducibility_assessment"]["core_risk_scaling_method_exact_enough"])
+        self.assertFalse(r["reproducibility_assessment"]["full_source_replication_claim_allowed"])
+        self.assertEqual(r["yatl_adaptation_draft"]["tested_object_type"],"YATL_INTERNAL_ADAPTATION")
+        self.assertEqual(r["yatl_adaptation_draft"]["crypto_calendar_window_days"],183)
+        self.assertEqual(r["yatl_adaptation_draft"]["scale_cap"],"1.0")
+        self.assertTrue(r["yatl_adaptation_draft"]["no_leverage"])
+        self.assertTrue(r["yatl_adaptation_draft"]["no_short"])
+        self.assertFalse(r["performance_run_allowed"])
+
     def test_all_extractions_preserve_safety(self):
         for path in BASE.glob("RIE-CAND-*.json"):
             r=json.loads(path.read_text(encoding="utf-8"))
