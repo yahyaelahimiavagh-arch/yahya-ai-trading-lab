@@ -1628,7 +1628,7 @@
         "Only returns strictly before the decision bar may enter downside volatility.",
         "Do not estimate ex-post optimal combination weights."
       ],
-      "status": "METHOD_SPECIFIED",
+      "status": "PREREGISTERED",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
       "p10_evidence_effect": "NONE",
@@ -1645,7 +1645,13 @@
         "sparse_negative_return_rule": "If fewer than three negative daily returns occur in a month, source uses negative returns over that month and the prior month.",
         "real_time_rule": "Initial K=120 months; expanding window; scale parameter estimated before each OOS month from prior training data.",
         "yatl_adaptation_required": true,
-        "performance_authorized": false
+        "performance_authorized": false,
+        "protocol": {
+          "protocol_id": "GEN2-003-DOWNSIDE-VOL-SCALING-001",
+          "relative_path": "docs/research/generation-2/GEN2-003-DOWNSIDE-VOL-SCALING-PROTOCOL-v0.1.0.json",
+          "performance_authorized": false,
+          "implementation_required": true
+        }
       }
     },
     {
