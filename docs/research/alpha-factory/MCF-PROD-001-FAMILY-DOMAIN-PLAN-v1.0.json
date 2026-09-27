@@ -5,8 +5,8 @@
   "state": "FROZEN_BEFORE_PERFORMANCE",
   "raw_cartesian_upper_bound": 8176,
   "target_after_structural_constraints": [
-    8000,
-    10000
+    7500,
+    8000
   ],
   "hard_generation_cap": 12000,
   "families": [
@@ -488,7 +488,8 @@
     "unsupported_operator_blocks_family_preperformance": true,
     "no_parameter_domain_expansion_after_outcome": true,
     "no_symbol_specific_parameter_tuning": true,
-    "no_family_survivor_quota": true
+    "no_family_survivor_quota": true,
+    "structural_count_must_reconcile_to_frozen_domain_math": true
   },
   "safety": {
     "paper_research_only": true,
@@ -498,5 +499,6 @@
     "p10_write": false,
     "p11_locked": true,
     "live_master_lock": "OFF"
-  }
+  },
+  "expected_structurally_valid_count": 7748
 }
