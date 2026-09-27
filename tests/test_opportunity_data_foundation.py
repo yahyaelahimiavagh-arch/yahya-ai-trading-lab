@@ -30,6 +30,16 @@ def dataset(symbol='BTCUSDT', indices=range(12), allow_gaps=True):
                  source_refs=('fixture://bounded/v1',), allow_gaps=allow_gaps)
 
 
+def hour_dataset(symbol='BTCUSDT'):
+    raw = dataset(symbol)[0].rows
+    hourly, _ = derive(raw, symbol, f'{symbol}/1h/view/v1', '15m', '1h',
+                       as_of_ms=START + 12*C)
+    return admit(dataset_id=f'{symbol}/1h/fixture/v1', symbol=symbol, interval='1h',
+                 rows=hourly, source='SYNTHETIC_FIXTURE', requested_start_ms=START,
+                 requested_end_ms=START + 12*C, retrieved_at_ms=START + 12*C,
+                 source_refs=('fixture://bounded/v1',), allow_gaps=False)
+
+
 def lifecycle(symbol='BTCUSDT', status='INACTIVE', **kw):
     return Lifecycle(symbol=symbol, base_asset=symbol[:-4], quote_asset='USDT',
                      venue='BINANCE_SPOT', instrument_type='SPOT', spot_allowed=True,
@@ -96,6 +106,48 @@ class OpportunityFoundationTests(unittest.TestCase):
         assert bridge == ix.mcf_data_binding('BTCUSDT', t, policy())
         assert not ix.liquidity_available(liquid, t+C)
 
+
+    def test_eligibility_requires_latest_completed_bar_even_with_zero_warmup(self):
+        d = dataset()
+        ix = build_index((lifecycle(),), (d,))
+        zero_warmup = replace(policy(), warmup_bars=0).frozen()
+        stale_t = START + 14*C
+        result = ix.eligibility('BTCUSDT', stale_t, zero_warmup)
+        assert result.data_admitted
+        assert not result.production_research_eligible
+        assert 'STALE_INTERVAL:15m' in result.reasons
+
+    def test_multi_asset_requires_all_policy_intervals_for_companions(self):
+        btc15 = dataset()
+        btc1h = hour_dataset()
+        eth15 = dataset('ETHUSDT')
+        ix = build_index((lifecycle(), lifecycle('ETHUSDT')), (btc15, btc1h, eth15))
+        t = START + 12*C
+        cross = UniversePolicy(
+            ref='fixture-cross/v1',
+            quote_asset='USDT',
+            required_intervals=('15m', '1h'),
+            required_dependencies=('MULTI_ASSET',),
+            warmup_bars=1,
+        ).frozen()
+        assert not ix.dependency_available(
+            'BTCUSDT', t, 'MULTI_ASSET', companions=('ETHUSDT',),
+            required_intervals=cross.required_intervals)
+        result = ix.eligibility('BTCUSDT', t, cross, companions=('ETHUSDT',))
+        assert not result.production_research_eligible
+        assert 'MISSING_MULTI_ASSET' in result.reasons
+
+        eth1h = hour_dataset('ETHUSDT')
+        complete = build_index(
+            (lifecycle(), lifecycle('ETHUSDT')),
+            (btc15, btc1h, eth15, eth1h),
+        )
+        assert complete.dependency_available(
+            'BTCUSDT', t, 'MULTI_ASSET', companions=('ETHUSDT',),
+            required_intervals=cross.required_intervals)
+        assert complete.eligibility(
+            'BTCUSDT', t, cross, companions=('ETHUSDT',)
+        ).production_research_eligible
 
     def test_quality_failures_gap_map_digest_and_binding(self):
         data, gap, manifest = dataset(indices=(0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11))
