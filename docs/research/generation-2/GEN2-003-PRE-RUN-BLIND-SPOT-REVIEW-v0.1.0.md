@@ -190,6 +190,50 @@ future. Decay monitoring remains a Forward/later-stage responsibility.
 
 No blocker.
 
+
+### N. Profit-factor infinity semantics
+
+The implementation treats any infinite cell profit factor as a non-finite metric
+and therefore a proposal-gate failure.
+
+An infinite profit factor can arise when a cell has positive gross profit and
+zero gross loss. That condition is not itself evidence of poor economics.
+
+Therefore, if the canonical run fails solely or partly because
+NONFINITE_METRIC is triggered by profit_factor_infinite:
+- preserve the protocol FAIL exactly as registered;
+- do not reinterpret that protocol result as NO_EDGE;
+- classify the failure mechanism separately under the Blind-Spot governance;
+- any alternative finite representation or gate semantic requires a new
+  protocol/candidate and cannot rescue GEN2-003 on the same evidence.
+
+No blocker and no protocol mutation is authorized.
+
+### O. Temporal opportunity concentration
+
+The frozen opportunity gate protects aggregate participation:
+directional signals/trades are preserved, active logical exposure is preserved,
+and aggregate notional exposure must remain at least 25% of control.
+
+It does not prove that notional is preserved uniformly through time. A dynamic
+risk scaler is intentionally allowed to concentrate/deconcentrate exposure.
+
+Therefore a PASS must not be interpreted as proof that the overlay preserved
+every high-value opportunity or avoided all temporal starvation. Per-fold,
+per-symbol, scale, and exposure diagnostics remain relevant downstream.
+
+No blocker; interpretation limitation recorded.
+
+### P. Fold reset semantics
+
+GEN2-003 evaluates each Development fold with an independent account/position
+state. This was checked against the accepted GEN2-001 and GEN2-002 runner
+semantics, which also evaluate Development cells independently by fold.
+
+Therefore the behavior is consistent with the established Generation-2
+Development comparison contract and is not treated as an implementation defect.
+
+
 ## 3. Pre-outcome interpretation lock
 
 Before running GEN2-003, the following interpretation is frozen:
