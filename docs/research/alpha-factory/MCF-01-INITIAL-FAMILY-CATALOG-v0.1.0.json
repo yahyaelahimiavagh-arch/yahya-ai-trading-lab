@@ -1,0 +1,196 @@
+{
+  "schema": "YATL_MCF_INITIAL_FAMILY_CATALOG",
+  "schema_version": "0.1.0",
+  "status": "DESIGN_CATALOG_PARAMETER_DOMAINS_NOT_YET_FROZEN",
+  "broad_discovery": true,
+  "families": [
+    {
+      "family_manifest_id": "MCF-FAM-001",
+      "alpha_family_id": "TREND",
+      "economic_mechanism_id": "TREND_CROSSOVER",
+      "data_dependencies": [
+        "PRICE_OHLC"
+      ],
+      "edge_attribution": "SIGNAL_ALPHA",
+      "parameter_domain_status": "PENDING_BOUNDING",
+      "performance_run_allowed": false
+    },
+    {
+      "family_manifest_id": "MCF-FAM-002",
+      "alpha_family_id": "BREAKOUT",
+      "economic_mechanism_id": "BREAKOUT_CHANNEL",
+      "data_dependencies": [
+        "PRICE_OHLC"
+      ],
+      "edge_attribution": "SIGNAL_ALPHA",
+      "parameter_domain_status": "PENDING_BOUNDING",
+      "performance_run_allowed": false
+    },
+    {
+      "family_manifest_id": "MCF-FAM-003",
+      "alpha_family_id": "MEAN_REVERSION",
+      "economic_mechanism_id": "SHORT_HORIZON_MEAN_REVERSION",
+      "data_dependencies": [
+        "PRICE_OHLC"
+      ],
+      "edge_attribution": "SIGNAL_ALPHA",
+      "parameter_domain_status": "PENDING_BOUNDING",
+      "performance_run_allowed": false
+    },
+    {
+      "family_manifest_id": "MCF-FAM-004",
+      "alpha_family_id": "CRASH_REBOUND",
+      "economic_mechanism_id": "CRASH_REBOUND",
+      "data_dependencies": [
+        "PRICE_OHLC"
+      ],
+      "edge_attribution": "TIMING_ALPHA",
+      "parameter_domain_status": "PENDING_BOUNDING",
+      "performance_run_allowed": false
+    },
+    {
+      "family_manifest_id": "MCF-FAM-005",
+      "alpha_family_id": "VOLUME",
+      "economic_mechanism_id": "VOLUME_CONFIRMED_DIRECTION",
+      "data_dependencies": [
+        "PRICE_OHLC",
+        "VOLUME"
+      ],
+      "edge_attribution": "SIGNAL_ALPHA",
+      "parameter_domain_status": "PENDING_BOUNDING",
+      "performance_run_allowed": false
+    },
+    {
+      "family_manifest_id": "MCF-FAM-006",
+      "alpha_family_id": "VOLATILITY",
+      "economic_mechanism_id": "VOLATILITY_CONDITIONED_EXPOSURE",
+      "data_dependencies": [
+        "PRICE_OHLC"
+      ],
+      "edge_attribution": "SIZING_ALPHA",
+      "parameter_domain_status": "PENDING_BOUNDING",
+      "performance_run_allowed": false
+    },
+    {
+      "family_manifest_id": "MCF-FAM-007",
+      "alpha_family_id": "TIME",
+      "economic_mechanism_id": "SESSION_TIME_EFFECT",
+      "data_dependencies": [
+        "PRICE_OHLC"
+      ],
+      "edge_attribution": "TIMING_ALPHA",
+      "parameter_domain_status": "PENDING_BOUNDING",
+      "performance_run_allowed": false
+    },
+    {
+      "family_manifest_id": "MCF-FAM-008",
+      "alpha_family_id": "LIQUIDITY",
+      "economic_mechanism_id": "LIQUIDITY_CONDITIONED_ENTRY",
+      "data_dependencies": [
+        "PRICE_OHLC",
+        "VOLUME"
+      ],
+      "edge_attribution": "TIMING_ALPHA",
+      "parameter_domain_status": "PENDING_BOUNDING",
+      "performance_run_allowed": false
+    },
+    {
+      "family_manifest_id": "MCF-FAM-009",
+      "alpha_family_id": "RELATIVE",
+      "economic_mechanism_id": "RELATIVE_STRENGTH",
+      "data_dependencies": [
+        "PRICE_OHLC",
+        "MULTI_ASSET"
+      ],
+      "edge_attribution": "SIGNAL_ALPHA",
+      "parameter_domain_status": "PENDING_BOUNDING",
+      "performance_run_allowed": false
+    },
+    {
+      "family_manifest_id": "MCF-FAM-010",
+      "alpha_family_id": "RELATIVE",
+      "economic_mechanism_id": "LEAD_LAG",
+      "data_dependencies": [
+        "PRICE_OHLC",
+        "MULTI_ASSET"
+      ],
+      "edge_attribution": "SIGNAL_ALPHA",
+      "parameter_domain_status": "PENDING_BOUNDING",
+      "performance_run_allowed": false
+    },
+    {
+      "family_manifest_id": "MCF-FAM-011",
+      "alpha_family_id": "REGIME",
+      "economic_mechanism_id": "REGIME_CONDITIONAL_DIRECTION",
+      "data_dependencies": [
+        "PRICE_OHLC"
+      ],
+      "edge_attribution": "TIMING_ALPHA",
+      "parameter_domain_status": "PENDING_BOUNDING",
+      "performance_run_allowed": false
+    },
+    {
+      "family_manifest_id": "MCF-FAM-012",
+      "alpha_family_id": "MICRO",
+      "economic_mechanism_id": "MULTI_VENUE_DISLOCATION",
+      "data_dependencies": [
+        "PRICE_OHLC",
+        "MULTI_VENUE"
+      ],
+      "edge_attribution": "SIGNAL_ALPHA",
+      "parameter_domain_status": "PENDING_BOUNDING",
+      "performance_run_allowed": false
+    },
+    {
+      "family_manifest_id": "MCF-FAM-013",
+      "alpha_family_id": "VOLUME",
+      "economic_mechanism_id": "PRICE_VOLUME_INTERACTION",
+      "data_dependencies": [
+        "PRICE_OHLC",
+        "VOLUME"
+      ],
+      "edge_attribution": "SIGNAL_ALPHA",
+      "parameter_domain_status": "PENDING_BOUNDING",
+      "performance_run_allowed": false
+    },
+    {
+      "family_manifest_id": "MCF-FAM-014",
+      "alpha_family_id": "STATISTICAL",
+      "economic_mechanism_id": "SIMPLE_STATISTICAL_DEVIATION",
+      "data_dependencies": [
+        "PRICE_OHLC"
+      ],
+      "edge_attribution": "SIGNAL_ALPHA",
+      "parameter_domain_status": "PENDING_BOUNDING",
+      "performance_run_allowed": false
+    },
+    {
+      "family_manifest_id": "MCF-FAM-015",
+      "alpha_family_id": "SIZING",
+      "economic_mechanism_id": "SIZING_OVERLAY",
+      "data_dependencies": [
+        "PRICE_OHLC"
+      ],
+      "edge_attribution": "SIZING_ALPHA",
+      "parameter_domain_status": "PENDING_BOUNDING",
+      "performance_run_allowed": false
+    },
+    {
+      "family_manifest_id": "MCF-FAM-016",
+      "alpha_family_id": "EXIT",
+      "economic_mechanism_id": "EXIT_OVERLAY",
+      "data_dependencies": [
+        "PRICE_OHLC"
+      ],
+      "edge_attribution": "TIMING_ALPHA",
+      "parameter_domain_status": "PENDING_BOUNDING",
+      "performance_run_allowed": false
+    }
+  ],
+  "note": "Catalog defines mechanism coverage only. Parameter domains and performance authorization require later frozen family manifests.",
+  "research_only": true,
+  "p10_read": false,
+  "p10_write_allowed": false,
+  "p11_locked": true,
+  "live_master_lock": "OFF"
+}
