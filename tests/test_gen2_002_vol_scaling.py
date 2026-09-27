@@ -47,7 +47,7 @@ class Gen2VolScalingTests(unittest.TestCase):
         self.assertEqual(caught.exception.missing_days,(missing_day,))
 
     def test_structural_gap_invalidates_frozen_window_before_economics(self):
-        boundary=20000*g2.DAY_MS
+        boundary=19997*g2.DAY_MS
         warmup=boundary-200*g2.DAY_MS
         missing_open=boundary-17*g2.DAY_MS+5*g2.HOUR_MS
         times=tuple(
