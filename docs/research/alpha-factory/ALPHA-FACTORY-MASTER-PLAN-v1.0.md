@@ -682,3 +682,67 @@ opening/run/adjudication remains directly Director-supervised. Work/Astra may
 prepare supporting analysis/audit packs but may not silently spend sealed
 evidence or promote a candidate.
 
+## 14. Blind-spot audit and conditional-edge track
+
+Authoritative cross-cutting governance:
+
+docs/research/alpha-factory/BLIND-SPOT-AND-CONDITIONAL-EDGE-GOVERNANCE-v1.0.md
+
+Alpha Factory must not treat every gate failure as proof of no edge.
+
+Every meaningful rejection now requires a failure classification and salvage
+review. The standard classifications include NO_EDGE, CONDITIONAL_EDGE,
+OVERFIT, DATA_BLOCKED, EXECUTION_LIMITED, CAPACITY_LIMITED, REGIME_MISMATCH,
+REDUNDANT_EDGE, IMPLEMENTATION_INVALIDATED, INSUFFICIENT_EVIDENCE and
+UNKNOWN_FAILURE_MECHANISM.
+
+Two economic deployment profiles are recognized:
+
+- ALL_REGIME_EDGE — intended to remain economically valid across the
+  preregistered operating regime set.
+- REGIME_CONDITIONAL_EDGE — intended to operate only inside a preregistered
+  envelope and judged outside that envelope primarily on detection, containment,
+  capital preservation and safe re-entry.
+- UNKNOWN_EDGE_SCOPE — default until enough evidence exists.
+
+A failed all-regime claim may motivate a new conditional-edge hypothesis, but
+the failed candidate remains immutable negative evidence. A conditional
+reinterpretation requires a new candidate ID, a new preregistered detector /
+operating envelope, and a fresh evidence budget.
+
+The six HSSE-004A survivors therefore remain non-certified for all-regime use.
+Their prior crisis failure is retained. A normal-regime / conditional
+deployment hypothesis is now explicitly permitted as a separate future research
+track, but is not itself approved and does not create Live authority.
+
+### Mandatory blind-spot questions
+
+At rejection, generation closeout, and major portfolio checkpoints the Director
+must ask whether:
+- a useful conditional edge is being killed by an all-regime gate;
+- robustness is being purchased by opportunity starvation;
+- search breadth is creating false discoveries;
+- improvement comes from signal, timing, sizing, execution or diversification;
+- a simpler benchmark explains most of the result;
+- detector delay, venue dependence, quote-asset dependence or strategy decay
+  has been ignored;
+- early capacity makes further research economically pointless.
+
+### Work-token conservation
+
+Work is no longer the default for broad planning.
+
+Governance, protocol design, assumption audits, rejection reviews, narrow
+source extraction, candidate classification, queue decisions and localized
+documentation remain CHAT_DIRECTOR whenever safe.
+
+WORK_REQUIRED is reserved for substantial implementation, bulk data work,
+large deterministic analysis, repository-wide migration, coordinated
+multi-file artifact work, or test/build workflows that materially benefit from
+Work.
+
+Before every Work gate the Director must first decide whether the task can be
+completed safely in CHAT_DIRECTOR. If yes, stay in chat.
+
+Astra remains reserved for corpus-scale synthesis.
+
