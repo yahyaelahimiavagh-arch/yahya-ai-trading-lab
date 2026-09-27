@@ -746,3 +746,93 @@ completed safely in CHAT_DIRECTOR. If yes, stay in chat.
 
 Astra remains reserved for corpus-scale synthesis.
 
+## Mass Canonical Candidate Factory — MCF track
+
+Authoritative design:
+`docs/research/alpha-factory/MASS-CANONICAL-CANDIDATE-FACTORY-v1.0.md`
+
+Alpha Factory is no longer restricted to candidate-by-candidate research.
+It must support high-throughput canonical strategy discovery across materially
+different economic mechanisms.
+
+Engineering target:
+- architecture supports 100,000+ canonical candidate specifications over time;
+- no candidate-count hard ceiling in the core design;
+- no one-branch / one-PR / one-file-per-candidate workflow.
+
+Research expansion is staged:
+- calibration batch around 1,000 candidates;
+- expansion batch around 10,000 candidates;
+- large-scale batch up to 100,000 once throughput, deterministic repeatability,
+  storage, false-discovery accounting and exact-recompute paths are accepted.
+
+These counts are capacity targets, not survivor quotas.
+
+### MCF stages
+
+MCF-00 — Governance / architecture  
+MCF-01 — Family-manifest and candidate-spec schema  
+MCF-02 — Deterministic generator / canonical ID / dedupe  
+MCF-03 — High-throughput Development screening  
+MCF-04 — Neighbor stability / multiple-testing / clustering  
+MCF-05 — Exact recompute / mechanism survivor freeze  
+MCF-06 — Fresh OOS handoff
+
+### Required filter cascade
+
+F0 structural validity  
+F1 opportunity/activity validity  
+F2 after-cost Development economics  
+F3 temporal robustness  
+F4 neighbor stability  
+F5 multiple-testing / false-discovery control  
+F6 duplication/common-factor clustering  
+F7 mechanism survivor freeze  
+F8 Fresh OOS  
+F9 all-regime or conditional-edge certification  
+F10 independent audit / Forward
+
+No hard gate may be bypassed by a ranking score.
+
+### Research-scale interpretation
+
+Historical research throughput may be compressed by compute and automation.
+Forward evidence cannot be compressed because it depends on future calendar-time
+market observations.
+
+YATL may therefore accelerate:
+- candidate generation;
+- historical Development;
+- robustness analysis;
+- historical crisis replay;
+- clustering;
+- multiple-testing diagnostics;
+- exact recomputation.
+
+YATL may not fabricate or compress:
+- real Forward time;
+- future regime exposure;
+- live execution experience;
+- time-dependent operational reliability.
+
+### Diversity requirement
+
+Broad MCF generations must span independent economic mechanisms rather than
+produce tens of thousands of near-identical trend parameterizations.
+
+Raw candidate count, effective trial count, economic mechanism count,
+common-factor cluster count and independent-family count must all be reported.
+
+The six historical HSSE survivors remain one correlated trend cluster and are
+not the center of future candidate generation.
+
+### Work-token conservation for MCF
+
+Design, trial budgets, manifests, filter policies, batch classification and
+closeout stay CHAT_DIRECTOR whenever safe.
+
+Work may be used once for substantial reusable engine implementation or major
+data plumbing. Work is not invoked per candidate or per batch result.
+
+Large canonical runs execute as MANUAL_VPS / BATCH_RUNTIME jobs.
+
