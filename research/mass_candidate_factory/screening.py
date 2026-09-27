@@ -22,10 +22,12 @@ def float_account(signals, opens, closes, policy:CostPolicy, *,stress=False):
         peak=max(peak,eq);dd=max(dd,(peak-eq)/peak)
     return {"net":cash+(qty*float(closes[-1])*(1-slip)*(1-fee) if debit is not None else 0.)-float(policy.initial_equity),"maximum_drawdown_fraction":dd,"fills":fills,"realized":realized,"fees":fees,"slippage":slippage}
 
-def screen(signals, opens, closes, policy, *, cost_policy_ref:str, thresholds:dict, folds:tuple[tuple[int,int],...], guard_band:str="0.000001", evidence:EvidenceBinding|None=None, fixture_id:str|None=None):
+def screen(signals, opens, closes, policy, *, cost_policy_ref:str, thresholds:dict, folds:tuple[tuple[int,int],...], guard_band:str="0.000001", evidence:EvidenceBinding|None=None, expected_quality_sha256:str|None=None, expected_dataset_id:str|None=None, fixture_id:str|None=None):
     if policy.ref != cost_policy_ref:
         raise MCFError("unbound cost policy")
     if evidence is not None and fixture_id is None:
+        if evidence.quality_sha256 != expected_quality_sha256 or evidence.dataset_id != expected_dataset_id:
+            raise MCFError("evidence not bound to frozen batch")
         evidence.validate()
         data_id=evidence.dataset_id
     elif evidence is None and isinstance(fixture_id,str) and fixture_id.startswith("SYNTHETIC-"):

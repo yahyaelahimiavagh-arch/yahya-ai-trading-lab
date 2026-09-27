@@ -35,3 +35,7 @@ class SafetyTest(unittest.TestCase):
         args=((False,False,False),(10,11,12),(10,11,12),__import__("mcf_fixtures").policy())
         with self.assertRaises(MCFError):screen(*args,cost_policy_ref="COST/v1",thresholds={},folds=((0,3),))
         with self.assertRaises(MCFError):screen(*args,cost_policy_ref="OPTIMISTIC/v1",thresholds={},folds=((0,3),),fixture_id="SYNTHETIC-001")
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/"quality.json";p.write_text("{}")
+            binding=EvidenceBinding(Path(d),"quality.json",hashlib.sha256(p.read_bytes()).hexdigest(),"DEV-001")
+            with self.assertRaises(MCFError):screen(*args,cost_policy_ref="COST/v1",thresholds={},folds=((0,3),),evidence=binding)
