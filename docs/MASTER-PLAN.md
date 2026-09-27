@@ -2344,3 +2344,52 @@ testing/build workflowی که واقعاً از Work سود می‌برد است
 Astra همچنان فقط برای corpus-scale synthesis طبق thresholdهای قبلی استفاده
 می‌شود.
 
+### Mass Canonical Candidate Factory — 2026-09-27
+
+YATL از مسیر candidate-by-candidate به یک strategy discovery factory در مقیاس
+بزرگ گسترش پیدا می‌کند.
+
+مرجع authoritative:
+`docs/research/alpha-factory/MASS-CANONICAL-CANDIDATE-FACTORY-v1.0.md`
+
+هدف معماری:
+- پشتیبانی از 100,000+ candidate canonical در طول زمان؛
+- بدون ساخت branch/PR/file مستقل برای هر candidate؛
+- deterministic generator + family manifests + sharded batch runner + append-only
+  result ledger + content-addressed artifacts.
+
+گسترش پژوهشی مرحله‌ای است:
+- حدود 1,000 candidate برای calibration؛
+- حدود 10,000 candidate برای expansion؛
+- تا 100,000 candidate پس از اثبات throughput، determinism، storage،
+  exact-recompute و multiple-testing accounting.
+
+این اعداد quota قبولی نیستند. صفر survivor معتبر است.
+
+تمرکز YATL دیگر روی شش survivor trend تاریخی نیست. آن شش مورد فقط یک
+common-factor cluster محسوب می‌شوند. broad discovery باید mechanismهای مستقل
+مثل trend، breakout، mean-reversion، crash/rebound، volume، volatility،
+session/time، liquidity، relative-strength، lead-lag، regime-conditional،
+multi-venue و sizing/exit overlays را پوشش دهد.
+
+فیلتر اصلی:
+F0 structural -> F1 opportunity -> F2 after-cost Development ->
+F3 temporal robustness -> F4 neighbor stability -> F5 multiple-testing ->
+F6 duplicate/common-factor cluster -> F7 mechanism survivor freeze ->
+F8 Fresh OOS -> F9 edge-scope certification -> F10 audit/Forward.
+
+Historical research را می‌توان با compute/automation شدیداً سریع کرد، اما:
+- real Forward time؛
+- future regimes؛
+- real execution experience
+قابل فشرده‌سازی نیستند.
+
+بنابراین timeline مهندسی/Development می‌تواند به‌جای ماه‌ها بسیار کوتاه‌تر شود،
+اما هیچ historical batch جای calendar-time Forward evidence را نمی‌گیرد.
+
+Work-token policy:
+- طراحی، manifests، filters، classification و closeout در CHAT_DIRECTOR؛
+- Work فقط برای ساخت reusable Mass Candidate Engine یا data plumbing سنگین؛
+- نه Work per candidate؛
+- batch execution روی VPS/runtime.
+
