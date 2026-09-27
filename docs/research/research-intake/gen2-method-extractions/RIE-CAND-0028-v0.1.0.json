@@ -1,0 +1,119 @@
+{
+  "schema": "YATL_GEN2_METHOD_EXTRACTION",
+  "schema_version": "0.1.0",
+  "extraction_id": "RIE-CAND-0028-METHOD-EXTRACTION-001",
+  "candidate_id": "RIE-CAND-0028",
+  "status": "SOURCE_METHOD_SPECIFIED_YATL_ADAPTATION_BLOCKED",
+  "source": {
+    "title": "A hidden Markov model to detect regime changes in cryptoasset markets",
+    "authors": [
+      "Paolo Giudici",
+      "Iman Abu Hashish"
+    ],
+    "journal": "Quality and Reliability Engineering International",
+    "volume": 36,
+    "issue": 6,
+    "pages": "2057-2065",
+    "publication_year": 2020,
+    "doi": "10.1002/qre.2673",
+    "publisher_url": "https://onlinelibrary.wiley.com/doi/full/10.1002/qre.2673",
+    "accessible_full_text_reference": "https://studylib.net/doc/26175843/a-hidden-markov-model-to-detect-regime-changes-in-cryptoa...",
+    "source_bytes_frozen": false,
+    "implementation_found": false,
+    "performance_claims_are_yatl_evidence": false
+  },
+  "exact_source_method": {
+    "objective": "Explain and predict Bitcoin price dynamics across exchange markets through latent regime states.",
+    "observed_vector": "Y_t is the vector of Bitcoin USD market prices across the included exchanges at time t.",
+    "source_assets": [
+      "BTC"
+    ],
+    "source_exchanges": [
+      "Bitfinex",
+      "Bitstamp",
+      "Bittrex",
+      "Coinbase",
+      "Gemini",
+      "ItBit",
+      "Kraken"
+    ],
+    "source_frequency": "DAILY_CLOSE",
+    "source_range": "2015-12-12/2018-10-25",
+    "observation_count": 1029,
+    "hidden_process": "FIRST_ORDER_TIME_INVARIANT_MARKOV_CHAIN",
+    "conditional_distribution": "MULTIVARIATE_GAUSSIAN_ZERO_MEAN_WITH_STATE_SPECIFIC_COVARIANCE",
+    "covariance_structures_compared": [
+      "FULL",
+      "DIAGONAL"
+    ],
+    "hidden_state_counts_compared": [
+      2,
+      3,
+      4
+    ],
+    "variance_covariance_estimation": "MAXIMUM_LIKELIHOOD_FORWARD_BACKWARD",
+    "transition_matrix_estimation": "EXPECTATION_MAXIMIZATION_BAUM_WELCH",
+    "model_comparison": "LIKELIHOOD_RATIO_TEST_WITH_CHI_SQUARED_P_VALUE",
+    "selected_source_configuration": {
+      "hidden_states": 3,
+      "covariance": "DIAGONAL",
+      "economic_interpretation": [
+        "BEAR",
+        "STABLE",
+        "BULL"
+      ]
+    },
+    "next_state_prediction": "Compute conditional P(Z_{t+1}|Y_{1:T}) under the fitted model and choose the state with the highest conditional probability.",
+    "price_forecast": "Associate the predicted state with the mean exchange prices under that state.",
+    "predictive_evaluation": {
+      "train_fraction": "0.80",
+      "test_fraction": "0.20",
+      "forecast_horizon": "ONE_DAY_AHEAD",
+      "procedure": "ROLLING_PREDICTIONS_ON_TEST_SET",
+      "metric": "RMSE"
+    }
+  },
+  "source_to_registry_mismatch": {
+    "registry_claims_not_directly_in_source": [
+      "BTCUSDT/ETHUSDT joint multi-asset regime detection",
+      "1h/4h intraday operation",
+      "return and realized-volatility feature vector",
+      "trend-strategy full/reduced/zero exposure mapping"
+    ],
+    "source_explicitly_treats_as_future_extensions": [
+      "simultaneous analysis of different cryptoassets",
+      "intraday application"
+    ],
+    "conclusion": "The current RIE-CAND-0028 YATL hypothesis is an internal adaptation, not a direct reproduction of the published method."
+  },
+  "unresolved_yatl_adaptation_choices": [
+    "Choose source-faithful versus YATL-native observation features; no return/volatility feature set is justified by this source alone.",
+    "Choose BTC-only, BTC/ETH joint, or multi-venue architecture.",
+    "Freeze timeframe; source evidence is daily and intraday is only proposed as future work.",
+    "Freeze training window and refit/update schedule.",
+    "Freeze deterministic initialization, convergence, and failed-fit behavior.",
+    "Freeze state-label canonicalization using training-only information; HMM state labels are exchangeable.",
+    "Freeze probability-to-eligibility/exposure mapping, including UNKNOWN state semantics.",
+    "Freeze whether state count is fixed at three or searched; any search must consume an explicit bounded trial budget.",
+    "Freeze missing-data and exchange-availability behavior.",
+    "Add conditional-edge detector metrics: false activation/deactivation, recognition lag, missed opportunity, loss before shutdown, re-entry lag, false re-entry.",
+    "Define base/stress cost mapping and opportunity-preservation gates."
+  ],
+  "blind_spot_findings": [
+    "Using the published three-state result as if it were universally optimal would transfer an in-sample source selection into a different market/timeframe.",
+    "Mapping latent states to bear/stable/bull after viewing their realized periods can leak future information unless YATL canonicalizes labels from training-only statistics.",
+    "HMM complexity introduces initialization/local-optimum and model-selection degrees of freedom that must be preregistered.",
+    "The paper models nonstationary price levels with Gaussian state emissions; direct reuse on intraday crypto should not be assumed valid.",
+    "Source prediction quality is price-RMSE evidence, not trading-edge evidence."
+  ],
+  "required_next_state": "YATL_ADAPTATION_DESIGN_BEFORE_PREREGISTRATION",
+  "performance_run_allowed": false,
+  "direct_source_replication_claim_allowed": false,
+  "research_only": true,
+  "p10_read": false,
+  "p10_write_allowed": false,
+  "fresh_oos_read_allowed": false,
+  "recent_reserve_read_allowed": false,
+  "p11_locked": true,
+  "live_master_lock": "OFF"
+}
