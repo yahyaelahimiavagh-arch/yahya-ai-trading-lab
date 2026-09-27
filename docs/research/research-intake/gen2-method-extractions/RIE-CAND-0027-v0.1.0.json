@@ -1,0 +1,37 @@
+{
+  "schema": "YATL_GEN2_METHOD_EXTRACTION",
+  "schema_version": "0.1.0",
+  "candidate_id": "RIE-CAND-0027",
+  "source": {
+    "title": "Downside risk and the performance of volatility-managed portfolios",
+    "author": [
+      "Feifei Wang",
+      "Xuemin Sterling Yan"
+    ],
+    "doi": "10.1016/j.jbankfin.2021.106198",
+    "uri": "https://www.sciencedirect.com/science/article/pii/S0378426621001576",
+    "publication_year": 2021,
+    "access_state": "PARTIAL_PUBLIC_METHOD_TEXT",
+    "source_bytes_frozen": false,
+    "implementation_found": false
+  },
+  "extracted_method": {
+    "concept": "Scale exposure by lagged downside volatility rather than lagged total volatility.",
+    "downside_definition_visible": "Downside volatility is estimated from negative returns; related literature/current accessible text indicates a zero threshold.",
+    "motivation": "High downside volatility may predict both high future volatility and lower future returns.",
+    "real_time_note": "The paper reports improved real-time behavior from fixed-weight strategies versus repeatedly estimated weights.",
+    "exact_yatl_ready_formula": false
+  },
+  "blockers": [
+    "Exact estimator horizon, normalization constant and fixed-weight real-time implementation needed for a faithful YATL specification are not fully exposed in accessible text.",
+    "No inspectable implementation/code was found.",
+    "Source bytes are not frozen."
+  ],
+  "status": "NOT_READY_PENDING_EXACT_METHOD",
+  "performance_claims_trusted": false,
+  "performance_run_allowed": false,
+  "p10_read": false,
+  "p10_write_allowed": false,
+  "p11_locked": true,
+  "research_only": true
+}

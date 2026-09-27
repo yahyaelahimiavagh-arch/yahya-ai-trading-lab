@@ -2001,7 +2001,19 @@ Forward مستقل و با protocol جدید بررسی می‌شود. real-forw
 9. **HSSE-005 — Crisis/Regime Certification — CANONICAL COMPLETE / 0 PASS 2026-09-26**: هر شش survivor بدون retune/rerank/retry روی 8 واحد de-duplicated بحران/regime تا پایان 2024 اجرا شدند و **0/6 PASS** شد. همه شش مورد فقط 25% واحدها را در base و stress مثبت کردند و median unit PnL هر شش منفی بود؛ drawdown و sample gates مشکل اصلی نبودند. correlation بین unit-PnLهای survivorها بسیار بالا بود (~0.83 تا ~0.999) و sign agreement برابر 0.875 تا 1.0 بود، بنابراین شش survivor عملاً شش edge مستقل محسوب نمی‌شوند. نسل فعلی در HSSE-005 رد شد؛ همان نسل retune یا survivor-replacement نمی‌شود. Audit Holdout 2025–2026 و recent reserve همچنان sealed هستند. HSSE-006 در صورت اجرا فقط rejection/pipeline integrity را audit می‌کند، نه promotion.
 10. **HSSE-006 — Independent Audit**: recomputation، trial ledger audit، leakage
    audit و candidate registry audit.
-11. فقط پس از آن: **Forward Candidate Review** برای نسل بعدی؛ P10 جاری untouched.
+11. **Generation-2 Research — ACTIVE / RIE-004**: پس از رد 0/6 در HSSE-005،
+   نسل اول retune نمی‌شود. literature sweep جدید روی volatility management،
+   downside-volatility، panic-state protection، stop-loss و crypto regime
+   detection باز شده است. Candidateهای موجود `RIE-CAND-0011` و
+   `RIE-CAND-0022` دوباره استفاده می‌شوند و Candidateهای `0025..0031`
+   به registry افزوده شده‌اند. اول simple deterministic control layers تست
+   می‌شوند؛ HMM/NHHM فقط بعد از شکست/نیازِ مدل‌های ساده وارد search می‌شوند.
+   هیچ combination قبل از standalone evidence مجاز نیست.
+12. فقط پس از Audit نسل اول و protocol جدید Gen-2: **Generation-2 Controlled
+   Development/Search → Fresh Evaluation → Crisis Certification → Independent
+   Audit → Forward Candidate Review**. P10 جاری untouched است و 2025–2026 تا
+   تعیین protocol جدید sealed می‌ماند.
+13. **RIE-005 — Gen-2 Method Extraction — ACTIVE**: Queue به‌ترتیب preregistered اجرا می‌شود. `0011`، `0022` و `0027` به‌دلیل source/method reproducibility blockers قبل از هر performance run در حالت NOT_READY باقی مانده‌اند؛ `0030` (crypto stop-loss overlay) اولین candidate با روش کافی برای specification است، ولی تا freeze شدن stop basis، bar trigger، execution timing، bounded threshold grid و costs هیچ Development run مجاز نیست.
 
 قانون توقف scope creep همچنان پابرجاست: اگر search گسترده با protocol صحیح
 candidate قابل‌قبولی پیدا نکند، نتیجه معتبر `NO_EDGE_FOUND` است. پاسخ به این
@@ -2022,3 +2034,214 @@ P10، گذشته را عمیق و منظم مطالعه کنیم؛ HSL حق ند
 P11 باز نشده است. `LIVE_MASTER_LOCK=OFF`، PAPER ONLY، Spot only، no leverage،
 no withdrawal، no trade permission، no order endpoint و no AI direct execution
 بدون تغییر باقی می‌مانند.
+
+14. **GEN2 Master Protocol — REGISTERED BEFORE PERFORMANCE**: پایان نسل دوم فقط یکی از دو حالت است: `GEN2_FORWARD_CANDIDATE` یا `GEN2_NO_ROBUST_EDGE_FOUND`. حداکثر 8 hypothesis اصلی و 3 combination، بدون افزایش budget بعد از outcome. Fresh OOS = 2025-01-01 تا 2026-07-01 و recent reserve از 2026-07-01 همچنان sealed هستند.
+15. **GEN2-001 Stop Overlay — PREREGISTERED**: Candidate `0030` روی هر شش survivor فریز‌شده نسل اول و فقط روی Development تا 2023-01-01 تست می‌شود. grid دقیق stop = 10/20/30/40/50% + control؛ 36 condition، بدون hidden trial. 2023–2024، HSSE-005 outcomes و Fresh OOS برای selection ممنوع‌اند. هیچ performance run هنوز انجام نشده.
+
+
+16. **GEN2-001 Stop Overlay — CANONICAL COMPLETE / 0 PROPOSALS**: 36 registered
+conditions were executed exactly once on Development evidence. The 10% stop
+activated 20 times across 3/6 reference strategies but failed aggregate base/stress
+economics and median improvement gates. 20/30/40/50% never activated. No stop
+threshold is promoted; no same-evidence threshold refinement/retry is allowed.
+Generation 2 continues to the next preregistered hypothesis. P10 untouched; Fresh
+OOS sealed; P11 locked.
+
+17. **GEN2-002 Volatility Scaling — CANONICAL INVALIDATED / 0 PROPOSALS — 2026-09-27**:
+`RIE-CAND-0025` was implemented as the frozen YATL adaptation
+`GEN2-ADAPT-0002-VOL-SCALING` with the preregistered 12% annualized target,
+183 completed UTC-day estimator, monthly updates, `scale=min(1,0.12/sigma_ann)`,
+no short, no leverage, and 12 total conditions across the six frozen reference
+strategies. Final implementation HEAD
+`3e8e5167414b26fb72ed80a620a74f6bdc60d38e` passed GitHub Actions run
+`36307964173` and the focused GEN2-002 test suite.
+
+The single canonical Development evaluation did **not** compute economic
+performance. It was invalidated before economic evaluation because the frozen
+183-day estimator window was structurally incomplete at **40 symbol-month
+boundaries** in the admitted CRL Development corpus. The admitted corpus preserves
+CRL-003-verified source gaps; the protocol forbids interpolation, forward-fill,
+silent window shortening, alternate target/window/EWMA rescue, leverage, or hidden
+retry. Canonical runtime artifact:
+`generation-2/gen2-002/vol-scaling-25ac8f5fbee4fb9e75f79c7e.json`,
+SHA-256
+`25ac8f5fbee4fb9e75f79c7e769a3cc1b0c046ede0536c8f91a6d4eba5a0a701`.
+Canonical acceptance record:
+`docs/research/generation-2/GEN2-002-CANONICAL-RESULT-v0.1.0.json`.
+
+Outcome state:
+`status=FAIL`,
+`evaluation_status=INVALIDATED_BEFORE_ECONOMIC_EVALUATION`,
+`performance_outcome_computed=false`,
+`failure_reasons=[INCOMPLETE_VOLATILITY_WINDOW]`,
+`proposal_count=0`.
+This negative result is retained. The same Development evidence may not be used
+to relax the 183-day window, change the target, introduce an EWMA substitute, or
+otherwise rescue this candidate. This does **not** establish that all volatility
+scaling is invalid; it closes only this preregistered GEN2-002 adaptation on this
+frozen evidence. P10 remains untouched; Fresh OOS and recent reserve remain
+sealed; P11 remains locked; LIVE_MASTER_LOCK=OFF.
+
+## YATL Alpha Factory — Authoritative Program Layer — 2026-09-27
+
+از این checkpoint، هدف تحقیقاتی YATL فقط «پیداکردن یا تعمیر یک strategy» نیست.
+برنامه بالادستی رسمی پروژه **Alpha Factory** است: یک pipeline برای کشف، رد،
+اعتبارسنجی، تفکیک و در نهایت ترکیب edgeهای واقعاً مستقل و قابل‌مقیاس.
+
+مرجع تفصیلی:
+`docs/research/alpha-factory/ALPHA-FACTORY-MASTER-PLAN-v1.0.md`
+
+قرارداد machine-readable مراحل:
+`docs/research/alpha-factory/ALPHA-FACTORY-STAGE-GATES-v1.0.json`
+
+این لایه، protocolهای frozen قبلی را بازنویسی نمی‌کند. GEN2-MASTER-001 و تمام
+outcomeهای canonical قبلی immutable evidence باقی می‌مانند. Generation 2 یکی از
+research trackهای Alpha Factory است.
+
+### هدف شمالی
+
+هدف YATL از این پس:
+
+**کشف چند منبع مستقل opportunity/alpha که پس از fee/slippage ارزش اقتصادی مثبت
+داشته باشند، روی داده واقعاً ندیده‌شده دوام بیاورند، در بحران رفتار قابل‌فهم و
+کنترل‌شده داشته باشند، فرصت معامله را با محافظه‌کاری افراطی نابود نکنند، و در
+صورت اثبات edge قابلیت رشد ظرفیت سرمایه داشته باشند.**
+
+معیار اصلی پیشرفت:
+**validated independent edge count + opportunity coverage + capacity**؛
+نه تعداد backtest، تعداد تست، تعداد خطوط کد یا تعداد parameter variant.
+
+### معماری سه‌لایه
+
+1. **Alpha Discovery Plane** — کشف hypothesis، data expansion، source binding،
+   method extraction، Development search و family diversity.
+2. **Adjudication Plane** — exact recompute، anti-leakage، false-discovery control،
+   robustness، cost stress، independence/correlation، Fresh OOS، crisis و audit.
+3. **Forward & Capital Plane** — Paper/shadow forward، execution quality،
+   opportunity realization و capacity research؛ بدون Live authority.
+
+### نقشه مرحله‌ای ثابت
+
+| Stage | نام | هدف | وضعیت |
+|---|---|---|---|
+| AF-00 | Program Governance | قفل معماری، lifecycle، stage gates | **ACTIVE / IMPLEMENTED IN PR** |
+| AF-01 | Opportunity Data Foundation | universe point-in-time، gap policy، liquidity/capacity metadata | PENDING |
+| AF-02 | Alpha Taxonomy & Registry v2 | family/mechanism/capacity classification | PENDING |
+| AF-03 | Research Intake / Opportunity Sweep | ساخت hypothesisهای مستقل با provenance | PENDING |
+| AF-04 | Standalone Alpha Development | تست هر edge به‌تنهایی قبل از combination | PENDING |
+| AF-05 | Robust Search / False Discovery | multiple-testing، neighbor stability، trial ledger | PENDING |
+| AF-06 | Independence & Opportunity Gate | correlation، overlap، regime coverage، cluster count | PENDING |
+| AF-07 | Portfolio / Ensemble Lab | ترکیب فقط componentهای standalone-qualified | LOCKED |
+| AF-08 | Fresh OOS | یک adjudication روی evidence sealed | SEALED |
+| AF-09 | Crisis / Regime Certification | failure-map و stress certification | LOCKED |
+| AF-10 | Independent Audit | provenance/code/trial/leakage/economics audit | LOCKED |
+| AF-11 | Forward Opportunity Validation | real-time Paper/shadow evidence | LOCKED |
+| AF-12 | Capacity & Capital Scaling | deployable capital / impact / net-dollar PnL | LOCKED |
+| AF-13 | Adaptive Research Loop | نسل جدید hypothesis بدون rescue tuning | CONTINUOUS |
+
+### خانواده‌های Alpha
+
+Registry جدید باید candidateها را حداقل در این خانواده‌ها تفکیک کند:
+
+- AF-TREND — trend / time-series momentum
+- AF-BREAKOUT — breakout / volatility expansion
+- AF-MEANREV — mean reversion
+- AF-CRASHREB — panic / dislocation / rebound
+- AF-VOLUME — volume-conditioned edge
+- AF-LIQUIDITY — liquidity / spread / impact proxies
+- AF-TIME — session / weekday / recurring time effects
+- AF-RELATIVE — relative-strength / lead-lag / cross-asset information
+- AF-REGIME — deterministic/probabilistic regime logic
+- AF-EVENT — point-in-time external/event context
+- AF-MICRO — microstructure only after trustworthy historical data exists
+
+چند parameter variant از یک mechanism، چند edge مستقل محسوب نمی‌شوند.
+
+### Candidate lifecycle اجباری
+
+`DISCOVERED → SOURCE_BOUND → METHOD_SPECIFIED → PREREGISTERED → IMPLEMENTED →
+DEVELOPMENT_EVALUATED → DEVELOPMENT_SURVIVOR/REJECTED → FROZEN_FOR_OOS →
+OOS_SURVIVOR/OOS_REJECTED → CRISIS_CERTIFIED → INDEPENDENT_AUDIT_PASS →
+FORWARD_CANDIDATE`
+
+Blockerها نیز state رسمی‌اند:
+`BLOCKED_SOURCE`, `BLOCKED_DATA`, `BLOCKED_REPRODUCIBILITY`,
+`INVALIDATED_BEFORE_ECONOMICS`.
+
+### Opportunity-preservation rule
+
+YATL نباید به سیستمی تبدیل شود که با «تقریباً هیچ معامله‌ای نکردن» gateها را
+پاس کند. هر candidate باید قبل از outcome، opportunity profile خود را تعریف کند.
+برای overlayها و risk-layerها حداقل signal count، completed trades، active exposure،
+notional utilization و starvation بررسی می‌شود. Sparse بودن فقط وقتی معتبر است
+که بخشی از hypothesis اصلی و از قبل ثبت‌شده باشد.
+
+### Scale principle
+
+هدف بلندمدت فقط درصد بازده بالا نیست. هر edge مستقل باید در نهایت از نظر:
+**edge quality، breadth، persistence، capacity، diversification، execution و
+compounding** ارزیابی شود.
+
+هیچ wealth target تضمین‌شده نیست. Alpha Factory به‌جای وعده نتیجه، زیرساختی
+می‌سازد که در صورت کشف edge قوی، ظرفیت رشد آن در یک سیستم تک‌استراتژی کوچک
+محبوس نشود.
+
+### ترتیب اجرایی فوری
+
+ترتیب بعدی پروژه از این checkpoint:
+
+1. **AF-00 closeout** — docs + machine-readable gates + CI.
+2. **GEN2-002 canonical closeout** — outcome فعلی حفظ؛ no rescue.
+3. **AF-03A Source Unblock Sprint** — فقط یک تلاش bounded برای
+   RIE-CAND-0011 / 0022 / 0027؛ هیچ rule حدس زده نمی‌شود.
+4. **GEN2 queue continuation** — اگر blockerها باقی ماندند، candidate بعدی eligible
+   در queue با protocol تازه؛ Queue B از 0028 شروع می‌شود.
+5. **AF-01 Opportunity Data Design** — قبل از universe expansion، policy و
+   point-in-time eligibility فریز شود.
+6. **AF-02 Registry v2** — family/mechanism/capacity/opportunity fields.
+7. **AF-03B Independent Alpha Sweep #2** — عمداً خارج از trend-overlay cluster،
+   با اولویت mean reversion، volume/liquidity، time effects، crash/rebound و
+   relative/lead-lag.
+8. **AF-04 Standalone Development** — هنوز combination ممنوع.
+9. **AF-06 Independence Gate** — survivorها به edge-cluster واقعی تبدیل شوند.
+10. AF-07 به بعد فقط پس از standalone evidence باز می‌شود.
+
+### Safety / authority unchanged
+
+این برنامه هیچ authorization جدیدی ایجاد نمی‌کند:
+PAPER / RESEARCH ONLY، `LIVE_MASTER_LOCK=OFF`، no Futures execution،
+no leverage، no short، no live execution، no order endpoint، no AI direct
+execution، P10 independent/untouched و P11 LOCKED باقی می‌مانند.
+
+### Execution Routing — Chat / Work / Astra — 2026-09-27
+
+Alpha Factory از این checkpoint به work packageهای کوچک‌تر تقسیم شده است و
+نوع اجرای هر بسته قبل از شروع مشخص می‌شود.
+
+مرجع authoritative:
+`docs/research/alpha-factory/EXECUTION-MODE-MATRIX-v1.0.md`
+
+کلاس‌ها:
+- `CHAT_DIRECTOR`: تصمیم، protocol، blocker، اجرای canonical تحت نظارت؛
+- `WORK_REQUIRED`: کار چندمرحله‌ای روی فایل‌ها، datasetها و artifactهای متعدد؛
+- `ASTRA_REQUIRED`: synthesis در مقیاس corpus بزرگ؛
+- `WORK_AND_ASTRA_REQUIRED`: هر دو نیاز همزمان.
+
+**قانون هشدار اجباری:** قبل از ورود به هر work package که Work یا Astra لازم
+دارد، Director باید قبل از شروع اجرا به Yahya هشدار دهد. دستورهای عمومی
+«ادامه» یا «بریم» به‌تنهایی اجازه عبور خاموش از این gate را نمی‌دهند.
+
+هشدارهای استاندارد:
+- `⚠️ WORK GATE`
+- `⚠️ ASTRA GATE`
+- `⚠️ WORK + ASTRA GATE`
+
+Astra فقط برای مسئله سخت استفاده نمی‌شود؛ trigger آن corpus-scale بودن است.
+نمونه thresholdها: 50 source عمیق جدید، 25 method قابل‌بازتولید جدید،
+100 candidate برای clustering سراسری، 20 survivor variant، 10 independent edge
+cluster یا 3 نسل پژوهشی کامل.
+
+Fresh OOS و evidenceهای sealed حتی در Work/Astra به‌صورت autonomous مصرف
+نمی‌شوند؛ بازکردن و اجرای canonical آن‌ها همچنان Director-supervised باقی
+می‌ماند.
+

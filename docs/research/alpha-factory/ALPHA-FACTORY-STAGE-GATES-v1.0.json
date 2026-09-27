@@ -1,0 +1,373 @@
+{
+  "schema": "YATL_ALPHA_FACTORY_STAGE_GATES",
+  "schema_version": "1.0.0",
+  "program_id": "YATL-ALPHA-FACTORY-001",
+  "status": "AUTHORITATIVE_PROGRAM_LAYER",
+  "established_utc": "2026-09-27T00:00:00Z",
+  "objective": "Discover independently auditable, after-cost, opportunity-preserving and scalable alpha sources; combine only evidence-backed components; validate on sealed unseen evidence before Forward consideration.",
+  "current_authority": {
+    "paper_research_only": true,
+    "live_master_lock": "OFF",
+    "futures_execution": false,
+    "leverage": false,
+    "shorting": false,
+    "live_execution": false,
+    "order_endpoint": false,
+    "ai_direct_execution": false,
+    "p10_independent": true,
+    "p10_write_allowed": false,
+    "p11_locked": true
+  },
+  "stages": [
+    {
+      "stage_id": "AF-00",
+      "name": "PROGRAM_GOVERNANCE",
+      "status": "ACTIVE",
+      "depends_on": [],
+      "parallel_safe": true,
+      "unlock_condition": "IMMEDIATE",
+      "exit_gate": [
+        "PROGRAM_DOCS_PRESENT",
+        "FROZEN_PROTOCOLS_UNCHANGED",
+        "FINAL_HEAD_CI_GREEN"
+      ],
+      "execution_route": "CHAT_DIRECTOR"
+    },
+    {
+      "stage_id": "AF-01",
+      "name": "OPPORTUNITY_DATA_FOUNDATION",
+      "status": "PENDING",
+      "depends_on": [
+        "AF-00"
+      ],
+      "parallel_safe": true,
+      "unlock_condition": "AF-00_ACCEPTED",
+      "exit_gate": [
+        "POINT_IN_TIME_UNIVERSE_POLICY",
+        "SYMBOL_ELIGIBILITY_HISTORY_SPEC",
+        "GAP_POLICY",
+        "CAPACITY_METADATA_SPEC",
+        "SEALED_OOS_ISOLATION_TEST"
+      ],
+      "execution_route": "MIXED_CHAT_THEN_WORK"
+    },
+    {
+      "stage_id": "AF-02",
+      "name": "ALPHA_TAXONOMY_REGISTRY_V2",
+      "status": "PENDING",
+      "depends_on": [
+        "AF-00"
+      ],
+      "parallel_safe": true,
+      "unlock_condition": "AF-00_ACCEPTED",
+      "exit_gate": [
+        "REGISTRY_V2_SCHEMA",
+        "ALL_ACTIVE_CANDIDATES_CLASSIFIED",
+        "DUPLICATION_FINGERPRINTS",
+        "FAMILY_LEVEL_REPORTING"
+      ],
+      "execution_route": "MIXED_CHAT_THEN_WORK_WITH_CONDITIONAL_ASTRA"
+    },
+    {
+      "stage_id": "AF-03",
+      "name": "RESEARCH_INTAKE_OPPORTUNITY_SWEEP",
+      "status": "PENDING",
+      "depends_on": [
+        "AF-00"
+      ],
+      "parallel_safe": true,
+      "unlock_condition": "AF-00_ACCEPTED",
+      "exit_gate": [
+        "SOURCE_BOUND_OR_EXPLICIT_BLOCKER",
+        "METHOD_SPEC_OR_EXPLICIT_BLOCKER",
+        "NO_GUESSED_RULES",
+        "NO_PERFORMANCE_BASED_QUEUE_REORDERING"
+      ],
+      "execution_route": "MIXED_AUTOMATION_WORK_WITH_THRESHOLD_ASTRA"
+    },
+    {
+      "stage_id": "AF-04",
+      "name": "STANDALONE_ALPHA_DEVELOPMENT",
+      "status": "PENDING",
+      "depends_on": [
+        "AF-02",
+        "AF-03"
+      ],
+      "parallel_safe": false,
+      "unlock_condition": "CANDIDATE_PREREGISTERED_AND_IMPLEMENTED",
+      "exit_gate": [
+        "CANONICAL_DEVELOPMENT_RESULT",
+        "FULL_TRIAL_LEDGER",
+        "OPPORTUNITY_SCORECARD",
+        "NEGATIVE_OR_SURVIVOR_CLOSEOUT"
+      ],
+      "execution_route": "CHAT_PROTOCOL_WORK_IMPLEMENTATION_MANUAL_CANONICAL_RUN"
+    },
+    {
+      "stage_id": "AF-05",
+      "name": "ROBUST_SEARCH_FALSE_DISCOVERY_CONTROL",
+      "status": "PENDING",
+      "depends_on": [
+        "AF-04"
+      ],
+      "parallel_safe": false,
+      "unlock_condition": "DEVELOPMENT_EVIDENCE_EXISTS",
+      "exit_gate": [
+        "MULTIPLE_TESTING_ACCOUNTING",
+        "NEIGHBOR_STABILITY",
+        "REPRODUCIBLE_RANKING",
+        "SURVIVOR_DIGEST_FROZEN"
+      ],
+      "execution_route": "WORK_THEN_CHAT_FREEZE"
+    },
+    {
+      "stage_id": "AF-06",
+      "name": "INDEPENDENCE_CORRELATION_OPPORTUNITY_GATE",
+      "status": "PENDING",
+      "depends_on": [
+        "AF-05"
+      ],
+      "parallel_safe": false,
+      "unlock_condition": "ONE_OR_MORE_DEVELOPMENT_SURVIVORS",
+      "exit_gate": [
+        "EDGE_CLUSTER_MAP",
+        "CORRELATION_REPORT",
+        "TRADE_OVERLAP_REPORT",
+        "REGIME_COVERAGE_MAP",
+        "OPPORTUNITY_COVERAGE_MAP"
+      ],
+      "execution_route": "WORK_WITH_CONDITIONAL_ASTRA"
+    },
+    {
+      "stage_id": "AF-07",
+      "name": "PORTFOLIO_ENSEMBLE_LAB",
+      "status": "LOCKED_UNTIL_STANDALONE_EVIDENCE",
+      "depends_on": [
+        "AF-06"
+      ],
+      "parallel_safe": false,
+      "unlock_condition": "STANDALONE_COMPONENT_EVIDENCE_JUSTIFIES_COMBINATION",
+      "exit_gate": [
+        "COMBINATION_PROTOCOL",
+        "BOUNDED_TRIAL_BUDGET",
+        "MARGINAL_EDGE_REPORT",
+        "PORTFOLIO_SURVIVOR_OR_REJECTION"
+      ],
+      "execution_route": "CHAT_PROTOCOL_WORK_IMPLEMENTATION_CONDITIONAL_ASTRA"
+    },
+    {
+      "stage_id": "AF-08",
+      "name": "FRESH_OOS_ADJUDICATION",
+      "status": "SEALED",
+      "depends_on": [
+        "AF-05"
+      ],
+      "parallel_safe": false,
+      "unlock_condition": "FROZEN_STANDALONE_OR_PORTFOLIO_SURVIVOR",
+      "exit_gate": [
+        "ONE_CANONICAL_FRESH_OOS_ADJUDICATION",
+        "NO_SAME_OOS_RETUNE",
+        "OOS_SURVIVOR_OR_REJECTION"
+      ],
+      "execution_route": "CHAT_DIRECTOR_MANUAL_SEALED_EVIDENCE"
+    },
+    {
+      "stage_id": "AF-09",
+      "name": "CRISIS_REGIME_ADVERSARIAL_CERTIFICATION",
+      "status": "LOCKED",
+      "depends_on": [
+        "AF-08"
+      ],
+      "parallel_safe": false,
+      "unlock_condition": "OOS_SURVIVOR",
+      "exit_gate": [
+        "CRISIS_REGIME_MAP",
+        "COST_STRESS",
+        "LIQUIDITY_STRESS",
+        "BOUNDED_FAILURE_PROFILE",
+        "CERTIFIED_OR_REJECTED"
+      ],
+      "execution_route": "WORK_IMPLEMENTATION_CHAT_CERTIFICATION"
+    },
+    {
+      "stage_id": "AF-10",
+      "name": "INDEPENDENT_AUDIT",
+      "status": "LOCKED",
+      "depends_on": [
+        "AF-09"
+      ],
+      "parallel_safe": false,
+      "unlock_condition": "CRISIS_CERTIFIED",
+      "exit_gate": [
+        "PROVENANCE_AUDIT",
+        "CODE_DIGEST_AUDIT",
+        "TRIAL_COUNT_AUDIT",
+        "LEAKAGE_AUDIT",
+        "ECONOMICS_RECOMPUTE",
+        "P10_ISOLATION_AUDIT"
+      ],
+      "execution_route": "WORK_AND_ASTRA_REQUIRED"
+    },
+    {
+      "stage_id": "AF-11",
+      "name": "FORWARD_OPPORTUNITY_VALIDATION",
+      "status": "LOCKED",
+      "depends_on": [
+        "AF-10"
+      ],
+      "parallel_safe": false,
+      "unlock_condition": "INDEPENDENT_AUDIT_PASS",
+      "exit_gate": [
+        "FORWARD_PROTOCOL",
+        "ELAPSED_TIME_GATE",
+        "OPPORTUNITY_COUNT_GATE",
+        "EXECUTION_QUALITY_REPORT",
+        "FORWARD_CANDIDATE_OR_REJECT"
+      ],
+      "execution_route": "CHAT_PROTOCOL_WORK_TOOLING_CHAT_ADJUDICATION"
+    },
+    {
+      "stage_id": "AF-12",
+      "name": "CAPACITY_CAPITAL_SCALING_RESEARCH",
+      "status": "LOCKED",
+      "depends_on": [
+        "AF-11"
+      ],
+      "parallel_safe": false,
+      "unlock_condition": "FORWARD_CAPABLE_EDGE",
+      "exit_gate": [
+        "SLIPPAGE_CURVE",
+        "MARKET_PARTICIPATION_ANALYSIS",
+        "CAPACITY_DECAY_CURVE",
+        "DRAWDOWN_AT_SCALE",
+        "PORTFOLIO_CAPACITY_BOTTLENECKS"
+      ],
+      "execution_route": "WORK_WITH_CONDITIONAL_ASTRA"
+    },
+    {
+      "stage_id": "AF-13",
+      "name": "ADAPTIVE_RESEARCH_LOOP",
+      "status": "CONTINUOUS_AFTER_CANDIDATE_CLOSE",
+      "depends_on": [],
+      "parallel_safe": true,
+      "unlock_condition": "ANY_CANDIDATE_CLOSEOUT",
+      "exit_gate": [
+        "FAILURE_MECHANISM_RECORDED",
+        "NEW_LOGIC_GETS_NEW_CANDIDATE_ID",
+        "OLD_EVIDENCE_NOT_OVERWRITTEN"
+      ],
+      "execution_route": "CHAT_WITH_CONDITIONAL_ASTRA"
+    }
+  ],
+  "alpha_families": [
+    "AF-TREND",
+    "AF-BREAKOUT",
+    "AF-MEANREV",
+    "AF-CRASHREB",
+    "AF-VOLUME",
+    "AF-LIQUIDITY",
+    "AF-TIME",
+    "AF-RELATIVE",
+    "AF-REGIME",
+    "AF-EVENT",
+    "AF-MICRO"
+  ],
+  "candidate_states": [
+    "DISCOVERED",
+    "SOURCE_BOUND",
+    "METHOD_SPECIFIED",
+    "PREREGISTERED",
+    "IMPLEMENTED",
+    "DEVELOPMENT_EVALUATED",
+    "REJECTED_NEGATIVE_EVIDENCE",
+    "DEVELOPMENT_SURVIVOR",
+    "FROZEN_FOR_OOS",
+    "OOS_REJECTED",
+    "OOS_SURVIVOR",
+    "CRISIS_CERTIFIED",
+    "INDEPENDENT_AUDIT_PASS",
+    "FORWARD_CANDIDATE",
+    "BLOCKED_SOURCE",
+    "BLOCKED_DATA",
+    "BLOCKED_REPRODUCIBILITY",
+    "INVALIDATED_BEFORE_ECONOMICS"
+  ],
+  "promotion_principles": {
+    "standalone_before_combination": true,
+    "hidden_trials_forbidden": true,
+    "post_outcome_rescue_forbidden": true,
+    "negative_evidence_retained": true,
+    "sealed_oos_required": true,
+    "opportunity_starvation_rejected": true,
+    "correlated_variants_count_as_one_cluster": true,
+    "single_exceptional_edge_may_progress_without_portfolio": true,
+    "capacity_required_before_capital_scaling": true
+  },
+  "immediate_sequence": [
+    "AF-00_CLOSEOUT",
+    "GEN2-002_CLOSEOUT_CI",
+    "AF-03A_SOURCE_UNBLOCK_0011_0022_0027",
+    "GEN2_NEXT_ELIGIBLE_PREREGISTERED_CANDIDATE",
+    "AF-01_OPPORTUNITY_DATA_DESIGN",
+    "AF-02_REGISTRY_V2",
+    "AF-03B_INDEPENDENT_ALPHA_SWEEP_002",
+    "AF-04_STANDALONE_DEVELOPMENT",
+    "AF-06_INDEPENDENCE_GATE"
+  ],
+  "current_evidence": {
+    "gen1_hsse005": "0_OF_6_CRISIS_PASS_HIGHLY_CORRELATED",
+    "gen2_001": "CANONICAL_COMPLETE_ZERO_PROPOSALS",
+    "gen2_002": "CANONICAL_INVALIDATED_BEFORE_ECONOMIC_EVALUATION_ZERO_PROPOSALS",
+    "fresh_oos": "SEALED",
+    "p10": "INDEPENDENT_REAL_FORWARD_EVIDENCE_COLLECTION",
+    "p11": "LOCKED"
+  },
+  "program_scorecard": [
+    "candidate_count_total",
+    "candidate_count_source_bound",
+    "candidate_count_development_evaluated",
+    "negative_evidence_count",
+    "survivors_by_alpha_family",
+    "independent_edge_cluster_count",
+    "after_cost_expectancy_by_family",
+    "opportunity_count",
+    "opportunity_utilization",
+    "fresh_oos_survivor_count",
+    "crisis_certified_count",
+    "forward_candidate_count",
+    "estimated_capacity_by_edge",
+    "sealed_evidence_status",
+    "p10_isolation_status",
+    "p11_lock_status"
+  ],
+  "evidence_ladder": [
+    "DEVELOPMENT",
+    "FROZEN_SURVIVOR",
+    "FRESH_OOS",
+    "CRISIS_CERTIFICATION",
+    "INDEPENDENT_AUDIT",
+    "FORWARD_PAPER",
+    "CAPACITY_RESEARCH",
+    "FUTURE_SEPARATELY_AUTHORIZED_TINY_LIVE"
+  ],
+  "execution_routing": {
+    "authoritative_matrix": "docs/research/alpha-factory/EXECUTION-MODE-MATRIX-v1.0.md",
+    "required_modes": [
+      "CHAT_DIRECTOR",
+      "WORK_REQUIRED",
+      "ASTRA_REQUIRED",
+      "WORK_AND_ASTRA_REQUIRED"
+    ],
+    "mandatory_pre_stage_warning": true,
+    "generic_continue_does_not_cross_required_mode_gate": true,
+    "sealed_evidence_manual_director_supervision": true,
+    "astra_thresholds": {
+      "deep_reviewed_sources_since_prior_synthesis": 50,
+      "reproducible_methods_since_prior_synthesis": 25,
+      "global_candidate_count_for_cluster_synthesis": 100,
+      "survivor_variants_for_global_synthesis": 20,
+      "independent_mechanism_clusters_for_large_portfolio_synthesis": 10,
+      "completed_generations_for_failure_synthesis": 3
+    }
+  }
+}

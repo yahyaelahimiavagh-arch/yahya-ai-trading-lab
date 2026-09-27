@@ -1,0 +1,44 @@
+{
+  "schema": "YATL_GEN2_METHOD_EXTRACTION",
+  "schema_version": "0.1.0",
+  "candidate_id": "RIE-CAND-0011",
+  "source": {
+    "title": "Cryptocurrency market risk-managed momentum strategies",
+    "author": [
+      "Ao Yang"
+    ],
+    "doi": "10.1016/j.frl.2025.107879",
+    "uri": "https://www.sciencedirect.com/science/article/pii/S1544612325011377",
+    "publication_year": 2025,
+    "access_state": "PARTIAL_PUBLIC_METHOD_TEXT",
+    "source_bytes_frozen": false,
+    "implementation_found": false
+  },
+  "extracted_method": {
+    "source_universe": "Broad cryptocurrency cross-section from CoinMarketCap.",
+    "conventional_signal": "Weekly cross-sectional momentum: rank cryptocurrencies by 2-week cumulative return into quintiles.",
+    "source_positioning": "Value-weighted long highest quintile and short lowest quintile (WML).",
+    "formation_period": "2 weeks",
+    "holding_period": "1 week",
+    "rebalance": "weekly",
+    "risk_management": "Applies a Barroso-Santa-Clara style risk-managed momentum overlay; exact scaling estimator/target/caps are not fully exposed in the accessible source text.",
+    "yatl_direct_replication_possible": false
+  },
+  "yatl_relevance": {
+    "useful_component": "Risk-managed exposure concept for a frozen trend/momentum signal.",
+    "required_adaptation": "BTCUSDT/ETHUSDT, long-only Spot, no leverage, no short leg, after-cost execution.",
+    "adaptation_is_not_source_replication": true
+  },
+  "blockers": [
+    "Exact risk-scaling equation, estimator window, target-volatility convention and leverage/cap semantics are not fully available in the accessible source text.",
+    "No inspectable source implementation/code was found.",
+    "Source bytes are not frozen."
+  ],
+  "status": "NOT_READY_PENDING_EXACT_METHOD",
+  "performance_claims_trusted": false,
+  "performance_run_allowed": false,
+  "p10_read": false,
+  "p10_write_allowed": false,
+  "p11_locked": true,
+  "research_only": true
+}
