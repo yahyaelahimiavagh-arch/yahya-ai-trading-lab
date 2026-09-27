@@ -249,3 +249,59 @@ repository-wide migration, or heavy test/build execution.
 
 Before each Work gate, first ask whether Chat can complete the task safely.
 
+
+
+## Mass Candidate Factory status — 2026-09-27
+
+### MCF-00 — CLOSED
+Governance and mass-factory architecture accepted.
+
+### MCF-01 — CLOSED
+Family manifest/candidate identity schema and initial mechanism catalog accepted.
+
+### MCF-02 — IMPLEMENTATION ACCEPTED / MERGED
+
+- PR #144 merged.
+- implementation Final HEAD:
+  `637b865c097246a901c937bb1de8fc4b90c8f8c3`
+- merged main:
+  `2adb89eb2eae1c3160e0adb66aabbb2c2dd85f66`
+- Actions run `36332442478`: green.
+- engineering calibration only; no production selection batch.
+
+Authoritative closeout:
+`MCF-02-IMPLEMENTATION-CLOSEOUT-v1.0.md`
+
+### AF-02B — BOUNDED MIGRATION COMPLETE
+
+31/31 legacy candidates migrated conservatively to Registry v2.
+
+- no candidate ID lost;
+- no performance authorization granted;
+- GEN2-001/002/003 canonical evidence linked;
+- RIE-CAND-0028 source/adaptation split preserved.
+
+Artifacts:
+- `CANDIDATE-REGISTRY-V2-v1.0.json`
+- `AF-02B-REGISTRY-V2-MIGRATION-CLOSEOUT-v1.0.md`
+
+### Current production blocker
+
+The Mass Candidate Engine is ready, but the first true mass Development
+selection batch remains locked until AF-01B point-in-time opportunity data
+foundation is implemented/accepted and production family/trial/evidence
+manifests are frozen.
+
+### Current next package
+
+AF-01B Opportunity Data Foundation implementation.
+
+Mode:
+`WORK_REQUIRED`
+
+Reason:
+multi-file point-in-time universe/data loader, manifests, eligibility history,
+gap-aware research API and bulk data plumbing.
+
+No Work is required for per-candidate execution after the shared foundation is
+built.
