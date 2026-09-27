@@ -628,11 +628,27 @@
       "leakage_risks": [
         "Volatility estimator and scaling target must be frozen before OOS."
       ],
-      "status": "NEW",
+      "status": "BLOCKED_REPRODUCIBILITY",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
       "p10_evidence_effect": "NONE",
-      "reproduction_packet": null
+      "reproduction_packet": {
+        "state": "BLOCKED_REPRODUCIBILITY",
+        "closeout_ref": "docs/research/research-intake/AF-03A-SOURCE-UNBLOCK-SPRINT-v0.1.0.md",
+        "known_exact_details": [
+          "2-week cumulative-return formation",
+          "1-week holding period",
+          "weekly quintile sort",
+          "value-weighted Winner-minus-Loser construction",
+          "weekly rolling rebalance"
+        ],
+        "missing_details": [
+          "exact risk-scaling estimator horizon",
+          "exact target/scaling constant",
+          "exact update convention",
+          "paper-specific crypto adaptation details"
+        ]
+      }
     },
     {
       "candidate_id": "RIE-CAND-0012",
@@ -1274,11 +1290,27 @@
       "leakage_risks": [
         "Regime thresholds must be fit on train data only and lagged at decision time."
       ],
-      "status": "NEW",
+      "status": "BLOCKED_SOURCE",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
       "p10_evidence_effect": "NONE",
-      "reproduction_packet": null
+      "reproduction_packet": {
+        "state": "BLOCKED_SOURCE",
+        "closeout_ref": "docs/research/research-intake/AF-03A-SOURCE-UNBLOCK-SPRINT-v0.1.0.md",
+        "known_exact_details": [
+          "three regimes: Expansion, Neutral, Contraction",
+          "uses short-vs-long realized-volatility structure",
+          "uses normalized directional momentum",
+          "strategy-agnostic control-layer intent"
+        ],
+        "missing_details": [
+          "short realized-volatility horizon",
+          "long realized-volatility horizon",
+          "normalized-momentum equation",
+          "regime thresholds",
+          "state update semantics"
+        ]
+      }
     },
     {
       "candidate_id": "RIE-CAND-0023",
@@ -1548,7 +1580,8 @@
         ],
         "provenance_notes": [
           "Web-verified academic/publisher source; source bytes are not frozen yet.",
-          "Reported performance is not YATL evidence and must be independently reproduced."
+          "Reported performance is not YATL evidence and must be independently reproduced.",
+          "AF-03A full-text method extraction completed from author-hosted PDF; source bytes were not stored in-repo."
         ]
       },
       "technique_family": "VOLATILITY",
@@ -1569,10 +1602,14 @@
       ],
       "stop_rules": [],
       "sizing_rules": [
-        "Compare downside-volatility scaling against both unscaled trend and total-volatility scaling using identical costs and no leverage."
+        "Source managed return is proportional to inverse lagged downside volatility: f_Down_sigma,t = c_tilde* / sigma_Down,t-1 * f_t.",
+        "Source real-time scaling parameter is re-estimated at each month boundary from the expanding training sample so original and managed portfolios have equal estimated volatility over the prior training period.",
+        "YATL adaptation must impose a preregistered no-leverage cap and explicit crypto rebalance semantics before any performance run."
       ],
       "lookbacks": [
-        "Negative-return volatility window and fixed scaling schedule require reproduction and bounded search."
+        "Source method is monthly: downside volatility for month t is computed from daily original-portfolio returns in month t; managed return for month t uses volatility from month t-1.",
+        "If month t contains fewer than three negative daily returns, source downside volatility uses negative daily returns from months t and t-1.",
+        "Real-time source evaluation uses an initial 120-month training period with an expanding estimation window."
       ],
       "cost_assumptions": [
         "Use frozen YATL fee and adverse-slippage assumptions in controlled Development search.",
@@ -1591,11 +1628,25 @@
         "Only returns strictly before the decision bar may enter downside volatility.",
         "Do not estimate ex-post optimal combination weights."
       ],
-      "status": "NEW",
+      "status": "METHOD_SPECIFIED",
       "duplicate_of": null,
       "strategy_evidence_effect": "NONE",
       "p10_evidence_effect": "NONE",
-      "reproduction_packet": null
+      "reproduction_packet": {
+        "state": "METHOD_SPECIFIED",
+        "closeout_ref": "docs/research/research-intake/AF-03A-SOURCE-UNBLOCK-SPRINT-v0.1.0.md",
+        "source_full_text_url": "https://www.lehigh.edu/~xuy219/research/Downside.pdf",
+        "source_equations": {
+          "total_volatility": "sigma_Total,t = sqrt(sum_j f_j^2)",
+          "downside_volatility": "sigma_Down,t = sqrt(sum_j f_j^2 * I[f_j < 0])",
+          "managed_return": "f_Down_sigma,t = c_tilde* / sigma_Down,t-1 * f_t"
+        },
+        "lag_rule": "Only lagged completed-month downside volatility enters month-t managed return.",
+        "sparse_negative_return_rule": "If fewer than three negative daily returns occur in a month, source uses negative returns over that month and the prior month.",
+        "real_time_rule": "Initial K=120 months; expanding window; scale parameter estimated before each OOS month from prior training data.",
+        "yatl_adaptation_required": true,
+        "performance_authorized": false
+      }
     },
     {
       "candidate_id": "RIE-CAND-0028",
