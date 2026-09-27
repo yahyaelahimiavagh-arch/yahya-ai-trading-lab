@@ -58,6 +58,8 @@ This is accounting, not a standalone pass condition.
 
 For candidates remaining after F4:
 - calculate Development daily Sharpe from exact normalized return series;
+- use zero risk-free rate for this research comparison;
+- annualize daily Sharpe by sqrt(365);
 - use the generation/family effective trial count and non-normal return moments
   in a versioned Deflated Sharpe implementation;
 - hard requirement: DSR confidence >= 0.95 that the candidate exceeds the
@@ -69,6 +71,13 @@ If DSR assumptions/input series are invalid, candidate is
 ## 6. Probability of Backtest Overfitting
 
 Use deterministic CSCV on 8 chronological Development slices.
+
+Slice construction is frozen:
+- Development calendar is 2020-03-01 through 2023-01-01 exclusive;
+- let D be the ordered UTC calendar days in this interval;
+- slice i uses day indexes
+  `floor(i*len(D)/8)` through `floor((i+1)*len(D)/8)-1`;
+- therefore slice boundaries are determined without performance input.
 
 - slice boundaries fixed before outcome;
 - all valid symmetric train/test combinations evaluated;
@@ -82,9 +91,10 @@ MCF-PROD-001 survivors.
 
 Implement a block-bootstrap family-level reality-check/SPA-style diagnostic
 with:
-- deterministic seed frozen in implementation contract;
-- block length selected by a fixed pre-outcome rule;
-- at least 2,000 bootstrap replications for canonical run.
+- deterministic seed `20260927`;
+- circular moving-block bootstrap on daily returns;
+- fixed block length: 14 calendar days;
+- exactly 2,000 bootstrap replications for MCF-PROD-001 canonical run.
 
 For MCF-PROD-001 this is a required diagnostic, not an independent rescue gate.
 
