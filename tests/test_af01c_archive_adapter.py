@@ -139,6 +139,19 @@ class AF01C(unittest.TestCase):
         self.assertEqual(rec["fallback_state"], "EXPLICIT")
         self.assertEqual(rec["row_count"], 31 * 96)
         self.assertEqual(rec["gap_count"], 0)
+        pilot_root = self.root / "fallback"
+        self.assertEqual(reconcile(pilot_root, p)["source_gap_count"], 0)
+        evidence = canonical(dict(symbol="ETHUSDT", classification="ORDINARY_SPOT_CONFIRMED", reviewed=True,
+                                  source_type="INDEPENDENT_HISTORICAL_PRODUCT_RECORD", source_reference="fixture:product-record"))
+        evidence_ref = f"classification/record-{sha256(evidence)}.json"
+        from research.opportunity_data.storage import save_artifact
+        save_artifact(pilot_root, evidence_ref, evidence)
+        admitted = build_lifecycle(pilot_root, p, "ETHUSDT", retrieved_ms=1790539200000,
+                                   ordinary_evidence_ref=evidence_ref)
+        self.assertEqual(admitted["classification"], "ORDINARY_SPOT_CONFIRMED")
+        self.assertEqual(admitted["gap_count"], 0)
+        self.assertFalse(admitted["production_eligible"])
+        self.assertEqual(len(admitted["index_sha256"]), 64)
 
     def test_safety_unresolved_and_source_gap(self):
         inv = self.inventory()
