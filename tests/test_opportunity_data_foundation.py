@@ -56,6 +56,7 @@ class OpportunityFoundationTests(unittest.TestCase):
         assert ix.symbol('BTCUSDT', START+4*C)['lifecycle_status'] == 'HISTORICALLY_ADMITTED'
         assert ix.symbols_at(START+14*C) == ()
         assert not ix.symbols_at(START-C)
+        assert not ix.symbols_at(START)
         assert ix.index_sha256 == build_index((l,), (d,)).index_sha256
         assert ix.intervals_at(l.symbol, START+2*C) == ('15m',)
         assert ix.dependency_available(l.symbol, START+2*C, 'VOLUME')
@@ -75,6 +76,9 @@ class OpportunityFoundationTests(unittest.TestCase):
         ix = build_index((lifecycle(), lifecycle('ETHUSDT')), (d, eth))
         t = START+5*C
         assert ix.eligibility('BTCUSDT', t, policy()).production_research_eligible
+        assert not ix.eligibility('BTCUSDT', START, policy()).data_admitted
+        with self.assertRaises(OpportunityError):
+            ix.eligibility('BTCUSDT', t, replace(policy(), policy_sha256='0'*64))
         assert not ix.eligibility('BTCUSDT', START+C, policy()).production_research_eligible
         assert 'QUOTE_MISMATCH' in ix.eligibility('BTCUSDT', t, replace(policy(), quote_asset='BTC').frozen()).reasons
         cross = replace(policy(), required_dependencies=('MULTI_ASSET',)).frozen()
@@ -152,6 +156,9 @@ class OpportunityFoundationTests(unittest.TestCase):
         assert m.metric_sha256 == compute(data, ending_ms=t, window_bars=3).metric_sha256
         gap_data = dataset(indices=(0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11))[0]
         assert compute(gap_data, ending_ms=t, window_bars=3).gap_rate == str(__import__('decimal').Decimal(1)/3)
+        ix = build_index((lifecycle(),), (dataset(indices=(0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11)),))
+        strict = policy(maximum_gap_rate='0')
+        assert 'GAP_RATE:15m' in ix.eligibility('BTCUSDT', START+5*C, strict).reasons
 
 
     def test_development_isolation_paths_partitions_symlinks_and_immutable_artifacts(self):

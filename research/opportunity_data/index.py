@@ -28,10 +28,12 @@ class UniverseIndex:
                     quality_refs=self.quality_refs)
 
     def symbol(self, symbol: str, t_ms: int) -> dict | None:
-        return next((r.snapshot_at(t_ms) for r in self.records if r.symbol == symbol), None)
+        return next((r.snapshot_at(t_ms) for r in self.records if r.symbol == symbol
+                     and any(d.symbol == symbol and any(bar.close_time_ms < t_ms for bar in d.rows)
+                             for d in self.datasets)), None)
 
     def symbols_at(self, t_ms: int) -> tuple[str, ...]:
-        return tuple(r.symbol for r in self.records if r.existed_at(t_ms))
+        return tuple(r.symbol for r in self.records if self.symbol(r.symbol, t_ms) is not None)
 
     def intervals_at(self, symbol: str, t_ms: int) -> tuple[str, ...]:
         if self.symbol(symbol, t_ms) is None:

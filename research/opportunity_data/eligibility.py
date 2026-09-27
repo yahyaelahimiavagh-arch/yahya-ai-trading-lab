@@ -84,14 +84,16 @@ def check(lifecycle: Lifecycle, datasets: tuple[AdmittedDataset, ...], policy: U
         if dataset.quality_verdict not in {"PASS_CONTIGUOUS", "PASS_WITH_GAPS"}:
             continue
         valid[dataset.interval] = dataset
-    admitted = bool(valid) and lifecycle.first_admitted_data_ms <= t_ms
+    admitted = any(r.close_time_ms < t_ms for d in valid.values() for r in d.rows)
     for interval in policy.required_intervals:
         data = valid.get(interval)
         if data is None:
             reasons.append("MISSING_INTERVAL:" + interval)
             continue
         cadence = CADENCE_MS[interval]
-        history = [r for r in data.rows if r.close_time_ms < t_ms and r.open_time_ms >= t_ms - (policy.warmup_bars + 1) * cadence]
+        window_start = (t_ms // cadence - policy.warmup_bars) * cadence
+        history = [r for r in data.rows if r.close_time_ms < t_ms
+                   and r.open_time_ms >= window_start]
         if len(history) < policy.warmup_bars:
             reasons.append("INSUFFICIENT_HISTORY:" + interval)
         if policy.maximum_gap_rate is not None and policy.warmup_bars:
