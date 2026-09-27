@@ -99,7 +99,9 @@
         "CANONICAL_DEVELOPMENT_RESULT",
         "FULL_TRIAL_LEDGER",
         "OPPORTUNITY_SCORECARD",
-        "NEGATIVE_OR_SURVIVOR_CLOSEOUT"
+        "NEGATIVE_OR_SURVIVOR_CLOSEOUT",
+        "FAILURE_CLASSIFICATION_IF_REJECTED",
+        "SALVAGE_REVIEW_IF_REJECTED"
       ],
       "execution_route": "CHAT_PROTOCOL_WORK_IMPLEMENTATION_MANUAL_CANONICAL_RUN"
     },
@@ -116,7 +118,8 @@
         "MULTIPLE_TESTING_ACCOUNTING",
         "NEIGHBOR_STABILITY",
         "REPRODUCIBLE_RANKING",
-        "SURVIVOR_DIGEST_FROZEN"
+        "SURVIVOR_DIGEST_FROZEN",
+        "MULTIPLE_TESTING_ACCOUNTING_EXPLICIT"
       ],
       "execution_route": "WORK_THEN_CHAT_FREEZE"
     },
@@ -185,7 +188,9 @@
         "COST_STRESS",
         "LIQUIDITY_STRESS",
         "BOUNDED_FAILURE_PROFILE",
-        "CERTIFIED_OR_REJECTED"
+        "CERTIFIED_OR_REJECTED",
+        "EDGE_SCOPE_CERTIFICATION_RECORDED",
+        "CONDITIONAL_EDGE_DETECTOR_AND_CONTAINMENT_IF_APPLICABLE"
       ],
       "execution_route": "WORK_IMPLEMENTATION_CHAT_CERTIFICATION"
     },
@@ -254,7 +259,9 @@
       "exit_gate": [
         "FAILURE_MECHANISM_RECORDED",
         "NEW_LOGIC_GETS_NEW_CANDIDATE_ID",
-        "OLD_EVIDENCE_NOT_OVERWRITTEN"
+        "OLD_EVIDENCE_NOT_OVERWRITTEN",
+        "ASSUMPTION_LEDGER_UPDATED",
+        "BLIND_SPOT_REVIEW_COMPLETED"
       ],
       "execution_route": "CHAT_WITH_CONDITIONAL_ASTRA"
     }
@@ -368,6 +375,51 @@
       "survivor_variants_for_global_synthesis": 20,
       "independent_mechanism_clusters_for_large_portfolio_synthesis": 10,
       "completed_generations_for_failure_synthesis": 3
+    }
+  },
+  "blind_spot_and_conditional_edge_governance": {
+    "authoritative_document": "docs/research/alpha-factory/BLIND-SPOT-AND-CONDITIONAL-EDGE-GOVERNANCE-v1.0.md",
+    "edge_scopes": [
+      "UNKNOWN_EDGE_SCOPE",
+      "ALL_REGIME_EDGE",
+      "REGIME_CONDITIONAL_EDGE"
+    ],
+    "failure_classifications": [
+      "NO_EDGE",
+      "CONDITIONAL_EDGE",
+      "OVERFIT",
+      "DATA_BLOCKED",
+      "EXECUTION_LIMITED",
+      "CAPACITY_LIMITED",
+      "REGIME_MISMATCH",
+      "REDUNDANT_EDGE",
+      "IMPLEMENTATION_INVALIDATED",
+      "INSUFFICIENT_EVIDENCE",
+      "UNKNOWN_FAILURE_MECHANISM"
+    ],
+    "rejection_review_required": true,
+    "salvage_requires_new_candidate_for_new_logic": true,
+    "same_evidence_retune_forbidden": true,
+    "conditional_edge_requires_preregistered_operating_envelope": true,
+    "conditional_edge_requires_detector_metrics": [
+      "false_activation_rate",
+      "false_deactivation_rate",
+      "recognition_lag",
+      "missed_opportunity_cost",
+      "loss_before_shutdown",
+      "reentry_lag",
+      "false_reentry_count"
+    ],
+    "out_of_envelope_primary_objectives": [
+      "CAPITAL_SURVIVAL",
+      "BOUNDED_DRAWDOWN",
+      "BOUNDED_EXPOSURE",
+      "SAFE_REENTRY"
+    ],
+    "work_token_conservation": {
+      "work_not_default": true,
+      "prefer_chat_director_when_safe": true,
+      "work_escalation_requires_material_execution_need": true
     }
   }
 }
