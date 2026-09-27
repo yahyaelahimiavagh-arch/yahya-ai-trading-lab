@@ -345,7 +345,14 @@
     "estimated_capacity_by_edge",
     "sealed_evidence_status",
     "p10_isolation_status",
-    "p11_lock_status"
+    "p11_lock_status",
+    "all_regime_edge_candidate_count",
+    "regime_conditional_edge_candidate_count",
+    "failure_classification_count_by_type",
+    "open_assumption_count",
+    "blind_spot_review_count",
+    "salvage_review_count",
+    "strategy_decay_warning_count"
   ],
   "evidence_ladder": [
     "DEVELOPMENT",
