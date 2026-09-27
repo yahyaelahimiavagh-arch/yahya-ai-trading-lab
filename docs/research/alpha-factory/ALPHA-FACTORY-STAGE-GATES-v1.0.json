@@ -1,0 +1,156 @@
+{
+  "schema": "YATL_ALPHA_FACTORY_STAGE_GATES",
+  "schema_version": "1.0.0",
+  "program_id": "YATL-ALPHA-FACTORY-001",
+  "status": "AUTHORITATIVE_PROGRAM_LAYER",
+  "established_utc": "2026-09-27T00:00:00Z",
+  "objective": "Discover independently auditable, after-cost, opportunity-preserving and scalable alpha sources; combine only evidence-backed components; validate on sealed unseen evidence before Forward consideration.",
+  "current_authority": {
+    "paper_research_only": true,
+    "live_master_lock": "OFF",
+    "futures_execution": false,
+    "leverage": false,
+    "shorting": false,
+    "live_execution": false,
+    "order_endpoint": false,
+    "ai_direct_execution": false,
+    "p10_independent": true,
+    "p10_write_allowed": false,
+    "p11_locked": true
+  },
+  "stages": [
+    {
+      "stage_id": "AF-00",
+      "name": "PROGRAM_GOVERNANCE",
+      "status": "ACTIVE"
+    },
+    {
+      "stage_id": "AF-01",
+      "name": "OPPORTUNITY_DATA_FOUNDATION",
+      "status": "PENDING"
+    },
+    {
+      "stage_id": "AF-02",
+      "name": "ALPHA_TAXONOMY_REGISTRY_V2",
+      "status": "PENDING"
+    },
+    {
+      "stage_id": "AF-03",
+      "name": "RESEARCH_INTAKE_OPPORTUNITY_SWEEP",
+      "status": "PENDING"
+    },
+    {
+      "stage_id": "AF-04",
+      "name": "STANDALONE_ALPHA_DEVELOPMENT",
+      "status": "PENDING"
+    },
+    {
+      "stage_id": "AF-05",
+      "name": "ROBUST_SEARCH_FALSE_DISCOVERY_CONTROL",
+      "status": "PENDING"
+    },
+    {
+      "stage_id": "AF-06",
+      "name": "INDEPENDENCE_CORRELATION_OPPORTUNITY_GATE",
+      "status": "PENDING"
+    },
+    {
+      "stage_id": "AF-07",
+      "name": "PORTFOLIO_ENSEMBLE_LAB",
+      "status": "LOCKED_UNTIL_STANDALONE_EVIDENCE"
+    },
+    {
+      "stage_id": "AF-08",
+      "name": "FRESH_OOS_ADJUDICATION",
+      "status": "SEALED"
+    },
+    {
+      "stage_id": "AF-09",
+      "name": "CRISIS_REGIME_ADVERSARIAL_CERTIFICATION",
+      "status": "LOCKED"
+    },
+    {
+      "stage_id": "AF-10",
+      "name": "INDEPENDENT_AUDIT",
+      "status": "LOCKED"
+    },
+    {
+      "stage_id": "AF-11",
+      "name": "FORWARD_OPPORTUNITY_VALIDATION",
+      "status": "LOCKED"
+    },
+    {
+      "stage_id": "AF-12",
+      "name": "CAPACITY_CAPITAL_SCALING_RESEARCH",
+      "status": "LOCKED"
+    },
+    {
+      "stage_id": "AF-13",
+      "name": "ADAPTIVE_RESEARCH_LOOP",
+      "status": "CONTINUOUS_AFTER_CANDIDATE_CLOSE"
+    }
+  ],
+  "alpha_families": [
+    "AF-TREND",
+    "AF-BREAKOUT",
+    "AF-MEANREV",
+    "AF-CRASHREB",
+    "AF-VOLUME",
+    "AF-LIQUIDITY",
+    "AF-TIME",
+    "AF-RELATIVE",
+    "AF-REGIME",
+    "AF-EVENT",
+    "AF-MICRO"
+  ],
+  "candidate_states": [
+    "DISCOVERED",
+    "SOURCE_BOUND",
+    "METHOD_SPECIFIED",
+    "PREREGISTERED",
+    "IMPLEMENTED",
+    "DEVELOPMENT_EVALUATED",
+    "REJECTED_NEGATIVE_EVIDENCE",
+    "DEVELOPMENT_SURVIVOR",
+    "FROZEN_FOR_OOS",
+    "OOS_REJECTED",
+    "OOS_SURVIVOR",
+    "CRISIS_CERTIFIED",
+    "INDEPENDENT_AUDIT_PASS",
+    "FORWARD_CANDIDATE",
+    "BLOCKED_SOURCE",
+    "BLOCKED_DATA",
+    "BLOCKED_REPRODUCIBILITY",
+    "INVALIDATED_BEFORE_ECONOMICS"
+  ],
+  "promotion_principles": {
+    "standalone_before_combination": true,
+    "hidden_trials_forbidden": true,
+    "post_outcome_rescue_forbidden": true,
+    "negative_evidence_retained": true,
+    "sealed_oos_required": true,
+    "opportunity_starvation_rejected": true,
+    "correlated_variants_count_as_one_cluster": true,
+    "single_exceptional_edge_may_progress_without_portfolio": true,
+    "capacity_required_before_capital_scaling": true
+  },
+  "immediate_sequence": [
+    "AF-00_CLOSEOUT",
+    "GEN2-002_CLOSEOUT_CI",
+    "AF-03A_SOURCE_UNBLOCK_0011_0022_0027",
+    "GEN2_NEXT_ELIGIBLE_PREREGISTERED_CANDIDATE",
+    "AF-01_OPPORTUNITY_DATA_DESIGN",
+    "AF-02_REGISTRY_V2",
+    "AF-03B_INDEPENDENT_ALPHA_SWEEP_002",
+    "AF-04_STANDALONE_DEVELOPMENT",
+    "AF-06_INDEPENDENCE_GATE"
+  ],
+  "current_evidence": {
+    "gen1_hsse005": "0_OF_6_CRISIS_PASS_HIGHLY_CORRELATED",
+    "gen2_001": "CANONICAL_COMPLETE_ZERO_PROPOSALS",
+    "gen2_002": "CANONICAL_INVALIDATED_BEFORE_ECONOMIC_EVALUATION_ZERO_PROPOSALS",
+    "fresh_oos": "SEALED",
+    "p10": "INDEPENDENT_REAL_FORWARD_EVIDENCE_COLLECTION",
+    "p11": "LOCKED"
+  }
+}
