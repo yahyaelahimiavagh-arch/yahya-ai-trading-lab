@@ -31,3 +31,13 @@ For RIE-CAND-0030, freeze before any market outcome:
 
 P10 remains untouched. 2025-2026 holdout/recent reserve remain sealed. P11 is
 locked.
+
+
+## GEN2-001 result
+
+`RIE-CAND-0030` / `GEN2-ADAPT-0001-STOP-OVERLAY` completed its one registered
+Development run with **0 proposals** across 36 conditions. The 10% stop activated
+20 times across 3/6 frozen reference strategies but failed aggregate base/stress
+improvement and median improvement gates. Thresholds 20/30/40/50% produced zero
+stop fills. The component is retained as negative evidence; no threshold refinement
+or retry on the same Development evidence is allowed.

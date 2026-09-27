@@ -2037,3 +2037,12 @@ no withdrawal، no trade permission، no order endpoint و no AI direct executio
 
 14. **GEN2 Master Protocol — REGISTERED BEFORE PERFORMANCE**: پایان نسل دوم فقط یکی از دو حالت است: `GEN2_FORWARD_CANDIDATE` یا `GEN2_NO_ROBUST_EDGE_FOUND`. حداکثر 8 hypothesis اصلی و 3 combination، بدون افزایش budget بعد از outcome. Fresh OOS = 2025-01-01 تا 2026-07-01 و recent reserve از 2026-07-01 همچنان sealed هستند.
 15. **GEN2-001 Stop Overlay — PREREGISTERED**: Candidate `0030` روی هر شش survivor فریز‌شده نسل اول و فقط روی Development تا 2023-01-01 تست می‌شود. grid دقیق stop = 10/20/30/40/50% + control؛ 36 condition، بدون hidden trial. 2023–2024، HSSE-005 outcomes و Fresh OOS برای selection ممنوع‌اند. هیچ performance run هنوز انجام نشده.
+
+
+16. **GEN2-001 Stop Overlay — CANONICAL COMPLETE / 0 PROPOSALS**: 36 registered
+conditions were executed exactly once on Development evidence. The 10% stop
+activated 20 times across 3/6 reference strategies but failed aggregate base/stress
+economics and median improvement gates. 20/30/40/50% never activated. No stop
+threshold is promoted; no same-evidence threshold refinement/retry is allowed.
+Generation 2 continues to the next preregistered hypothesis. P10 untouched; Fresh
+OOS sealed; P11 locked.
