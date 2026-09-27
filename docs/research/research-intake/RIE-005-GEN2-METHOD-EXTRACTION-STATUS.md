@@ -1,83 +1,101 @@
 # RIE-005 — Generation-2 Method Extraction Status
 
-Status: **ACTIVE / GEN2-001 CLOSED NEGATIVE / GEN2-002 PREREGISTERED / NO GEN2-002 PERFORMANCE RUN**
+Status: **ACTIVE / GEN2-001 CLOSED NEGATIVE / GEN2-002 CLOSED INVALIDATED / AF-03A COMPLETE / RIE-CAND-0027 METHOD SPECIFIED**
 
-The preregistered reproduction queue is being executed in order. Candidates may
-be bypassed only for a source-access/reproducibility blocker discovered before
-any performance run.
+The preregistered reproduction queue is executed in order. A candidate may be
+temporarily bypassed only for a documented source-access/reproducibility blocker
+discovered before any performance run. A later candidate does not permanently
+inherit priority from that bypass.
 
 ## Current queue state
 
 | Candidate | State | Reason |
 |---|---|---|
-| RIE-CAND-0011 | BLOCKED | Exact risk-scaling method/code not fully exposed; source bytes unfrozen. |
-| RIE-CAND-0022 | BLOCKED | Exact SSRN equations/thresholds unavailable in current environment; source bytes unfrozen. |
-| RIE-CAND-0027 | BLOCKED | Downside-volatility concept visible, but exact real-time estimator/scaling specification incomplete. |
-| RIE-CAND-0030 | CANONICAL COMPLETE / 0 PROPOSALS | GEN2-001 ran exactly once on its registered Development evidence and remains negative evidence. |
-| RIE-CAND-0025 | METHOD EXTRACTED / GEN2-002 PREREGISTERED / RUN NOT STARTED | Core 126-session inverse-volatility method and 12% annualized target are exact enough; YATL requires an explicit no-leverage 24/7 crypto adaptation. |
+| RIE-CAND-0011 | BLOCKED_REPRODUCIBILITY | Conventional crypto momentum construction is exposed, but this paper's exact risk-scaling implementation is still not sufficiently bound to reproduce without importing assumptions from another source. |
+| RIE-CAND-0022 | BLOCKED_SOURCE | Three regime concepts are exposed, but exact RV horizons, normalized-momentum equation, thresholds and update semantics remain unavailable. |
+| RIE-CAND-0027 | METHOD_SPECIFIED / NEXT ELIGIBLE | Full source text exposes downside-volatility equations, lag semantics and real-time expanding-window scaling. YATL adaptation protocol is still required before any performance run. |
+| RIE-CAND-0030 | CANONICAL COMPLETE / 0 PROPOSALS | GEN2-001 executed exactly once on registered Development evidence and remains negative evidence. |
+| RIE-CAND-0025 | CANONICAL INVALIDATED / 0 PROPOSALS | GEN2-002 was invalidated before economic evaluation due structurally incomplete frozen 183-day estimator windows; no rescue is allowed on the same evidence. |
 
-No blocked candidate is rejected. Queue order has not changed because of trading
-performance. `RIE-CAND-0025` is reached only after the registered GEN2-001 result
-for `0030`.
+AF-03A closeout:
+`docs/research/research-intake/AF-03A-SOURCE-UNBLOCK-SPRINT-v0.1.0.md`
 
-## RIE-CAND-0025 exact-method finding
+## RIE-CAND-0027 exact-method finding
 
-The source method is sufficiently specified for the core risk-scaling rule:
+Source:
+Feifei Wang and Xuemin Sterling Yan,
+*Downside risk and the performance of volatility-managed portfolios*,
+Journal of Banking & Finance 131 (2021) 106198.
 
-- risk input: daily returns of the unscaled WML momentum strategy;
-- estimator: previous six months / 126 trading sessions;
-- source variance forecast:
-  `sigma_hat_sq_t = 21 * sum_{j=0}^{125}(r_WML,d_{t-1-j}^2) / 126`;
-- scaled return:
-  `r_scaled_t = (target / sigma_hat_t) * r_WML_t`;
-- target: 12% annualized volatility;
-- update frequency: monthly;
-- only lagged realized returns enter the estimate.
+Author-hosted full text:
+`https://www.lehigh.edu/~xuy219/research/Downside.pdf`
 
-This is **not** a source replication inside YATL. The paper is an equity
-long-short/self-financing construction and can use scale weights above one.
-YATL is BTCUSDT/ETHUSDT long-only Spot with no leverage. The author page lists
-an official replication package, but its bytes are not frozen in the current
-evidence store.
+The source computes:
 
-The registered object is therefore
-`GEN2-ADAPT-0002-VOL-SCALING`, explicitly classified as a
-`YATL_INTERNAL_ADAPTATION`.
+`sigma_Total,t = sqrt(sum_j f_j^2)`
 
-## GEN2-002 frozen adaptation
+`sigma_Down,t = sqrt(sum_j f_j^2 * I[f_j < 0])`
 
-Before any performance outcome, GEN2-002 freezes:
+where `f_j` is a daily return inside month `t`.
 
-1. all six HSSE-004A survivors as reference strategies, unchanged;
-2. one scaler only: source target 12%, no alternate target/window/EWMA trials;
-3. 183 completed UTC crypto days and 365-day annualization as the explicit
-   24/7 analogue of the source six-month/126-session estimator;
-4. monthly scale updates using only data completed before the UTC month boundary;
-5. `scale = min(1, 0.12 / sigma_ann)` — hard no-leverage cap, no short;
-6. cost-bearing month-boundary quantity rebalances while directional
-   entry/exit logic remains untouched;
-7. base costs 10 bps fee + 5 bps adverse slippage and stress costs 20 + 10 bps;
-8. six strategies × (control + scaler) = 12 registered conditions total;
-9. Development warm-up from 2020-01-01, scored range from 2020-08-01 through
-   2023-01-01 exclusive;
-10. a fixed opportunity-preservation gate: same directional entry/trade counts,
-    full active-time preservation, and at least 25% aggregate notional exposure
-    versus control.
+If fewer than three negative daily returns occur in month `t`, downside
+volatility is computed using negative daily returns from both month `t` and
+month `t-1`.
 
-The 25% notional floor is a YATL engineering viability gate, not a source
-parameter. It is frozen before outcomes to reject a nominally active but
-economically starved scaler.
+The downside-volatility-managed portfolio is:
 
-## Next engineering gate
+`f_Down_sigma,t = c_tilde* / sigma_Down,t-1 * f_t`
 
-No GEN2-002 market performance run is authorized yet.
+so the managed month-`t` return uses only lagged downside volatility.
 
-Next: implement the deterministic scaler/rebalance runner and protocol-specific
-tests. Only after that implementation has a Final HEAD with passing CI may the
-single registered Development run execute. A failure may not be rescued by
-changing the 12% target, the 183-day window, the cap, or the opportunity floor
-on the same evidence.
+The paper's real-time construction uses:
+- an initial `K = 120 months` training period;
+- an expanding estimation window;
+- before each out-of-sample month, a real-time scaling parameter estimated from
+  the prior training sample so original and managed portfolios have equal
+  estimated volatility over that training sample.
 
-P10 remains untouched. 2023-2024 known diagnostics are not used for GEN2-002
-selection. Fresh OOS and recent reserve remain sealed. P11 is locked.
-`LIVE_MASTER_LOCK=OFF`; no AI direct execution.
+The source also studies fixed relative weights (10%, 25%, 50%, 75%, 90%)
+between unmanaged and volatility-managed portfolios to reduce estimation-risk
+instability.
+
+## YATL boundary for 0027
+
+The exact source method is now sufficiently exposed to remove the original
+reproducibility blocker, but this does **not** authorize Development performance.
+
+A new YATL internal adaptation must be preregistered before any outcome. It must
+freeze at minimum:
+- crypto sampling/calendar mapping;
+- downside-volatility estimator window;
+- update boundary;
+- no-leverage cap;
+- quantity/rebalance semantics;
+- missing-data behavior;
+- base/stress costs;
+- opportunity-preservation gates;
+- bounded comparison set.
+
+The source is monthly equity-factor/anomaly evidence and may imply leverage.
+YATL remains BTCUSDT/ETHUSDT long-only Spot, no leverage, research only.
+
+## Queue consequence
+
+Because `RIE-CAND-0027` was bypassed only while blocked and is now
+`METHOD_SPECIFIED`, it becomes the **next eligible Queue-A candidate**.
+
+`RIE-CAND-0028` (3-state HMM) remains Queue B and must not pre-empt 0027 merely
+because 0027 was previously blocked.
+
+## Next allowed action
+
+Prepare a fresh preregistered YATL adaptation protocol for
+`RIE-CAND-0027`.
+
+No performance run is authorized until:
+1. the adaptation choices are frozen before outcomes;
+2. deterministic implementation/tests exist;
+3. Final HEAD CI is green.
+
+P10 remains untouched. Fresh OOS and recent reserve remain sealed.
+P11 remains locked. `LIVE_MASTER_LOCK=OFF`.
