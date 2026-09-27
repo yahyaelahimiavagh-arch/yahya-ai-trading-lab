@@ -1,6 +1,6 @@
 # RIE-005 — Generation-2 Method Extraction Status
 
-Status: **ACTIVE / AF-03A COMPLETE / RIE-CAND-0027 PREREGISTERED AS GEN2-003 / IMPLEMENTATION NOT STARTED**
+Status: **ACTIVE / AF-03A COMPLETE / GEN2-003 CANONICAL CLOSED / NEXT: RIE-CAND-0028 METHOD ASSESSMENT**
 
 The preregistered reproduction queue is executed in order. A candidate may be
 temporarily bypassed only for a documented source-access/reproducibility blocker
@@ -13,7 +13,7 @@ inherit priority from that bypass.
 |---|---|---|
 | RIE-CAND-0011 | BLOCKED_REPRODUCIBILITY | Conventional crypto momentum construction is exposed, but this paper's exact risk-scaling implementation is still not sufficiently bound to reproduce without importing assumptions from another source. |
 | RIE-CAND-0022 | BLOCKED_SOURCE | Three regime concepts are exposed, but exact RV horizons, normalized-momentum equation, thresholds and update semantics remain unavailable. |
-| RIE-CAND-0027 | PREREGISTERED / GEN2-003 | Source method is exact enough and `GEN2-003-DOWNSIDE-VOL-SCALING-001` is frozen before performance. Deterministic implementation/tests are still required. |
+| RIE-CAND-0027 | CANONICAL COMPLETE / 0 PROPOSALS | GEN2-003 ran exactly once. Downside scaling improved control but failed the 50% valid-scale-decision gate on all six references and underperformed the registered total-vol comparator. Classified REDUNDANT_EDGE with estimator-availability limitation; no same-evidence rescue. |
 | RIE-CAND-0030 | CANONICAL COMPLETE / 0 PROPOSALS | GEN2-001 executed exactly once on registered Development evidence and remains negative evidence. |
 | RIE-CAND-0025 | CANONICAL INVALIDATED / 0 PROPOSALS | GEN2-002 was invalidated before economic evaluation due structurally incomplete frozen 183-day estimator windows; no rescue is allowed on the same evidence. |
 
@@ -104,14 +104,27 @@ Frozen design:
 - opportunity-preservation and valid-scale-decision gates;
 - Fresh OOS/recent reserve/P10 not read.
 
+## GEN2-003 canonical outcome
+
+Canonical closeout:
+`docs/research/generation-2/GEN2-003-CANONICAL-CLOSEOUT-v0.1.0.md`
+
+Canonical result:
+`docs/research/generation-2/GEN2-003-CANONICAL-RESULT-v0.1.0.json`
+
+Key interpretation:
+- exact downside-over-total superiority claim rejected;
+- all six valid-scale fractions were below the frozen 0.50 minimum;
+- directional entry/trade preservation did not fail;
+- broader volatility sizing remains an observation, not a promoted candidate;
+- the total-vol comparator cannot be promoted post hoc on this evidence.
+
 ## Next allowed action
 
-Deterministic GEN2-003 implementation + protocol-specific tests.
+Assess `RIE-CAND-0028` source/method reproducibility.
 
-**Execution routing: WORK_REQUIRED.**
+**Execution routing: CHAT_DIRECTOR.**
 
-No performance run is authorized until implementation is complete and its Final
-HEAD CI is green.
-
+No performance run is authorized during source/method assessment.
 P10 remains untouched. Fresh OOS and recent reserve remain sealed.
 P11 remains locked. `LIVE_MASTER_LOCK=OFF`.

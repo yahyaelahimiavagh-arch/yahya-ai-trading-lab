@@ -1,0 +1,117 @@
+{
+  "schema": "YATL_GEN2_COMPONENT_ACCEPTANCE",
+  "schema_version": "0.1.0",
+  "acceptance_id": "GEN2-003-CANONICAL-RESULT-001",
+  "component_id": "GEN2-ADAPT-0003-DOWNSIDE-VOL-SCALING",
+  "source_candidate_id": "RIE-CAND-0027",
+  "status": "CANONICAL_COMPLETE_ZERO_PROPOSALS",
+  "protocol_id": "GEN2-003-DOWNSIDE-VOL-SCALING-001",
+  "protocol_sha256": "2821e5dbcbdbb503ba7e68627ef3eeee1454f9ee268d5af2a5cc564954d5c3bc",
+  "implementation_id": "GEN2-003-DOWNSIDE-VOL-SCALING/0.1.0",
+  "final_main_head_sha": "e64320998221068e824d1f87ccdd36582fb20616",
+  "development_condition_count": 18,
+  "artifact": {
+    "relative_path": "generation-2/gen2-003/downside-vol-scaling-c9e864aa24e4b722671001af.json",
+    "file_sha256": "c9e864aa24e4b722671001af42f2165e608078fe7865bebdc02f8d26d4fa2255"
+  },
+  "proposal_count": 0,
+  "failure_reasons": [
+    "OPPORTUNITY_PRESERVATION_FAILED:HSSE004A-SURV-001",
+    "OPPORTUNITY_PRESERVATION_FAILED:HSSE004A-SURV-002",
+    "OPPORTUNITY_PRESERVATION_FAILED:HSSE004A-SURV-003",
+    "OPPORTUNITY_PRESERVATION_FAILED:HSSE004A-SURV-004",
+    "OPPORTUNITY_PRESERVATION_FAILED:HSSE004A-SURV-005",
+    "OPPORTUNITY_PRESERVATION_FAILED:HSSE004A-SURV-006",
+    "DOWNSIDE_BASE_NOT_ABOVE_TOTAL",
+    "DOWNSIDE_STRESS_NOT_ABOVE_TOTAL"
+  ],
+  "opportunity_diagnostic": {
+    "exact_failure_subreason_for_all_six": "VALID_SCALE_DECISION_FRACTION_LOW",
+    "directional_entry_signals_preserved_for_all_six": true,
+    "completed_directional_trades_preserved_for_all_six": true,
+    "active_exposure_hours_starvation_observed": false,
+    "notional_exposure_starvation_observed": false,
+    "valid_new_scale_decision_fraction_range": [
+      "0.3448275862068965517241379310344827586206896551724137931034482758620689655172413793103448275862068965517241379310344827586206896551724137931034482758620689655172413793103448275862068965517241379310344827586206896551724137931034482758620689655172413793103448",
+      "0.4482758620689655172413793103448275862068965517241379310344827586206896551724137931034482758620689655172413793103448275862068965517241379310344827586206896551724137931034482758620689655172413793103448275862068965517241379310344827586206896551724137931034483"
+    ],
+    "valid_new_scale_decisions_range": [
+      20,
+      26
+    ],
+    "carried_scale_decisions_range": [
+      32,
+      38
+    ],
+    "registered_minimum_valid_scale_fraction": "0.50"
+  },
+  "aggregate": {
+    "CONTROL_UNSCALED": {
+      "base_net": "114.38953502328",
+      "stress_net": "75.65266317312"
+    },
+    "SOURCE_STYLE_DOWNSIDE_VOL_SCALED_NO_LEVERAGE": {
+      "base_net": "139.780885292476429134149951179117224522543825870537006282145506117812836965942893764900514019120409552846150764635557097997028210650687200364328999368504191231662139384667887718657879775039725000265736672707525818071448564715857236231148647713166185046333",
+      "stress_net": "103.740974231169936298694471513596233520890907918687238469581596339661088753606784734332844315313781834480000815466445107233205557793312274308308856587746061804170370440585681560419784576313013981799881583625622996449151179159253287688600467150816834629381"
+    },
+    "SOURCE_STYLE_TOTAL_VOL_SCALED_NO_LEVERAGE": {
+      "base_net": "149.160682715828426215771161755765863688871726299221517592964634427609392454307357643481043972571155980708623125000888348883264826703287590491005630740442678825204565931802586531901144506350971970516510293207438692863092709569577846889767463841375269671675",
+      "stress_net": "114.987609063769334620750634261781880955101235305102879451789277486067194436460095911897921594674689026674029115889746903514023824136892601056007537751106043453290842628818977791415300272957916132412803771750688477825615849505473385179835945958777953870328"
+    }
+  },
+  "derived_interpretation": {
+    "downside_vs_control_base_percent": "22.19726679020848",
+    "downside_vs_control_stress_percent": "37.12798714537513",
+    "total_vs_control_base_percent": "30.39714051243584",
+    "total_vs_control_stress_percent": "51.99413244797092",
+    "downside_vs_total_base_percent": "-6.288384614879914",
+    "downside_vs_total_stress_percent": "-9.780736310781354",
+    "median_base_delta_vs_control": "3.9041166670059197278478629353449937754476434610821803138832490472693721815867397940767082335881518372228894015775751305158768351379415873288246441569660638344456188749390651895781500004066271009542704511975042792954192948574475641461544743599802818825085",
+    "median_stress_delta_vs_control": "4.308873721723659816904291466834894315369443602478686668950199846425100465374009262033061537086095731360057277969349066984719822806565115515376894587603686441754605926199138875831643942501694163536390874028700555160088431225048103504285736262454249949315",
+    "median_drawdown_delta_vs_control": "-0.0000465876128565768065768137424457237366943108997428513197516494180290024891987626854600914836002999186984579370789407734180265772401398723550404235572537351381400958775194857719175222136568090415571454317771989082446465970631765154918443360068191352434933965",
+    "activated_reference_strategies": 6,
+    "scaled_entry_or_rebalance_events": 274,
+    "nonworse_drawdown_reference_strategies": 6
+  },
+  "failure_classification": {
+    "primary": "REDUNDANT_EDGE",
+    "secondary_mechanism": "ESTIMATOR_AVAILABILITY_LIMITATION",
+    "what_failed": [
+      "The preregistered claim that downside-volatility scaling would outperform the source-style total-volatility comparator.",
+      "The preregistered minimum 0.50 valid-new-scale-decision fraction for all six reference strategies."
+    ],
+    "what_did_not_fail": [
+      "Directional entry signal preservation.",
+      "Completed directional trade preservation.",
+      "Aggregate downside-scaled base and stress economics versus the unscaled control.",
+      "Median base and stress delta versus control.",
+      "Median drawdown delta versus control.",
+      "Non-worse drawdown count across all six reference strategies."
+    ]
+  },
+  "salvage_review": {
+    "result": "OBSERVATION_RETAINED_NO_POST_HOC_PROMOTION",
+    "possible_conditional_edge": false,
+    "possible_data_or_execution_artifact": true,
+    "interpretation": [
+      "The exact downside-specific superiority hypothesis is rejected.",
+      "Broader volatility sizing remains economically interesting because both registered scalers improved the control in this Development run.",
+      "The total-volatility comparator was not selection-eligible under GEN2-003 and cannot be promoted post hoc.",
+      "Any future total-volatility or estimator-availability hypothesis requires a new candidate/protocol and fresh evidence budget; no same-evidence retry or threshold relaxation is allowed.",
+      "The possible REGIME_CONDITIONAL_EDGE status of the six underlying trend survivors remains a separate untested hypothesis."
+    ],
+    "new_candidate_required_for_any_new_logic": true
+  },
+  "rerun_for_selection_forbidden": true,
+  "same_evidence_scale_fraction_relaxation_forbidden": true,
+  "same_evidence_estimator_change_forbidden": true,
+  "same_evidence_total_vol_promotion_forbidden": true,
+  "candidate_retained_as_negative_evidence": true,
+  "fresh_oos_read": false,
+  "recent_reserve_read": false,
+  "p10_read": false,
+  "p10_write_allowed": false,
+  "p11_locked": true,
+  "live_master_lock": "OFF",
+  "research_only": true
+}
