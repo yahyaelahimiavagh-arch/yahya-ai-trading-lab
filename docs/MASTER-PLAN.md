@@ -2047,20 +2047,37 @@ threshold is promoted; no same-evidence threshold refinement/retry is allowed.
 Generation 2 continues to the next preregistered hypothesis. P10 untouched; Fresh
 OOS sealed; P11 locked.
 
-17. **GEN2-002 Volatility Scaling — METHOD EXTRACTED / PREREGISTERED / ZERO PERFORMANCE RUNS**:
-`RIE-CAND-0025` core method is exact enough for adaptation: monthly inverse-volatility
-scaling from the previous six months / 126 trading sessions with a 12% annualized
-target. YATL does **not** claim source replication because the paper is equity WML
-long-short and can use leverage. The frozen YATL object is
-`GEN2-ADAPT-0002-VOL-SCALING` (primary hypothesis #2): all six HSSE-004A reference
-strategies unchanged, 183 completed UTC crypto days, 365-day annualization, monthly
-updates, `scale=min(1,0.12/sigma_ann)`, no short/no leverage, explicit cost-bearing
-monthly rebalances, and 12 total conditions (6 × control/scaled). Directional
-entry/trade counts must match control and aggregate notional exposure must remain
-at least 25% of control to prevent economic starvation. Development estimator
-warm-up begins 2020-01-01; scored selection is 2020-08-01 through 2023-01-01
-exclusive. 2023-2024 known diagnostics, HSSE-005 outcomes, Fresh OOS and recent
-reserve are not used for selection. No alternate target/window/EWMA trial is
-authorized after outcome. Performance remains blocked until deterministic
-implementation + tests have a passing Final HEAD. P10 untouched; Fresh OOS sealed;
-P11 locked; LIVE_MASTER_LOCK=OFF.
+17. **GEN2-002 Volatility Scaling — CANONICAL INVALIDATED / 0 PROPOSALS — 2026-09-27**:
+`RIE-CAND-0025` was implemented as the frozen YATL adaptation
+`GEN2-ADAPT-0002-VOL-SCALING` with the preregistered 12% annualized target,
+183 completed UTC-day estimator, monthly updates, `scale=min(1,0.12/sigma_ann)`,
+no short, no leverage, and 12 total conditions across the six frozen reference
+strategies. Final implementation HEAD
+`3e8e5167414b26fb72ed80a620a74f6bdc60d38e` passed GitHub Actions run
+`36307964173` and the focused GEN2-002 test suite.
+
+The single canonical Development evaluation did **not** compute economic
+performance. It was invalidated before economic evaluation because the frozen
+183-day estimator window was structurally incomplete at **40 symbol-month
+boundaries** in the admitted CRL Development corpus. The admitted corpus preserves
+CRL-003-verified source gaps; the protocol forbids interpolation, forward-fill,
+silent window shortening, alternate target/window/EWMA rescue, leverage, or hidden
+retry. Canonical runtime artifact:
+`generation-2/gen2-002/vol-scaling-25ac8f5fbee4fb9e75f79c7e.json`,
+SHA-256
+`25ac8f5fbee4fb9e75f79c7e769a3cc1b0c046ede0536c8f91a6d4eba5a0a701`.
+Canonical acceptance record:
+`docs/research/generation-2/GEN2-002-CANONICAL-RESULT-v0.1.0.json`.
+
+Outcome state:
+`status=FAIL`,
+`evaluation_status=INVALIDATED_BEFORE_ECONOMIC_EVALUATION`,
+`performance_outcome_computed=false`,
+`failure_reasons=[INCOMPLETE_VOLATILITY_WINDOW]`,
+`proposal_count=0`.
+This negative result is retained. The same Development evidence may not be used
+to relax the 183-day window, change the target, introduce an EWMA substitute, or
+otherwise rescue this candidate. This does **not** establish that all volatility
+scaling is invalid; it closes only this preregistered GEN2-002 adaptation on this
+frozen evidence. P10 remains untouched; Fresh OOS and recent reserve remain
+sealed; P11 remains locked; LIVE_MASTER_LOCK=OFF.
