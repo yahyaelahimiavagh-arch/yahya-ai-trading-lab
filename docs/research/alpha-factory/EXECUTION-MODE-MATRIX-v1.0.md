@@ -215,3 +215,21 @@ Updated routing clarifications:
 
 Astra thresholds are unchanged.
 
+## 8. Mass Candidate Factory execution routing
+
+MCF-00 Governance / architecture -> CHAT_DIRECTOR  
+MCF-01 Family manifest / candidate spec design -> CHAT_DIRECTOR  
+MCF-02 Generator implementation -> WORK_REQUIRED only for the reusable engine implementation  
+MCF-03 Batch historical screening -> MANUAL_VPS / BATCH_RUNTIME  
+MCF-04 Statistical/cluster analytics -> CHAT_DIRECTOR for bounded result sets; WORK_REQUIRED only when materially large  
+MCF-05 Exact recompute / freeze -> CHAT_DIRECTOR + MANUAL_VPS  
+MCF-06 Fresh OOS handoff -> CHAT_DIRECTOR + MANUAL_VPS under sealed-evidence supervision
+
+Rules:
+- never invoke Work once per candidate;
+- never invoke Work merely because a batch contains thousands of candidates;
+- candidate enumeration and historical execution belong in deterministic runtime
+  engines, not interactive orchestration;
+- Astra is considered only when corpus-scale synthesis thresholds fire;
+- real Forward calendar time is never replaced by historical compute.
+
