@@ -174,3 +174,44 @@ First expected Astra gate:
 - AF-03D Corpus Synthesis Checkpoint when its source/method threshold is met.
 
 The Director must warn Yahya before any of these required-mode transitions.
+
+## 7. Work-token conservation override — 2026-09-27
+
+Work is a scarce execution resource. The routing table must be interpreted with
+a Chat-first bias.
+
+Before any WORK_REQUIRED transition, the Director must first test whether the
+task can be completed safely and deterministically in CHAT_DIRECTOR. If yes,
+the task stays in chat even if it touches several documentation or policy files.
+
+The following are explicitly CHAT-first:
+- governance and Master Plan edits;
+- protocol/preregistration design;
+- candidate/failure classification;
+- blind-spot and assumption audits;
+- rejection/salvage reviews;
+- bounded source extraction;
+- queue and registry-policy decisions;
+- small registry updates;
+- bounded comparison/review of a small number of artifacts.
+
+Work remains mandatory for:
+- substantial code implementation;
+- bulk dataset acquisition/transformation;
+- repository-wide migrations;
+- large deterministic numerical jobs;
+- coordinated testing/build execution;
+- large artifact packs whose manual orchestration creates material error risk.
+
+Updated routing clarifications:
+- AF-02B Registry migration/classification: CHAT_DIRECTOR while bounded; escalate
+  to Work only for bulk/repository-wide migration.
+- AF-03C Deep Alpha Sweep: CHAT_DIRECTOR for bounded research batches; escalate
+  to Work only when a bulk sweep materially exceeds the Sentinel-sized batch or
+  requires coordinated artifact writes.
+- AF-06A Independence analytics: CHAT_DIRECTOR for a small survivor set; Work
+  only when artifact count/analysis volume becomes materially large.
+- documentation-only cross-cutting governance never requires Work by itself.
+
+Astra thresholds are unchanged.
+
