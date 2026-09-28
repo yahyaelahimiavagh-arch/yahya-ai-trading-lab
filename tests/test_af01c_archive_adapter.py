@@ -183,6 +183,25 @@ class AF01C(unittest.TestCase):
             with self.assertRaises(AcquisitionError):
                 _validate_https_url(url, ("data.binance.vision",))
         _validate_https_url(self.u("data/spot/monthly/klines/"), ("s3-ap-northeast-1.amazonaws.com",))
+        from research.opportunity_data.archive_inventory import _page
+        real_shape = (
+            b'<ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">'
+            b'<Name>data.binance.vision</Name><Prefix>data/spot/monthly/klines/</Prefix>'
+            b'<KeyCount>2</KeyCount><MaxKeys>2</MaxKeys><IsTruncated>true</IsTruncated>'
+            b'<Contents><Key>data/spot/monthly/klines/0GBNB/12h/0GBNB-12h-2025-09.zip</Key></Contents>'
+            b'<Contents><Key>data/spot/monthly/klines/0GBNB/12h/0GBNB-12h-2025-10.zip</Key></Contents>'
+            b'<NextContinuationToken>token-2</NextContinuationToken></ListBucketResult>'
+        )
+        keys, more, token = _page(real_shape)
+        self.assertEqual(len(keys), 2)
+        self.assertTrue(more)
+        self.assertEqual(token, "token-2")
+        outside = "data/spot/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2025-01.zip"
+        permitted = dict(self.pages)
+        permitted[self.u("data/spot/monthly/klines/")] = listing(
+            [outside, self.btc], truncated=True, token="continue")
+        snapshot = discover(self.root, fetched_at="2026-09-27T20:00:00Z", fetcher=Fetcher(permitted))
+        self.assertNotIn(outside, {x["key"] for x in snapshot["objects"]})
         broken = dict(self.pages)
         broken[self.u("data/spot/monthly/klines/", "continue")] = listing([
             "data/spot/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2020-13.zip"])
