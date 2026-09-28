@@ -151,31 +151,33 @@ class AF01C(unittest.TestCase):
         start_after = object_prefix + symbol + "-15m-2019-99"
         future = object_prefix + symbol + "-15m-2025-10.zip"
 
-        pages = dict(self.pages)
-        pages[self.u(self.monthly_root, "symbols-2", delimiter="/")] = listing(
+        future_only = dict(self.pages)
+        future_only[self.u(self.monthly_root, "symbols-2", delimiter="/")] = listing(
             prefixes=[self.monthly_root + "ETHUSDT/", symbol_prefix]
         )
-        pages[self.u(object_prefix, start_after=start_after)] = listing([future])
+        future_only[self.u(object_prefix, start_after=start_after)] = listing([future])
 
         snapshot = discover(
             self.root,
             fetched_at="2026-09-27T20:00:00Z",
-            fetcher=Fetcher(pages),
+            fetcher=Fetcher(future_only),
         )
         verify(snapshot)
         self.assertIn(symbol, snapshot["discovered_symbols"]["monthly"])
         self.assertNotIn(symbol, {x["symbol"] for x in snapshot["objects"]})
 
-        admitted = copy.deepcopy(snapshot)
-        admitted["objects"] = sorted(
-            [*admitted["objects"], parsed],
-            key=lambda x: x["key"],
+        historical_pages = dict(future_only)
+        historical_pages[self.u(object_prefix, start_after=start_after)] = listing(
+            [historical, future]
         )
-        admitted["normalized_inventory_sha256"] = __import__(
-            "research.opportunity_data.models",
-            fromlist=["digest"],
-        ).digest(dict(schema="AF-01C-INVENTORY/1", objects=admitted["objects"]))
-        p = plan(admitted, (symbol,), ("2020-01",))
+        historical_snapshot = discover(
+            self.root / "utf8-historical",
+            fetched_at="2026-09-27T20:00:00Z",
+            fetcher=Fetcher(historical_pages),
+        )
+        verify(historical_snapshot)
+        self.assertIn(symbol, {x["symbol"] for x in historical_snapshot["objects"]})
+        p = plan(historical_snapshot, (symbol,), ("2020-01",))
         self.assertEqual(p["periods"][0]["symbol"], symbol)
 
     def test_planner_bound_and_monthly_checksum_restart_admission(self):
