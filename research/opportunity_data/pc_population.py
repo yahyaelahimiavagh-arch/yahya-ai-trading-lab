@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import shutil
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -27,6 +28,8 @@ FROZEN_AUDIT_SHA256 = "cc5221fc79c0a35bace700603f7b8332eef842d5dd0e4b918017d7af9
 FROZEN_SYMBOL_COUNT = 413
 FROZEN_PERIOD_COUNT = 9306
 MAX_CANARY_BATCH = 25
+MAX_FAST_BATCHES = 40
+MAX_FAST_WORKERS = 4
 SUCCESS_STATES = frozenset({"MONTHLY_SUCCESS", "DAILY_FALLBACK_SUCCESS"})
 MONTHS = tuple(
     f"{year}-{month:02d}"
@@ -208,28 +211,12 @@ def _validate_ledger(root: Path, population_plan: dict, inventory: dict, entry: 
     return record
 
 
-def population_status(root: Path, plan_relative: str, inventory_relative: str) -> dict:
-    population_plan, inventory = _load_bound_plan(root, plan_relative, inventory_relative)
-    counts: Counter[str] = Counter()
-    completed = 0
-    artifact_refs: set[str] = set()
-
-    for entry in population_plan["periods"]:
-        path = root / "ledger" / f"{entry['symbol']}-{entry['month']}.json"
-        if not path.is_file():
-            continue
-        record = _validate_ledger(root, population_plan, inventory, entry)
-        completed += 1
-        counts[record["state"]] += 1
-        artifact_refs.update(record.get("artifact_hashes", {}))
-
-    artifact_bytes = 0
-    for relative in artifact_refs:
-        path = development_path(root, relative)
-        if not path.is_file():
-            raise OpportunityError("P-C ledger references missing artifact")
-        artifact_bytes += path.stat().st_size
-
+def _status_from_verified_scan(
+    population_plan: dict,
+    counts: Counter[str],
+    completed: int,
+    artifact_bytes: int,
+) -> dict:
     total = len(population_plan["periods"])
     remaining = total - completed
     success_count = sum(counts[state] for state in SUCCESS_STATES)
@@ -247,6 +234,70 @@ def population_status(root: Path, plan_relative: str, inventory_relative: str) -
         artifact_bytes=artifact_bytes,
     )
     return base | {"status_sha256": digest(base)}
+
+
+def _scan_population(
+    root: Path,
+    population_plan: dict,
+    inventory: dict,
+) -> tuple[Counter[str], int, set[str], int, list[dict]]:
+    """Verify each existing immutable ledger once and derive restart state from it."""
+    counts: Counter[str] = Counter()
+    completed = 0
+    artifact_refs: set[str] = set()
+    missing: list[dict] = []
+
+    for entry in population_plan["periods"]:
+        path = root / "ledger" / f"{entry['symbol']}-{entry['month']}.json"
+        if not path.is_file():
+            missing.append(entry)
+            continue
+        record = _validate_ledger(root, population_plan, inventory, entry)
+        completed += 1
+        counts[record["state"]] += 1
+        artifact_refs.update(record.get("artifact_hashes", {}))
+
+    artifact_bytes = 0
+    for relative in artifact_refs:
+        path = development_path(root, relative)
+        if not path.is_file():
+            raise OpportunityError("P-C ledger references missing artifact")
+        artifact_bytes += path.stat().st_size
+
+    return counts, completed, artifact_refs, artifact_bytes, missing
+
+
+def _extend_artifact_accounting(
+    root: Path,
+    artifact_refs: set[str],
+    artifact_bytes: int,
+    records: list[dict],
+) -> int:
+    for record in records:
+        for relative in record.get("artifact_hashes", {}):
+            if relative in artifact_refs:
+                continue
+            path = development_path(root, relative)
+            if not path.is_file():
+                raise OpportunityError("P-C ledger references missing artifact")
+            artifact_refs.add(relative)
+            artifact_bytes += path.stat().st_size
+    return artifact_bytes
+
+
+def population_status(root: Path, plan_relative: str, inventory_relative: str) -> dict:
+    population_plan, inventory = _load_bound_plan(root, plan_relative, inventory_relative)
+    counts, completed, _, artifact_bytes, _ = _scan_population(
+        root,
+        population_plan,
+        inventory,
+    )
+    return _status_from_verified_scan(
+        population_plan,
+        counts,
+        completed,
+        artifact_bytes,
+    )
 
 
 def _tree_size(path: Path) -> int:
@@ -446,6 +497,76 @@ def _verify_continuation_acceptance(
     return document
 
 
+def _acquire_verified_entries(
+    root: Path,
+    population_plan: dict,
+    inventory: dict,
+    entries: list[dict],
+    *,
+    allow_daily_fallback: bool,
+    fetcher,
+    retrieved_ms: int,
+    workers: int = 1,
+) -> list[dict]:
+    if not isinstance(workers, int) or not 1 <= workers <= MAX_FAST_WORKERS:
+        raise OpportunityError("P-C fast worker bound exceeded")
+    if workers > 1 and fetcher is not None:
+        raise OpportunityError("parallel P-C acquisition requires isolated default fetchers")
+
+    def acquire(entry: dict) -> dict:
+        return acquire_period(
+            root,
+            entry,
+            fetcher=fetcher,
+            plan_doc=population_plan,
+            inventory=inventory,
+            retrieved_ms=retrieved_ms,
+            allow_daily_fallback=allow_daily_fallback,
+            verified_binding=_bound_entry_from_verified_plan(population_plan, entry),
+        )
+
+    if workers == 1:
+        candidates = [acquire(entry) for entry in entries]
+    else:
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            candidates = list(executor.map(acquire, entries))
+
+    records = []
+    for entry, candidate in zip(entries, candidates):
+        record = _validate_ledger(root, population_plan, inventory, entry)
+        if record.get("record_sha256") != candidate.get("record_sha256"):
+            raise OpportunityError("P-C acquired ledger verification mismatch")
+        records.append(record)
+    return records
+
+
+def _persist_batch(
+    root: Path,
+    population_plan: dict,
+    records: list[dict],
+    *,
+    requested_limit: int,
+    broad_continuation: bool,
+) -> dict:
+    batch_base = dict(
+        schema="AF-01C-PC-BATCH/1",
+        state="P_C_BROAD_BATCH_COMPLETE" if broad_continuation else "P_C_CANARY_BATCH_COMPLETE",
+        plan_sha256=population_plan["plan_sha256"],
+        requested_limit=requested_limit,
+        acquired_count=len(records),
+        identities=tuple(record["identity"] for record in records),
+        records=tuple(record["record_sha256"] for record in records),
+        state_counts=dict(sorted(Counter(record["state"] for record in records).items())),
+    )
+    batch_sha = digest(batch_base)
+    batch_ref = f"batches/batch-{batch_sha}.json"
+    save_artifact(root, batch_ref, canonical(batch_base))
+    return batch_base | {
+        "batch_sha256": batch_sha,
+        "batch_ref": batch_ref,
+    }
+
+
 def acquire_batch(
     root: Path,
     plan_relative: str,
@@ -462,8 +583,18 @@ def acquire_batch(
         raise OpportunityError("P-C canary batch limit exceeded")
     _verify_storage_preflight(root, storage_preflight_relative)
     population_plan, inventory = _load_bound_plan(root, plan_relative, inventory_relative)
-    current_status = population_status(root, plan_relative, inventory_relative)
-    broad_continuation = current_status["completed_identities"] >= MAX_CANARY_BATCH
+    counts, completed, artifact_refs, artifact_bytes, missing = _scan_population(
+        root,
+        population_plan,
+        inventory,
+    )
+    current_status = _status_from_verified_scan(
+        population_plan,
+        counts,
+        completed,
+        artifact_bytes,
+    )
+    broad_continuation = completed >= MAX_CANARY_BATCH
     if broad_continuation:
         if not continuation_acceptance_relative:
             raise OpportunityError("P-C canary population ceiling reached; continuation acceptance required")
@@ -474,53 +605,187 @@ def acquire_batch(
             current_status,
         )
 
-    missing = []
-    for entry in population_plan["periods"]:
-        path = root / "ledger" / f"{entry['symbol']}-{entry['month']}.json"
-        if path.is_file():
-            _validate_ledger(root, population_plan, inventory, entry)
-            continue
-        missing.append(entry)
-        if len(missing) == limit:
-            break
-
+    missing = missing[:limit]
     if not broad_continuation:
-        allowed = MAX_CANARY_BATCH - current_status["completed_identities"]
+        allowed = MAX_CANARY_BATCH - completed
         if len(missing) > allowed:
             missing = missing[:allowed]
 
     if retrieved_ms is None:
         retrieved_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
 
-    records = []
-    for entry in missing:
-        record = acquire_period(
-            root,
-            entry,
-            fetcher=fetcher,
-            plan_doc=population_plan,
-            inventory=inventory,
-            retrieved_ms=retrieved_ms,
-            allow_daily_fallback=allow_daily_fallback,
-        )
-        records.append(record)
-
-    batch_base = dict(
-        schema="AF-01C-PC-BATCH/1",
-        state="P_C_BROAD_BATCH_COMPLETE" if broad_continuation else "P_C_CANARY_BATCH_COMPLETE",
-        plan_sha256=population_plan["plan_sha256"],
-        requested_limit=limit,
-        acquired_count=len(records),
-        identities=tuple(record["identity"] for record in records),
-        records=tuple(record["record_sha256"] for record in records),
-        state_counts=dict(sorted(Counter(record["state"] for record in records).items())),
+    records = _acquire_verified_entries(
+        root,
+        population_plan,
+        inventory,
+        missing,
+        allow_daily_fallback=allow_daily_fallback,
+        fetcher=fetcher,
+        retrieved_ms=retrieved_ms,
+        workers=1,
     )
-    batch_sha = digest(batch_base)
-    save_artifact(root, f"batches/batch-{batch_sha}.json", canonical(batch_base))
-    status = population_status(root, plan_relative, inventory_relative)
-    return batch_base | {
-        "batch_sha256": batch_sha,
-        "batch_ref": f"batches/batch-{batch_sha}.json",
+
+    for record in records:
+        counts[record["state"]] += 1
+    completed += len(records)
+    artifact_bytes = _extend_artifact_accounting(
+        root,
+        artifact_refs,
+        artifact_bytes,
+        records,
+    )
+
+    batch = _persist_batch(
+        root,
+        population_plan,
+        records,
+        requested_limit=limit,
+        broad_continuation=broad_continuation,
+    )
+    status = _status_from_verified_scan(
+        population_plan,
+        counts,
+        completed,
+        artifact_bytes,
+    )
+    return batch | {"population_status": status}
+
+
+def acquire_batches_fast(
+    root: Path,
+    plan_relative: str,
+    inventory_relative: str,
+    *,
+    limit: int,
+    batch_count: int,
+    workers: int,
+    storage_preflight_relative: str,
+    continuation_acceptance_relative: str | None = None,
+    allow_daily_fallback: bool = True,
+    fetcher=None,
+    retrieved_ms: int | None = None,
+) -> dict:
+    """Run bounded internal batches after one verified restart scan.
+
+    Progress is still derived from immutable ledgers: all pre-existing ledgers are
+    verified once at process start and every newly written ledger is re-read and
+    verified before it contributes to status.
+    """
+    if not isinstance(limit, int) or not 1 <= limit <= MAX_CANARY_BATCH:
+        raise OpportunityError("P-C canary batch limit exceeded")
+    if not isinstance(batch_count, int) or not 1 <= batch_count <= MAX_FAST_BATCHES:
+        raise OpportunityError("P-C fast batch-count bound exceeded")
+    if not isinstance(workers, int) or not 1 <= workers <= MAX_FAST_WORKERS:
+        raise OpportunityError("P-C fast worker bound exceeded")
+    if workers > 1 and fetcher is not None:
+        raise OpportunityError("parallel P-C acquisition requires isolated default fetchers")
+
+    _verify_storage_preflight(root, storage_preflight_relative)
+    population_plan, inventory = _load_bound_plan(root, plan_relative, inventory_relative)
+    counts, completed, artifact_refs, artifact_bytes, missing = _scan_population(
+        root,
+        population_plan,
+        inventory,
+    )
+    current_status = _status_from_verified_scan(
+        population_plan,
+        counts,
+        completed,
+        artifact_bytes,
+    )
+    broad_continuation = completed >= MAX_CANARY_BATCH
+    if broad_continuation:
+        if not continuation_acceptance_relative:
+            raise OpportunityError("P-C canary population ceiling reached; continuation acceptance required")
+        _verify_continuation_acceptance(
+            root,
+            continuation_acceptance_relative,
+            population_plan,
+            current_status,
+        )
+
+    batch_summaries = []
+    for _ in range(batch_count):
+        if not missing:
+            break
+
+        batch_limit = min(limit, len(missing))
+        if not broad_continuation:
+            allowed = MAX_CANARY_BATCH - completed
+            if allowed <= 0:
+                break
+            batch_limit = min(batch_limit, allowed)
+
+        entries = missing[:batch_limit]
+        batch_retrieved_ms = (
+            retrieved_ms
+            if retrieved_ms is not None
+            else int(datetime.now(timezone.utc).timestamp() * 1000)
+        )
+        records = _acquire_verified_entries(
+            root,
+            population_plan,
+            inventory,
+            entries,
+            allow_daily_fallback=allow_daily_fallback,
+            fetcher=fetcher,
+            retrieved_ms=batch_retrieved_ms,
+            workers=workers,
+        )
+
+        for record in records:
+            counts[record["state"]] += 1
+        completed += len(records)
+        artifact_bytes = _extend_artifact_accounting(
+            root,
+            artifact_refs,
+            artifact_bytes,
+            records,
+        )
+
+        batch = _persist_batch(
+            root,
+            population_plan,
+            records,
+            requested_limit=batch_limit,
+            broad_continuation=broad_continuation,
+        )
+        batch_summaries.append(
+            dict(
+                batch_ref=batch["batch_ref"],
+                batch_sha256=batch["batch_sha256"],
+                acquired_count=batch["acquired_count"],
+                state_counts=batch["state_counts"],
+            )
+        )
+        del missing[:batch_limit]
+
+        if not broad_continuation and completed >= MAX_CANARY_BATCH:
+            break
+
+    status = _status_from_verified_scan(
+        population_plan,
+        counts,
+        completed,
+        artifact_bytes,
+    )
+    run_base = dict(
+        schema="AF-01C-PC-FAST-RUN/1",
+        state="P_C_FAST_RUN_COMPLETE",
+        plan_sha256=population_plan["plan_sha256"],
+        requested_batch_count=batch_count,
+        completed_batch_count=len(batch_summaries),
+        per_batch_limit=limit,
+        workers=workers,
+        batches=tuple(batch_summaries),
+        final_status_sha256=status["status_sha256"],
+    )
+    run_sha = digest(run_base)
+    run_ref = f"runs/fast-run-{run_sha}.json"
+    save_artifact(root, run_ref, canonical(run_base))
+    return run_base | {
+        "fast_run_sha256": run_sha,
+        "fast_run_ref": run_ref,
         "population_status": status,
     }
 
