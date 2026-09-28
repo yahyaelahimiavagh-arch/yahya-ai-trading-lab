@@ -16,6 +16,7 @@ from .pc_population import (
     create_pc_plan,
     population_status,
     reconcile_population,
+    storage_preflight,
 )
 from research.mass_candidate_factory.models import guard_root
 
@@ -44,10 +45,14 @@ def main(argv=None) -> int:
     pc_plan = commands.add_parser("pc-plan")
     pc_plan.add_argument("--inventory", required=True)
 
+    pc_storage = commands.add_parser("pc-storage-preflight")
+    pc_storage.add_argument("--source-root", type=Path, required=True)
+
     pc_acquire = commands.add_parser("pc-acquire")
     pc_acquire.add_argument("--plan", required=True)
     pc_acquire.add_argument("--inventory", required=True)
     pc_acquire.add_argument("--limit", type=int, required=True)
+    pc_acquire.add_argument("--storage-preflight", required=True)
     pc_acquire.add_argument("--daily-fallback", action="store_true")
 
     pc_status = commands.add_parser("pc-status")
@@ -77,12 +82,15 @@ def main(argv=None) -> int:
             result = bootstrap_pc(args.source_root, root, args.inventory, args.audit)
         elif args.command == "pc-plan":
             result = create_pc_plan(root, args.inventory)
+        elif args.command == "pc-storage-preflight":
+            result = storage_preflight(args.source_root, root)
         elif args.command == "pc-acquire":
             result = acquire_batch(
                 root,
                 args.plan,
                 args.inventory,
                 limit=args.limit,
+                storage_preflight_relative=args.storage_preflight,
                 allow_daily_fallback=args.daily_fallback,
                 retrieved_ms=int(now.timestamp() * 1000),
             )
