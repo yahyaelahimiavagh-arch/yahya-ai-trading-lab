@@ -2425,3 +2425,38 @@ Search-space اولیه در
 
 هیچ survivor quota وجود ندارد. صفر survivor نتیجه معتبر است.
 Fresh OOS، recent reserve و P10 همچنان untouched هستند.
+
+## Research extension — Institutional Edge Intelligence — 2026-09-28
+
+A new research-intake track is preregistered at:
+
+`docs/research/research-intake/RIE-006-INSTITUTIONAL-EDGE-INTELLIGENCE.md`
+
+Purpose:
+- mine legally accessible public evidence about institutional quantitative
+  methods, execution, market microstructure, liquidity, capacity, portfolio/risk
+  mechanisms and public alternative data;
+- convert source material into explicit mechanism hypotheses rather than trust
+  reported performance;
+- use AI aggressively as a research extractor and adversarial falsifier for
+  leakage, overfit, timestamp errors, hidden costs, outlier dependence and
+  simpler alternative explanations;
+- prioritize execution alpha, cross-sectional/relative opportunity, liquidity
+  dislocation/recovery, regime-conditional edges, edge decay/crowding and
+  ensembles of independently validated small edges.
+
+Boundary:
+- public/legal sources only;
+- no unauthorized access, stolen proprietary code, credential abuse, malware,
+  MNPI, private user data, manipulation, spoofing, wash trading or confidential
+  front-running;
+- no research output mutates P10;
+- no Live/order/quantity authority;
+- P11 remains locked;
+- no merge without explicit Director command.
+
+This extension is intended to increase the breadth and quality of Alpha Factory
+inputs. It does not claim or guarantee any wealth outcome; very large scale
+requires persistent after-cost edge, independent breadth, execution quality,
+capacity, risk control and long-horizon compounding.
+
