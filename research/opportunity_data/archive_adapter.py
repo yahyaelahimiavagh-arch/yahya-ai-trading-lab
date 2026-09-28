@@ -14,7 +14,7 @@ from research.crisis_lab.acquisition import (
     _normalize_archive_csv_with_evidence, _monthly_daily_override_days,
     parse_checksum,
 )
-from .archive_inventory import HOST, InventoryUnproven, parse_key, verify
+from .archive_inventory import HOST, InventoryUnproven, parse_key, valid_symbol, verify
 from .canonical import validate_rows
 from .index import build_index
 from .lifecycle import Lifecycle
@@ -59,7 +59,7 @@ def plan(snapshot: dict, symbols: tuple[str, ...], months: tuple[str, ...], *, p
     if len(set(symbols)) != len(symbols) or len(set(months)) != len(months):
         raise OpportunityError("duplicate pilot identity")
     requested = set(symbols)
-    if any(not re.fullmatch(r"[A-Z0-9]+USDT", s) for s in requested):
+    if any(not valid_symbol(s) for s in requested):
         raise OpportunityError("unregistered symbol")
     if any(not re.fullmatch(r"20(?:20|21|22)-(?:0[1-9]|1[0-2])", m) for m in months):
         raise OpportunityError("outside Development range")
