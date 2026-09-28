@@ -310,7 +310,10 @@ def storage_preflight(source_root: Path, target_root: Path, *, period_count: int
 
 
 def _verify_storage_preflight(root: Path, relative: str) -> dict:
-    document, _ = _read_json(root, relative)
+    try:
+        document, _ = _read_json(root, relative)
+    except OpportunityError as exc:
+        raise OpportunityError("P-C storage preflight missing/invalid") from exc
     if (
         document.get("schema") != "AF-01C-PC-STORAGE-PREFLIGHT/1"
         or document.get("state") != "PASS"
