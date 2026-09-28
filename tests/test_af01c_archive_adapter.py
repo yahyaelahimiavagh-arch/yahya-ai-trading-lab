@@ -1,4 +1,5 @@
 """Bounded archive engineering fixtures; no market outcomes."""
+import copy
 import hashlib
 import io
 import json
@@ -335,12 +336,21 @@ class AF01C(unittest.TestCase):
                            retrieved_ms=1790539200000)
         with self.assertRaisesRegex(OpportunityError, "different inventory/plan"):
             reconcile(self.root, expanded, inv)
-        changed = dict(inv)
-        changed["objects"] = [*inv["objects"], dict(key="data/spot/monthly/klines/XRPUSDT/15m/XRPUSDT-15m-2020-01.zip",
-                                                   cadence="monthly", symbol="XRPUSDT", interval="15m", period="2020-01")]
+        changed = copy.deepcopy(inv)
+        changed["objects"] = [*inv["objects"], dict(
+            key="data/spot/monthly/klines/XRPUSDT/15m/XRPUSDT-15m-2020-01.zip",
+            cadence="monthly", symbol="XRPUSDT", interval="15m", period="2020-01")]
         changed["objects"] = sorted(changed["objects"], key=lambda x: x["key"])
+        changed["discovered_symbols"]["monthly"] = sorted(
+            [*changed["discovered_symbols"]["monthly"], "XRPUSDT"])
+        xrp_prefix = "data/spot/monthly/klines/XRPUSDT/15m/"
+        changed["object_range_bounds"]["monthly:XRPUSDT"] = {
+            "start_after": xrp_prefix + "XRPUSDT-15m-2019-99",
+            "end_exclusive": xrp_prefix + "XRPUSDT-15m-2023-01",
+        }
         from research.opportunity_data.models import digest
-        changed["normalized_inventory_sha256"] = digest(dict(schema="AF-01C-INVENTORY/1", objects=changed["objects"]))
+        changed["normalized_inventory_sha256"] = digest(
+            dict(schema="AF-01C-INVENTORY/1", objects=changed["objects"]))
         new_plan = plan(changed, ("BTCUSDT",), ("2020-01",))
         with self.assertRaisesRegex(OpportunityError, "different inventory/plan"):
             acquire_period(self.root, new_plan["periods"][0], Fetcher({}), plan_doc=new_plan,
@@ -351,7 +361,6 @@ class AF01C(unittest.TestCase):
         eth_root = self.root / "selected-objects"
         acquire_period(eth_root, eth["periods"][0], Fetcher({}), plan_doc=eth, inventory=inv,
                        retrieved_ms=1790539200000)
-        import copy
         altered = copy.deepcopy(eth)
         altered["periods"][0]["daily"] = altered["periods"][0]["daily"][:-1]
         altered["plan_sha256"] = digest({k: v for k, v in altered.items() if k != "plan_sha256"})
