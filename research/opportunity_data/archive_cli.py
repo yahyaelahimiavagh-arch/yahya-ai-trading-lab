@@ -10,6 +10,13 @@ from .archive_adapter import acquire_period, build_lifecycle, plan, reconcile, v
 from .archive_inventory import InventoryUnproven, discover, verify
 from .models import OpportunityError, canonical, development_path
 from .storage import save_artifact
+from .pc_population import (
+    acquire_batch,
+    bootstrap_pc,
+    create_pc_plan,
+    population_status,
+    reconcile_population,
+)
 from research.mass_candidate_factory.models import guard_root
 
 
@@ -28,6 +35,28 @@ def main(argv=None) -> int:
     pilot.add_argument("--inventory", required=True)
     pilot.add_argument("--daily-fallback", action="store_true")
     pilot.add_argument("--boundary-evidence-map", help="Development-root JSON mapping SYMBOL-YYYY-MM to immutable evidence ref")
+
+    pc_bootstrap = commands.add_parser("pc-bootstrap")
+    pc_bootstrap.add_argument("--source-root", type=Path, required=True)
+    pc_bootstrap.add_argument("--inventory", required=True)
+    pc_bootstrap.add_argument("--audit", required=True)
+
+    pc_plan = commands.add_parser("pc-plan")
+    pc_plan.add_argument("--inventory", required=True)
+
+    pc_acquire = commands.add_parser("pc-acquire")
+    pc_acquire.add_argument("--plan", required=True)
+    pc_acquire.add_argument("--inventory", required=True)
+    pc_acquire.add_argument("--limit", type=int, required=True)
+    pc_acquire.add_argument("--daily-fallback", action="store_true")
+
+    pc_status = commands.add_parser("pc-status")
+    pc_status.add_argument("--plan", required=True)
+    pc_status.add_argument("--inventory", required=True)
+
+    pc_reconcile = commands.add_parser("pc-reconcile")
+    pc_reconcile.add_argument("--plan", required=True)
+    pc_reconcile.add_argument("--inventory", required=True)
     for name in ("reconcile", "population-status", "build-lifecycle"):
         command = commands.add_parser(name)
         command.add_argument("--plan", required=True)
@@ -44,6 +73,23 @@ def main(argv=None) -> int:
         now = datetime.now(timezone.utc)
         if args.command == "inventory":
             result = discover(root, fetched_at=now.isoformat().replace("+00:00", "Z"), max_pages=args.max_pages)
+        elif args.command == "pc-bootstrap":
+            result = bootstrap_pc(args.source_root, root, args.inventory, args.audit)
+        elif args.command == "pc-plan":
+            result = create_pc_plan(root, args.inventory)
+        elif args.command == "pc-acquire":
+            result = acquire_batch(
+                root,
+                args.plan,
+                args.inventory,
+                limit=args.limit,
+                allow_daily_fallback=args.daily_fallback,
+                retrieved_ms=int(now.timestamp() * 1000),
+            )
+        elif args.command == "pc-status":
+            result = population_status(root, args.plan, args.inventory)
+        elif args.command == "pc-reconcile":
+            result = reconcile_population(root, args.plan, args.inventory)
         else:
             inv = json.loads(development_path(root, args.inventory).read_bytes())
             verify(inv)
