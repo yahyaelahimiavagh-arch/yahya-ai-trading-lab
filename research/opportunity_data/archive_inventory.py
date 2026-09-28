@@ -21,8 +21,8 @@ PREFIXES = (
 )
 SYMBOL = re.compile(r"^[A-Z0-9]+USDT$")
 KEY = re.compile(
-    r"^data/spot/(monthly|daily)/klines/([A-Z0-9]+USDT)/15m/\\2-15m-"
-    r"(20\\d\\d-\\d\\d(?:-\\d\\d)?)\\.zip$"
+    r"^data/spot/(monthly|daily)/klines/([A-Z0-9]+USDT)/15m/\2-15m-"
+    r"(20\d\d-\d\d(?:-\d\d)?)\.zip$"
 )
 START, END = date(2020, 1, 1), date(2023, 1, 1)
 MAX_PAGE_BYTES = 2_000_000
