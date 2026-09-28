@@ -8,7 +8,7 @@ import unittest
 import zipfile
 from pathlib import Path
 
-from research.opportunity_data.archive_inventory import InventoryUnproven, discover, parse_key, verify
+from research.opportunity_data.archive_inventory import InventoryUnproven, discover, parse_key, valid_symbol, verify
 from research.opportunity_data.archive_adapter import acquire_period, build_lifecycle, plan, reconcile
 from research.opportunity_data.models import OpportunityError, sha256, canonical
 
@@ -129,6 +129,54 @@ class AF01C(unittest.TestCase):
         self.assertIsNone(parse_key("data/spot/monthly/klines/BTCUSDT/1h/BTCUSDT-1h-2020-01.zip"))
         with self.assertRaises(InventoryUnproven):
             discover(self.root, fetched_at="2026-09-27T20:00:00Z", fetcher=Fetcher({}))
+
+    def test_utf8_usdt_symbol_is_registered_but_still_time_bounded(self):
+        symbol = "币安人生USDT"
+        self.assertTrue(valid_symbol(symbol))
+        self.assertFalse(valid_symbol("USDT"))
+        self.assertFalse(valid_symbol("BAD/USDT"))
+        self.assertFalse(valid_symbol("BAD\\\\USDT"))
+        self.assertFalse(valid_symbol("BAD\\nUSDT"))
+
+        historical = (
+            f"data/spot/monthly/klines/{symbol}/15m/"
+            f"{symbol}-15m-2020-01.zip"
+        )
+        parsed = parse_key(historical)
+        self.assertIsNotNone(parsed)
+        self.assertEqual(parsed["symbol"], symbol)
+
+        symbol_prefix = self.monthly_root + symbol + "/"
+        object_prefix = symbol_prefix + "15m/"
+        start_after = object_prefix + symbol + "-15m-2019-99"
+        future = object_prefix + symbol + "-15m-2025-10.zip"
+
+        pages = dict(self.pages)
+        pages[self.u(self.monthly_root, "symbols-2", delimiter="/")] = listing(
+            prefixes=[self.monthly_root + "ETHUSDT/", symbol_prefix]
+        )
+        pages[self.u(object_prefix, start_after=start_after)] = listing([future])
+
+        snapshot = discover(
+            self.root,
+            fetched_at="2026-09-27T20:00:00Z",
+            fetcher=Fetcher(pages),
+        )
+        verify(snapshot)
+        self.assertIn(symbol, snapshot["discovered_symbols"]["monthly"])
+        self.assertNotIn(symbol, {x["symbol"] for x in snapshot["objects"]})
+
+        admitted = copy.deepcopy(snapshot)
+        admitted["objects"] = sorted(
+            [*admitted["objects"], parsed],
+            key=lambda x: x["key"],
+        )
+        admitted["normalized_inventory_sha256"] = __import__(
+            "research.opportunity_data.models",
+            fromlist=["digest"],
+        ).digest(dict(schema="AF-01C-INVENTORY/1", objects=admitted["objects"]))
+        p = plan(admitted, (symbol,), ("2020-01",))
+        self.assertEqual(p["periods"][0]["symbol"], symbol)
 
     def test_planner_bound_and_monthly_checksum_restart_admission(self):
         inv = self.inventory()
