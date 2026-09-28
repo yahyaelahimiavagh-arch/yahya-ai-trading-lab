@@ -19,11 +19,25 @@ PREFIXES = (
     ("monthly", "data/spot/monthly/klines/"),
     ("daily", "data/spot/daily/klines/"),
 )
-SYMBOL = re.compile(r"^[A-Z0-9]+USDT$")
 KEY = re.compile(
-    r"^data/spot/(monthly|daily)/klines/([A-Z0-9]+USDT)/15m/\2-15m-"
+    r"^data/spot/(monthly|daily)/klines/([^/]+USDT)/15m/\2-15m-"
     r"(20\d\d-\d\d(?:-\d\d)?)\.zip$"
 )
+
+
+def valid_symbol(symbol: object) -> bool:
+    """Registered archive symbol grammar: exact UTF-8-safe path component ending in USDT."""
+    if not isinstance(symbol, str) or not symbol.endswith("USDT") or symbol == "USDT":
+        return False
+    if "/" in symbol or "\\" in symbol:
+        return False
+    if any(ord(char) < 0x20 or ord(char) == 0x7F for char in symbol):
+        return False
+    try:
+        encoded = symbol.encode("utf-8")
+    except UnicodeError:
+        return False
+    return 1 <= len(encoded) <= 128
 START, END = date(2020, 1, 1), date(2023, 1, 1)
 MAX_PAGE_BYTES = 2_000_000
 INVENTORY_STRATEGY = "HIERARCHICAL_COMMON_PREFIXES_RANGE_BOUNDED/2"
@@ -40,6 +54,8 @@ def parse_key(key: str) -> dict | None:
     if not match:
         return None
     cadence, symbol, period = match.groups()
+    if not valid_symbol(symbol):
+        raise InventoryUnproven("malformed registered archive symbol")
     try:
         first = date.fromisoformat(period + "-01" if cadence == "monthly" else period)
         if cadence == "monthly":
@@ -153,9 +169,9 @@ def discover(root: Path, *, fetched_at: str, fetcher=None, max_pages: int = 2000
                 if not symbol or "/" in symbol or common_prefix in seen_prefixes:
                     raise InventoryUnproven("malformed/duplicate symbol directory")
                 seen_prefixes.add(common_prefix)
-                if symbol.endswith("USDT") and not SYMBOL.fullmatch(symbol):
+                if symbol.endswith("USDT") and not valid_symbol(symbol):
                     raise InventoryUnproven("malformed USDT symbol directory")
-                if SYMBOL.fullmatch(symbol):
+                if valid_symbol(symbol):
                     symbols.add(symbol)
             if not more:
                 break
