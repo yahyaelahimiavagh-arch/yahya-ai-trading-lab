@@ -26,7 +26,7 @@ KEY = re.compile(
 )
 START, END = date(2020, 1, 1), date(2023, 1, 1)
 MAX_PAGE_BYTES = 2_000_000
-INVENTORY_STRATEGY = "HIERARCHICAL_COMMON_PREFIXES/1"
+INVENTORY_STRATEGY = "HIERARCHICAL_COMMON_PREFIXES_RANGE_BOUNDED/2"
 
 
 class InventoryUnproven(ValueError):
@@ -103,7 +103,13 @@ def discover(root: Path, *, fetched_at: str, fetcher=None, max_pages: int = 2000
     endpoints: list[str] = []
     pages = 0
 
-    def fetch_page(prefix: str, *, delimiter: str | None = None, token: str | None = None):
+    def fetch_page(
+        prefix: str,
+        *,
+        delimiter: str | None = None,
+        token: str | None = None,
+        start_after: str | None = None,
+    ):
         nonlocal pages
         if pages >= max_pages:
             raise InventoryUnproven("listing pagination bound exceeded")
@@ -113,6 +119,8 @@ def discover(root: Path, *, fetched_at: str, fetcher=None, max_pages: int = 2000
         query["max-keys"] = "1000"
         if token:
             query["continuation-token"] = token
+        elif start_after:
+            query["start-after"] = start_after
         url = f"{LIST_BASE}?{urlencode(query)}"
         try:
             payload = fetcher.fetch(url, max_bytes=MAX_PAGE_BYTES)
@@ -158,14 +166,25 @@ def discover(root: Path, *, fetched_at: str, fetcher=None, max_pages: int = 2000
         cadence_symbols[cadence] = sorted(symbols)
 
     observed: set[str] = set()
+    range_bounds: dict[str, dict[str, str]] = {}
     for cadence, root_prefix in PREFIXES:
         for symbol in cadence_symbols[cadence]:
             object_prefix = f"{root_prefix}{symbol}/15m/"
+            start_after = f"{object_prefix}{symbol}-15m-2019-99"
+            range_bounds[f"{cadence}:{symbol}"] = {
+                "start_after": start_after,
+                "end_exclusive": f"{object_prefix}{symbol}-15m-2023-01",
+            }
             token = None
             seen_tokens: set[str] = set()
             seen_listing_keys: set[str] = set()
+            reached_end = False
             while True:
-                keys, prefixes, more, next_token = fetch_page(object_prefix, token=token)
+                keys, prefixes, more, next_token = fetch_page(
+                    object_prefix,
+                    token=token,
+                    start_after=start_after if token is None else None,
+                )
                 if prefixes:
                     raise InventoryUnproven("unexpected nested prefix in exact 15m listing")
                 if not keys and more:
@@ -176,13 +195,21 @@ def discover(root: Path, *, fetched_at: str, fetcher=None, max_pages: int = 2000
                     seen_listing_keys.add(key)
                     if not key.endswith(".zip"):
                         continue
-                    if KEY.fullmatch(key) is None:
+                    match = KEY.fullmatch(key)
+                    if match is None:
                         raise InventoryUnproven("malformed registered object key")
-                    parse_key(key)  # validates period; valid out-of-window objects are intentionally ignored
+                    item = parse_key(key)  # validates period
+                    if item is None:
+                        _, _, period = match.groups()
+                        first = date.fromisoformat(period + "-01" if cadence == "monthly" else period)
+                        if first >= END:
+                            reached_end = True
+                            break
+                        continue
                     if key in observed:
                         raise InventoryUnproven("duplicate archive object key")
                     observed.add(key)
-                if not more:
+                if reached_end or not more:
                     break
                 if next_token in seen_tokens or next_token == token:
                     raise InventoryUnproven("pagination cycle")
@@ -199,6 +226,7 @@ def discover(root: Path, *, fetched_at: str, fetcher=None, max_pages: int = 2000
         retrieved_at=fetched_at,
         source_endpoint=f"{LIST_BASE}?list-type=2",
         discovered_symbols=cadence_symbols,
+        object_range_bounds=range_bounds,
         listing_urls=endpoints,
         raw_page_sha256=raw_pages,
         raw_inventory_sha256=sha256(canonical(raw_pages)),
@@ -216,6 +244,7 @@ def verify(snapshot: dict) -> None:
     if (
         snapshot.get("state") != "COMPLETE"
         or snapshot.get("inventory_strategy") != INVENTORY_STRATEGY
+        or not isinstance(snapshot.get("object_range_bounds"), dict)
         or not isinstance(symbols, dict)
         or sorted(symbols) != ["daily", "monthly"]
         or any(
