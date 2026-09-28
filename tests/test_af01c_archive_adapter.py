@@ -62,17 +62,21 @@ class AF01C(unittest.TestCase):
         from urllib.parse import urlencode
         self.monthly_root = "data/spot/monthly/klines/"
         self.daily_root = "data/spot/daily/klines/"
-        self.u = lambda prefix, token=None, delimiter=None: (
+        self.u = lambda prefix, token=None, delimiter=None, start_after=None: (
             "https://s3-ap-northeast-1.amazonaws.com/data.binance.vision?" + urlencode({
                 **{"list-type": "2", "prefix": prefix},
                 **({"delimiter": delimiter} if delimiter is not None else {}),
                 **{"max-keys": "1000"},
                 **({"continuation-token": token} if token else {}),
+                **({"start-after": start_after} if start_after is not None and token is None else {}),
             })
         )
         self.monthly_btc = self.monthly_root + "BTCUSDT/15m/"
         self.monthly_eth = self.monthly_root + "ETHUSDT/15m/"
         self.daily_eth = self.daily_root + "ETHUSDT/15m/"
+        self.monthly_btc_start = self.monthly_btc + "BTCUSDT-15m-2019-99"
+        self.monthly_eth_start = self.monthly_eth + "ETHUSDT-15m-2019-99"
+        self.daily_eth_start = self.daily_eth + "ETHUSDT-15m-2019-99"
         self.pages = {
             self.u(self.monthly_root, delimiter="/"): listing(
                 prefixes=[self.monthly_root + "BTCUSDT/"], truncated=True, token="symbols-2"),
@@ -80,9 +84,9 @@ class AF01C(unittest.TestCase):
                 prefixes=[self.monthly_root + "ETHUSDT/"]),
             self.u(self.daily_root, delimiter="/"): listing(
                 prefixes=[self.daily_root + "ETHUSDT/"]),
-            self.u(self.monthly_btc): listing([self.btc]),
-            self.u(self.monthly_eth): listing([self.eth]),
-            self.u(self.daily_eth): listing(self.daily),
+            self.u(self.monthly_btc, start_after=self.monthly_btc_start): listing([self.btc]),
+            self.u(self.monthly_eth, start_after=self.monthly_eth_start): listing([self.eth]),
+            self.u(self.daily_eth, start_after=self.daily_eth_start): listing(self.daily),
         }
 
     def tearDown(self):
@@ -228,9 +232,13 @@ class AF01C(unittest.TestCase):
 
         outside = "data/spot/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2025-01.zip"
         permitted = dict(self.pages)
-        permitted[self.u(self.monthly_btc)] = listing([outside, self.btc], include_count=True)
+        permitted[self.u(self.monthly_btc, start_after=self.monthly_btc_start)] = listing(
+            [self.btc, outside], include_count=True)
         snapshot = discover(self.root, fetched_at="2026-09-27T20:00:00Z", fetcher=Fetcher(permitted))
-        self.assertEqual(snapshot["inventory_strategy"], "HIERARCHICAL_COMMON_PREFIXES/1")
+        self.assertEqual(
+            snapshot["inventory_strategy"],
+            "HIERARCHICAL_COMMON_PREFIXES_RANGE_BOUNDED/2",
+        )
         self.assertEqual(snapshot["discovered_symbols"]["monthly"], ["BTCUSDT", "ETHUSDT"])
         self.assertEqual(snapshot["discovered_symbols"]["daily"], ["ETHUSDT"])
         self.assertNotIn(outside, {x["key"] for x in snapshot["objects"]})
@@ -240,10 +248,39 @@ class AF01C(unittest.TestCase):
             prefixes=[self.daily_root + "ETHBTC/", self.daily_root + "ETHUSDT/"])
         fetched = Fetcher(non_usdt)
         discover(self.root, fetched_at="2026-09-27T20:00:00Z", fetcher=fetched)
-        self.assertNotIn(self.u(self.daily_root + "ETHBTC/15m/"), fetched.calls)
+        ethbtc_prefix = self.daily_root + "ETHBTC/15m/"
+        self.assertNotIn(
+            self.u(
+                ethbtc_prefix,
+                start_after=ethbtc_prefix + "ETHBTC-15m-2019-99",
+            ),
+            fetched.calls,
+        )
+
+        future = dict(self.pages)
+        first_2023 = (
+            "data/spot/monthly/klines/BTCUSDT/15m/"
+            "BTCUSDT-15m-2023-01.zip"
+        )
+        future[self.u(self.monthly_btc, start_after=self.monthly_btc_start)] = listing(
+            [self.btc, first_2023],
+            truncated=True,
+            token="post-development",
+        )
+        bounded_fetcher = Fetcher(future)
+        bounded_snapshot = discover(
+            self.root,
+            fetched_at="2026-09-27T20:00:00Z",
+            fetcher=bounded_fetcher,
+        )
+        self.assertIn(self.btc, {x["key"] for x in bounded_snapshot["objects"]})
+        self.assertNotIn(
+            self.u(self.monthly_btc, token="post-development"),
+            bounded_fetcher.calls,
+        )
 
         broken = dict(self.pages)
-        broken[self.u(self.monthly_btc)] = listing([
+        broken[self.u(self.monthly_btc, start_after=self.monthly_btc_start)] = listing([
             "data/spot/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2020-13.zip"])
         with self.assertRaises(InventoryUnproven):
             discover(self.root, fetched_at="2026-09-27T20:00:00Z", fetcher=Fetcher(broken))
