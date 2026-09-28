@@ -34,10 +34,10 @@ def valid_symbol(symbol: object) -> bool:
     if any(ord(char) < 0x20 or ord(char) == 0x7F for char in symbol):
         return False
     try:
-        encoded = symbol.encode("utf-8")
+        symbol.encode("utf-8")
     except UnicodeError:
         return False
-    return 1 <= len(encoded) <= 128
+    return True
 START, END = date(2020, 1, 1), date(2023, 1, 1)
 MAX_PAGE_BYTES = 2_000_000
 INVENTORY_STRATEGY = "HIERARCHICAL_COMMON_PREFIXES_RANGE_BOUNDED/2"
