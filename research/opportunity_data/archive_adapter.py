@@ -328,12 +328,28 @@ def _ordinary_evidence(root: Path, symbol: str, relative: str | None) -> str | N
 
 def acquire_period(root: Path, entry: dict, fetcher=None, *, plan_doc: dict, inventory: dict,
                    retrieved_ms: int, allow_daily_fallback: bool = False,
-                   boundary_evidence_ref: str | None = None) -> dict:
+                   boundary_evidence_ref: str | None = None,
+                   verified_binding: dict | None = None) -> dict:
     try:
         guard_root(root)
     except ValueError as exc:
         raise OpportunityError("unsafe runtime root") from exc
-    binding = _bound_entry(plan_doc, inventory, entry)
+    if verified_binding is None:
+        binding = _bound_entry(plan_doc, inventory, entry)
+    else:
+        selected = (
+            ([entry["monthly"]["key"]] if entry.get("monthly") else [])
+            + [item["key"] for item in entry.get("daily", ())]
+        )
+        expected_binding = dict(
+            inventory_sha256=plan_doc["inventory_sha256"],
+            plan_sha256=plan_doc["plan_sha256"],
+            entry_sha256=digest(entry),
+            selected_object_keys=selected,
+        )
+        if verified_binding != expected_binding:
+            raise OpportunityError("preverified plan binding mismatch")
+        binding = verified_binding
     symbol, month = entry.get("symbol"), entry.get("month")
     if (not isinstance(symbol, str) or not re.fullmatch(r"[A-Z0-9]+USDT", symbol)
             or not isinstance(month, str) or not re.fullmatch(r"20(?:20|21|22)-(?:0[1-9]|1[0-2])", month)
