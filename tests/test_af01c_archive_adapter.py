@@ -101,6 +101,23 @@ class AF01C(unittest.TestCase):
         self.assertEqual(first["normalized_inventory_sha256"], second["normalized_inventory_sha256"])
         self.assertEqual(len(first["objects"]), 33)
         verify(first)
+        tampered_raw = copy.deepcopy(first)
+        tampered_raw["raw_inventory_sha256"] = "0" * 64
+        with self.assertRaises(InventoryUnproven):
+            verify(tampered_raw)
+        tampered_bounds = copy.deepcopy(first)
+        key = sorted(tampered_bounds["object_range_bounds"])[0]
+        tampered_bounds["object_range_bounds"][key]["end_exclusive"] += "-tampered"
+        with self.assertRaises(InventoryUnproven):
+            verify(tampered_bounds)
+        tampered_urls = copy.deepcopy(first)
+        tampered_urls["listing_urls"] = tampered_urls["listing_urls"][:-1]
+        with self.assertRaises(InventoryUnproven):
+            verify(tampered_urls)
+        tampered_source = copy.deepcopy(first)
+        tampered_source["source_endpoint"] = "https://example.invalid/"
+        with self.assertRaises(InventoryUnproven):
+            verify(tampered_source)
         with self.assertRaises(InventoryUnproven):
             discover(self.root, fetched_at="2026-09-27T20:00:00Z", fetcher=Fetcher(self.pages), max_pages=5)
         bad = dict(self.pages)
