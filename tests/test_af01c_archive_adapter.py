@@ -180,6 +180,48 @@ class AF01C(unittest.TestCase):
         p = plan(historical_snapshot, (symbol,), ("2020-01",))
         self.assertEqual(p["periods"][0]["symbol"], symbol)
 
+    def test_broad_planner_indexes_inventory_once(self):
+        from unittest.mock import patch
+
+        class CountingList(list):
+            def __init__(self, values):
+                super().__init__(values)
+                self.iterations = 0
+
+            def __iter__(self):
+                self.iterations += 1
+                return super().__iter__()
+
+        objects = CountingList([
+            dict(key="data/spot/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2020-01.zip",
+                 cadence="monthly", symbol="BTCUSDT", interval="15m", period="2020-01"),
+            dict(key="data/spot/daily/klines/BTCUSDT/15m/BTCUSDT-15m-2020-02-01.zip",
+                 cadence="daily", symbol="BTCUSDT", interval="15m", period="2020-02-01"),
+            dict(key="data/spot/monthly/klines/ETHUSDT/15m/ETHUSDT-15m-2020-01.zip",
+                 cadence="monthly", symbol="ETHUSDT", interval="15m", period="2020-01"),
+        ])
+        snapshot = {
+            "objects": objects,
+            "normalized_inventory_sha256": "a" * 64,
+        }
+
+        with patch("research.opportunity_data.archive_adapter.verify", lambda _: None):
+            result = plan(
+                snapshot,
+                ("BTCUSDT", "ETHUSDT"),
+                ("2020-01", "2020-02"),
+                pilot=False,
+            )
+
+        self.assertEqual(result["state"], "REGISTERED_DEVELOPMENT")
+        self.assertEqual(
+            [(x["symbol"], x["month"]) for x in result["periods"]],
+            [("BTCUSDT", "2020-01"), ("BTCUSDT", "2020-02"), ("ETHUSDT", "2020-01")],
+        )
+        self.assertEqual(result["periods"][1]["monthly"], None)
+        self.assertEqual(len(result["periods"][1]["daily"]), 1)
+        self.assertLessEqual(objects.iterations, 2)
+
     def test_planner_bound_and_monthly_checksum_restart_admission(self):
         inv = self.inventory()
         p = plan(inv, ("BTCUSDT",), ("2020-01",))
