@@ -264,7 +264,7 @@ def verify(snapshot: dict) -> None:
     if any(
         not isinstance(symbols.get(cadence), list)
         or symbols[cadence] != sorted(set(symbols[cadence]))
-        or any(not SYMBOL.fullmatch(symbol) for symbol in symbols[cadence])
+        or any(not valid_symbol(symbol) for symbol in symbols[cadence])
         for cadence in ("monthly", "daily")
     ):
         raise InventoryUnproven("snapshot identity/contents invalid")
