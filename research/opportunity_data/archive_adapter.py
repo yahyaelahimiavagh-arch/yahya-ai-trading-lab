@@ -63,21 +63,33 @@ def plan(snapshot: dict, symbols: tuple[str, ...], months: tuple[str, ...], *, p
         raise OpportunityError("unregistered symbol")
     if any(not re.fullmatch(r"20(?:20|21|22)-(?:0[1-9]|1[0-2])", m) for m in months):
         raise OpportunityError("outside Development range")
-    objects = snapshot["objects"]
-    registered = {x["symbol"] for x in objects}
+
+    # Build the historical lookup once. Broad population planning may contain
+    # thousands of symbol/month identities, so rescanning the full inventory
+    # for every identity would be O(objects * symbols * months).
+    registered: set[str] = set()
+    monthly_by_period: dict[tuple[str, str], dict] = {}
+    daily_by_month: dict[tuple[str, str], list[dict]] = {}
+    for item in snapshot["objects"]:
+        symbol = item["symbol"]
+        registered.add(symbol)
+        if item["cadence"] == "monthly":
+            monthly_by_period[(symbol, item["period"])] = item
+        else:
+            daily_by_month.setdefault((symbol, item["period"][:7]), []).append(item)
+
     if requested - registered:
         raise OpportunityError("symbol absent from historical inventory")
+
     chosen = []
-    by_key = {x["key"]: x for x in objects}
     for symbol in sorted(requested):
         for month in sorted(months):
-            monthly_key = f"data/spot/monthly/klines/{symbol}/15m/{symbol}-15m-{month}.zip"
-            days = sorted((x for x in objects if x["symbol"] == symbol and x["cadence"] == "daily"
-                           and x["period"].startswith(month)), key=lambda x: x["key"])
-            monthly = by_key.get(monthly_key)
+            monthly = monthly_by_period.get((symbol, month))
+            days = sorted(daily_by_month.get((symbol, month), ()), key=lambda x: x["key"])
             if not monthly and not days:
                 continue
             chosen.append(dict(symbol=symbol, month=month, monthly=monthly, daily=days))
+
     if not chosen:
         raise OpportunityError("no selected archived periods")
     result = dict(version="AF-01C-PLAN/1", state="AF01C_ENGINEERING_PILOT_NO_SELECTION" if pilot else "REGISTERED_DEVELOPMENT",
