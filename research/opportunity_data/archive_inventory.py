@@ -241,23 +241,58 @@ def discover(root: Path, *, fetched_at: str, fetcher=None, max_pages: int = 2000
 def verify(snapshot: dict) -> None:
     objects = snapshot.get("objects")
     symbols = snapshot.get("discovered_symbols")
+    raw_pages = snapshot.get("raw_page_sha256")
+    listing_urls = snapshot.get("listing_urls")
+    if not isinstance(symbols, dict) or sorted(symbols) != ["daily", "monthly"]:
+        raise InventoryUnproven("snapshot identity/contents invalid")
+    if any(
+        not isinstance(symbols.get(cadence), list)
+        or symbols[cadence] != sorted(set(symbols[cadence]))
+        or any(not SYMBOL.fullmatch(symbol) for symbol in symbols[cadence])
+        for cadence in ("monthly", "daily")
+    ):
+        raise InventoryUnproven("snapshot identity/contents invalid")
+
+    expected_bounds: dict[str, dict[str, str]] = {}
+    for cadence, root_prefix in PREFIXES:
+        for symbol in symbols[cadence]:
+            object_prefix = f"{root_prefix}{symbol}/15m/"
+            expected_bounds[f"{cadence}:{symbol}"] = {
+                "start_after": f"{object_prefix}{symbol}-15m-2019-99",
+                "end_exclusive": f"{object_prefix}{symbol}-15m-2023-01",
+            }
+
     if (
-        snapshot.get("state") != "COMPLETE"
+        snapshot.get("schema") != "AF-01C-INVENTORY-SNAPSHOT/1"
+        or snapshot.get("state") != "COMPLETE"
         or snapshot.get("inventory_strategy") != INVENTORY_STRATEGY
-        or not isinstance(snapshot.get("object_range_bounds"), dict)
-        or not isinstance(symbols, dict)
-        or sorted(symbols) != ["daily", "monthly"]
+        or not isinstance(snapshot.get("retrieved_at"), str)
+        or not snapshot["retrieved_at"].endswith("Z")
+        or snapshot.get("source_endpoint") != f"{LIST_BASE}?list-type=2"
+        or snapshot.get("object_range_bounds") != expected_bounds
+        or not isinstance(raw_pages, list)
+        or not raw_pages
         or any(
-            not isinstance(symbols.get(cadence), list)
-            or symbols[cadence] != sorted(set(symbols[cadence]))
-            or any(not SYMBOL.fullmatch(symbol) for symbol in symbols[cadence])
-            for cadence in ("monthly", "daily")
+            not isinstance(value, str)
+            or len(value) != 64
+            or any(char not in "0123456789abcdef" for char in value)
+            for value in raw_pages
         )
+        or not isinstance(listing_urls, list)
+        or len(listing_urls) != len(raw_pages)
+        or any(
+            not isinstance(url, str)
+            or not url.startswith(f"{LIST_BASE}?")
+            or "list-type=2" not in url
+            for url in listing_urls
+        )
+        or snapshot.get("raw_inventory_sha256") != sha256(canonical(raw_pages))
         or not isinstance(objects, list)
         or not objects
         or objects != sorted(objects, key=lambda x: x["key"])
         or len({x["key"] for x in objects}) != len(objects)
         or any(parse_key(x["key"]) != x for x in objects)
+        or any(x["symbol"] not in symbols[x["cadence"]] for x in objects)
         or snapshot.get("normalized_inventory_sha256")
         != digest(dict(schema="AF-01C-INVENTORY/1", objects=objects))
     ):
