@@ -8,6 +8,7 @@ Current tracks:
 - `historical-strategy-lab/` — historical walk-forward / challenger research.
 - `model-lab/` — isolated external-model research critic.
 - `research-intake/` — external source provenance and candidate registry.
+  - `research-intake/RIE-006-INSTITUTIONAL-EDGE-INTELLIGENCE.md` — public/legal institutional edge intelligence, execution alpha, cross-sectional mechanisms, and adversarial-AI falsification.
 - `historical-strategy-search/` — controlled Train search, sealed historical OOS and audit boundaries.
 
 Rules:
