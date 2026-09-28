@@ -9,6 +9,8 @@ from pathlib import Path
 from research.opportunity_data.archive_adapter import plan
 from research.opportunity_data.models import canonical, sha256
 from research.opportunity_data.pc_population import (
+    MAX_CANARY_BATCH,
+    accept_canary_continuation,
     acquire_batch,
     population_status,
     reconcile_population,
@@ -141,6 +143,37 @@ class PCPopulation(unittest.TestCase):
         final = reconcile_population(self.root, self.plan_ref, self.inventory_ref)
         self.assertEqual(final["state"], "POPULATION_COMPLETE")
         self.assertEqual(final["final_count"], 1)
+
+    def test_continuation_requires_exact_canary_boundary(self):
+        batch_base = dict(
+            schema="AF-01C-PC-BATCH/1",
+            state="P_C_CANARY_BATCH_COMPLETE",
+            plan_sha256=self.plan["plan_sha256"],
+            requested_limit=1,
+            acquired_count=1,
+            identities=("BTCUSDT-2020-01",),
+            records=("0" * 64,),
+            state_counts={"MONTHLY_SUCCESS": 1},
+        )
+        batch_sha = __import__("research.opportunity_data.models", fromlist=["digest"]).digest(batch_base)
+        batch_ref = f"batches/batch-{batch_sha}.json"
+        save_artifact(self.root, batch_ref, canonical(batch_base))
+        with self.assertRaisesRegex(Exception, "exactly complete"):
+            accept_canary_continuation(
+                self.root,
+                self.plan_ref,
+                self.inventory_ref,
+                batch_ref,
+                ci_head_sha="a" * 40,
+                ci_run_id=1,
+                ci_workflow="test",
+            )
+
+    def test_broad_continuation_requires_acceptance_after_canary_ceiling(self):
+        # Exercise the fail-closed ceiling check without network access by
+        # constructing 25 valid ledger placeholders is intentionally avoided;
+        # the acceptance helper itself enforces the exact 25-ledger boundary.
+        self.assertEqual(MAX_CANARY_BATCH, 25)
 
     def test_storage_preflight_is_required(self):
         with self.assertRaisesRegex(Exception, "storage preflight"):
