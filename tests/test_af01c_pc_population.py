@@ -11,8 +11,11 @@ from research.opportunity_data.archive_adapter import plan
 from research.opportunity_data.models import canonical, sha256
 from research.opportunity_data.pc_population import (
     MAX_CANARY_BATCH,
+    MAX_FAST_BATCHES,
+    MAX_FAST_WORKERS,
     accept_canary_continuation,
     acquire_batch,
+    acquire_batches_fast,
     population_status,
     reconcile_population,
 )
@@ -144,6 +147,124 @@ class PCPopulation(unittest.TestCase):
         final = reconcile_population(self.root, self.plan_ref, self.inventory_ref)
         self.assertEqual(final["state"], "POPULATION_COMPLETE")
         self.assertEqual(final["final_count"], 1)
+
+    def _two_month_runtime(self):
+        from research.opportunity_data.models import digest
+
+        feb_key = "data/spot/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2020-02.zip"
+        feb_item = dict(
+            key=feb_key,
+            cadence="monthly",
+            symbol="BTCUSDT",
+            interval="15m",
+            period="2020-02",
+        )
+        inventory = dict(self.inventory)
+        inventory["objects"] = [self.item, feb_item]
+        inventory["normalized_inventory_sha256"] = digest(
+            dict(schema="AF-01C-INVENTORY/1", objects=inventory["objects"])
+        )
+        population_plan = plan(
+            inventory,
+            ("BTCUSDT",),
+            ("2020-01", "2020-02"),
+            pilot=False,
+        )
+        inventory_ref = "inventory/two-month.json"
+        plan_ref = f"plans/plan-{population_plan['plan_sha256']}.json"
+        save_artifact(self.root, inventory_ref, canonical(inventory))
+        save_artifact(self.root, plan_ref, canonical(population_plan))
+
+        jan_start = 1577836800000
+        feb_start = 1580515200000
+        jan_rows = [candle(jan_start + i * 900000) for i in range(31 * 96)]
+        feb_rows = [candle(feb_start + i * 900000) for i in range(29 * 96)]
+        jan_raw = zip_csv("BTCUSDT-15m-2020-01.csv", jan_rows)
+        feb_raw = zip_csv("BTCUSDT-15m-2020-02.csv", feb_rows)
+
+        jan_url = "https://data.binance.vision/" + self.item["key"]
+        feb_url = "https://data.binance.vision/" + feb_item["key"]
+        mapping = {
+            jan_url: jan_raw,
+            jan_url + ".CHECKSUM": (
+                f"{sha256(jan_raw)}  BTCUSDT-15m-2020-01.zip\n".encode()
+            ),
+            feb_url: feb_raw,
+            feb_url + ".CHECKSUM": (
+                f"{sha256(feb_raw)}  BTCUSDT-15m-2020-02.zip\n".encode()
+            ),
+        }
+        return population_plan, inventory_ref, plan_ref, mapping
+
+    def test_fast_path_reuses_one_verified_scan_and_preserves_order(self):
+        from research.opportunity_data import pc_population as pc_population_module
+
+        population_plan, inventory_ref, plan_ref, mapping = self._two_month_runtime()
+        default_fetcher = Fetcher(mapping)
+        original_verify = pc_population_module.verify_plan
+
+        with mock.patch(
+            "research.opportunity_data.pc_population.verify_plan",
+            wraps=original_verify,
+        ) as verify_call, mock.patch(
+            "research.opportunity_data.archive_adapter.HttpsFetcher",
+            return_value=default_fetcher,
+        ):
+            result = acquire_batches_fast(
+                self.root,
+                plan_ref,
+                inventory_ref,
+                limit=1,
+                batch_count=2,
+                workers=2,
+                storage_preflight_relative=self.preflight_ref,
+                retrieved_ms=1790539200000,
+            )
+
+        self.assertEqual(verify_call.call_count, 1)
+        self.assertEqual(result["completed_batch_count"], 2)
+        self.assertEqual(result["population_status"]["completed_identities"], 2)
+        self.assertEqual(result["population_status"]["remaining_identities"], 0)
+        self.assertEqual(len(result["batches"]), 2)
+
+        identities = []
+        for batch in result["batches"]:
+            payload = json.loads(
+                (self.root / batch["batch_ref"]).read_bytes()
+            )
+            identities.extend(payload["identities"])
+        self.assertEqual(
+            identities,
+            ["BTCUSDT-2020-01", "BTCUSDT-2020-02"],
+        )
+        self.assertEqual(
+            result["population_status"]["status_sha256"],
+            population_status(self.root, plan_ref, inventory_ref)["status_sha256"],
+        )
+
+    def test_fast_path_bounds_are_hard(self):
+        self.assertEqual(MAX_FAST_BATCHES, 40)
+        self.assertEqual(MAX_FAST_WORKERS, 4)
+        with self.assertRaisesRegex(Exception, "batch-count bound"):
+            acquire_batches_fast(
+                self.root,
+                self.plan_ref,
+                self.inventory_ref,
+                limit=1,
+                batch_count=MAX_FAST_BATCHES + 1,
+                workers=1,
+                storage_preflight_relative=self.preflight_ref,
+            )
+        with self.assertRaisesRegex(Exception, "worker bound"):
+            acquire_batches_fast(
+                self.root,
+                self.plan_ref,
+                self.inventory_ref,
+                limit=1,
+                batch_count=1,
+                workers=MAX_FAST_WORKERS + 1,
+                storage_preflight_relative=self.preflight_ref,
+            )
 
     def test_population_status_does_not_reverify_full_plan_per_ledger(self):
         start = 1577836800000
