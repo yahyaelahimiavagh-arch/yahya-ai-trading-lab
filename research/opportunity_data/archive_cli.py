@@ -11,6 +11,7 @@ from .archive_inventory import InventoryUnproven, discover, verify
 from .models import OpportunityError, canonical, development_path
 from .storage import save_artifact
 from .pc_population import (
+    accept_canary_continuation,
     acquire_batch,
     bootstrap_pc,
     create_pc_plan,
@@ -54,6 +55,15 @@ def main(argv=None) -> int:
     pc_acquire.add_argument("--limit", type=int, required=True)
     pc_acquire.add_argument("--storage-preflight", required=True)
     pc_acquire.add_argument("--daily-fallback", action="store_true")
+    pc_acquire.add_argument("--continuation-acceptance")
+
+    pc_accept = commands.add_parser("pc-canary-accept")
+    pc_accept.add_argument("--plan", required=True)
+    pc_accept.add_argument("--inventory", required=True)
+    pc_accept.add_argument("--canary-batch", required=True)
+    pc_accept.add_argument("--ci-head-sha", required=True)
+    pc_accept.add_argument("--ci-run-id", type=int, required=True)
+    pc_accept.add_argument("--ci-workflow", required=True)
 
     pc_status = commands.add_parser("pc-status")
     pc_status.add_argument("--plan", required=True)
@@ -84,6 +94,16 @@ def main(argv=None) -> int:
             result = create_pc_plan(root, args.inventory)
         elif args.command == "pc-storage-preflight":
             result = storage_preflight(args.source_root, root)
+        elif args.command == "pc-canary-accept":
+            result = accept_canary_continuation(
+                root,
+                args.plan,
+                args.inventory,
+                args.canary_batch,
+                ci_head_sha=args.ci_head_sha,
+                ci_run_id=args.ci_run_id,
+                ci_workflow=args.ci_workflow,
+            )
         elif args.command == "pc-acquire":
             result = acquire_batch(
                 root,
@@ -91,6 +111,7 @@ def main(argv=None) -> int:
                 args.inventory,
                 limit=args.limit,
                 storage_preflight_relative=args.storage_preflight,
+                continuation_acceptance_relative=args.continuation_acceptance,
                 allow_daily_fallback=args.daily_fallback,
                 retrieved_ms=int(now.timestamp() * 1000),
             )
