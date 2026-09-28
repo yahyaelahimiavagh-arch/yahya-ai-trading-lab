@@ -13,6 +13,7 @@ from .storage import save_artifact
 from .pc_population import (
     accept_canary_continuation,
     acquire_batch,
+    acquire_batches_fast,
     bootstrap_pc,
     create_pc_plan,
     population_status,
@@ -56,6 +57,16 @@ def main(argv=None) -> int:
     pc_acquire.add_argument("--storage-preflight", required=True)
     pc_acquire.add_argument("--daily-fallback", action="store_true")
     pc_acquire.add_argument("--continuation-acceptance")
+
+    pc_fast = commands.add_parser("pc-acquire-fast")
+    pc_fast.add_argument("--plan", required=True)
+    pc_fast.add_argument("--inventory", required=True)
+    pc_fast.add_argument("--limit", type=int, default=25)
+    pc_fast.add_argument("--batches", type=int, required=True)
+    pc_fast.add_argument("--workers", type=int, default=4)
+    pc_fast.add_argument("--storage-preflight", required=True)
+    pc_fast.add_argument("--daily-fallback", action="store_true")
+    pc_fast.add_argument("--continuation-acceptance")
 
     pc_accept = commands.add_parser("pc-canary-accept")
     pc_accept.add_argument("--plan", required=True)
@@ -114,6 +125,18 @@ def main(argv=None) -> int:
                 continuation_acceptance_relative=args.continuation_acceptance,
                 allow_daily_fallback=args.daily_fallback,
                 retrieved_ms=int(now.timestamp() * 1000),
+            )
+        elif args.command == "pc-acquire-fast":
+            result = acquire_batches_fast(
+                root,
+                args.plan,
+                args.inventory,
+                limit=args.limit,
+                batch_count=args.batches,
+                workers=args.workers,
+                storage_preflight_relative=args.storage_preflight,
+                continuation_acceptance_relative=args.continuation_acceptance,
+                allow_daily_fallback=args.daily_fallback,
             )
         elif args.command == "pc-status":
             result = population_status(root, args.plan, args.inventory)
