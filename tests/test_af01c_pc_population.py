@@ -87,6 +87,13 @@ class PCPopulation(unittest.TestCase):
         self.plan_ref = f"plans/plan-{self.plan['plan_sha256']}.json"
         save_artifact(self.root, self.inventory_ref, canonical(self.inventory))
         save_artifact(self.root, self.plan_ref, canonical(self.plan))
+        self.preflight_ref = "preflight/storage-test.json"
+        self.preflight = dict(
+            schema="AF-01C-PC-STORAGE-PREFLIGHT/1",
+            state="PASS",
+            conservative_required_bytes=1,
+        )
+        save_artifact(self.root, self.preflight_ref, canonical(self.preflight))
 
     def tearDown(self):
         self.temp.cleanup()
@@ -110,6 +117,7 @@ class PCPopulation(unittest.TestCase):
             self.plan_ref,
             self.inventory_ref,
             limit=1,
+            storage_preflight_relative=self.preflight_ref,
             fetcher=fetcher,
             retrieved_ms=1790539200000,
         )
@@ -123,6 +131,7 @@ class PCPopulation(unittest.TestCase):
             self.plan_ref,
             self.inventory_ref,
             limit=1,
+            storage_preflight_relative=self.preflight_ref,
             fetcher=Fetcher({}),
             retrieved_ms=1790539200000,
         )
@@ -133,6 +142,18 @@ class PCPopulation(unittest.TestCase):
         self.assertEqual(final["state"], "POPULATION_COMPLETE")
         self.assertEqual(final["final_count"], 1)
 
+    def test_storage_preflight_is_required(self):
+        with self.assertRaisesRegex(Exception, "storage preflight"):
+            acquire_batch(
+                self.root,
+                self.plan_ref,
+                self.inventory_ref,
+                limit=1,
+                storage_preflight_relative="preflight/missing.json",
+                fetcher=Fetcher({}),
+                retrieved_ms=1790539200000,
+            )
+
     def test_canary_limit_is_hard_bounded(self):
         with self.assertRaisesRegex(Exception, "canary batch limit"):
             acquire_batch(
@@ -140,6 +161,7 @@ class PCPopulation(unittest.TestCase):
                 self.plan_ref,
                 self.inventory_ref,
                 limit=26,
+                storage_preflight_relative=self.preflight_ref,
                 fetcher=Fetcher({}),
                 retrieved_ms=1790539200000,
             )
