@@ -4,6 +4,7 @@ import json
 import tempfile
 import unittest
 import zipfile
+from unittest import mock
 from pathlib import Path
 
 from research.opportunity_data.archive_adapter import plan
@@ -143,6 +144,35 @@ class PCPopulation(unittest.TestCase):
         final = reconcile_population(self.root, self.plan_ref, self.inventory_ref)
         self.assertEqual(final["state"], "POPULATION_COMPLETE")
         self.assertEqual(final["final_count"], 1)
+
+    def test_population_status_does_not_reverify_full_plan_per_ledger(self):
+        start = 1577836800000
+        rows = [candle(start + i * 900000) for i in range(31 * 96)]
+        raw = zip_csv("BTCUSDT-15m-2020-01.csv", rows)
+        url = "https://data.binance.vision/" + self.item["key"]
+        fetcher = Fetcher({
+            url: raw,
+            url + ".CHECKSUM": f"{sha256(raw)}  BTCUSDT-15m-2020-01.zip\n".encode(),
+        })
+
+        acquire_batch(
+            self.root,
+            self.plan_ref,
+            self.inventory_ref,
+            limit=1,
+            storage_preflight_relative=self.preflight_ref,
+            fetcher=fetcher,
+            retrieved_ms=1790539200000,
+        )
+
+        with mock.patch(
+            "research.opportunity_data.archive_adapter.verify_plan",
+            side_effect=AssertionError("per-ledger full-plan revalidation"),
+        ):
+            status = population_status(self.root, self.plan_ref, self.inventory_ref)
+
+        self.assertEqual(status["completed_identities"], 1)
+        self.assertEqual(status["remaining_identities"], 0)
 
     def test_continuation_requires_exact_canary_boundary(self):
         batch_base = dict(
