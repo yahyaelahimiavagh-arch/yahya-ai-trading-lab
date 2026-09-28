@@ -11,7 +11,6 @@ from research.mass_candidate_factory.models import guard_root
 
 from .archive_adapter import (
     STATES,
-    _bound_entry,
     _verify_record_binding,
     acquire_period,
     plan,
@@ -169,6 +168,20 @@ def _load_bound_plan(root: Path, plan_relative: str, inventory_relative: str) ->
     return population_plan, inventory
 
 
+def _bound_entry_from_verified_plan(population_plan: dict, entry: dict) -> dict:
+    """Build the immutable ledger binding after the caller has verified the full plan once."""
+    selected = (
+        ([entry["monthly"]["key"]] if entry["monthly"] else [])
+        + [item["key"] for item in entry["daily"]]
+    )
+    return dict(
+        inventory_sha256=population_plan["inventory_sha256"],
+        plan_sha256=population_plan["plan_sha256"],
+        entry_sha256=digest(entry),
+        selected_object_keys=selected,
+    )
+
+
 def _validate_ledger(root: Path, population_plan: dict, inventory: dict, entry: dict) -> dict:
     path = root / "ledger" / f"{entry['symbol']}-{entry['month']}.json"
     try:
@@ -185,7 +198,7 @@ def _validate_ledger(root: Path, population_plan: dict, inventory: dict, entry: 
         root,
         record,
         entry,
-        _bound_entry(population_plan, inventory, entry),
+        _bound_entry_from_verified_plan(population_plan, entry),
     )
     if (
         record.get("identity") != f"{entry['symbol']}-{entry['month']}"
