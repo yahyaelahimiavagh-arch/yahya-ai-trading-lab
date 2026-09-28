@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
@@ -235,19 +236,112 @@ def population_status(root: Path, plan_relative: str, inventory_relative: str) -
     return base | {"status_sha256": digest(base)}
 
 
+def _tree_size(path: Path) -> int:
+    total = 0
+    if not path.exists():
+        return 0
+    for candidate in path.rglob("*"):
+        if candidate.is_file() and not candidate.is_symlink():
+            total += candidate.stat().st_size
+    return total
+
+
+def storage_preflight(source_root: Path, target_root: Path, *, period_count: int = FROZEN_PERIOD_COUNT) -> dict:
+    """Persist a conservative disk-capacity gate based on real P-B successful artifacts."""
+    guard_root(source_root)
+    guard_root(target_root)
+    if not source_root.is_dir() or not target_root.is_dir():
+        raise OpportunityError("storage preflight root missing")
+    source = source_root.resolve()
+    target = target_root.resolve()
+    if source == target or source.is_relative_to(target) or target.is_relative_to(source):
+        raise OpportunityError("storage preflight roots are not isolated")
+
+    sizes = []
+    ledger_root = source_root / "ledger"
+    for ledger in sorted(ledger_root.glob("*.json")):
+        try:
+            record = json.loads(ledger.read_bytes())
+        except (OSError, ValueError, UnicodeError) as exc:
+            raise OpportunityError("invalid P-B ledger during storage preflight") from exc
+        if record.get("state") not in SUCCESS_STATES:
+            continue
+        refs = set(record.get("artifact_hashes", {}))
+        if record.get("canonical_ref"):
+            refs.add(record["canonical_ref"])
+        size = 0
+        for relative in refs:
+            path = development_path(source_root, relative)
+            if not path.is_file():
+                raise OpportunityError("P-B storage sample references missing artifact")
+            size += path.stat().st_size
+        sizes.append(size)
+
+    if not sizes:
+        raise OpportunityError("no successful P-B storage sample")
+    usage = shutil.disk_usage(target_root)
+    average = int(sum(sizes) / len(sizes))
+    maximum = max(sizes)
+    estimate_average_x2 = average * period_count * 2
+    estimate_max_x1_25 = maximum * period_count * 5 // 4
+    required = max(estimate_average_x2, estimate_max_x1_25)
+    state = "PASS" if usage.free > required else "BLOCKED"
+
+    base = dict(
+        schema="AF-01C-PC-STORAGE-PREFLIGHT/1",
+        state=state,
+        filesystem_total_bytes=usage.total,
+        filesystem_used_bytes=usage.used,
+        filesystem_free_bytes=usage.free,
+        source_root_bytes=_tree_size(source_root),
+        target_root_bytes=_tree_size(target_root),
+        pilot_success_sample_count=len(sizes),
+        pilot_average_artifact_bytes_per_period=average,
+        pilot_max_artifact_bytes_per_period=maximum,
+        period_count=period_count,
+        estimate_average_x2_bytes=estimate_average_x2,
+        estimate_max_x1_25_bytes=estimate_max_x1_25,
+        conservative_required_bytes=required,
+    )
+    preflight_sha = digest(base)
+    relative = f"preflight/storage-{preflight_sha}.json"
+    save_artifact(target_root, relative, canonical(base))
+    return base | {"preflight_sha256": preflight_sha, "preflight_ref": relative}
+
+
+def _verify_storage_preflight(root: Path, relative: str) -> dict:
+    document, _ = _read_json(root, relative)
+    if (
+        document.get("schema") != "AF-01C-PC-STORAGE-PREFLIGHT/1"
+        or document.get("state") != "PASS"
+        or not isinstance(document.get("conservative_required_bytes"), int)
+        or document["conservative_required_bytes"] <= 0
+    ):
+        raise OpportunityError("P-C storage preflight not accepted")
+    current = shutil.disk_usage(root)
+    if current.free <= document["conservative_required_bytes"]:
+        raise OpportunityError("P-C storage capacity no longer satisfies frozen preflight")
+    return document
+
+
 def acquire_batch(
     root: Path,
     plan_relative: str,
     inventory_relative: str,
     *,
     limit: int,
+    storage_preflight_relative: str,
     allow_daily_fallback: bool = True,
     fetcher=None,
     retrieved_ms: int | None = None,
 ) -> dict:
     if not isinstance(limit, int) or not 1 <= limit <= MAX_CANARY_BATCH:
         raise OpportunityError("P-C canary batch limit exceeded")
+    _verify_storage_preflight(root, storage_preflight_relative)
     population_plan, inventory = _load_bound_plan(root, plan_relative, inventory_relative)
+    current_status = population_status(root, plan_relative, inventory_relative)
+    if current_status["completed_identities"] >= MAX_CANARY_BATCH:
+        raise OpportunityError("P-C canary population ceiling reached")
 
     missing = []
     for entry in population_plan["periods"]:
@@ -258,6 +352,10 @@ def acquire_batch(
         missing.append(entry)
         if len(missing) == limit:
             break
+
+    allowed = MAX_CANARY_BATCH - current_status["completed_identities"]
+    if len(missing) > allowed:
+        missing = missing[:allowed]
 
     if retrieved_ms is None:
         retrieved_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
