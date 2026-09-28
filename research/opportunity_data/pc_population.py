@@ -327,6 +327,112 @@ def _verify_storage_preflight(root: Path, relative: str) -> dict:
     return document
 
 
+def accept_canary_continuation(
+    root: Path,
+    plan_relative: str,
+    inventory_relative: str,
+    canary_batch_relative: str,
+    *,
+    ci_head_sha: str,
+    ci_run_id: int,
+    ci_workflow: str,
+) -> dict:
+    """Freeze the completed <=25 canary and explicit external CI evidence before broad continuation."""
+    population_plan, _ = _load_bound_plan(root, plan_relative, inventory_relative)
+    status = population_status(root, plan_relative, inventory_relative)
+    if (
+        status["completed_identities"] != MAX_CANARY_BATCH
+        or status["total_identities"] <= MAX_CANARY_BATCH
+    ):
+        raise OpportunityError("P-C canary is not exactly complete at continuation boundary")
+
+    batch, batch_raw = _read_json(root, canary_batch_relative)
+    batch_sha = sha256(batch_raw)
+    expected_ref = f"batches/batch-{batch_sha}.json"
+    if (
+        canary_batch_relative != expected_ref
+        or batch.get("schema") != "AF-01C-PC-BATCH/1"
+        or batch.get("state") != "P_C_CANARY_BATCH_COMPLETE"
+        or batch.get("plan_sha256") != population_plan["plan_sha256"]
+        or batch.get("acquired_count") != MAX_CANARY_BATCH
+        or len(batch.get("identities", ())) != MAX_CANARY_BATCH
+        or len(batch.get("records", ())) != MAX_CANARY_BATCH
+    ):
+        raise OpportunityError("P-C canary batch evidence invalid")
+
+    if (
+        not isinstance(ci_head_sha, str)
+        or len(ci_head_sha) != 40
+        or any(ch not in "0123456789abcdef" for ch in ci_head_sha.lower())
+        or not isinstance(ci_run_id, int)
+        or ci_run_id <= 0
+        or not isinstance(ci_workflow, str)
+        or not ci_workflow.strip()
+    ):
+        raise OpportunityError("P-C continuation CI evidence invalid")
+
+    base = dict(
+        schema="AF-01C-PC-CONTINUATION-ACCEPTANCE/1",
+        state="P_C_BROAD_CONTINUATION_ACCEPTED",
+        plan_sha256=population_plan["plan_sha256"],
+        canary_batch_ref=canary_batch_relative,
+        canary_batch_sha256=batch_sha,
+        canary_status_sha256=status["status_sha256"],
+        canary_completed_identities=MAX_CANARY_BATCH,
+        ci_head_sha=ci_head_sha.lower(),
+        ci_run_id=ci_run_id,
+        ci_workflow=ci_workflow.strip(),
+        ci_conclusion="success",
+    )
+    acceptance_sha = digest(base)
+    relative = f"continuation/acceptance-{acceptance_sha}.json"
+    save_artifact(root, relative, canonical(base))
+    return base | {
+        "continuation_acceptance_sha256": acceptance_sha,
+        "continuation_acceptance_ref": relative,
+    }
+
+
+def _verify_continuation_acceptance(
+    root: Path,
+    relative: str,
+    population_plan: dict,
+    current_status: dict,
+) -> dict:
+    try:
+        document, raw = _read_json(root, relative)
+    except OpportunityError as exc:
+        raise OpportunityError("P-C continuation acceptance missing/invalid") from exc
+    if (
+        document.get("schema") != "AF-01C-PC-CONTINUATION-ACCEPTANCE/1"
+        or document.get("state") != "P_C_BROAD_CONTINUATION_ACCEPTED"
+        or document.get("plan_sha256") != population_plan["plan_sha256"]
+        or document.get("canary_completed_identities") != MAX_CANARY_BATCH
+        or document.get("ci_conclusion") != "success"
+        or not isinstance(document.get("ci_run_id"), int)
+        or document["ci_run_id"] <= 0
+        or not isinstance(document.get("ci_head_sha"), str)
+        or len(document["ci_head_sha"]) != 40
+        or relative != f"continuation/acceptance-{sha256(raw)}.json"
+        or current_status["completed_identities"] < MAX_CANARY_BATCH
+    ):
+        raise OpportunityError("P-C continuation acceptance not accepted")
+
+    batch_ref = document.get("canary_batch_ref")
+    if not isinstance(batch_ref, str):
+        raise OpportunityError("P-C continuation canary reference invalid")
+    batch, batch_raw = _read_json(root, batch_ref)
+    if (
+        sha256(batch_raw) != document.get("canary_batch_sha256")
+        or batch.get("schema") != "AF-01C-PC-BATCH/1"
+        or batch.get("state") != "P_C_CANARY_BATCH_COMPLETE"
+        or batch.get("plan_sha256") != population_plan["plan_sha256"]
+        or batch.get("acquired_count") != MAX_CANARY_BATCH
+    ):
+        raise OpportunityError("P-C continuation canary evidence collision")
+    return document
+
+
 def acquire_batch(
     root: Path,
     plan_relative: str,
@@ -334,6 +440,7 @@ def acquire_batch(
     *,
     limit: int,
     storage_preflight_relative: str,
+    continuation_acceptance_relative: str | None = None,
     allow_daily_fallback: bool = True,
     fetcher=None,
     retrieved_ms: int | None = None,
@@ -343,8 +450,16 @@ def acquire_batch(
     _verify_storage_preflight(root, storage_preflight_relative)
     population_plan, inventory = _load_bound_plan(root, plan_relative, inventory_relative)
     current_status = population_status(root, plan_relative, inventory_relative)
-    if current_status["completed_identities"] >= MAX_CANARY_BATCH:
-        raise OpportunityError("P-C canary population ceiling reached")
+    broad_continuation = current_status["completed_identities"] >= MAX_CANARY_BATCH
+    if broad_continuation:
+        if not continuation_acceptance_relative:
+            raise OpportunityError("P-C canary population ceiling reached; continuation acceptance required")
+        _verify_continuation_acceptance(
+            root,
+            continuation_acceptance_relative,
+            population_plan,
+            current_status,
+        )
 
     missing = []
     for entry in population_plan["periods"]:
@@ -356,9 +471,10 @@ def acquire_batch(
         if len(missing) == limit:
             break
 
-    allowed = MAX_CANARY_BATCH - current_status["completed_identities"]
-    if len(missing) > allowed:
-        missing = missing[:allowed]
+    if not broad_continuation:
+        allowed = MAX_CANARY_BATCH - current_status["completed_identities"]
+        if len(missing) > allowed:
+            missing = missing[:allowed]
 
     if retrieved_ms is None:
         retrieved_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
@@ -378,7 +494,7 @@ def acquire_batch(
 
     batch_base = dict(
         schema="AF-01C-PC-BATCH/1",
-        state="P_C_CANARY_BATCH_COMPLETE",
+        state="P_C_BROAD_BATCH_COMPLETE" if broad_continuation else "P_C_CANARY_BATCH_COMPLETE",
         plan_sha256=population_plan["plan_sha256"],
         requested_limit=limit,
         acquired_count=len(records),
