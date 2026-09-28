@@ -55,6 +55,8 @@ contaminating validation evidence.
 
 Responsibilities:
 - literature/repository/transcript research;
+- public/legal institutional intelligence from court/regulatory filings, exchange documentation, patents, technical talks and other provenance-bound sources;
+- adversarial-AI falsification of leakage, overfit, cost assumptions and simpler explanations;
 - point-in-time data expansion;
 - candidate registry and deduplication;
 - exact method extraction;
@@ -229,7 +231,17 @@ Sources:
 - reproducible repositories;
 - professional books/lectures/transcripts;
 - credible English/Chinese research;
+- public court/regulatory filings, exchange documentation, patents, public technical talks and other legally accessible institutional evidence;
 - internally observed market-structure questions.
+
+Institutional-source research is governed by:
+`docs/research/research-intake/RIE-006-INSTITUTIONAL-EDGE-INTELLIGENCE.md`.
+
+RIE-006 may infer and test public economic mechanisms, including execution alpha,
+liquidity/capacity, cross-sectional/lead-lag, microstructure, public
+alternative-data and edge-decay hypotheses. It may not use unauthorized
+proprietary code, intrusion, material non-public information or manipulative
+market behavior.
 
 Minimum sweep objective:
 - at least 5 materially distinct alpha families represented before declaring a
@@ -601,9 +613,13 @@ requires a documented bypass:
 7. **AF-03B Independent Alpha Sweep #2** — deliberately source candidates outside
    the current trend-overlay cluster, prioritizing mean reversion, volume/liquidity,
    time effects, crash/rebound and relative/lead-lag mechanisms.
-8. **AF-04 Standalone Development** — no portfolio combinations yet.
-9. **AF-06 Independence Gate** — cluster survivors by true economic behavior.
-10. **AF-07+** only after standalone evidence justifies combination or promotion.
+8. **RIE-006 Institutional Edge Intelligence** — bounded public/legal source sweep;
+   prioritize execution alpha, cross-sectional/lead-lag, liquidity dislocation,
+   adversarial-AI falsification and mechanism-first candidate extraction. This is
+   research intake only and cannot bypass AF gates.
+9. **AF-04 Standalone Development** — no portfolio combinations yet.
+10. **AF-06 Independence Gate** — cluster survivors by true economic behavior.
+11. **AF-07+** only after standalone evidence justifies combination or promotion.
 
 ## 12. Program scorecard
 
