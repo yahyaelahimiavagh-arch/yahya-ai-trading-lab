@@ -17,6 +17,7 @@ LIST_HOST = "s3-ap-northeast-1.amazonaws.com"
 LIST_BASE = f"https://{LIST_HOST}/data.binance.vision"
 PREFIXES = ("data/spot/monthly/klines/", "data/spot/daily/klines/")
 KEY = re.compile(r"^data/spot/(monthly|daily)/klines/([A-Z0-9]+USDT)/15m/\2-15m-(20\d\d-\d\d(?:-\d\d)?)\.zip$")
+REGISTERED_PATH = re.compile(r"^data/spot/(monthly|daily)/klines/[A-Z0-9]+USDT/15m/[^/]+\.zip$")
 START, END = date(2020, 1, 1), date(2023, 1, 1)
 MAX_PAGE_BYTES = 2_000_000
 
@@ -103,8 +104,10 @@ def discover(root: Path, *, fetched_at: str, fetcher=None, max_pages: int = 2000
                 if not key.startswith(prefix) or key in observed:
                     raise InventoryUnproven("out-of-prefix/duplicate object key")
                 observed.add(key)
-                if key.endswith(".zip") and "/15m/" in key and "USDT/" in key and parse_key(key) is None:
-                    raise InventoryUnproven("malformed registered object key")
+                if REGISTERED_PATH.fullmatch(key):
+                    if KEY.fullmatch(key) is None:
+                        raise InventoryUnproven("malformed registered object key")
+                    parse_key(key)  # valid out-of-window objects are ignored after date validation
             raw_pages.append(sha256(payload))
             save_artifact(root, f"inventory/raw/{sha256(payload)}.xml", payload)
             endpoints.append(url)
