@@ -25,10 +25,15 @@ def candle(t):
     return f"{t},1,2,1,2,10,{t+899999},20,2,5,10,0"
 
 
-def listing(keys, *, truncated=False, token=None):
+def listing(keys=(), *, prefixes=(), truncated=False, token=None, include_count=False):
     contents = "".join(f"<Contents><Key>{key}</Key></Contents>" for key in keys)
+    common = "".join(f"<CommonPrefixes><Prefix>{prefix}</Prefix></CommonPrefixes>" for prefix in prefixes)
     continuation = f"<NextContinuationToken>{token}</NextContinuationToken>" if token else ""
-    return f"<ListBucketResult>{contents}<IsTruncated>{str(truncated).lower()}</IsTruncated>{continuation}</ListBucketResult>".encode()
+    count = f"<KeyCount>{len(keys) + len(prefixes)}</KeyCount>" if include_count else ""
+    return (
+        f"<ListBucketResult>{count}{contents}{common}"
+        f"<IsTruncated>{str(truncated).lower()}</IsTruncated>{continuation}</ListBucketResult>"
+    ).encode()
 
 
 class Fetcher:
@@ -55,12 +60,30 @@ class AF01C(unittest.TestCase):
         self.eth = "data/spot/monthly/klines/ETHUSDT/15m/ETHUSDT-15m-2020-01.zip"
         self.daily = [f"data/spot/daily/klines/ETHUSDT/15m/ETHUSDT-15m-2020-01-{n:02}.zip" for n in range(1, 32)]
         from urllib.parse import urlencode
-        self.u = lambda prefix, token=None: "https://s3-ap-northeast-1.amazonaws.com/data.binance.vision?" + urlencode({
-            **{"list-type": "2", "prefix": prefix, "max-keys": "1000"},
-            **({"continuation-token": token} if token else {})})
-        self.pages = {self.u("data/spot/monthly/klines/"): listing([self.btc], truncated=True, token="continue"),
-                      self.u("data/spot/monthly/klines/", "continue"): listing([self.eth]),
-                      self.u("data/spot/daily/klines/"): listing(self.daily)}
+        self.monthly_root = "data/spot/monthly/klines/"
+        self.daily_root = "data/spot/daily/klines/"
+        self.u = lambda prefix, token=None, delimiter=None: (
+            "https://s3-ap-northeast-1.amazonaws.com/data.binance.vision?" + urlencode({
+                **{"list-type": "2", "prefix": prefix},
+                **({"delimiter": delimiter} if delimiter is not None else {}),
+                **{"max-keys": "1000"},
+                **({"continuation-token": token} if token else {}),
+            })
+        )
+        self.monthly_btc = self.monthly_root + "BTCUSDT/15m/"
+        self.monthly_eth = self.monthly_root + "ETHUSDT/15m/"
+        self.daily_eth = self.daily_root + "ETHUSDT/15m/"
+        self.pages = {
+            self.u(self.monthly_root, delimiter="/"): listing(
+                prefixes=[self.monthly_root + "BTCUSDT/"], truncated=True, token="symbols-2"),
+            self.u(self.monthly_root, "symbols-2", delimiter="/"): listing(
+                prefixes=[self.monthly_root + "ETHUSDT/"]),
+            self.u(self.daily_root, delimiter="/"): listing(
+                prefixes=[self.daily_root + "ETHUSDT/"]),
+            self.u(self.monthly_btc): listing([self.btc]),
+            self.u(self.monthly_eth): listing([self.eth]),
+            self.u(self.daily_eth): listing(self.daily),
+        }
 
     def tearDown(self):
         self.temp.cleanup()
@@ -75,9 +98,10 @@ class AF01C(unittest.TestCase):
         self.assertEqual(len(first["objects"]), 33)
         verify(first)
         with self.assertRaises(InventoryUnproven):
-            discover(self.root, fetched_at="2026-09-27T20:00:00Z", fetcher=Fetcher(self.pages), max_pages=2)
+            discover(self.root, fetched_at="2026-09-27T20:00:00Z", fetcher=Fetcher(self.pages), max_pages=5)
         bad = dict(self.pages)
-        bad[self.u("data/spot/monthly/klines/", "continue")] = listing([self.btc])
+        bad[self.u(self.monthly_root, "symbols-2", delimiter="/")] = listing(
+            prefixes=[self.monthly_root + "BTCUSDT/"])
         with self.assertRaises(InventoryUnproven):
             discover(self.root, fetched_at="2026-09-27T20:00:00Z", fetcher=Fetcher(bad))
         self.assertIsNone(parse_key("data/spot/monthly/klines/BTCUSDT/1h/BTCUSDT-1h-2020-01.zip"))
@@ -182,33 +206,51 @@ class AF01C(unittest.TestCase):
                     "https://user:secret@data.binance.vision/file"):
             with self.assertRaises(AcquisitionError):
                 _validate_https_url(url, ("data.binance.vision",))
-        _validate_https_url(self.u("data/spot/monthly/klines/"), ("s3-ap-northeast-1.amazonaws.com",))
-        from research.opportunity_data.archive_inventory import _page
+        _validate_https_url(self.u(self.monthly_root, delimiter="/"), ("s3-ap-northeast-1.amazonaws.com",))
+        from research.opportunity_data.archive_inventory import _listing_page
         real_shape = (
             b'<ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">'
             b'<Name>data.binance.vision</Name><Prefix>data/spot/monthly/klines/</Prefix>'
-            b'<KeyCount>2</KeyCount><MaxKeys>2</MaxKeys><IsTruncated>true</IsTruncated>'
-            b'<Contents><Key>data/spot/monthly/klines/0GBNB/12h/0GBNB-12h-2025-09.zip</Key></Contents>'
-            b'<Contents><Key>data/spot/monthly/klines/0GBNB/12h/0GBNB-12h-2025-10.zip</Key></Contents>'
+            b'<Delimiter>/</Delimiter><KeyCount>2</KeyCount><MaxKeys>2</MaxKeys>'
+            b'<IsTruncated>true</IsTruncated>'
+            b'<CommonPrefixes><Prefix>data/spot/monthly/klines/0GBNB/</Prefix></CommonPrefixes>'
+            b'<CommonPrefixes><Prefix>data/spot/monthly/klines/0GUSDT/</Prefix></CommonPrefixes>'
             b'<NextContinuationToken>token-2</NextContinuationToken></ListBucketResult>'
         )
-        keys, more, token = _page(real_shape)
-        self.assertEqual(len(keys), 2)
+        keys, prefixes, more, token = _listing_page(real_shape)
+        self.assertEqual(keys, [])
+        self.assertEqual(prefixes, [
+            "data/spot/monthly/klines/0GBNB/",
+            "data/spot/monthly/klines/0GUSDT/",
+        ])
         self.assertTrue(more)
         self.assertEqual(token, "token-2")
+
         outside = "data/spot/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2025-01.zip"
         permitted = dict(self.pages)
-        permitted[self.u("data/spot/monthly/klines/")] = listing(
-            [outside, self.btc], truncated=True, token="continue")
+        permitted[self.u(self.monthly_btc)] = listing([outside, self.btc], include_count=True)
         snapshot = discover(self.root, fetched_at="2026-09-27T20:00:00Z", fetcher=Fetcher(permitted))
+        self.assertEqual(snapshot["inventory_strategy"], "HIERARCHICAL_COMMON_PREFIXES/1")
+        self.assertEqual(snapshot["discovered_symbols"]["monthly"], ["BTCUSDT", "ETHUSDT"])
+        self.assertEqual(snapshot["discovered_symbols"]["daily"], ["ETHUSDT"])
         self.assertNotIn(outside, {x["key"] for x in snapshot["objects"]})
+
+        non_usdt = dict(self.pages)
+        non_usdt[self.u(self.daily_root, delimiter="/")] = listing(
+            prefixes=[self.daily_root + "ETHBTC/", self.daily_root + "ETHUSDT/"])
+        fetched = Fetcher(non_usdt)
+        discover(self.root, fetched_at="2026-09-27T20:00:00Z", fetcher=fetched)
+        self.assertNotIn(self.u(self.daily_root + "ETHBTC/15m/"), fetched.calls)
+
         broken = dict(self.pages)
-        broken[self.u("data/spot/monthly/klines/", "continue")] = listing([
+        broken[self.u(self.monthly_btc)] = listing([
             "data/spot/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2020-13.zip"])
         with self.assertRaises(InventoryUnproven):
             discover(self.root, fetched_at="2026-09-27T20:00:00Z", fetcher=Fetcher(broken))
+
         cycle = dict(self.pages)
-        cycle[self.u("data/spot/monthly/klines/", "continue")] = listing([self.eth], truncated=True, token="continue")
+        cycle[self.u(self.monthly_root, "symbols-2", delimiter="/")] = listing(
+            prefixes=[self.monthly_root + "ETHUSDT/"], truncated=True, token="symbols-2")
         with self.assertRaises(InventoryUnproven):
             discover(self.root, fetched_at="2026-09-27T20:00:00Z", fetcher=Fetcher(cycle))
 
