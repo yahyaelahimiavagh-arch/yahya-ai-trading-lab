@@ -13,7 +13,7 @@ from statistics import median
 from typing import Mapping
 
 from .models import MCFError, digest
-from .production import CADENCE_MS, DEVELOPMENT_END_MS
+from .production import CADENCE_MS, DEVELOPMENT_END_MS, ProductionUniverseBinding
 
 VERSION = "MCF_PRODUCTION_FEATURES/1.0.0"
 POPULATION_START_MS = 1577836800000  # 2020-01-01T00:00:00Z
@@ -223,15 +223,12 @@ class ProductionFeatureCache:
         })
 
 
-def liquidity_percentiles(caches: Mapping[str, ProductionFeatureCache], window: int) -> dict[str, tuple[float | None, ...]]:
-    """Point-in-time percentile from lagged trailing quote volume.
-
-    Each target symbol is aligned on its own observed timestamps. A percentile
-    is unavailable when the target or fewer than two peers have a complete
-    lagged window at that timestamp.
-    """
+def liquidity_percentiles(caches: Mapping[str, ProductionFeatureCache], window: int,
+                          binding: ProductionUniverseBinding) -> dict[str, tuple[float | None, ...]]:
+    """Point-in-time percentile among members of the frozen dynamic universe."""
     if len(caches) < 2:
         raise MCFError("liquidity percentile requires multiple symbols")
+    binding.validate()
     trailing = {
         symbol: cache.rolling("quote_volume", window, lag=1, statistic="sum")
         for symbol, cache in caches.items()
@@ -244,8 +241,14 @@ def liquidity_percentiles(caches: Mapping[str, ProductionFeatureCache], window: 
     for symbol, cache in caches.items():
         values = []
         for t in cache.bars.times:
+            members = set(binding.symbols_at(t))
+            if symbol not in members:
+                values.append(None)
+                continue
             cross = []
             for peer_symbol in sorted(caches):
+                if peer_symbol not in members:
+                    continue
                 j = indexes[peer_symbol].get(t)
                 if j is None:
                     continue
