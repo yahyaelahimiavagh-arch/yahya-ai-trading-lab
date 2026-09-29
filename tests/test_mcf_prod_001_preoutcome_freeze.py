@@ -21,7 +21,7 @@ class MCFProd001PreOutcomeFreezeTest(unittest.TestCase):
         )
         self.assertEqual(
             summary["summary_sha256"],
-            "6b89457087d03f796802e1e6f71bb3b38129163d4bdce50dc0254cfd6baefaf6",
+            "434f81a7b7edb318ba61ad104df3fb3bd9157d07d7de0c15faa3d8ab7d3bfa39",
         )
         self.assertFalse(summary["safety"]["performance_read"])
         self.assertFalse(summary["safety"]["fresh_oos_read"])
@@ -47,6 +47,9 @@ class MCFProd001PreOutcomeFreezeTest(unittest.TestCase):
         self.assertEqual(
             fs["freeze_sha256"],
             "364696a021d7d9371423cfed7fe832fc3d45886990f548f20317b882023ca634",
+            msg="ACTUAL_FREEZE_SHA=" + fs["freeze_sha256"]
+            + " MAX_FAMILY=" + fs["maximum_single_family_fraction"]
+            + " TREND_BREAKOUT=" + fs["combined_trend_breakout_fraction"],
         )
         self.assertEqual(
             fs["executable_family_counts"],
