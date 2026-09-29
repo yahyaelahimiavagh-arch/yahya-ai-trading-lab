@@ -252,6 +252,25 @@ class AF01C(unittest.TestCase):
         with self.assertRaises(OpportunityError):
             acquire_period(self.root, p["periods"][0], Fetcher({}), plan_doc=p, inventory=inv, retrieved_ms=1790539200000)
 
+    def test_reconcile_verifies_plan_once(self):
+        import research.opportunity_data.archive_adapter as adapter
+        from unittest.mock import patch
+
+        inv = self.inventory()
+        p = plan(inv, ("BTCUSDT",), ("2020-01",))
+        acquire_period(
+            self.root,
+            p["periods"][0],
+            Fetcher({}),
+            plan_doc=p,
+            inventory=inv,
+            retrieved_ms=1790539200000,
+        )
+        with patch.object(adapter, "verify_plan", wraps=adapter.verify_plan) as verified:
+            result = reconcile(self.root, p, inv)
+        self.assertEqual(result["final_count"], 1)
+        self.assertEqual(verified.call_count, 1)
+
     def test_checksum_zip_member_and_explicit_fallback(self):
         inv = self.inventory()
         p = plan(inv, ("ETHUSDT",), ("2020-01",))
