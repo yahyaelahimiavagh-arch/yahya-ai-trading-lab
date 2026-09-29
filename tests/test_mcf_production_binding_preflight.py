@@ -13,6 +13,7 @@ from research.mass_candidate_factory.production_binding_preflight import (
     _classification_evidence,
     _month_starts,
     _month_stat,
+    _rank_data_eligible,
 )
 from research.opportunity_data.models import sha256
 
@@ -72,6 +73,19 @@ class ProductionBindingPreflightTest(unittest.TestCase):
         short_history = tuple(sorted(short_history, key=lambda x: x.open_time_ms))
         short_times = tuple(x.open_time_ms for x in short_history)
         self.assertIsNone(_month_stat(short_history, short_times, effective))
+
+
+    def test_classification_neutral_liquidity_ranking_is_deterministic(self):
+        rows = (
+            {"symbol": "BBBUSD T".replace(" ", ""), "trailing_30d_quote_volume": "100"},
+            {"symbol": "AAAUSDT", "trailing_30d_quote_volume": "100"},
+            {"symbol": "CCCUSDT", "trailing_30d_quote_volume": "250"},
+        )
+        ranked = _rank_data_eligible(rows)
+        self.assertEqual(
+            tuple(row["symbol"] for row in ranked),
+            ("CCCUSDT", "AAAUSDT", "BBBUSDT"),
+        )
 
     def test_independent_classification_evidence_and_exchangeinfo_block(self):
         with tempfile.TemporaryDirectory() as tmp:
