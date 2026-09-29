@@ -11,8 +11,10 @@ from research.mass_candidate_factory.production_binding_preflight import (
     DAY_MS,
     EXPECTED_WINDOW_BARS,
     _classification_evidence,
+    _classification_frontier,
     _month_starts,
     _month_stat,
+    _monthly_membership,
     _rank_data_eligible,
 )
 from research.opportunity_data.models import sha256
@@ -86,6 +88,63 @@ class ProductionBindingPreflightTest(unittest.TestCase):
             tuple(row["symbol"] for row in ranked),
             ("CCCUSDT", "AAAUSDT", "BBBUSDT"),
         )
+
+
+    def test_frontier_skips_confirmed_nonordinary_and_expands_below_raw_top50(self):
+        rows = []
+        rows.append({
+            "symbol": "LEVERAGED",
+            "trailing_30d_quote_volume": "1000",
+            "classification": "NONORDINARY_CONFIRMED",
+        })
+        for i in range(49):
+            rows.append({
+                "symbol": f"ORD{i:02d}",
+                "trailing_30d_quote_volume": str(900 - i),
+                "classification": "ORDINARY_SPOT_CONFIRMED",
+            })
+        rows.append({
+            "symbol": "UNRESOLVED51",
+            "trailing_30d_quote_volume": "100",
+            "classification": "PRODUCT_CLASSIFICATION_UNRESOLVED",
+        })
+        ranked = _rank_data_eligible(rows)
+        self.assertNotIn("UNRESOLVED51", tuple(row["symbol"] for row in ranked[:50]))
+        self.assertEqual(_classification_frontier(ranked), ("UNRESOLVED51",))
+
+    def test_frontier_empty_after_fifty_confirmed_ordinary(self):
+        rows = tuple({
+            "symbol": f"ORD{i:02d}",
+            "trailing_30d_quote_volume": str(1000 - i),
+            "classification": "ORDINARY_SPOT_CONFIRMED",
+        } for i in range(50)) + ({
+            "symbol": "LOWER_UNRESOLVED",
+            "trailing_30d_quote_volume": "1",
+            "classification": "PRODUCT_CLASSIFICATION_UNRESOLVED",
+        },)
+        self.assertEqual(_classification_frontier(_rank_data_eligible(rows)), ())
+
+    def test_frontier_keeps_unresolved_when_fewer_than_fifty_potential_members(self):
+        rows = (
+            {
+                "symbol": "ORD",
+                "trailing_30d_quote_volume": "10",
+                "classification": "ORDINARY_SPOT_CONFIRMED",
+            },
+            {
+                "symbol": "UNRESOLVED",
+                "trailing_30d_quote_volume": "9",
+                "classification": "PRODUCT_CLASSIFICATION_UNRESOLVED",
+            },
+        )
+        self.assertEqual(_classification_frontier(_rank_data_eligible(rows)), ("UNRESOLVED",))
+
+    def test_zero_eligible_month_is_valid_empty_membership(self):
+        month = _monthly_membership((), DEVELOPMENT_START_MS)
+        self.assertEqual(month["eligible_count"], 0)
+        self.assertEqual(month["selected_count"], 0)
+        self.assertEqual(month["selected_symbols"], ())
+        self.assertEqual(len(month["ranking_sha256"]), 64)
 
     def test_independent_classification_evidence_and_exchangeinfo_block(self):
         with tempfile.TemporaryDirectory() as tmp:
