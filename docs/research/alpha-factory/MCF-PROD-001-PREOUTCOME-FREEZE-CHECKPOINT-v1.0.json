@@ -1,0 +1,72 @@
+{
+  "schema": "MCF_PROD_001_PREOUTCOME_FREEZE_CHECKPOINT/1.0.0",
+  "generation_id": "MCF-PROD-001",
+  "state": "PRE_OUTCOME_IDENTITY_FREEZE_REPRODUCED",
+  "date": "2026-09-29",
+  "source": {
+    "accepted_main_sha": "7ccefe3386947b5e6ef13c649629d9fdec55ec04",
+    "implementation_pr": 159,
+    "implementation_head_sha": "cbb282ca008d90a8c610c426e32350b6d7fc9e7b",
+    "final_actions_run": 372
+  },
+  "frozen_input_sha256": {
+    "domain_plan": "63582afc846d9ed3e5e21024264fb40b89e9b8d3d09e54921f430ecd9b6b9c8d",
+    "search_budget": "f0bd1bde092dc20fed0407e013f6c80ba1330ed15f0c9ac87ac008dd623dfbc1",
+    "universe_policy": "9202869aad47591461f9d41c927ed48a2697f5a3f59a6e79b3de13586d14e251"
+  },
+  "generation": {
+    "raw_candidate_count": 9176,
+    "structurally_valid_count": 8640,
+    "structurally_invalid_count": 536,
+    "registered_candidate_ledger_sha256": "ea53e211f7bce3ed5c3421c15a8538b4abd6a7b2151182443363a95d8c6b5505",
+    "generation_summary_sha256": "6b89457087d03f796802e1e6f71bb3b38129163d4bdce50dc0254cfd6baefaf6"
+  },
+  "implementation_blockers": {
+    "blocked_candidate_count": 1788,
+    "families": {
+      "CRASH_REBOUND": 1536,
+      "RANGE_COMPRESSION_BREAKOUT": 252
+    }
+  },
+  "executable_freeze": {
+    "executable_candidate_count": 6852,
+    "candidate_ledger_sha256": "084150778f2270c2ce96dac631f2e0fb1e6f84fed3325a197a80aa3d59db8e73",
+    "neighbor_graph_sha256": "4eb36ca827b5b458147e6ba2a74308353dfa047cd368d72e106f568b1f4fc4bb",
+    "freeze_sha256": "364696a021d7d9371423cfed7fe832fc3d45886990f548f20317b882023ca634",
+    "first_executable_candidate": {
+      "candidate_id": "MCF-PROD-001-000000",
+      "candidate_spec_sha256": "1e278262d3abf0809a8e269a460ee43136f06eab6744a2313e19087e352727b9"
+    },
+    "last_executable_candidate": {
+      "candidate_id": "MCF-PROD-001-008815",
+      "candidate_spec_sha256": "aa55a978bf91c8a16bf4cf95542a4bc327d4563067c8f937c61b9be50d569c0a"
+    },
+    "maximum_single_family_fraction": "0.1809690601284296555750145943",
+    "combined_trend_breakout_fraction": "0.0776415645067133683596030356"
+  },
+  "executable_family_counts": {
+    "BREAKOUT_CHANNEL": 416,
+    "LEAD_LAG": 288,
+    "LIQUIDITY_CONDITIONED_ENTRY": 240,
+    "PRICE_VOLUME_INTERACTION": 1200,
+    "SESSION_TIME_EFFECT": 600,
+    "SHORT_HORIZON_MEAN_REVERSION": 1240,
+    "SIMPLE_STATISTICAL_DEVIATION": 352,
+    "TRADE_COUNT_CONFIRMED_DIRECTION": 1200,
+    "TREND_CROSSOVER": 116,
+    "VOLUME_CONFIRMED_DIRECTION": 1200
+  },
+  "safety": {
+    "performance_read": false,
+    "fresh_oos_read": false,
+    "recent_reserve_read": false,
+    "p10_read": false,
+    "p10_write": false,
+    "live": false,
+    "p11_locked": true
+  },
+  "authorization": {
+    "development_performance_run_authorized": false,
+    "next_required_action": "REPRODUCE_FREEZE_IN_REPOSITORY_CI_AND_MATERIALIZE_RUNTIME_FREEZE_BEFORE_DEVELOPMENT"
+  }
+}
