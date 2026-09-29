@@ -11,6 +11,7 @@ def candidate(i):
         "family_id": "FAM",
         "family": "FAM",
         "economic_mechanism_id": "MECH",
+        "family_spec_sha256": "f" * 64,
         "free_parameter_dimensions": 2,
     }
 
@@ -22,6 +23,8 @@ def result(c, state, returns=None):
         "candidate_spec_sha256": c["candidate_spec_sha256"],
         "family_id": c["family_id"],
         "economic_mechanism_id": c["economic_mechanism_id"],
+        "family_spec_sha256": c["family_spec_sha256"],
+        "neighbor_graph_sha256": None,
         "evidence_partition": "DEVELOPMENT",
         "f0_f3_state": state,
         "aggregate_stress_net_return": "0.10" if state == "F0_F3_PASS" else "-0.01",
@@ -49,14 +52,27 @@ def graph(candidates):
     return {**body, "neighbor_graph_sha256": digest(body)}
 
 
+def bind_graph(results, artifact):
+    bound = []
+    for item in results:
+        body = {k: v for k, v in item.items() if k != "result_sha256"}
+        body["neighbor_graph_sha256"] = artifact["neighbor_graph_sha256"]
+        bound.append({**body, "result_sha256": digest(body)})
+    return tuple(bound)
+
+
 class AdjudicationRunnerTest(unittest.TestCase):
     def test_zero_f0_f3_passers_is_valid_terminal_outcome(self):
         candidates = tuple(candidate(i) for i in range(4))
-        results = tuple(result(c, "DEVELOPMENT_FAIL") for c in candidates)
+        artifact = graph(candidates)
+        results = bind_graph(
+            tuple(result(c, "DEVELOPMENT_FAIL") for c in candidates),
+            artifact,
+        )
         out = adjudicate(
             production_results=results,
             executable_candidates=candidates,
-            neighbor_graph_artifact=graph(candidates),
+            neighbor_graph_artifact=artifact,
         )
         self.assertEqual(out["state"], "ZERO_SURVIVOR_VALID")
         self.assertEqual(out["development_survivor_count"], 0)
@@ -67,19 +83,38 @@ class AdjudicationRunnerTest(unittest.TestCase):
         self.assertFalse(out["safety"]["fresh_oos_read"])
         self.assertFalse(out["safety"]["p10_read"])
 
+    def test_nonexact_f0_f3_passer_is_rejected(self):
+        candidates = tuple(candidate(i) for i in range(4))
+        artifact = graph(candidates)
+        rows = list(bind_graph(
+            tuple(result(c, "DEVELOPMENT_FAIL") for c in candidates),
+            artifact,
+        ))
+        body = {k: v for k, v in rows[0].items() if k != "result_sha256"}
+        body["f0_f3_state"] = "F0_F3_PASS"
+        body["exact_accounting"] = False
+        rows[0] = {**body, "result_sha256": digest(body)}
+        with self.assertRaises(Exception):
+            adjudicate(
+                production_results=tuple(rows),
+                executable_candidates=candidates,
+                neighbor_graph_artifact=artifact,
+            )
+
     def test_f4_failure_cannot_be_rescued_by_statistics(self):
         candidates = tuple(candidate(i) for i in range(4))
         positive = [0.01 + ((i % 5) - 2) * 0.0002 for i in range(80)]
-        results = (
+        artifact = graph(candidates)
+        results = bind_graph((
             result(candidates[0], "F0_F3_PASS", positive),
             result(candidates[1], "DEVELOPMENT_FAIL"),
             result(candidates[2], "DEVELOPMENT_FAIL"),
             result(candidates[3], "DEVELOPMENT_FAIL"),
-        )
+        ), artifact)
         out = adjudicate(
             production_results=results,
             executable_candidates=candidates,
-            neighbor_graph_artifact=graph(candidates),
+            neighbor_graph_artifact=artifact,
         )
         self.assertEqual(out["state"], "ZERO_SURVIVOR_VALID")
         self.assertFalse(out["f4"][0]["f4_pass"])
