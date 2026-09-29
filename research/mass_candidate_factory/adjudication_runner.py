@@ -110,12 +110,55 @@ def adjudicate(*, production_results: Sequence[Mapping[str, object]],
         if result.get("f0_f3_state") == "F0_F3_PASS"
     }
     raw_family = Counter(str(c["family_id"]) for c in executable_candidates)
+    raw_mechanism = Counter(str(c["economic_mechanism_id"]) for c in executable_candidates)
+
+    # Trial accounting is over the complete frozen executable generation.
+    # Failed candidates remain in the raw and effective multiple-testing
+    # denominators; MCF-03 emits exact daily series for every executable trial.
+    all_series = {
+        cid: daily_series_from_result(results[cid])
+        for cid in sorted(candidates)
+    }
+    generation_eff = effective_trial_count(tuple(all_series.values()))["effective_trials"]
+
+    family_all_series: dict[str, list[DailySeries]] = {}
+    mechanism_all_series: dict[str, list[DailySeries]] = {}
+    for series in all_series.values():
+        family_all_series.setdefault(series.family_id, []).append(series)
+        mechanism_all_series.setdefault(series.mechanism_id, []).append(series)
+
+    effective_family = {
+        family: effective_trial_count(family_all_series[family])["effective_trials"]
+        for family in sorted(raw_family)
+    }
+    effective_mechanism = {
+        mechanism: effective_trial_count(mechanism_all_series[mechanism])["effective_trials"]
+        for mechanism in sorted(raw_mechanism)
+    }
+    accounting = TrialAccounting(
+        raw_generation_trials=len(candidates),
+        effective_generation_trials=generation_eff,
+        raw_family_trials=dict(raw_family),
+        effective_family_trials=effective_family,
+        raw_mechanism_trials=dict(raw_mechanism),
+        effective_mechanism_trials=effective_mechanism,
+    )
+    accounting.validate()
+    trial_accounting = {
+        "raw_generation_trials": accounting.raw_generation_trials,
+        "effective_generation_trials": accounting.effective_generation_trials,
+        "raw_family_trials": tuple(sorted(accounting.raw_family_trials.items())),
+        "effective_family_trials": tuple(sorted(accounting.effective_family_trials.items())),
+        "raw_mechanism_trials": tuple(sorted(accounting.raw_mechanism_trials.items())),
+        "effective_mechanism_trials": tuple(sorted(accounting.effective_mechanism_trials.items())),
+    }
 
     base = {
         "schema": VERSION,
         "executable_candidate_count": len(candidates),
         "f0_f3_passer_count": len(passers),
         "raw_family_trials": tuple(sorted(raw_family.items())),
+        "raw_mechanism_trials": tuple(sorted(raw_mechanism.items())),
         "neighbor_graph_sha256": neighbor_graph_artifact["neighbor_graph_sha256"],
         "safety": dict(SAFETY),
     }
@@ -124,7 +167,7 @@ def adjudicate(*, production_results: Sequence[Mapping[str, object]],
             **base,
             "state": "ZERO_SURVIVOR_VALID",
             "f4": (),
-            "trial_accounting": None,
+            "trial_accounting": trial_accounting,
             "family_pbo": (),
             "family_reality_check": (),
             "f5": (),
@@ -135,12 +178,12 @@ def adjudicate(*, production_results: Sequence[Mapping[str, object]],
         return {**result, "adjudication_sha256": digest(result)}
 
     passer_series = {
-        cid: daily_series_from_result(results[cid])
+        cid: all_series[cid]
         for cid in sorted(passers)
     }
     stress = {
         cid: float(results[cid]["aggregate_stress_net_return"])
-        for cid in passers
+        for cid in sorted(candidates)
     }
     f4 = {
         cid: neighbor_stability(cid, graph, passers, stress)
@@ -148,30 +191,16 @@ def adjudicate(*, production_results: Sequence[Mapping[str, object]],
     }
     f4_passers = {cid for cid, row in f4.items() if row["f4_pass"]}
 
-    generation_eff = effective_trial_count(tuple(passer_series.values()))["effective_trials"]
-    family_series: dict[str, list[DailySeries]] = {}
+    passer_family_series: dict[str, list[DailySeries]] = {}
     for series in passer_series.values():
-        family_series.setdefault(series.family_id, []).append(series)
-    effective_family = {}
-    for family in raw_family:
-        rows = family_series.get(family, [])
-        effective_family[family] = (
-            effective_trial_count(rows)["effective_trials"] if rows else 1.0
-        )
-    accounting = TrialAccounting(
-        raw_generation_trials=len(candidates),
-        effective_generation_trials=generation_eff,
-        raw_family_trials=dict(raw_family),
-        effective_family_trials=effective_family,
-    )
-    accounting.validate()
+        passer_family_series.setdefault(series.family_id, []).append(series)
 
     family_pbo = {
         family: cscv_pbo(rows)
-        for family, rows in sorted(family_series.items())
+        for family, rows in sorted(passer_family_series.items())
     }
     family_reality = {}
-    for family, rows in sorted(family_series.items()):
+    for family, rows in sorted(passer_family_series.items()):
         f4_rows = [s for s in rows if s.candidate_id in f4_passers]
         if not f4_rows:
             family_reality[family] = {
@@ -226,12 +255,7 @@ def adjudicate(*, production_results: Sequence[Mapping[str, object]],
         **base,
         "state": state,
         "f4": tuple(f4[cid] for cid in sorted(f4)),
-        "trial_accounting": {
-            "raw_generation_trials": accounting.raw_generation_trials,
-            "effective_generation_trials": accounting.effective_generation_trials,
-            "raw_family_trials": tuple(sorted(accounting.raw_family_trials.items())),
-            "effective_family_trials": tuple(sorted(accounting.effective_family_trials.items())),
-        },
+        "trial_accounting": trial_accounting,
         "family_pbo": tuple((family, family_pbo[family]) for family in sorted(family_pbo)),
         "family_reality_check": tuple((family, family_reality[family]) for family in sorted(family_reality)),
         "f5": tuple(f5[cid] for cid in sorted(f5)),
