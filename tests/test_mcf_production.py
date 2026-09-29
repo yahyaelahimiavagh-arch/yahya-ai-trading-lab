@@ -94,6 +94,51 @@ class ProductionRunnerTest(unittest.TestCase):
         self.assertEqual(result["completed_trades"], 1)
         self.assertEqual(result["forced_membership_exits"], 1)
 
+    def test_membership_leave_and_reentry_across_gap_forces_exit(self):
+        mar = DEVELOPMENT_START_MS
+        apr = 1585699200000
+        may = 1588291200000
+        b = binding(
+            MembershipSnapshot(mar, ("BTCUSDT",), H),
+            MembershipSnapshot(apr, ("ETHUSDT",), S),
+            MembershipSnapshot(may, ("BTCUSDT",), F),
+        )
+        day = 86_400_000
+        times = (apr - 2 * day, apr - day, may, may + day)
+        series = ProductionSeries(
+            "BTCUSDT", "1d", times,
+            ("100", "101", "120", "121"), ("100", "101", "120", "121"),
+            (True, True, True, False), (True, True, True, True),
+        )
+        result = _simulate(series, b, ProductionCostPolicy(), stress=False)
+        self.assertEqual(result["completed_trades"], 1)
+        self.assertEqual(result["forced_membership_exits"], 1)
+        self.assertIn(may // day, result["forced_exit_days"])
+
+    def test_daily_return_mask_does_not_bridge_missing_source_day(self):
+        snap = MembershipSnapshot(DEVELOPMENT_START_MS, ("BTCUSDT",), H)
+        b = binding(snap)
+        f = freeze_for(b)
+        day = 86_400_000
+        series = ProductionSeries(
+            "BTCUSDT", "1d",
+            (
+                DEVELOPMENT_START_MS,
+                DEVELOPMENT_START_MS + 2 * day,
+                DEVELOPMENT_START_MS + 3 * day,
+            ),
+            ("100", "100", "100"), ("100", "100", "100"),
+            (False, False, False), (True, True, True),
+        )
+        result = run_candidate(
+            candidate=candidate_binding(),
+            freeze=f,
+            binding=b,
+            series_by_symbol={"BTCUSDT": series},
+        )
+        mask = result["daily_return_series"]["valid_mask"]
+        self.assertEqual(mask[:4], (True, False, False, True))
+
     def test_public_runner_requires_pre_outcome_freeze(self):
         snap = MembershipSnapshot(DEVELOPMENT_START_MS, ("BTCUSDT",), H)
         b = binding(snap)
