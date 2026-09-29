@@ -3,6 +3,7 @@ import unittest
 from research.mass_candidate_factory.models import MCFError, digest
 from research.mass_candidate_factory.production import (
     DEVELOPMENT_START_MS,
+    FrozenCandidateBinding,
     MembershipSnapshot,
     PreOutcomeFreeze,
     ProductionCostPolicy,
@@ -26,6 +27,19 @@ def binding(*snapshots):
         quality_index_sha256=S,
         universe_policy_sha256=F,
         membership_snapshots=tuple(snapshots),
+    )
+
+
+def candidate_binding():
+    return FrozenCandidateBinding(
+        candidate_id="MCF-TEST-000001",
+        candidate_spec_sha256=H,
+        family_id="FAM-TEST",
+        economic_mechanism_id="MECH-TEST",
+        family_spec_sha256=S,
+        parameter_neighbor_ids=(),
+        neighbor_graph_sha256=F,
+        free_parameter_dimensions=2,
     )
 
 
@@ -92,8 +106,7 @@ class ProductionRunnerTest(unittest.TestCase):
             (True, False, False), (True, True, True),
         )
         result = run_candidate(
-            candidate_id="MCF-TEST-000001",
-            candidate_spec_sha256=H,
+            candidate=candidate_binding(),
             freeze=f,
             binding=b,
             series_by_symbol={"BTCUSDT": series},
@@ -104,16 +117,23 @@ class ProductionRunnerTest(unittest.TestCase):
         self.assertFalse(result["safety"]["fresh_oos_read"])
         self.assertFalse(result["safety"]["p10_read"])
         self.assertEqual(result, run_candidate(
-            candidate_id="MCF-TEST-000001",
-            candidate_spec_sha256=H,
+            candidate=candidate_binding(),
             freeze=f,
             binding=b,
             series_by_symbol={"BTCUSDT": series},
         ))
         with self.assertRaises(MCFError):
             run_candidate(
-                candidate_id="MCF-TEST-999999",
-                candidate_spec_sha256=H,
+                candidate=FrozenCandidateBinding(
+                    candidate_id="MCF-TEST-999999",
+                    candidate_spec_sha256=H,
+                    family_id="FAM-TEST",
+                    economic_mechanism_id="MECH-TEST",
+                    family_spec_sha256=S,
+                    parameter_neighbor_ids=(),
+                    neighbor_graph_sha256=F,
+                    free_parameter_dimensions=2,
+                ),
                 freeze=f,
                 binding=b,
                 series_by_symbol={"BTCUSDT": series},
