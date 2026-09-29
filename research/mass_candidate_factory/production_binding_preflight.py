@@ -174,6 +174,14 @@ def _month_stat(rows: Sequence[object], times: Sequence[int], effective_ms: int)
     }
 
 
+def _rank_data_eligible(rows: Sequence[Mapping[str, object]]) -> tuple[Mapping[str, object], ...]:
+    """Classification-neutral deterministic lagged-liquidity order."""
+    return tuple(sorted(
+        rows,
+        key=lambda row: (-Decimal(str(row["trailing_30d_quote_volume"])), str(row["symbol"])),
+    ))
+
+
 def _symbol_rows(root: Path, plan: dict, inventory: dict, entries: Sequence[dict]) -> tuple[tuple[object, ...], tuple[str, ...]]:
     rows = []
     refs = []
@@ -276,10 +284,7 @@ def audit(*, pc_root: Path, plan_relative: str, inventory_relative: str,
     neutral_monthly = []
     initial_frontier: set[str] = set()
     for month in months:
-        ranked = sorted(
-            data_eligible_by_month[month],
-            key=lambda row: (-Decimal(row["trailing_30d_quote_volume"]), row["symbol"]),
-        )
+        ranked = _rank_data_eligible(data_eligible_by_month[month])
         raw_top = ranked[:MAX_MEMBERS]
         unresolved_raw_top = tuple(
             row["symbol"]
@@ -317,10 +322,7 @@ def audit(*, pc_root: Path, plan_relative: str, inventory_relative: str,
     monthly = []
     if classification_complete:
         for month in months:
-            ranked = sorted(
-                eligible_by_month[month],
-                key=lambda row: (-Decimal(row["trailing_30d_quote_volume"]), row["symbol"]),
-            )
+            ranked = _rank_data_eligible(eligible_by_month[month])
             if not ranked:
                 raise MCFError("production binding month has zero eligible ordinary Spot symbols")
             selected_ranked = ranked[:MAX_MEMBERS]
