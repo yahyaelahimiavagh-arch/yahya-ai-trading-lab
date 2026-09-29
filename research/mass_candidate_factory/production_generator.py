@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Mapping, Sequence
 
 from .models import MCFError, digest
+from .production_manifest import manifest_index
 
 VERSION = "MCF_PRODUCTION_GENERATOR/1.0.0"
 ROOT = Path(__file__).resolve().parents[2]
@@ -31,6 +32,7 @@ def _load(path: Path) -> tuple[dict, str]:
 DOMAIN_PLAN, DOMAIN_PLAN_SHA256 = _load(DOMAIN_PLAN_PATH)
 SEARCH_BUDGET, SEARCH_BUDGET_SHA256 = _load(SEARCH_BUDGET_PATH)
 UNIVERSE_POLICY, UNIVERSE_POLICY_SHA256 = _load(UNIVERSE_POLICY_PATH)
+PRODUCTION_MANIFESTS = manifest_index()
 
 
 def _number(value):
@@ -134,6 +136,7 @@ def _candidate_identity(family: Mapping[str, object], timeframe: str,
         "generation_id": "MCF-PROD-001",
         "family_id": family["id"],
         "family": family["family"],
+        "family_spec_sha256": PRODUCTION_MANIFESTS[family["family"]]["family_spec_sha256"],
         "timeframe": timeframe,
         "parameter_vector": dict(vector),
         "domain_plan_sha256": DOMAIN_PLAN_SHA256,
@@ -176,6 +179,7 @@ def generate() -> dict:
                     "family_id": family["id"],
                     "family": family["family"],
                     "economic_mechanism_id": family["family"],
+                    "family_spec_sha256": PRODUCTION_MANIFESTS[family["family"]]["family_spec_sha256"],
                     "timeframe": timeframe,
                     "parameter_vector": vector,
                     "free_parameter_dimensions": len(names),
@@ -362,9 +366,8 @@ def freeze_executable_generation(blocked_families: Mapping[str, str]) -> dict:
         for row in executable
     )
     family_specs = {
-        str(f["family"]): digest(f)
-        for f in DOMAIN_PLAN["families"]
-        if f["family"] in counts
+        family: PRODUCTION_MANIFESTS[family]["family_spec_sha256"]
+        for family in counts
     }
     ledger_payload = [
         {"candidate_id": cid, "candidate_spec_sha256": spec}
