@@ -124,13 +124,17 @@ def verify_plan(p: dict, snapshot: dict) -> None:
                 raise OpportunityError("unregistered plan object")
 
 
+def _binding_from_verified_plan(p: dict, entry: dict) -> dict:
+    selected = ([entry["monthly"]["key"]] if entry["monthly"] else []) + [item["key"] for item in entry["daily"]]
+    return dict(inventory_sha256=p["inventory_sha256"], plan_sha256=p["plan_sha256"],
+                entry_sha256=digest(entry), selected_object_keys=selected)
+
+
 def _bound_entry(p: dict, snapshot: dict, entry: dict) -> dict:
     verify_plan(p, snapshot)
     if sum(item == entry for item in p["periods"]) != 1:
         raise OpportunityError("object absent/ambiguous in frozen plan")
-    selected = ([entry["monthly"]["key"]] if entry["monthly"] else []) + [item["key"] for item in entry["daily"]]
-    return dict(inventory_sha256=p["inventory_sha256"], plan_sha256=p["plan_sha256"],
-                entry_sha256=digest(entry), selected_object_keys=selected)
+    return _binding_from_verified_plan(p, entry)
 
 
 def _verify_record_binding(root: Path, record: dict, entry: dict, binding: dict) -> None:
@@ -457,7 +461,7 @@ def reconcile(root: Path, p: dict, inventory: dict) -> dict:
         record = json.loads(path.read_bytes())
         if digest({k: v for k, v in record.items() if k != "record_sha256"}) != record.get("record_sha256"):
             raise OpportunityError("ledger record digest mismatch")
-        _verify_record_binding(root, record, entry, _bound_entry(p, inventory, entry))
+        _verify_record_binding(root, record, entry, _binding_from_verified_plan(p, entry))
         if record["state"] not in STATES or record["identity"] != f"{entry['symbol']}-{entry['month']}":
             raise OpportunityError("invalid final object state")
         for relative, expected in record.get("artifact_hashes", {}).items():
