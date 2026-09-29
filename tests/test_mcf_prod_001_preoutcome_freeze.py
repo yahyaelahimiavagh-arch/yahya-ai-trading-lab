@@ -46,7 +46,7 @@ class MCFProd001PreOutcomeFreezeTest(unittest.TestCase):
         )
         self.assertEqual(
             fs["freeze_sha256"],
-            "364696a021d7d9371423cfed7fe832fc3d45886990f548f20317b882023ca634",
+            "84d4f8ec6234ffb5afccf44ea044661d72af8b4de525b111118ae087907d1dc6",
             msg="ACTUAL_FREEZE_SHA=" + fs["freeze_sha256"]
             + " MAX_FAMILY=" + fs["maximum_single_family_fraction"]
             + " TREND_BREAKOUT=" + fs["combined_trend_breakout_fraction"],
@@ -69,6 +69,14 @@ class MCFProd001PreOutcomeFreezeTest(unittest.TestCase):
         self.assertEqual(
             fs["blocked_families"],
             tuple(sorted(BLOCKED_FAMILIES.items())),
+        )
+        self.assertEqual(
+            fs["maximum_single_family_fraction"],
+            "0.1809690601284296555750145943",
+        )
+        self.assertEqual(
+            fs["combined_trend_breakout_fraction"],
+            "0.07764156450671336835960303561",
         )
         self.assertEqual(
             frozen["registered_candidates"][0],
