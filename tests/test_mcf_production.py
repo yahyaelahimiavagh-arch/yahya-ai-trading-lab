@@ -158,8 +158,7 @@ class ProductionRunnerTest(unittest.TestCase):
         )
         with self.assertRaises(MCFError):
             run_candidate(
-                candidate_id="MCF-TEST-000001",
-                candidate_spec_sha256=H,
+                candidate=candidate_binding(),
                 freeze=f,
                 binding=changed,
                 series_by_symbol={"BTCUSDT": series},
