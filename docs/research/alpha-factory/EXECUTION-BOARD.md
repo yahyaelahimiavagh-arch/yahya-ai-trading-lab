@@ -498,3 +498,62 @@ Purpose:
 10. Fresh OOS remains sealed until step 9 completes.
 
 No Development strategy outcome is authorized before steps 4-7 close.
+
+
+### MCF-PROD-001 — PRODUCTION BINDING PREFLIGHT ACCEPTED / MERGED
+
+PR #162 merged.
+
+Accepted main merge commit:
+`8faaa84038aa1614a0964b35788390f949d18626`
+
+Accepted implementation Final HEAD:
+`ed7995ec12438cf0059be3cccb6c37d0a8c52f34`
+
+Final Actions run #383: **SUCCESS**.
+
+Real VPS audit on the accepted AF-01C P-C corpus returned:
+
+- state: `CLASSIFICATION_INCOMPLETE`;
+- symbols scanned: 413;
+- unresolved data-eligible symbols: 384;
+- preliminary raw classification frontier: 174;
+- performance/Fresh OOS/recent reserve/P10 reads: false.
+
+The monthly eligibility anomalies were independently reconciled to the accepted
+AF-01C ledger:
+6,443 MONTHLY_SUCCESS and 2,863 preserved non-success identities.
+
+### CURRENT — Classification Frontier Closure
+
+Current branch:
+`mcf-prod-001-classification-frontier-closure`
+
+Purpose:
+
+- make the classification wave reflect the first 50 *potentially ordinary*
+  symbols rather than raw top-50 rows that may include confirmed nonordinary
+  products;
+- allow deterministic wave expansion after a frontier symbol resolves
+  nonordinary;
+- stop classification once unresolved lower-ranked symbols cannot change any
+  monthly membership;
+- preserve `classification_complete` separately from
+  `membership_resolved`;
+- freeze zero-data-eligible source-gap months as explicit empty membership
+  rather than treating them as integrity errors;
+- emit no candidate performance.
+
+Contract:
+`MCF-PROD-001-HISTORICAL-PRODUCT-CLASSIFICATION-FRONTIER-v1.0.md`
+
+Next acceptance evidence:
+
+1. green CI;
+2. exact Final HEAD;
+3. real VPS rerun against the accepted P-C corpus;
+4. corrected first frontier count and symbols;
+5. safety flags remain false for performance/Fresh OOS/recent reserve/P10.
+
+Historical source acquisition begins only after this implementation is accepted
+and is a separate **WORK_REQUIRED** work unit.
