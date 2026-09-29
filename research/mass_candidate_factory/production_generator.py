@@ -213,11 +213,12 @@ def generate() -> dict:
         raise MCFError("insufficient production family breadth")
 
     total_valid = len(valid)
-    max_family_fraction = max(family_counts.values()) / total_valid
+    max_family_fraction = Decimal(max(family_counts.values())) / Decimal(total_valid)
     if max_family_fraction > Decimal(SEARCH_BUDGET["maximum_single_family_fraction"]):
         raise MCFError("single-family concentration cap exceeded")
     trend_breakout = family_counts.get("TREND_CROSSOVER", 0) + family_counts.get("BREAKOUT_CHANNEL", 0)
-    if trend_breakout / total_valid > Decimal(SEARCH_BUDGET["maximum_combined_trend_breakout_fraction"]):
+    trend_breakout_fraction = Decimal(trend_breakout) / Decimal(total_valid)
+    if trend_breakout_fraction > Decimal(SEARCH_BUDGET["maximum_combined_trend_breakout_fraction"]):
         raise MCFError("combined trend/breakout concentration cap exceeded")
 
     registered = tuple(
@@ -235,8 +236,8 @@ def generate() -> dict:
         "structurally_valid_count": len(valid),
         "structurally_invalid_count": len(invalid),
         "family_valid_counts": family_count_rows,
-        "maximum_single_family_fraction": str(Decimal(max(family_counts.values())) / Decimal(total_valid)),
-        "combined_trend_breakout_fraction": str(Decimal(trend_breakout) / Decimal(total_valid)),
+        "maximum_single_family_fraction": str(max_family_fraction),
+        "combined_trend_breakout_fraction": str(trend_breakout_fraction),
         "registered_candidate_ledger_sha256": digest([
             {"candidate_id": cid, "candidate_spec_sha256": spec}
             for cid, spec in registered
