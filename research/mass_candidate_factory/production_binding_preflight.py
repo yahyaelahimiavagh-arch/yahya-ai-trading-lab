@@ -211,6 +211,7 @@ def audit(*, pc_root: Path, plan_relative: str, inventory_relative: str,
         classification_root = guard_root(classification_root)
 
     months = _month_starts()
+    data_eligible_by_month: dict[int, list[dict]] = {m: [] for m in months}
     eligible_by_month: dict[int, list[dict]] = {m: [] for m in months}
     unresolved_by_month: dict[int, list[str]] = {m: [] for m in months}
     symbol_audit = []
@@ -238,21 +239,24 @@ def audit(*, pc_root: Path, plan_relative: str, inventory_relative: str,
             if stat is None:
                 continue
             data_eligible_months += 1
+            stat_payload = {
+                "symbol": symbol,
+                "effective_ms": month,
+                "classification": classification,
+                "classification_sha256": classification_sha,
+                **stat,
+            }
+            stat_record = {
+                **stat_payload,
+                "eligibility_record_sha256": digest(stat_payload),
+            }
+            data_eligible_by_month[month].append(stat_record)
             if classification == "PRODUCT_CLASSIFICATION_UNRESOLVED":
                 unresolved_by_month[month].append(symbol)
                 continue
             if classification != "ORDINARY_SPOT_CONFIRMED":
                 continue
-            stat_payload = {
-                "symbol": symbol,
-                "effective_ms": month,
-                "classification_sha256": classification_sha,
-                **stat,
-            }
-            eligible_by_month[month].append({
-                **stat_payload,
-                "eligibility_record_sha256": digest(stat_payload),
-            })
+            eligible_by_month[month].append(stat_record)
 
         symbol_audit.append({
             "symbol": symbol,
@@ -268,6 +272,47 @@ def audit(*, pc_root: Path, plan_relative: str, inventory_relative: str,
         symbol for symbols in unresolved_by_month.values() for symbol in symbols
     }))
     classification_complete = not unresolved_symbols
+
+    neutral_monthly = []
+    initial_frontier: set[str] = set()
+    for month in months:
+        ranked = sorted(
+            data_eligible_by_month[month],
+            key=lambda row: (-Decimal(row["trailing_30d_quote_volume"]), row["symbol"]),
+        )
+        raw_top = ranked[:MAX_MEMBERS]
+        unresolved_raw_top = tuple(
+            row["symbol"]
+            for row in raw_top
+            if row["classification"] == "PRODUCT_CLASSIFICATION_UNRESOLVED"
+        )
+        initial_frontier.update(unresolved_raw_top)
+        ranking_payload = {
+            "schema": VERSION,
+            "effective_ms": month,
+            "rank_metric": "TRAILING_30D_QUOTE_VOLUME",
+            "classification_neutral": True,
+            "data_eligible_ranked": tuple(
+                (
+                    row["symbol"],
+                    row["trailing_30d_quote_volume"],
+                    row["classification"],
+                    row["eligibility_record_sha256"],
+                )
+                for row in ranked
+            ),
+            "raw_top50_symbols": tuple(row["symbol"] for row in raw_top),
+        }
+        neutral_monthly.append({
+            "effective_ms": month,
+            "data_eligible_count": len(ranked),
+            "raw_top50_count": len(raw_top),
+            "raw_top50_symbols": tuple(row["symbol"] for row in raw_top),
+            "unresolved_raw_top50_symbols": unresolved_raw_top,
+            "neutral_ranking_sha256": digest(ranking_payload),
+        })
+
+    initial_frontier_symbols = tuple(sorted(initial_frontier))
 
     monthly = []
     if classification_complete:
@@ -321,6 +366,12 @@ def audit(*, pc_root: Path, plan_relative: str, inventory_relative: str,
         "unresolved_data_eligible_symbol_count": len(unresolved_symbols),
         "unresolved_data_eligible_symbols": unresolved_symbols,
         "unresolved_month_counts": unresolved_month_counts,
+        "data_eligible_month_counts": tuple(
+            (month, len(data_eligible_by_month[month])) for month in months
+        ),
+        "classification_neutral_rankings": tuple(neutral_monthly),
+        "initial_classification_frontier_symbol_count": len(initial_frontier_symbols),
+        "initial_classification_frontier_symbols": initial_frontier_symbols,
         "monthly_rankings": tuple(monthly),
         "symbol_audit": tuple(symbol_audit),
         "safety": {
@@ -351,6 +402,7 @@ def materialize(*, output_root: Path, **kwargs) -> dict:
         "artifact": relative,
         "classification_complete": result["classification_complete"],
         "unresolved_data_eligible_symbol_count": result["unresolved_data_eligible_symbol_count"],
+        "initial_classification_frontier_symbol_count": result["initial_classification_frontier_symbol_count"],
         "month_count": result["month_count"],
         "performance_read": False,
     }
