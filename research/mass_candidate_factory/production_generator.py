@@ -306,3 +306,101 @@ def build_neighbor_graph(valid_candidates: Sequence[Mapping[str, object]]) -> di
     canonical = {cid: tuple(sorted(neighbors)) for cid, neighbors in sorted(graph.items())}
     row = {"schema": "MCF_PRODUCTION_NEIGHBOR_GRAPH/1.0.0", "graph": canonical}
     return {**row, "neighbor_graph_sha256": digest(row)}
+
+
+def freeze_executable_generation(blocked_families: Mapping[str, str]) -> dict:
+    """Freeze exact executable identities after pre-performance blockers.
+
+    The blocked-family mapping is an implementation audit result, never a
+    performance result. Blocked trials remain recorded and are not transferred
+    to another family or parameter grid.
+    """
+    generated = generate()
+    known = {str(f["family"]) for f in DOMAIN_PLAN["families"]}
+    if not isinstance(blocked_families, Mapping):
+        raise MCFError("blocked-family audit must be a mapping")
+    if set(blocked_families) - known:
+        raise MCFError("unknown blocked production family")
+    if any(not isinstance(reason, str) or not reason.strip() for reason in blocked_families.values()):
+        raise MCFError("blocked production family requires reason")
+
+    executable = tuple(
+        row for row in generated["valid"]
+        if row["family"] not in blocked_families
+    )
+    blocked = tuple(
+        {
+            **row,
+            "state": "BLOCKED_IMPLEMENTATION",
+            "failure_reasons": ("BLOCKED_IMPLEMENTATION",),
+            "implementation_blocker": blocked_families[row["family"]],
+        }
+        for row in generated["valid"]
+        if row["family"] in blocked_families
+    )
+    if not executable:
+        raise MCFError("no executable production candidates after implementation audit")
+
+    counts: dict[str, int] = {}
+    for row in executable:
+        counts[str(row["family"])] = counts.get(str(row["family"]), 0) + 1
+    if len(counts) < SEARCH_BUDGET["minimum_executable_mechanism_families"]:
+        raise MCFError("implementation blockers reduce mechanism breadth below minimum")
+
+    total = len(executable)
+    max_fraction = Decimal(max(counts.values())) / Decimal(total)
+    trend = counts.get("TREND_CROSSOVER", 0) + counts.get("BREAKOUT_CHANNEL", 0)
+    trend_fraction = Decimal(trend) / Decimal(total)
+    if max_fraction > Decimal(SEARCH_BUDGET["maximum_single_family_fraction"]):
+        raise MCFError("post-blocker single-family concentration cap exceeded")
+    if trend_fraction > Decimal(SEARCH_BUDGET["maximum_combined_trend_breakout_fraction"]):
+        raise MCFError("post-blocker trend/breakout concentration cap exceeded")
+
+    neighbor = build_neighbor_graph(executable)
+    registered = tuple(
+        (str(row["candidate_id"]), str(row["candidate_spec_sha256"]))
+        for row in executable
+    )
+    family_specs = {
+        str(f["family"]): digest(f)
+        for f in DOMAIN_PLAN["families"]
+        if f["family"] in counts
+    }
+    ledger_payload = [
+        {"candidate_id": cid, "candidate_spec_sha256": spec}
+        for cid, spec in registered
+    ]
+    summary = {
+        "schema": "MCF_PRODUCTION_EXECUTABLE_FREEZE/1.0.0",
+        "generation_id": "MCF-PROD-001",
+        "domain_plan_sha256": DOMAIN_PLAN_SHA256,
+        "search_budget_sha256": SEARCH_BUDGET_SHA256,
+        "universe_policy_sha256": UNIVERSE_POLICY_SHA256,
+        "pre_block_structurally_valid_count": len(generated["valid"]),
+        "blocked_implementation_count": len(blocked),
+        "executable_candidate_count": len(executable),
+        "blocked_families": tuple(sorted((str(k), str(v)) for k, v in blocked_families.items())),
+        "executable_family_counts": tuple(sorted(counts.items())),
+        "candidate_ledger_sha256": digest(ledger_payload),
+        "neighbor_graph_sha256": neighbor["neighbor_graph_sha256"],
+        "family_spec_sha256s": tuple(sorted(family_specs.values())),
+        "family_spec_sha256_by_family": tuple(sorted(family_specs.items())),
+        "maximum_single_family_fraction": str(max_fraction),
+        "combined_trend_breakout_fraction": str(trend_fraction),
+        "state": "PRE_OUTCOME_EXECUTABLE_SET_FROZEN",
+        "safety": {
+            "performance_read": False,
+            "fresh_oos_read": False,
+            "recent_reserve_read": False,
+            "p10_read": False,
+            "p10_write": False,
+            "live": False,
+        },
+    }
+    return {
+        "summary": {**summary, "freeze_sha256": digest(summary)},
+        "executable": executable,
+        "blocked": blocked,
+        "registered_candidates": registered,
+        "neighbor_graph": neighbor,
+    }
