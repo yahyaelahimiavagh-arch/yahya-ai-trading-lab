@@ -16,6 +16,7 @@ from research.mass_candidate_factory.production_binding_preflight import (
 
 ROOT = Path(__file__).resolve().parents[1]
 WAVE = ROOT / "docs/research/alpha-factory/MCF-PROD-001-CLASSIFICATION-WAVE-001.json"
+SHARDS = ROOT / "docs/research/alpha-factory/classification-wave-001"
 
 
 def _ledger():
@@ -96,6 +97,45 @@ class ClassificationAcquisitionTest(unittest.TestCase):
             )
             self.assertEqual(classification, "ORDINARY_SPOT_CONFIRMED")
             self.assertTrue(relative.endswith(f"{identity}.json"))
+
+    def test_frozen_source_shards_cover_wave_and_materialize(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output = Path(tmp) / "out"
+            output.mkdir()
+
+            result = materialize(
+                source_shards_dir=SHARDS,
+                wave_path=WAVE,
+                output_root=output,
+            )
+
+            self.assertEqual(result["resolved_count"], 176)
+            self.assertEqual(result["unresolved_count"], 0)
+
+            wave, _ = load_wave(WAVE)
+            cmap = json.loads((output / result["classification_map"]).read_text())
+            self.assertEqual(
+                set(cmap["entries"]),
+                set(wave["frontier_symbols"]),
+            )
+
+            classifications = {}
+            for symbol, relative in cmap["entries"].items():
+                classification, identity = _classification_evidence(
+                    output, symbol, relative
+                )
+                classifications[classification] = (
+                    classifications.get(classification, 0) + 1
+                )
+                self.assertTrue(relative.endswith(f"{identity}.json"))
+
+            self.assertEqual(
+                classifications,
+                {
+                    "NONORDINARY_CONFIRMED": 3,
+                    "ORDINARY_SPOT_CONFIRMED": 173,
+                },
+            )
 
     def test_noncanonical_ledger_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
