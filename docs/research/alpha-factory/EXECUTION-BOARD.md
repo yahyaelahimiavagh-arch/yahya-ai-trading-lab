@@ -354,20 +354,32 @@ Frozen domain-plan:
 - 9,176 raw Cartesian combinations before structural filtering;
 - 8,640 expected structurally-valid combinations before any performance.
 
-### AF-01C — NEXT DATA PACKAGE
+### AF-01C — CLOSED / IMPLEMENTATION ACCEPTED / POPULATION RECONCILED
 
-Bulk population plan frozen:
-`AF-01C-BULK-POPULATION-PLAN-v1.0.md`
+Accepted main merge commit:
+`ccb8eda76c63da9a164de59432bbe09d926b9d1f`
 
-Archive adapter implementation contract frozen:
-`AF-01C-ARCHIVE-ADAPTER-IMPLEMENTATION-CONTRACT-v1.0.md`
+Implementation/reconciliation-fix HEAD:
+`f6098c0b823cc98e33fcd9ca014512dd51026140`
 
-Important historical-universe rule:
-current `exchangeInfo` may not serve as the sole historical symbol inventory.
-The adapter must freeze an auditable historical archive-object inventory or stop
-with `HISTORICAL_SYMBOL_INVENTORY_UNPROVEN`.
+Final population:
+- 9,306 / 9,306 identities complete;
+- 6,443 MONTHLY_SUCCESS;
+- 2,863 preserved source-gap/failure identities;
+- final status SHA:
+  `59ef745317bb6e11c9bfad0e99643333d3611449332ec2da975fde9b1bd86703`;
+- reconciliation:
+  `POPULATION_COMPLETE_WITH_SOURCE_GAPS`;
+- population reconciliation SHA:
+  `1ecf1cbeec6473414d559fa433c0bda2e86de02cd89ab3a6f455dcf2af45dc17`.
 
-### MCF-03 — LOCKED UNTIL IMPLEMENTED
+Authoritative closeout:
+`AF-01C-HISTORICAL-UNIVERSE-CLOSEOUT-v1.0.md`
+
+No source-gap, timestamp-anomaly or invalid-schema evidence was repaired,
+interpolated or deleted.
+
+### MCF-03 — NEXT IMPLEMENTATION BLOCKER
 
 Contract:
 `MCF-03-PRODUCTION-INTEGRATION-CONTRACT-v1.0.md`
@@ -378,7 +390,7 @@ Adds:
 - exact F0-F3 production runner;
 - daily return artifacts for statistical adjudication.
 
-### MCF-04 — LOCKED UNTIL IMPLEMENTED
+### MCF-04 — NEXT IMPLEMENTATION BLOCKER
 
 Contract:
 `MCF-04-STATISTICAL-ADJUDICATION-CONTRACT-v1.0.md`
@@ -394,15 +406,13 @@ Adds severe filters:
 No MCF-PROD-001 performance may be exposed before MCF-03 and MCF-04 are
 implementation-accepted.
 
-### Parallel execution route
+### Current execution route
 
-1. Implement AF-01C historical archive adapter — WORK_REQUIRED.
-2. Implement MCF-03 + MCF-04 production runner/statistical layer — WORK_REQUIRED.
-3. Pilot AF-01C adapter.
-4. Director-supervised VPS bulk population — MANUAL_VPS / BATCH_RUNTIME.
-5. Freeze exact generated candidate count/spec SHAs before performance.
-6. Run MCF-PROD-001 Development.
-7. Apply F0-F7 and freeze only qualifying independent representatives.
-8. Fresh OOS remains sealed until step 7 completes.
+1. AF-01C historical archive adapter and bulk population — **COMPLETE / ACCEPTED**.
+2. Implement MCF-03 + MCF-04 production runner/statistical layer — **WORK_REQUIRED**.
+3. Freeze exact generated candidate count/spec SHAs before performance.
+4. Run MCF-PROD-001 Development — **MANUAL_VPS / DIRECTOR-SUPERVISED**.
+5. Apply F0-F7 and freeze only qualifying independent representatives.
+6. Fresh OOS remains sealed until step 5 completes.
 
 No production performance run is authorized by this checkpoint alone.
