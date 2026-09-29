@@ -48,6 +48,18 @@ class AdjudicationTest(unittest.TestCase):
         )
         self.assertIn("f4_pass", outcome)
 
+    def test_neighbor_stability_median_uses_all_valid_neighbors(self):
+        graph = {"A": ("B", "C", "D", "E")}
+        outcome = neighbor_stability(
+            "A",
+            graph,
+            {"B", "C"},
+            {"B": 0.01, "C": 0.02, "D": -0.50, "E": -1.00},
+        )
+        self.assertEqual(outcome["passing_neighbor_fraction"], 0.5)
+        self.assertLess(outcome["median_neighbor_stress_return"], 0.0)
+        self.assertFalse(outcome["f4_pass"])
+
     def test_effective_trials_and_deflated_sharpe(self):
         values = [0.01 + ((i % 5) - 2) * 0.0005 for i in range(80)]
         a = series("A", values)
@@ -105,6 +117,8 @@ class AdjudicationTest(unittest.TestCase):
             effective_generation_trials=2.0,
             raw_family_trials={"FAM-1": 5},
             effective_family_trials={"FAM-1": 1.5},
+            raw_mechanism_trials={"MECH-1": 10},
+            effective_mechanism_trials={"MECH-1": 2.0},
         )
         gate = statistical_gate(
             a,
