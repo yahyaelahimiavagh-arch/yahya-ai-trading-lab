@@ -215,6 +215,9 @@ class ProductionSeries:
             raise MCFError("production series length mismatch")
         if any(a >= b for a, b in zip(self.times, self.times[1:])):
             raise MCFError("production series must be strictly increasing")
+        cadence = CADENCE_MS[self.timeframe]
+        if any(t % cadence != 0 for t in self.times):
+            raise MCFError("production timestamps must align to timeframe cadence")
         for seq in (self.opens, self.closes):
             vals = [Decimal(str(v)) for v in seq]
             if any(not v.is_finite() or v <= 0 for v in vals):
@@ -274,6 +277,7 @@ def _simulate(series: ProductionSeries, binding: ProductionUniverseBinding,
         completed_trades = fills = failed_entries = 0
         exposure_bars = evaluable_bars = 0
         source_gap_cancellations = forced_membership_exits = 0
+        forced_exit_days: list[int] = []
         turnover_notional = Decimal(0)
         marks: list[tuple[int, Decimal]] = []
         member_marks: list[tuple[int, Decimal]] = []
@@ -285,7 +289,9 @@ def _simulate(series: ProductionSeries, binding: ProductionUniverseBinding,
                 "fills": 0, "failed_entries": 0, "turnover": "0",
                 "exposure_coverage": "0", "maximum_drawdown_fraction": "0",
                 "net_return": "0", "source_gap_cancellations": 0,
-                "forced_membership_exits": 0, "marks": (), "member_marks": (),
+                "forced_membership_exits": 0, "forced_exit_days": (),
+                "timeframe": series.timeframe, "cadence_ms": cadence,
+                "marks": (), "member_marks": (),
             }
 
         previous_scored: int | None = None
@@ -297,12 +303,31 @@ def _simulate(series: ProductionSeries, binding: ProductionUniverseBinding,
             index = bisect_right(snapshot_times, timestamp_ms) - 1
             return index >= 0 and series.symbol in snapshot_symbols[index]
 
+        def left_membership_between(start_ms: int, end_ms: int) -> bool:
+            """Detect any member->nonmember boundary between observed bars."""
+            start_index = bisect_right(snapshot_times, start_ms) - 1
+            end_index = bisect_right(snapshot_times, end_ms) - 1
+            if start_index < 0 or end_index <= start_index:
+                return False
+            state = series.symbol in snapshot_symbols[start_index]
+            for index in range(start_index + 1, end_index + 1):
+                next_state = series.symbol in snapshot_symbols[index]
+                if state and not next_state:
+                    return True
+                state = next_state
+            return False
+
         for i in scored:
             t = series.times[i]
             current_member = member_at(t)
             held_before = qty is not None
 
-            if held_before and not current_member and previous_member:
+            left_since_previous = (
+                held_before
+                and previous_scored is not None
+                and left_membership_between(series.times[previous_scored], t)
+            )
+            if left_since_previous:
                 ref = Decimal(str(series.opens[i]))
                 exec_price = ref * (Decimal(1) - slip)
                 gross = qty * exec_price
@@ -312,6 +337,7 @@ def _simulate(series: ProductionSeries, binding: ProductionUniverseBinding,
                 fills += 1
                 completed_trades += 1
                 forced_membership_exits += 1
+                forced_exit_days.append(t // DAY_MS)
             elif previous_scored is not None:
                 j = previous_scored
                 immediate = series.times[i] == series.times[j] + cadence
@@ -379,6 +405,9 @@ def _simulate(series: ProductionSeries, binding: ProductionUniverseBinding,
             "net_return": str(final_equity / initial - Decimal(1)),
             "source_gap_cancellations": source_gap_cancellations,
             "forced_membership_exits": forced_membership_exits,
+            "forced_exit_days": tuple(sorted(set(forced_exit_days))),
+            "timeframe": series.timeframe,
+            "cadence_ms": cadence,
             "marks": tuple((t, str(v)) for t, v in marks),
             "member_marks": tuple((t, str(v)) for t, v in member_marks),
         }
@@ -397,24 +426,55 @@ def _fold_return(result: Mapping[str, object], start_ms: int, end_ms: int,
     return in_fold[-1][1] / start_equity - Decimal(1)
 
 
+def _daily_symbol_returns(result: Mapping[str, object],
+                          initial_equity: Decimal) -> dict[int, Decimal | None]:
+    """Build true one-calendar-day returns without bridging source gaps."""
+    cadence = int(result["cadence_ms"])
+    if cadence <= 0 or DAY_MS % cadence != 0:
+        raise MCFError("invalid result cadence for daily normalization")
+    expected = DAY_MS // cadence
+    daily_equity: dict[int, Decimal] = {}
+    counts: dict[int, int] = {}
+    for timestamp, value in result["marks"]:
+        day = int(timestamp) // DAY_MS
+        daily_equity[day] = Decimal(value)
+        counts[day] = counts.get(day, 0) + 1
+
+    first_day = DEVELOPMENT_START_MS // DAY_MS
+    final_day = DEVELOPMENT_END_MS // DAY_MS
+    out: dict[int, Decimal | None] = {}
+    for day in range(first_day, final_day):
+        equity = daily_equity.get(day)
+        complete = counts.get(day, 0) == expected
+        if equity is None or not complete:
+            out[day] = None
+            continue
+        if day == first_day:
+            prior_equity = initial_equity
+        else:
+            prior_equity = daily_equity.get(day - 1)
+            prior_complete = counts.get(day - 1, 0) == expected
+            if prior_equity is None or not prior_complete:
+                out[day] = None
+                continue
+        if prior_equity <= 0:
+            raise MCFError("nonpositive prior equity in daily normalization")
+        out[day] = equity / prior_equity - Decimal(1)
+    return out
+
+
 def _daily_candidate_returns(results: Sequence[Mapping[str, object]],
                              binding: ProductionUniverseBinding,
                              initial_equity: Decimal) -> dict:
     """Equal-weight daily return with explicit invalid source-day masking."""
-    by_symbol: dict[str, dict[int, Decimal]] = {}
-    for result in results:
-        daily_equity: dict[int, Decimal] = {}
-        for t, value in result["member_marks"]:
-            daily_equity[int(t) // DAY_MS] = Decimal(value)
-        if not daily_equity:
-            continue
-        last_equity = initial_equity
-        daily_return: dict[int, Decimal] = {}
-        for day in sorted(daily_equity):
-            equity = daily_equity[day]
-            daily_return[day] = equity / last_equity - Decimal(1)
-            last_equity = equity
-        by_symbol[str(result["symbol"])] = daily_return
+    by_symbol = {
+        str(result["symbol"]): _daily_symbol_returns(result, initial_equity)
+        for result in results
+    }
+    transition_days = {
+        str(result["symbol"]): set(int(day) for day in result.get("forced_exit_days", ()))
+        for result in results
+    }
 
     first_day = DEVELOPMENT_START_MS // DAY_MS
     final_day = DEVELOPMENT_END_MS // DAY_MS
@@ -424,21 +484,16 @@ def _daily_candidate_returns(results: Sequence[Mapping[str, object]],
 
     for day in calendar_days:
         members = set(binding.symbols_at(day * DAY_MS))
-        missing = [symbol for symbol in members if day not in by_symbol.get(symbol, {})]
-        if not members or missing:
-            returns.append(None)
-            valid.append(False)
-            continue
-
-        # A symbol liquidated after a membership boundary remains visible on
-        # the observed exit day, while all current members are still required.
         transition = {
-            symbol for symbol, daily in by_symbol.items()
-            if symbol not in members and day in daily
+            symbol for symbol, days in transition_days.items()
+            if day in days and symbol not in members
         }
         active = sorted(members | transition)
-        values = [by_symbol[symbol][day] for symbol in active if day in by_symbol.get(symbol, {})]
-        if len(values) != len(active):
+        values = [
+            by_symbol.get(symbol, {}).get(day)
+            for symbol in active
+        ]
+        if not active or any(value is None for value in values):
             returns.append(None)
             valid.append(False)
             continue
@@ -459,26 +514,14 @@ def _daily_per_symbol_returns(results: Sequence[Mapping[str, object]],
     calendar = tuple(range(first_day, final_day))
     artifacts = []
     for result in results:
-        daily_equity: dict[int, Decimal] = {}
-        for timestamp, value in result["member_marks"]:
-            daily_equity[int(timestamp) // DAY_MS] = Decimal(value)
-        last_equity = initial_equity
-        returns: list[str | None] = []
-        valid: list[bool] = []
-        for day in calendar:
-            equity = daily_equity.get(day)
-            if equity is None:
-                returns.append(None)
-                valid.append(False)
-                continue
-            returns.append(str(equity / last_equity - Decimal(1)))
-            valid.append(True)
-            last_equity = equity
+        daily = _daily_symbol_returns(result, initial_equity)
+        returns = tuple(None if daily[day] is None else str(daily[day]) for day in calendar)
+        valid = tuple(daily[day] is not None for day in calendar)
         artifacts.append({
             "symbol": result["symbol"],
             "calendar_days": calendar,
-            "returns": tuple(returns),
-            "valid_mask": tuple(valid),
+            "returns": returns,
+            "valid_mask": valid,
         })
     return tuple(sorted(artifacts, key=lambda x: x["symbol"]))
 
