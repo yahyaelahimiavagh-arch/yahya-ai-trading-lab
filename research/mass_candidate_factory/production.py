@@ -171,6 +171,33 @@ class PreOutcomeFreeze:
 
 
 @dataclass(frozen=True)
+class FrozenCandidateBinding:
+    candidate_id: str
+    candidate_spec_sha256: str
+    family_id: str
+    economic_mechanism_id: str
+    family_spec_sha256: str
+    parameter_neighbor_ids: tuple[str, ...]
+    neighbor_graph_sha256: str
+    free_parameter_dimensions: int
+
+    def validate(self, freeze: PreOutcomeFreeze) -> None:
+        freeze.require_candidate(self.candidate_id, self.candidate_spec_sha256)
+        if not _safe_identity(self.family_id) or not _safe_identity(self.economic_mechanism_id):
+            raise MCFError("invalid frozen candidate family identity")
+        if not _sha(self.family_spec_sha256) or self.family_spec_sha256 not in freeze.family_manifest_sha256s:
+            raise MCFError("candidate family spec not in pre-outcome freeze")
+        if not _sha(self.neighbor_graph_sha256) or self.neighbor_graph_sha256 != freeze.neighbor_graph_sha256:
+            raise MCFError("candidate neighbor graph binding mismatch")
+        if self.free_parameter_dimensions < 0:
+            raise MCFError("invalid free parameter dimension count")
+        if tuple(sorted(set(self.parameter_neighbor_ids))) != self.parameter_neighbor_ids:
+            raise MCFError("parameter neighbors must be sorted and unique")
+        if self.candidate_id in self.parameter_neighbor_ids or any(not _safe_identity(x) for x in self.parameter_neighbor_ids):
+            raise MCFError("invalid parameter neighbor identity")
+
+
+@dataclass(frozen=True)
 class ProductionSeries:
     symbol: str
     timeframe: str
@@ -425,13 +452,44 @@ def _daily_candidate_returns(results: Sequence[Mapping[str, object]],
     }
 
 
-def run_candidate(*, candidate_id: str, candidate_spec_sha256: str,
+def _daily_per_symbol_returns(results: Sequence[Mapping[str, object]],
+                              initial_equity: Decimal) -> tuple[dict, ...]:
+    first_day = DEVELOPMENT_START_MS // DAY_MS
+    final_day = DEVELOPMENT_END_MS // DAY_MS
+    calendar = tuple(range(first_day, final_day))
+    artifacts = []
+    for result in results:
+        daily_equity: dict[int, Decimal] = {}
+        for timestamp, value in result["member_marks"]:
+            daily_equity[int(timestamp) // DAY_MS] = Decimal(value)
+        last_equity = initial_equity
+        returns: list[str | None] = []
+        valid: list[bool] = []
+        for day in calendar:
+            equity = daily_equity.get(day)
+            if equity is None:
+                returns.append(None)
+                valid.append(False)
+                continue
+            returns.append(str(equity / last_equity - Decimal(1)))
+            valid.append(True)
+            last_equity = equity
+        artifacts.append({
+            "symbol": result["symbol"],
+            "calendar_days": calendar,
+            "returns": tuple(returns),
+            "valid_mask": tuple(valid),
+        })
+    return tuple(sorted(artifacts, key=lambda x: x["symbol"]))
+
+
+def run_candidate(*, candidate: FrozenCandidateBinding,
                   freeze: PreOutcomeFreeze, binding: ProductionUniverseBinding,
                   series_by_symbol: Mapping[str, ProductionSeries],
                   cost_policy: ProductionCostPolicy | None = None) -> dict:
     """Run one frozen candidate on Development only."""
     policy = cost_policy or ProductionCostPolicy()
-    freeze.require_candidate(candidate_id, candidate_spec_sha256)
+    candidate.validate(freeze)
     binding.validate()
     policy.validate()
     binding_sha, cost_sha = freeze_digest(binding, policy)
@@ -520,8 +578,14 @@ def run_candidate(*, candidate_id: str, candidate_spec_sha256: str,
 
     result = {
         "schema": VERSION,
-        "candidate_id": candidate_id,
-        "candidate_spec_sha256": candidate_spec_sha256,
+        "candidate_id": candidate.candidate_id,
+        "candidate_spec_sha256": candidate.candidate_spec_sha256,
+        "family_id": candidate.family_id,
+        "economic_mechanism_id": candidate.economic_mechanism_id,
+        "family_spec_sha256": candidate.family_spec_sha256,
+        "parameter_neighbor_ids": candidate.parameter_neighbor_ids,
+        "neighbor_graph_sha256": candidate.neighbor_graph_sha256,
+        "free_parameter_dimensions": candidate.free_parameter_dimensions,
         "batch_id": freeze.batch_id,
         "evidence_partition": "DEVELOPMENT",
         "development_start_ms": DEVELOPMENT_START_MS,
@@ -545,6 +609,7 @@ def run_candidate(*, candidate_id: str, candidate_spec_sha256: str,
         "per_symbol_base": tuple(base_eval),
         "per_symbol_stress": tuple(stress_eval),
         "daily_return_series": daily,
+        "per_symbol_daily_return_series": _daily_per_symbol_returns(base_eval, initial),
         "f0_f3_state": "F0_F3_PASS" if not failures else "DEVELOPMENT_FAIL",
         "failure_reasons": tuple(sorted(set(failures))),
         "safety": {
