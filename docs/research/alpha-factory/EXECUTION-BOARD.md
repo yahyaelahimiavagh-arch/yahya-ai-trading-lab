@@ -557,3 +557,53 @@ Next acceptance evidence:
 
 Historical source acquisition begins only after this implementation is accepted
 and is a separate **WORK_REQUIRED** work unit.
+
+
+### MCF-PROD-001 — CLASSIFICATION FRONTIER CLOSURE ACCEPTED / MERGED
+
+PR #163 merged.
+
+Accepted main merge commit:
+`6420b34f32db6a0773b16962edb4269409e9c3b9`
+
+Accepted implementation Final HEAD:
+`afd3669d7185ddad1b1e5bd14c70aede06302a6b`
+
+Final Actions run #385: **SUCCESS**.
+
+Real VPS rerun:
+
+- preflight SHA:
+  `eff8f60b4a92be2a2e3266de86f9ad5a7c0bb9aaa8f25dc1a4a35805f058aa34`;
+- unresolved data-eligible symbols: 384;
+- corrected next classification frontier: 176;
+- membership resolved: false;
+- performance/Fresh OOS/recent reserve/P10 reads: false.
+
+### CURRENT — Historical Product Classification Wave 001 Input Freeze
+
+Current branch:
+`mcf-prod-001-classification-wave-001`
+
+Purpose:
+
+- freeze the exact 176-symbol first acquisition wave;
+- bind it to the accepted real-VPS preflight;
+- prohibit current-status/ticker-only inference;
+- freeze the historical source-admissibility hierarchy;
+- validate the manifest and safety boundary before bulk acquisition.
+
+Frozen manifest:
+
+`MCF-PROD-001-CLASSIFICATION-WAVE-001.json`
+
+Expected SHA-256:
+
+`1a2a2b35efbec3a1cd96174e190d5dce0352e2a43d6da7a975928062c5aaad58`
+
+Next execution gate:
+
+`⚠️ WORK_REQUIRED — MCF-PROD-001-CLASSIFICATION-WAVE-001-ACQUISITION`
+
+Bulk historical source acquisition has not started in this checkpoint.
+No strategy performance is authorized.
