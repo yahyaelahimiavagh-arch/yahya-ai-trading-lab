@@ -19,7 +19,7 @@
     "structurally_valid_count": 8640,
     "structurally_invalid_count": 536,
     "registered_candidate_ledger_sha256": "ea53e211f7bce3ed5c3421c15a8538b4abd6a7b2151182443363a95d8c6b5505",
-    "generation_summary_sha256": "6b89457087d03f796802e1e6f71bb3b38129163d4bdce50dc0254cfd6baefaf6"
+    "generation_summary_sha256": "434f81a7b7edb318ba61ad104df3fb3bd9157d07d7de0c15faa3d8ab7d3bfa39"
   },
   "implementation_blockers": {
     "blocked_candidate_count": 1788,
@@ -32,7 +32,7 @@
     "executable_candidate_count": 6852,
     "candidate_ledger_sha256": "084150778f2270c2ce96dac631f2e0fb1e6f84fed3325a197a80aa3d59db8e73",
     "neighbor_graph_sha256": "4eb36ca827b5b458147e6ba2a74308353dfa047cd368d72e106f568b1f4fc4bb",
-    "freeze_sha256": "364696a021d7d9371423cfed7fe832fc3d45886990f548f20317b882023ca634",
+    "freeze_sha256": "84d4f8ec6234ffb5afccf44ea044661d72af8b4de525b111118ae087907d1dc6",
     "first_executable_candidate": {
       "candidate_id": "MCF-PROD-001-000000",
       "candidate_spec_sha256": "1e278262d3abf0809a8e269a460ee43136f06eab6744a2313e19087e352727b9"
@@ -42,7 +42,7 @@
       "candidate_spec_sha256": "aa55a978bf91c8a16bf4cf95542a4bc327d4563067c8f937c61b9be50d569c0a"
     },
     "maximum_single_family_fraction": "0.1809690601284296555750145943",
-    "combined_trend_breakout_fraction": "0.0776415645067133683596030356"
+    "combined_trend_breakout_fraction": "0.07764156450671336835960303561"
   },
   "executable_family_counts": {
     "BREAKOUT_CHANNEL": 416,
