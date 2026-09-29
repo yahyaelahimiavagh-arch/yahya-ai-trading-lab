@@ -10,7 +10,7 @@ from decimal import Decimal
 from typing import Mapping, Sequence
 
 from .models import MCFError
-from .production import ProductionSeries
+from .production import ProductionSeries, ProductionUniverseBinding
 from .production_features import ProductionFeatureCache
 from .production_generator import SEARCH_BUDGET
 
@@ -85,7 +85,8 @@ def _condition_state(condition: Sequence[bool], available: Sequence[bool]) -> tu
 
 
 def compile_candidate(candidate: Mapping[str, object], cache: ProductionFeatureCache, *,
-                      liquidity_percentile: Sequence[float | None] | None = None) -> ProductionSeries:
+                      liquidity_percentile: Sequence[float | None] | None = None,
+                      universe_binding: ProductionUniverseBinding | None = None) -> ProductionSeries:
     """Compile a registered production candidate to completed-bar desired state."""
     family = str(candidate.get("family", ""))
     if family in BLOCKED_FAMILIES:
@@ -195,11 +196,18 @@ def compile_candidate(candidate: Mapping[str, object], cache: ProductionFeatureC
                 cache.bars.symbol, cache.bars.timeframe, cache.bars.times,
                 cache.bars.opens, cache.bars.closes, (False,) * n, (False,) * n,
             )
+        if universe_binding is None:
+            raise MCFError("lead-lag family requires point-in-time universe binding")
+        universe_binding.validate()
         peer_return = cache.peer_return(peer, lag)
         if mode not in {"MOMENTUM", "REVERSAL"}:
             raise MCFError("invalid lead-lag response mode")
-        for i in range(n):
-            if peer_return[i] is None:
+        for i, timestamp in enumerate(cache.bars.times):
+            if (
+                peer_return[i] is None
+                or not universe_binding.is_member(cache.bars.symbol, timestamp)
+                or not universe_binding.is_member(peer, timestamp)
+            ):
                 continue
             available[i] = True
             if mode == "MOMENTUM":
