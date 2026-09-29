@@ -102,8 +102,16 @@ def adjudicate(*, production_results: Sequence[Mapping[str, object]],
             raise MCFError("MCF-03 result/candidate spec mismatch")
         if result.get("family_id") != candidate.get("family_id"):
             raise MCFError("MCF-03 result/candidate family mismatch")
+        if result.get("economic_mechanism_id") != candidate.get("economic_mechanism_id"):
+            raise MCFError("MCF-03 result/candidate mechanism mismatch")
+        if result.get("neighbor_graph_sha256") != neighbor_graph_artifact.get("neighbor_graph_sha256"):
+            raise MCFError("MCF-03 result/neighbor graph mismatch")
+        if result.get("family_spec_sha256") != candidate.get("family_spec_sha256"):
+            raise MCFError("MCF-03 result/candidate family spec mismatch")
         if result.get("evidence_partition") != "DEVELOPMENT":
             raise MCFError("MCF-04 received non-Development result")
+        if result.get("f0_f3_state") == "F0_F3_PASS" and result.get("exact_accounting") is not True:
+            raise MCFError("MCF-04 passer is not exact-recomputed")
 
     passers = {
         cid for cid, result in results.items()
