@@ -60,6 +60,10 @@ class AdjudicationRunnerTest(unittest.TestCase):
         )
         self.assertEqual(out["state"], "ZERO_SURVIVOR_VALID")
         self.assertEqual(out["development_survivor_count"], 0)
+        self.assertIsNotNone(out["trial_accounting"])
+        self.assertEqual(out["trial_accounting"]["raw_generation_trials"], 4)
+        self.assertEqual(out["trial_accounting"]["raw_family_trials"], (("FAM", 4),))
+        self.assertEqual(out["trial_accounting"]["raw_mechanism_trials"], (("MECH", 4),))
         self.assertFalse(out["safety"]["fresh_oos_read"])
         self.assertFalse(out["safety"]["p10_read"])
 
