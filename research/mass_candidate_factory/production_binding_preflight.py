@@ -33,7 +33,7 @@ from .models import MCFError, canonical, digest, guard_root, safe_path, write_on
 from .production import DEVELOPMENT_END_MS, DEVELOPMENT_START_MS
 from .production_generator import UNIVERSE_POLICY, UNIVERSE_POLICY_SHA256
 
-VERSION = "MCF_PRODUCTION_BINDING_PREFLIGHT/1.0.0"
+VERSION = "MCF_PRODUCTION_BINDING_PREFLIGHT/1.1.0"
 CLASSIFICATION_SCHEMA = "MCF_HISTORICAL_PRODUCT_CLASSIFICATION_MAP/1.0.0"
 EVIDENCE_SCHEMA = "MCF_HISTORICAL_PRODUCT_CLASSIFICATION/1.0.0"
 EXPECTED_POPULATION_RECONCILIATION_SHA256 = (
@@ -182,6 +182,64 @@ def _rank_data_eligible(rows: Sequence[Mapping[str, object]]) -> tuple[Mapping[s
     ))
 
 
+def _classification_frontier(
+    ranked: Sequence[Mapping[str, object]],
+) -> tuple[str, ...]:
+    """Return unresolved symbols that can still affect the monthly top-N.
+
+    NONORDINARY rows do not consume a membership slot. The frontier is the
+    unresolved subset of the first MAX_MEMBERS rows that are still capable of
+    being ordinary Spot. Classify this bounded wave, rerun, and the frontier
+    expands only when a resolved NONORDINARY row exposes a lower-ranked symbol.
+    """
+    frontier: list[str] = []
+    potential_slots = 0
+    for row in ranked:
+        classification = str(row["classification"])
+        if classification == "NONORDINARY_CONFIRMED":
+            continue
+        if classification not in {
+            "ORDINARY_SPOT_CONFIRMED",
+            "PRODUCT_CLASSIFICATION_UNRESOLVED",
+        }:
+            raise MCFError("unknown product classification in frontier")
+        if potential_slots >= MAX_MEMBERS:
+            break
+        potential_slots += 1
+        if classification == "PRODUCT_CLASSIFICATION_UNRESOLVED":
+            frontier.append(str(row["symbol"]))
+    return tuple(frontier)
+
+
+def _monthly_membership(
+    rows: Sequence[Mapping[str, object]], effective_ms: int
+) -> dict:
+    """Freeze one resolved month; zero eligible symbols is a valid no-op month."""
+    ranked = _rank_data_eligible(rows)
+    selected_ranked = ranked[:MAX_MEMBERS]
+    ranking_payload = {
+        "schema": VERSION,
+        "effective_ms": effective_ms,
+        "rank_metric": "TRAILING_30D_QUOTE_VOLUME",
+        "eligible_ranked": tuple(
+            (
+                row["symbol"],
+                row["trailing_30d_quote_volume"],
+                row["eligibility_record_sha256"],
+            )
+            for row in ranked
+        ),
+        "selected_ranked": tuple(row["symbol"] for row in selected_ranked),
+    }
+    return {
+        "effective_ms": effective_ms,
+        "eligible_count": len(ranked),
+        "selected_count": len(selected_ranked),
+        "selected_symbols": tuple(sorted(row["symbol"] for row in selected_ranked)),
+        "ranking_sha256": digest(ranking_payload),
+    }
+
+
 def _symbol_rows(root: Path, plan: dict, inventory: dict, entries: Sequence[dict]) -> tuple[tuple[object, ...], tuple[str, ...]]:
     rows = []
     refs = []
@@ -282,16 +340,24 @@ def audit(*, pc_root: Path, plan_relative: str, inventory_relative: str,
     classification_complete = not unresolved_symbols
 
     neutral_monthly = []
-    initial_frontier: set[str] = set()
+    next_frontier: set[str] = set()
+    frontier_by_month: dict[int, tuple[str, ...]] = {}
     for month in months:
         ranked = _rank_data_eligible(data_eligible_by_month[month])
         raw_top = ranked[:MAX_MEMBERS]
         unresolved_raw_top = tuple(
-            row["symbol"]
+            str(row["symbol"])
             for row in raw_top
             if row["classification"] == "PRODUCT_CLASSIFICATION_UNRESOLVED"
         )
-        initial_frontier.update(unresolved_raw_top)
+        frontier = _classification_frontier(ranked)
+        frontier_by_month[month] = frontier
+        next_frontier.update(frontier)
+        potential_top = tuple(
+            str(row["symbol"])
+            for row in ranked
+            if row["classification"] != "NONORDINARY_CONFIRMED"
+        )[:MAX_MEMBERS]
         ranking_payload = {
             "schema": VERSION,
             "effective_ms": month,
@@ -307,46 +373,27 @@ def audit(*, pc_root: Path, plan_relative: str, inventory_relative: str,
                 for row in ranked
             ),
             "raw_top50_symbols": tuple(row["symbol"] for row in raw_top),
+            "potential_top50_symbols": potential_top,
+            "classification_frontier_symbols": frontier,
         }
         neutral_monthly.append({
             "effective_ms": month,
             "data_eligible_count": len(ranked),
             "raw_top50_count": len(raw_top),
             "raw_top50_symbols": tuple(row["symbol"] for row in raw_top),
+            "potential_top50_symbols": potential_top,
             "unresolved_raw_top50_symbols": unresolved_raw_top,
+            "classification_frontier_symbols": frontier,
             "neutral_ranking_sha256": digest(ranking_payload),
         })
 
-    initial_frontier_symbols = tuple(sorted(initial_frontier))
+    next_frontier_symbols = tuple(sorted(next_frontier))
+    membership_resolved = not next_frontier_symbols
 
     monthly = []
-    if classification_complete:
+    if membership_resolved:
         for month in months:
-            ranked = _rank_data_eligible(eligible_by_month[month])
-            if not ranked:
-                raise MCFError("production binding month has zero eligible ordinary Spot symbols")
-            selected_ranked = ranked[:MAX_MEMBERS]
-            ranking_payload = {
-                "schema": VERSION,
-                "effective_ms": month,
-                "rank_metric": "TRAILING_30D_QUOTE_VOLUME",
-                "eligible_ranked": tuple(
-                    (
-                        row["symbol"],
-                        row["trailing_30d_quote_volume"],
-                        row["eligibility_record_sha256"],
-                    )
-                    for row in ranked
-                ),
-                "selected_ranked": tuple(row["symbol"] for row in selected_ranked),
-            }
-            monthly.append({
-                "effective_ms": month,
-                "eligible_count": len(ranked),
-                "selected_count": len(selected_ranked),
-                "selected_symbols": tuple(sorted(row["symbol"] for row in selected_ranked)),
-                "ranking_sha256": digest(ranking_payload),
-            })
+            monthly.append(_monthly_membership(eligible_by_month[month], month))
 
     unresolved_month_counts = tuple(
         (month, len(unresolved_by_month[month]))
@@ -356,7 +403,7 @@ def audit(*, pc_root: Path, plan_relative: str, inventory_relative: str,
     base = {
         "schema": VERSION,
         "generation_id": "MCF-PROD-001",
-        "state": "READY_FOR_PRODUCTION_BINDING" if classification_complete else "CLASSIFICATION_INCOMPLETE",
+        "state": "READY_FOR_PRODUCTION_BINDING" if membership_resolved else "CLASSIFICATION_INCOMPLETE",
         "plan_sha256": plan["plan_sha256"],
         "population_reconciliation_sha256": EXPECTED_POPULATION_RECONCILIATION_SHA256,
         "population_reconciliation_state": reconciliation["state"],
@@ -365,6 +412,7 @@ def audit(*, pc_root: Path, plan_relative: str, inventory_relative: str,
         "symbol_count": len(entries_by_symbol),
         "month_count": len(months),
         "classification_complete": classification_complete,
+        "membership_resolved": membership_resolved,
         "unresolved_data_eligible_symbol_count": len(unresolved_symbols),
         "unresolved_data_eligible_symbols": unresolved_symbols,
         "unresolved_month_counts": unresolved_month_counts,
@@ -372,8 +420,15 @@ def audit(*, pc_root: Path, plan_relative: str, inventory_relative: str,
             (month, len(data_eligible_by_month[month])) for month in months
         ),
         "classification_neutral_rankings": tuple(neutral_monthly),
-        "initial_classification_frontier_symbol_count": len(initial_frontier_symbols),
-        "initial_classification_frontier_symbols": initial_frontier_symbols,
+        "frontier_month_counts": tuple(
+            (month, len(frontier_by_month[month]))
+            for month in months
+            if frontier_by_month[month]
+        ),
+        "next_classification_frontier_symbol_count": len(next_frontier_symbols),
+        "next_classification_frontier_symbols": next_frontier_symbols,
+        "initial_classification_frontier_symbol_count": len(next_frontier_symbols),
+        "initial_classification_frontier_symbols": next_frontier_symbols,
         "monthly_rankings": tuple(monthly),
         "symbol_audit": tuple(symbol_audit),
         "safety": {
@@ -403,7 +458,9 @@ def materialize(*, output_root: Path, **kwargs) -> dict:
         "preflight_sha256": result["preflight_sha256"],
         "artifact": relative,
         "classification_complete": result["classification_complete"],
+        "membership_resolved": result["membership_resolved"],
         "unresolved_data_eligible_symbol_count": result["unresolved_data_eligible_symbol_count"],
+        "next_classification_frontier_symbol_count": result["next_classification_frontier_symbol_count"],
         "initial_classification_frontier_symbol_count": result["initial_classification_frontier_symbol_count"],
         "month_count": result["month_count"],
         "performance_read": False,
