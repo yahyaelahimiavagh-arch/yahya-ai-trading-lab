@@ -73,6 +73,8 @@ class TrialAccounting:
     effective_generation_trials: float
     raw_family_trials: Mapping[str, int]
     effective_family_trials: Mapping[str, float]
+    raw_mechanism_trials: Mapping[str, int]
+    effective_mechanism_trials: Mapping[str, float]
 
     def validate(self) -> None:
         if self.raw_generation_trials < 1:
@@ -85,6 +87,12 @@ class TrialAccounting:
             eff = float(self.effective_family_trials[family])
             if raw < 1 or not 1.0 <= eff <= raw:
                 raise MCFError("invalid family trial accounting")
+        if not self.raw_mechanism_trials or set(self.raw_mechanism_trials) != set(self.effective_mechanism_trials):
+            raise MCFError("incomplete mechanism trial accounting")
+        for mechanism, raw in self.raw_mechanism_trials.items():
+            eff = float(self.effective_mechanism_trials[mechanism])
+            if raw < 1 or not 1.0 <= eff <= raw:
+                raise MCFError("invalid mechanism trial accounting")
 
 
 def _vector_key(vector: Mapping[str, object], names: Sequence[str]) -> tuple[str, ...]:
@@ -150,7 +158,10 @@ def neighbor_stability(candidate_id: str, graph: Mapping[str, Sequence[str]],
         raise MCFError("candidate absent from neighbor graph")
     neighbors = tuple(graph[candidate_id])
     passing = tuple(n for n in neighbors if n in f0_f3_passers)
-    values = [float(stress_return_by_candidate[n]) for n in passing if n in stress_return_by_candidate]
+    missing_stress = tuple(n for n in neighbors if n not in stress_return_by_candidate)
+    if missing_stress:
+        raise MCFError("incomplete neighbor stress-return coverage")
+    values = [float(stress_return_by_candidate[n]) for n in neighbors]
     fraction = len(passing) / len(neighbors) if neighbors else 0.0
     med = median(values) if values else float("-inf")
     passed = len(neighbors) >= 3 and fraction >= 0.50 and bool(values) and med > 0.0
@@ -166,7 +177,7 @@ def neighbor_stability(candidate_id: str, graph: Mapping[str, Sequence[str]],
         "valid_neighbor_count": len(neighbors),
         "passing_neighbor_count": len(passing),
         "passing_neighbor_fraction": fraction,
-        "median_passing_neighbor_stress_return": None if not values else med,
+        "median_neighbor_stress_return": None if not values else med,
         "f4_pass": passed,
         "failure_reasons": tuple(reasons),
     }
@@ -392,12 +403,20 @@ def reality_check(series: Sequence[DailySeries], *, replications: int = BOOTSTRA
     rng = Random(seed)
     exceed = 0
     n = len(common)
+    compact_index = {calendar_index: i for i, calendar_index in enumerate(common)}
+    calendar_n = len(calendar)
     for _ in range(replications):
         indexes = []
         while len(indexes) < n:
-            start = rng.randrange(n)
-            indexes.extend((start + j) % n for j in range(block_days))
-        indexes = indexes[:n]
+            # Blocks are 14 calendar days, not 14 compressed valid observations.
+            start = rng.randrange(calendar_n)
+            for offset in range(block_days):
+                calendar_index = (start + offset) % calendar_n
+                compact = compact_index.get(calendar_index)
+                if compact is not None:
+                    indexes.append(compact)
+                    if len(indexes) == n:
+                        break
         boot = max(
             sum(row[i] for i in indexes) / n * sqrt(n)
             for row in centered
@@ -488,6 +507,8 @@ def statistical_gate(series: DailySeries, accounting: TrialAccounting,
     accounting.validate()
     if series.family_id not in accounting.raw_family_trials:
         raise MCFError("family absent from trial accounting")
+    if series.mechanism_id not in accounting.raw_mechanism_trials:
+        raise MCFError("mechanism absent from trial accounting")
     effective = max(
         float(accounting.effective_generation_trials),
         float(accounting.effective_family_trials[series.family_id]),
@@ -509,6 +530,9 @@ def statistical_gate(series: DailySeries, accounting: TrialAccounting,
         "family_pbo": dict(family_pbo),
         "failure_reasons": tuple(reasons),
         "raw_family_trials": accounting.raw_family_trials[series.family_id],
+        "effective_family_trials": accounting.effective_family_trials[series.family_id],
+        "raw_mechanism_trials": accounting.raw_mechanism_trials[series.mechanism_id],
+        "effective_mechanism_trials": accounting.effective_mechanism_trials[series.mechanism_id],
         "effective_trials_used": effective,
     }
 
