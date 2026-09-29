@@ -416,3 +416,85 @@ implementation-accepted.
 6. Fresh OOS remains sealed until step 5 completes.
 
 No production performance run is authorized by this checkpoint alone.
+
+
+## Production Readiness checkpoint — 2026-09-29 update
+
+This section supersedes the older MCF-03/MCF-04 "next blocker" wording above
+for current execution status.
+
+### MCF-03 / MCF-04 — IMPLEMENTATION ACCEPTED / MERGED
+
+PR #159 merged.
+
+Accepted main merge commit:
+`7ccefe3386947b5e6ef13c649629d9fdec55ec04`
+
+Accepted implementation Final HEAD:
+`cbb282ca008d90a8c610c426e32350b6d7fc9e7b`
+
+Final implementation Actions run #372: **SUCCESS**.
+
+No MCF-PROD-001 performance was exposed by implementation acceptance.
+
+### MCF-PROD-001 — PRE-OUTCOME CANDIDATE FREEZE ACCEPTED
+
+PR #160 merged.
+
+Accepted main merge commit:
+`69dc1c6d167b216bf26e2a8ade42e55f845dd417`
+
+Frozen executable identities:
+
+- raw candidates: 9,176;
+- structurally valid: 8,640;
+- implementation-blocked: 1,788;
+- executable candidates: 6,852;
+- candidate ledger SHA:
+  `084150778f2270c2ce96dac631f2e0fb1e6f84fed3325a197a80aa3d59db8e73`;
+- neighbor graph SHA:
+  `4eb36ca827b5b458147e6ba2a74308353dfa047cd368d72e106f568b1f4fc4bb`;
+- executable freeze SHA:
+  `84d4f8ec6234ffb5afccf44ea044661d72af8b4de525b111118ae087907d1dc6`.
+
+### MCF-PROD-001 — VPS FREEZE MATERIALIZER ACCEPTED
+
+PR #161 merged.
+
+Accepted main merge commit:
+`f3803ebe0bd9ec43f71940d463098fde58aa4d1d`
+
+The repository now has a fail-closed, immutable/idempotent VPS materializer and
+read-back verifier for the accepted pre-outcome candidate freeze.
+
+### CURRENT — Production Binding Preflight
+
+Current work unit:
+**MCF-PROD-001 production-binding preflight**
+
+Current branch:
+`mcf-prod-001-production-binding-preflight`
+
+Purpose:
+
+- scan the accepted AF-01C P-C corpus symbol-at-a-time;
+- apply frozen 60-day history and 99.5% trailing-30d continuity rules;
+- identify product-classification blockers before monthly top-50 ranking;
+- reject current `exchangeInfo` as historical classification evidence;
+- prevent unresolved high-liquidity symbols from being silently excluded;
+- emit no candidate performance.
+
+### Updated execution route
+
+1. MCF-03/MCF-04 implementation — **COMPLETE / ACCEPTED**.
+2. Exact 6,852-candidate/spec/neighbor freeze — **COMPLETE / ACCEPTED**.
+3. VPS pre-outcome freeze materializer — **COMPLETE / ACCEPTED**.
+4. Production binding preflight / historical product classification — **CURRENT**.
+5. Freeze exact monthly point-in-time membership snapshots.
+6. Materialize selected-union Development 15m/1h/4h runtime bars.
+7. Freeze Development runner input manifest.
+8. Run 6,852-candidate MCF-PROD-001 Development — **MANUAL VPS / DIRECTOR-SUPERVISED**.
+9. Apply F0-F7 and freeze qualifying independent representatives.
+10. Fresh OOS remains sealed until step 9 completes.
+
+No Development strategy outcome is authorized before steps 4-7 close.
