@@ -1,0 +1,112 @@
+[
+  {
+    "sample": "S1",
+    "report_date": "2018-05-01",
+    "intended_release_date": "2018-05-04",
+    "actual_release_date_or_time": "2018-05-04T15:30:00-04:00",
+    "disruption_type": "ordinary",
+    "cftc_announcement_source": "https://www.cftc.gov/MarketReports/CommitmentsofTraders/ReleaseSchedule/index.htm",
+    "revision_correction_sources": [
+      "https://www.cftc.gov/MarketReports/CommitmentsofTraders/HistoricalSpecialAnnouncements/index.htm"
+    ],
+    "affected_report_family": "Legacy Futures Only",
+    "affected_market": "UNKNOWN",
+    "revision_publication_date_time": "UNKNOWN",
+    "original_snapshot_identity": null,
+    "late_archived_snapshot_identity": "https://web.archive.org/web/20181028115934id_/https://www.cftc.gov/sites/default/files/files/dea/cotarchives/2018/futures/deacmesf050118.htm",
+    "revised_snapshot_identity": null,
+    "original_semantic_field_hash": null,
+    "late_archived_semantic_field_hash": "71b0338f807830eba635ae4bd5ec1b18cdcc661867fede4c91a135c9b64dfbca",
+    "current_semantic_field_hash": "71b0338f807830eba635ae4bd5ec1b18cdcc661867fede4c91a135c9b64dfbca",
+    "classification": "SNAPSHOT_D_NO_CONTEMPORANEOUS_CAPTURE",
+    "notes": "Late capture matches current values but is not original-at-release evidence; no conclusion about intervening revisions."
+  },
+  {
+    "sample": "S2",
+    "report_date": "2021-06-15",
+    "intended_release_date": "2021-06-18",
+    "actual_release_date_or_time": "2021-06-21",
+    "disruption_type": "Juneteenth federal observance",
+    "cftc_announcement_source": "https://www.cftc.gov/MarketReports/CommitmentsofTraders/HistoricalSpecialAnnouncements/index.htm",
+    "revision_correction_sources": [
+      "https://www.cftc.gov/MarketReports/CommitmentsofTraders/HistoricalSpecialAnnouncements/index.htm"
+    ],
+    "affected_report_family": "Legacy Futures Only",
+    "affected_market": "UNKNOWN",
+    "revision_publication_date_time": "UNKNOWN",
+    "original_snapshot_identity": null,
+    "late_archived_snapshot_identity": "https://web.archive.org/web/20240928035933id_/https://www.cftc.gov/sites/default/files/files/dea/cotarchives/2021/futures/deacmesf061521.htm",
+    "revised_snapshot_identity": null,
+    "original_semantic_field_hash": null,
+    "late_archived_semantic_field_hash": "4e9a78f7cfd8325f87537d653fcf0bab98fa0541ce281238daf9a64b5418a4ca",
+    "current_semantic_field_hash": "4e9a78f7cfd8325f87537d653fcf0bab98fa0541ce281238daf9a64b5418a4ca",
+    "classification": "SNAPSHOT_D_NO_CONTEMPORANEOUS_CAPTURE",
+    "notes": "Late capture matches current values but is not original-at-release evidence; no conclusion about intervening revisions."
+  },
+  {
+    "sample": "S3",
+    "report_date": "2018-12-24",
+    "intended_release_date": "2018-12-28",
+    "actual_release_date_or_time": "2019-02-01",
+    "disruption_type": "appropriations lapse",
+    "cftc_announcement_source": "https://www.cftc.gov/PressRoom/PressReleases/7864-19",
+    "revision_correction_sources": [
+      "https://www.cftc.gov/MarketReports/CommitmentsofTraders/HistoricalSpecialAnnouncements/index.htm"
+    ],
+    "affected_report_family": "Legacy Futures Only",
+    "affected_market": "UNKNOWN",
+    "revision_publication_date_time": "UNKNOWN",
+    "original_snapshot_identity": null,
+    "late_archived_snapshot_identity": "https://web.archive.org/web/20190417062245id_/https://www.cftc.gov/sites/default/files/files/dea/cotarchives/2018/futures/deacmesf122418.htm",
+    "revised_snapshot_identity": null,
+    "original_semantic_field_hash": null,
+    "late_archived_semantic_field_hash": "3d61c740361000b94c7f12dfb9840487ff52f58a10715d8d44af18de4c795b0a",
+    "current_semantic_field_hash": "3d61c740361000b94c7f12dfb9840487ff52f58a10715d8d44af18de4c795b0a",
+    "classification": "SNAPSHOT_D_NO_CONTEMPORANEOUS_CAPTURE",
+    "notes": "Late capture matches current values but is not original-at-release evidence; no conclusion about intervening revisions."
+  },
+  {
+    "sample": "S4",
+    "report_date": "2023-01-31",
+    "intended_release_date": "2023-02-03",
+    "actual_release_date_or_time": "2023-02-24",
+    "disruption_type": "ION reporting incident",
+    "cftc_announcement_source": "https://www.cftc.gov/MarketReports/CommitmentsofTraders/HistoricalSpecialAnnouncements/index.htm",
+    "revision_correction_sources": [
+      "https://www.cftc.gov/MarketReports/CommitmentsofTraders/HistoricalSpecialAnnouncements/index.htm"
+    ],
+    "affected_report_family": "Legacy Futures Only",
+    "affected_market": "UNKNOWN",
+    "revision_publication_date_time": "UNKNOWN",
+    "original_snapshot_identity": null,
+    "late_archived_snapshot_identity": "https://web.archive.org/web/20241002180825id_/https://www.cftc.gov/sites/default/files/files/dea/cotarchives/2023/futures/deacmesf013123.htm",
+    "revised_snapshot_identity": null,
+    "original_semantic_field_hash": null,
+    "late_archived_semantic_field_hash": "65fa285d45b71484619ea17e6035c2cd4a898625354786ca41e25bac5096fbe7",
+    "current_semantic_field_hash": "65fa285d45b71484619ea17e6035c2cd4a898625354786ca41e25bac5096fbe7",
+    "classification": "SNAPSHOT_D_NO_CONTEMPORANEOUS_CAPTURE",
+    "notes": "Late capture matches current values but is not original-at-release evidence; no conclusion about intervening revisions."
+  },
+  {
+    "sample": "S5",
+    "report_date": "2025-09-30",
+    "intended_release_date": "2025-10-03",
+    "actual_release_date_or_time": "2025-11-19",
+    "disruption_type": "appropriations lapse",
+    "cftc_announcement_source": "https://www.cftc.gov/MarketReports/CommitmentsofTraders/HistoricalSpecialAnnouncements/index.htm",
+    "revision_correction_sources": [
+      "https://www.cftc.gov/MarketReports/CommitmentsofTraders/HistoricalSpecialAnnouncements/index.htm"
+    ],
+    "affected_report_family": "Legacy Futures Only",
+    "affected_market": "UNKNOWN",
+    "revision_publication_date_time": "UNKNOWN",
+    "original_snapshot_identity": null,
+    "late_archived_snapshot_identity": "https://web.archive.org/web/20260419025738id_/https://www.cftc.gov/sites/default/files/files/dea/cotarchives/2025/futures/deacmesf093025.htm",
+    "revised_snapshot_identity": null,
+    "original_semantic_field_hash": null,
+    "late_archived_semantic_field_hash": "87e2285abc69db1328cd5087cebe7f90524d4cf62f5377303976b3869bc83ac3",
+    "current_semantic_field_hash": "87e2285abc69db1328cd5087cebe7f90524d4cf62f5377303976b3869bc83ac3",
+    "classification": "SNAPSHOT_D_NO_CONTEMPORANEOUS_CAPTURE",
+    "notes": "Late capture matches current values but is not original-at-release evidence; no conclusion about intervening revisions."
+  }
+]
