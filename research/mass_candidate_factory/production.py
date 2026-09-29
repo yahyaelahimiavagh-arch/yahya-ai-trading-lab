@@ -7,6 +7,7 @@ without opening Fresh OOS, P10, Futures, leverage, shorting or Live.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from bisect import bisect_right
 from decimal import Decimal, localcontext
 from datetime import datetime, timezone
 from statistics import median
@@ -96,14 +97,9 @@ class ProductionUniverseBinding:
             raise MCFError("membership history does not cover Development start")
 
     def symbols_at(self, timestamp_ms: int) -> tuple[str, ...]:
-        self.validate()
-        chosen = None
-        for snapshot in self.membership_snapshots:
-            if snapshot.effective_ms <= timestamp_ms:
-                chosen = snapshot
-            else:
-                break
-        return () if chosen is None else chosen.symbols
+        times = tuple(snapshot.effective_ms for snapshot in self.membership_snapshots)
+        index = bisect_right(times, timestamp_ms) - 1
+        return () if index < 0 else self.membership_snapshots[index].symbols
 
     def is_member(self, symbol: str, timestamp_ms: int) -> bool:
         return symbol in self.symbols_at(timestamp_ms)
@@ -267,10 +263,16 @@ def _simulate(series: ProductionSeries, binding: ProductionUniverseBinding,
 
         previous_scored: int | None = None
         previous_member = False
+        snapshot_times = tuple(x.effective_ms for x in binding.membership_snapshots)
+        snapshot_symbols = tuple(x.symbols for x in binding.membership_snapshots)
+
+        def member_at(timestamp_ms: int) -> bool:
+            index = bisect_right(snapshot_times, timestamp_ms) - 1
+            return index >= 0 and series.symbol in snapshot_symbols[index]
 
         for i in scored:
             t = series.times[i]
-            current_member = binding.is_member(series.symbol, t)
+            current_member = member_at(t)
             held_before = qty is not None
 
             if held_before and not current_member and previous_member:
@@ -369,7 +371,9 @@ def _fold_return(result: Mapping[str, object], start_ms: int, end_ms: int,
 
 
 def _daily_candidate_returns(results: Sequence[Mapping[str, object]],
+                             binding: ProductionUniverseBinding,
                              initial_equity: Decimal) -> dict:
+    """Equal-weight daily return with explicit invalid source-day masking."""
     by_symbol: dict[str, dict[int, Decimal]] = {}
     for result in results:
         daily_equity: dict[int, Decimal] = {}
@@ -385,14 +389,40 @@ def _daily_candidate_returns(results: Sequence[Mapping[str, object]],
             last_equity = equity
         by_symbol[str(result["symbol"])] = daily_return
 
-    all_days = sorted({d for values in by_symbol.values() for d in values})
-    returns = []
-    valid = []
-    for day in all_days:
-        values = [daily[day] for daily in by_symbol.values() if day in daily]
-        returns.append(None if not values else str(sum(values, Decimal(0)) / Decimal(len(values))))
-        valid.append(bool(values))
-    return {"calendar_days": tuple(all_days), "returns": tuple(returns), "valid_mask": tuple(valid)}
+    first_day = DEVELOPMENT_START_MS // DAY_MS
+    final_day = DEVELOPMENT_END_MS // DAY_MS
+    calendar_days = tuple(range(first_day, final_day))
+    returns: list[str | None] = []
+    valid: list[bool] = []
+
+    for day in calendar_days:
+        members = set(binding.symbols_at(day * DAY_MS))
+        missing = [symbol for symbol in members if day not in by_symbol.get(symbol, {})]
+        if not members or missing:
+            returns.append(None)
+            valid.append(False)
+            continue
+
+        # A symbol liquidated after a membership boundary remains visible on
+        # the observed exit day, while all current members are still required.
+        transition = {
+            symbol for symbol, daily in by_symbol.items()
+            if symbol not in members and day in daily
+        }
+        active = sorted(members | transition)
+        values = [by_symbol[symbol][day] for symbol in active if day in by_symbol.get(symbol, {})]
+        if len(values) != len(active):
+            returns.append(None)
+            valid.append(False)
+            continue
+        returns.append(str(sum(values, Decimal(0)) / Decimal(len(values))))
+        valid.append(True)
+
+    return {
+        "calendar_days": calendar_days,
+        "returns": tuple(returns),
+        "valid_mask": tuple(valid),
+    }
 
 
 def run_candidate(*, candidate_id: str, candidate_spec_sha256: str,
@@ -486,7 +516,7 @@ def run_candidate(*, candidate_id: str, candidate_spec_sha256: str,
     exposure = [Decimal(x["exposure_coverage"]) for x in base_eval]
     turnover = [Decimal(x["turnover"]) for x in base_eval]
     max_dd = [Decimal(x["maximum_drawdown_fraction"]) for x in base_eval]
-    daily = _daily_candidate_returns(base_eval, initial)
+    daily = _daily_candidate_returns(base_eval, binding, initial)
 
     result = {
         "schema": VERSION,
