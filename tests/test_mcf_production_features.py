@@ -1,6 +1,7 @@
 import unittest
 
 from research.mass_candidate_factory.models import MCFError
+from research.mass_candidate_factory.production import MembershipSnapshot, ProductionUniverseBinding
 from research.mass_candidate_factory.production_features import (
     ProductionBars,
     ProductionFeatureCache,
@@ -9,6 +10,17 @@ from research.mass_candidate_factory.production_features import (
 
 START = 1577836800000
 HOUR = 3_600_000
+H = "a" * 64
+
+
+def binding(symbols):
+    return ProductionUniverseBinding(
+        universe_evidence_id="MCF-PROD-001-UNIVERSE-EVIDENCE",
+        population_manifest_sha256=H,
+        quality_index_sha256=H,
+        universe_policy_sha256=H,
+        membership_snapshots=(MembershipSnapshot(START, tuple(sorted(symbols)), H),),
+    )
 
 
 def bars(symbol="AAAUSDT", times=None, quote=None):
@@ -62,7 +74,11 @@ class ProductionFeaturesTest(unittest.TestCase):
     def test_liquidity_percentile_is_point_in_time(self):
         a = ProductionFeatureCache(bars("AAAUSDT", quote=(100, 100, 100, 100, 100, 100, 100, 100)))
         b = ProductionFeatureCache(bars("BBBUSDT", quote=(200, 200, 200, 200, 200, 200, 200, 200)))
-        out = liquidity_percentiles({"AAAUSDT": a, "BBBUSDT": b}, 2)
+        out = liquidity_percentiles(
+            {"AAAUSDT": a, "BBBUSDT": b},
+            2,
+            binding(("AAAUSDT", "BBBUSDT")),
+        )
         self.assertIsNone(out["AAAUSDT"][0])
         self.assertIsNone(out["AAAUSDT"][1])
         self.assertEqual(out["AAAUSDT"][2], 0.0)
