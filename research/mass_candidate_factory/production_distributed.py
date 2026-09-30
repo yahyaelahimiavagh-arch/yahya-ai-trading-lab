@@ -537,6 +537,8 @@ def claim_batch(db_path: Path, plan: Mapping[str, object], *, node_id: str,
                 raise MCFError("coordinator missing frozen batch")
             if row[1] == "INGESTED":
                 raise MCFError("batch already ingested")
+            if row[1] in {"PAUSE_REQUESTED", "PAUSED", "AWAITING_INGEST", "BLOCKED"}:
+                raise MCFError(f"batch unavailable in state {row[1]}")
             if row[1] == "CLAIMED" and row[2] != node_id and (row[3] or 0) >= now:
                 raise MCFError("batch already claimed by another node")
             chosen = batch_code
@@ -579,6 +581,107 @@ def heartbeat(db_path: Path, plan: Mapping[str, object], *, node_id: str,
         )
         con.commit()
     return {"status": "HEARTBEAT_ACCEPTED", "batch_code": batch_code, "node_id": node_id, "lease_until_ms": until}
+
+
+def coordinator_pause_request(db_path: Path, plan: Mapping[str, object], *,
+                              node_id: str, batch_code: str,
+                              now_ms: int | None = None) -> dict:
+    _node(node_id)
+    batch(plan, batch_code)
+    now = int(time.time() * 1000) if now_ms is None else int(now_ms)
+    with sqlite3.connect(db_path, timeout=30, isolation_level=None) as con:
+        con.execute("BEGIN IMMEDIATE")
+        _coordinator_bound(con, plan)
+        row = con.execute(
+            "SELECT state,owner_node,lease_until_ms FROM batches WHERE batch_code=?",
+            (batch_code,),
+        ).fetchone()
+        if row is None or row[0] != "CLAIMED" or row[1] != node_id or (row[2] or 0) < now:
+            raise MCFError("pause request requires active matching lease")
+        con.execute(
+            "UPDATE batches SET state='PAUSE_REQUESTED',updated_at_ms=? WHERE batch_code=?",
+            (now, batch_code),
+        )
+        con.commit()
+    return {"status": "PAUSE_REQUESTED", "batch_code": batch_code, "node_id": node_id}
+
+
+def coordinator_mark_paused(db_path: Path, plan: Mapping[str, object], *,
+                            node_id: str, batch_code: str,
+                            now_ms: int | None = None) -> dict:
+    _node(node_id)
+    batch(plan, batch_code)
+    now = int(time.time() * 1000) if now_ms is None else int(now_ms)
+    with sqlite3.connect(db_path, timeout=30, isolation_level=None) as con:
+        con.execute("BEGIN IMMEDIATE")
+        _coordinator_bound(con, plan)
+        row = con.execute(
+            "SELECT state,owner_node FROM batches WHERE batch_code=?",
+            (batch_code,),
+        ).fetchone()
+        if row is None or row[0] != "PAUSE_REQUESTED" or row[1] != node_id:
+            raise MCFError("safe pause acknowledgement requires matching pause request")
+        con.execute(
+            "UPDATE batches SET state='PAUSED',lease_until_ms=NULL,updated_at_ms=? WHERE batch_code=?",
+            (now, batch_code),
+        )
+        con.commit()
+    return {"status": "PAUSED_SAFE", "batch_code": batch_code, "node_id": node_id}
+
+
+def coordinator_resume(db_path: Path, plan: Mapping[str, object], *,
+                       node_id: str, batch_code: str, lease_seconds: int = 900,
+                       now_ms: int | None = None) -> dict:
+    _node(node_id)
+    batch(plan, batch_code)
+    if type(lease_seconds) is not int or not 60 <= lease_seconds <= 86400:
+        raise MCFError("invalid coordinator lease")
+    now = int(time.time() * 1000) if now_ms is None else int(now_ms)
+    until = now + lease_seconds * 1000
+    with sqlite3.connect(db_path, timeout=30, isolation_level=None) as con:
+        con.execute("BEGIN IMMEDIATE")
+        _coordinator_bound(con, plan)
+        row = con.execute(
+            "SELECT state,owner_node FROM batches WHERE batch_code=?",
+            (batch_code,),
+        ).fetchone()
+        if row is None or row[0] != "PAUSED" or row[1] != node_id:
+            raise MCFError("resume requires matching paused owner")
+        con.execute(
+            "UPDATE batches SET state='CLAIMED',lease_until_ms=?,updated_at_ms=? WHERE batch_code=?",
+            (until, now, batch_code),
+        )
+        con.commit()
+    return {
+        "status": "BATCH_RESUMED",
+        "batch_code": batch_code,
+        "node_id": node_id,
+        "lease_until_ms": until,
+    }
+
+
+def coordinator_release(db_path: Path, plan: Mapping[str, object], *,
+                        node_id: str, batch_code: str,
+                        now_ms: int | None = None) -> dict:
+    _node(node_id)
+    batch(plan, batch_code)
+    now = int(time.time() * 1000) if now_ms is None else int(now_ms)
+    with sqlite3.connect(db_path, timeout=30, isolation_level=None) as con:
+        con.execute("BEGIN IMMEDIATE")
+        _coordinator_bound(con, plan)
+        row = con.execute(
+            "SELECT state,owner_node FROM batches WHERE batch_code=?",
+            (batch_code,),
+        ).fetchone()
+        if row is None or row[1] != node_id or row[0] not in {"CLAIMED", "PAUSE_REQUESTED", "PAUSED"}:
+            raise MCFError("release requires matching active/paused owner")
+        con.execute(
+            """UPDATE batches SET state='AVAILABLE',owner_node=NULL,lease_until_ms=NULL,
+               updated_at_ms=? WHERE batch_code=?""",
+            (now, batch_code),
+        )
+        con.commit()
+    return {"status": "BATCH_RELEASED", "batch_code": batch_code}
 
 
 def mark_ingested(db_path: Path, plan: Mapping[str, object], *, manifest: Mapping[str, object],
