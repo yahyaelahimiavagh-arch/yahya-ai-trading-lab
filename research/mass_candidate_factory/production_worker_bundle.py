@@ -4,6 +4,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
+import tempfile
+import zipfile
 from pathlib import Path
 from typing import Mapping
 
@@ -162,6 +165,184 @@ def verify_bundle(root: Path, manifest: Mapping[str, object],
         "total_bytes": manifest["total_bytes"],
         "performance_execution_authorized": False,
     }
+
+
+
+ARCHIVE_MANIFEST_MEMBER = "worker-bundle-manifest.json"
+ARCHIVE_PAYLOAD_PREFIX = "payload/"
+
+
+def _zip_info(name: str) -> zipfile.ZipInfo:
+    info = zipfile.ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0))
+    info.compress_type = zipfile.ZIP_DEFLATED
+    info.external_attr = 0o100600 << 16
+    return info
+
+
+def _archive_sha(path: Path) -> tuple[str, int]:
+    h = hashlib.sha256()
+    total = 0
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            h.update(chunk)
+            total += len(chunk)
+    return h.hexdigest(), total
+
+
+def archive_bundle(
+    runtime_root: Path,
+    manifest: Mapping[str, object],
+    distributed_plan: Mapping[str, object],
+    output_root: Path,
+) -> dict:
+    """Create one portable compressed archive after full byte verification."""
+    validate_bundle_manifest(manifest, distributed_plan)
+    verify_bundle(runtime_root, manifest, distributed_plan)
+    output_root.mkdir(parents=True, exist_ok=True)
+    guard_root(output_root)
+
+    fd, tmp_name = tempfile.mkstemp(prefix=".partial-worker-bundle-", dir=output_root)
+    os.close(fd)
+    tmp = Path(tmp_name)
+    try:
+        with zipfile.ZipFile(
+            tmp,
+            mode="w",
+            compression=zipfile.ZIP_DEFLATED,
+            compresslevel=6,
+            allowZip64=True,
+        ) as archive:
+            archive.writestr(_zip_info(ARCHIVE_MANIFEST_MEMBER), canonical(dict(manifest)))
+            for row in manifest["objects"]:
+                source = safe_path(runtime_root, str(row["relative"]))
+                member = ARCHIVE_PAYLOAD_PREFIX + str(row["relative"])
+                info = _zip_info(member)
+                with source.open("rb") as src, archive.open(info, "w", force_zip64=True) as dst:
+                    for chunk in iter(lambda: src.read(1024 * 1024), b""):
+                        dst.write(chunk)
+
+        raw_sha, archive_bytes = _archive_sha(tmp)
+        name = (
+            f"worker-runtime-{manifest['bundle_manifest_sha256']}-"
+            f"{raw_sha}.zip"
+        )
+        target = safe_path(output_root, name)
+        try:
+            os.link(tmp, target)
+        except FileExistsError:
+            old_sha, old_bytes = _archive_sha(target)
+            if old_sha != raw_sha or old_bytes != archive_bytes:
+                raise MCFError("worker bundle archive collision")
+        return {
+            "status": "WORKER_BUNDLE_ARCHIVE_READY_NO_PERFORMANCE",
+            "bundle_manifest_sha256": manifest["bundle_manifest_sha256"],
+            "archive_sha256": raw_sha,
+            "archive_bytes": archive_bytes,
+            "archive_path": str(target),
+            "object_count": manifest["object_count"],
+            "dataset_count": manifest["dataset_count"],
+            "performance_execution_authorized": False,
+        }
+    finally:
+        if tmp.exists():
+            tmp.unlink()
+
+
+def _extract_verified_member(
+    archive: zipfile.ZipFile,
+    info: zipfile.ZipInfo,
+    *,
+    target: Path,
+    expected_bytes: int,
+    expected_sha256: str,
+) -> None:
+    if info.is_dir() or info.file_size != expected_bytes:
+        raise MCFError("worker archive member size/type mismatch")
+    mode = (info.external_attr >> 16) & 0o170000
+    if mode not in (0, 0o100000):
+        raise MCFError("worker archive contains non-regular payload member")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    if target.exists():
+        if target.is_symlink() or target.stat().st_size != expected_bytes or _raw_sha(target) != expected_sha256:
+            raise MCFError("existing worker runtime object collision")
+        return
+
+    fd, tmp_name = tempfile.mkstemp(prefix=".partial-runtime-", dir=target.parent)
+    tmp = Path(tmp_name)
+    h = hashlib.sha256()
+    total = 0
+    try:
+        with os.fdopen(fd, "wb") as dst, archive.open(info, "r") as src:
+            while True:
+                chunk = src.read(1024 * 1024)
+                if not chunk:
+                    break
+                total += len(chunk)
+                if total > expected_bytes:
+                    raise MCFError("worker archive member exceeds declared size")
+                h.update(chunk)
+                dst.write(chunk)
+            dst.flush()
+            os.fsync(dst.fileno())
+        if total != expected_bytes or h.hexdigest() != expected_sha256:
+            raise MCFError("worker archive member hash mismatch")
+        try:
+            os.link(tmp, target)
+        except FileExistsError:
+            if target.is_symlink() or target.stat().st_size != expected_bytes or _raw_sha(target) != expected_sha256:
+                raise MCFError("concurrent worker runtime object collision")
+    finally:
+        if tmp.exists():
+            tmp.unlink()
+
+
+def import_bundle_archive(
+    archive_path: Path,
+    runtime_root: Path,
+    distributed_plan: Mapping[str, object],
+) -> dict:
+    """Safely import a worker archive and verify the reconstructed runtime."""
+    runtime_root.mkdir(parents=True, exist_ok=True)
+    guard_root(runtime_root)
+    with zipfile.ZipFile(archive_path, mode="r") as archive:
+        infos = archive.infolist()
+        names = [x.filename for x in infos]
+        if len(names) != len(set(names)) or ARCHIVE_MANIFEST_MEMBER not in names:
+            raise MCFError("worker archive member inventory invalid")
+        manifest_info = archive.getinfo(ARCHIVE_MANIFEST_MEMBER)
+        if manifest_info.file_size > 32 * 1024 * 1024:
+            raise MCFError("worker archive manifest exceeds bound")
+        manifest_raw = archive.read(manifest_info)
+        manifest = json.loads(manifest_raw)
+        if not isinstance(manifest, Mapping) or canonical(manifest) != manifest_raw:
+            raise MCFError("worker archive manifest is not canonical")
+        validate_bundle_manifest(manifest, distributed_plan)
+
+        expected_names = {ARCHIVE_MANIFEST_MEMBER}
+        for row in manifest["objects"]:
+            expected_names.add(ARCHIVE_PAYLOAD_PREFIX + str(row["relative"]))
+        if set(names) != expected_names:
+            raise MCFError("worker archive contains missing or unexpected members")
+
+        for row in manifest["objects"]:
+            member = ARCHIVE_PAYLOAD_PREFIX + str(row["relative"])
+            info = archive.getinfo(member)
+            target = safe_path(runtime_root, str(row["relative"]))
+            _extract_verified_member(
+                archive,
+                info,
+                target=target,
+                expected_bytes=int(row["bytes"]),
+                expected_sha256=str(row["raw_sha256"]),
+            )
+
+    verified = verify_bundle(runtime_root, manifest, distributed_plan)
+    return {
+        **verified,
+        "status": "WORKER_BUNDLE_ARCHIVE_IMPORTED_VERIFIED_NO_PERFORMANCE",
+        "archive_path": str(archive_path),
+    }
+
 
 
 def main(argv=None) -> int:
