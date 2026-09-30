@@ -144,6 +144,13 @@ class ProductionRuntime:
             self._liquidity[key] = liquidity_percentiles(caches, window, self.binding)
         return self._liquidity[key]
 
+    def release_transient_features(self) -> None:
+        """Bound long-run RSS by discarding candidate-derived feature matrices."""
+        for caches in self._caches.values():
+            for cache in caches.values():
+                cache.clear_transient()
+        self._liquidity.clear()
+
     def candidate_binding(self, candidate: Mapping[str, object]) -> FrozenCandidateBinding:
         cid = str(candidate["candidate_id"])
         neighbors = tuple(self._neighbor_graph[cid])
