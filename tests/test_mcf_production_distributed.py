@@ -16,6 +16,10 @@ from research.mass_candidate_factory.production_distributed import (
     claim_batch,
     clear_pause,
     coordinator_status,
+    coordinator_pause_request,
+    coordinator_mark_paused,
+    coordinator_resume,
+    coordinator_release,
     d1_seed_sql,
     heartbeat,
     init_coordinator,
@@ -243,6 +247,51 @@ class DistributedExecutionTest(unittest.TestCase):
             lease_seconds=60, now_ms=90_001,
         )
         self.assertEqual(recovered["node_id"], "NODE-LAPTOP")
+
+    def test_coordinator_pause_survives_lease_expiry_until_explicit_resume_or_release(self):
+        init_coordinator(self.db, self.plan)
+        claim_batch(
+            self.db, self.plan, node_id="NODE-LAPTOP", batch_code="B002",
+            lease_seconds=60, now_ms=1_000,
+        )
+        requested = coordinator_pause_request(
+            self.db, self.plan, node_id="NODE-LAPTOP", batch_code="B002",
+            now_ms=2_000,
+        )
+        self.assertEqual(requested["status"], "PAUSE_REQUESTED")
+        paused = coordinator_mark_paused(
+            self.db, self.plan, node_id="NODE-LAPTOP", batch_code="B002",
+            now_ms=3_000,
+        )
+        self.assertEqual(paused["status"], "PAUSED_SAFE")
+        with self.assertRaises(MCFError):
+            claim_batch(
+                self.db, self.plan, node_id="NODE-WORKPC", batch_code="B002",
+                lease_seconds=60, now_ms=1_000_000,
+            )
+        resumed = coordinator_resume(
+            self.db, self.plan, node_id="NODE-LAPTOP", batch_code="B002",
+            lease_seconds=60, now_ms=1_000_001,
+        )
+        self.assertEqual(resumed["status"], "BATCH_RESUMED")
+        coordinator_pause_request(
+            self.db, self.plan, node_id="NODE-LAPTOP", batch_code="B002",
+            now_ms=1_000_002,
+        )
+        coordinator_mark_paused(
+            self.db, self.plan, node_id="NODE-LAPTOP", batch_code="B002",
+            now_ms=1_000_003,
+        )
+        released = coordinator_release(
+            self.db, self.plan, node_id="NODE-LAPTOP", batch_code="B002",
+            now_ms=1_000_004,
+        )
+        self.assertEqual(released["status"], "BATCH_RELEASED")
+        reclaimed = claim_batch(
+            self.db, self.plan, node_id="NODE-WORKPC", batch_code="B002",
+            lease_seconds=60, now_ms=1_000_005,
+        )
+        self.assertEqual(reclaimed["node_id"], "NODE-WORKPC")
 
     def test_auto_claim_assigns_distinct_batches_to_three_nodes(self):
         init_coordinator(self.db, self.plan)
