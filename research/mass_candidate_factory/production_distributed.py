@@ -258,19 +258,23 @@ def write_candidate_result(
     compact = storage_result(result)
     if compact.get("candidate_id") != candidate_id or compact.get("candidate_spec_sha256") != row["candidate_spec_sha256"]:
         raise MCFError("candidate result identity mismatch")
-    base = {
+    identity = {
         "schema": RESULT_SCHEMA,
         "generation_id": GENERATION_ID,
         "plan_sha256": plan["plan_sha256"],
         "batch_code": batch_code,
         "candidate_id": candidate_id,
         "candidate_spec_sha256": row["candidate_spec_sha256"],
-        "node_id": node_id,
         "git_sha": git_sha,
         "runner_input_sha256": runner_input_sha256,
         "result": compact,
     }
-    doc = {**base, "result_artifact_sha256": digest(base)}
+    # Compute location must not change scientific artifact identity.
+    doc = {
+        **identity,
+        "producer_node_id": node_id,
+        "result_artifact_sha256": digest(identity),
+    }
     directory = _candidate_result_dir(root, batch_code, candidate_id)
     directory.mkdir(parents=True, exist_ok=True)
     target = safe_path(root, f"results/{batch_code}/{candidate_id}/result-{doc['result_artifact_sha256']}.json")
@@ -279,8 +283,21 @@ def write_candidate_result(
         if path.is_symlink():
             raise MCFError("candidate result symlink")
         old = json.loads(path.read_text())
+        old_identity = {
+            k: v for k, v in old.items()
+            if k not in {"result_artifact_sha256", "producer_node_id"}
+        }
+        if digest(old_identity) != old.get("result_artifact_sha256"):
+            raise MCFError("existing candidate result artifact identity invalid")
         if old.get("result_artifact_sha256") != doc["result_artifact_sha256"]:
             raise MCFError("nondeterministic duplicate candidate result")
+        # An identical rerun on another node is scientifically idempotent.
+        return {
+            "batch_code": batch_code,
+            "candidate_id": candidate_id,
+            "result_artifact_sha256": old["result_artifact_sha256"],
+            "artifact": str(path.relative_to(guard_root(root))),
+        }
     write_once(target, canonical(doc))
     return {
         "batch_code": batch_code,
@@ -302,7 +319,10 @@ def _read_candidate_result(root: Path, plan: Mapping[str, object], batch_code: s
         raise MCFError("duplicate result artifacts for candidate")
     raw = paths[0].read_bytes()
     doc = json.loads(raw)
-    base = {k: v for k, v in doc.items() if k != "result_artifact_sha256"}
+    identity = {
+        k: v for k, v in doc.items()
+        if k not in {"result_artifact_sha256", "producer_node_id"}
+    }
     if (
         canonical(doc) != raw
         or doc.get("schema") != RESULT_SCHEMA
@@ -313,8 +333,8 @@ def _read_candidate_result(root: Path, plan: Mapping[str, object], batch_code: s
         or doc.get("candidate_spec_sha256") != expected["candidate_spec_sha256"]
         or not _sha(doc.get("git_sha"))
         or not _sha(doc.get("runner_input_sha256"))
-        or not NODE_RE.fullmatch(str(doc.get("node_id", "")))
-        or digest(base) != doc.get("result_artifact_sha256")
+        or not NODE_RE.fullmatch(str(doc.get("producer_node_id", "")))
+        or digest(identity) != doc.get("result_artifact_sha256")
     ):
         raise MCFError("candidate result artifact boundary mismatch")
     result = doc.get("result")
@@ -338,7 +358,7 @@ def status(root: Path, plan: Mapping[str, object], batch_code: str) -> dict:
             raise MCFError("duplicate completed candidate identity")
         identities.add(doc["candidate_id"])
         complete.append(doc["candidate_id"])
-        nodes.add(doc["node_id"])
+        nodes.add(doc["producer_node_id"])
         git_shas.add(doc["git_sha"])
         runner_shas.add(doc["runner_input_sha256"])
     pending = [row["candidate_id"] for row in rows if row["candidate_id"] not in identities]
@@ -386,7 +406,7 @@ def build_batch_manifest(root: Path, plan: Mapping[str, object], batch_code: str
         })
         git_shas.add(doc["git_sha"])
         runner_shas.add(doc["runner_input_sha256"])
-        nodes.add(doc["node_id"])
+        nodes.add(doc["producer_node_id"])
     if len(git_shas) != 1 or len(runner_shas) != 1:
         raise MCFError("batch mixes git or runner-input identities")
     base = {
