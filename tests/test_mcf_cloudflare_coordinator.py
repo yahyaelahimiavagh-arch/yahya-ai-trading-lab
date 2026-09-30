@@ -22,15 +22,22 @@ class CloudflareCoordinatorSourceTest(unittest.TestCase):
             "/v1/ready",
             "/v1/ingested",
             "/v1/status",
-            "/v1/artifact/",
-            "/v1/manifest/",
-            "/v1/admin/object/",
             "YATL_ADMIN_TOKEN_SHA256",
             "RESULTS",
             "ARTIFACT_RAW_SHA_MISMATCH",
             "MANIFEST_RAW_SHA_MISMATCH",
         ):
             self.assertIn(needle, source)
+
+        for literal, regex_form in (
+            ("/v1/artifact/", r"\\/v1\\/artifact\\/"),
+            ("/v1/manifest/", r"\\/v1\\/manifest\\/"),
+            ("/v1/admin/object/", r"\\/v1\\/admin\\/object\\/"),
+        ):
+            self.assertTrue(
+                literal in source or regex_form in source,
+                msg=f"missing route source for {literal}",
+            )
         self.assertNotIn("API_KEY", source)
         self.assertNotIn("API_SECRET", source)
         self.assertNotIn("withdraw", source.lower())
