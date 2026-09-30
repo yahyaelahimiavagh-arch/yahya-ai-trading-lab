@@ -1,0 +1,15 @@
+#!/bin/sh
+set -eu
+
+NODE_ID="${1:-}"
+case "$NODE_ID" in
+  NODE-VPS|NODE-LAPTOP|NODE-WORKPC) ;;
+  *) echo '{"status":"SSH_DISTRIBUTED_GATEWAY_BLOCKED","reason":"invalid forced-command node"}'; exit 2 ;;
+esac
+
+exec /opt/yatl/app/.venv/bin/python -m research.mass_candidate_factory.production_ssh_gateway server \
+  --node-id "$NODE_ID" \
+  --plan /var/lib/yatl/research/mcf-prod-001-distributed/plan.json \
+  --db /var/lib/yatl/research/mcf-prod-001-distributed/coordinator.sqlite3 \
+  --results-root /var/lib/yatl/research/mcf-prod-001-results \
+  --spool-root /var/lib/yatl/research/mcf-prod-001-incoming
