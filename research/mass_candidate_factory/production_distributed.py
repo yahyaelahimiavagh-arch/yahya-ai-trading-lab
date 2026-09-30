@@ -611,6 +611,24 @@ def coordinator_status(db_path: Path, plan: Mapping[str, object]) -> dict:
     }
 
 
+def d1_seed_sql(plan: Mapping[str, object]) -> str:
+    """Emit deterministic D1 seed SQL for plan metadata and 14 batch identities."""
+    validate_plan(plan)
+    statements = [
+        "INSERT OR REPLACE INTO meta(key,value) VALUES('schema','MCF_DISTRIBUTED_COORDINATOR/1.0.0');",
+        f"INSERT OR REPLACE INTO meta(key,value) VALUES('plan_sha256','{plan['plan_sha256']}');",
+        f"INSERT OR REPLACE INTO meta(key,value) VALUES('generation_id','{GENERATION_ID}');",
+        "DELETE FROM batches;",
+    ]
+    for item in plan["batches"]:
+        statements.append(
+            "INSERT INTO batches(batch_code,batch_sha256,plan_sha256,candidate_count,state,updated_at_ms) "
+            f"VALUES('{item['batch_code']}','{item['batch_sha256']}','{plan['plan_sha256']}',"
+            f"{item['candidate_count']},'AVAILABLE',0);"
+        )
+    return "\n".join(statements) + "\n"
+
+
 def _load_plan(path: Path) -> dict:
     raw = path.read_bytes()
     plan = json.loads(raw)
@@ -646,6 +664,10 @@ def main(argv=None) -> int:
     p.add_argument("--db", required=True, type=Path)
     p.add_argument("--plan", required=True, type=Path)
 
+    p = sub.add_parser("emit-d1-seed")
+    p.add_argument("--plan", required=True, type=Path)
+    p.add_argument("--output", required=True, type=Path)
+
     args = parser.parse_args(argv)
     try:
         if args.command == "freeze-plan":
@@ -673,6 +695,17 @@ def main(argv=None) -> int:
                 result = init_coordinator(args.db, plan)
             elif args.command == "coordinator-status":
                 result = coordinator_status(args.db, plan)
+            elif args.command == "emit-d1-seed":
+                payload = d1_seed_sql(plan).encode("utf-8")
+                if args.output.exists() and args.output.read_bytes() != payload:
+                    raise MCFError("D1 seed collision")
+                _atomic_replace(args.output, payload)
+                result = {
+                    "status": "D1_SEED_EMITTED",
+                    "plan_sha256": plan["plan_sha256"],
+                    "batch_count": plan["batch_count"],
+                    "output": str(args.output),
+                }
             else:
                 raise MCFError("unsupported distributed command")
         print(json.dumps(result, sort_keys=True))
