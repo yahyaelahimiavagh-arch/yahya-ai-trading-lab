@@ -123,6 +123,25 @@ class WorkerAgentTest(unittest.TestCase):
         self.assertEqual(rc, 0)
         self.assertEqual(ssh_mock.call_args.args[0], ["claim", "B003", "7200"])
 
+    def test_ssh_auto_claim_uses_explicit_claim_next(self):
+        fake_plan = {"plan_sha256": "a" * 64}
+        with patch.dict(os.environ, {"YATL_NODE_ID": "NODE-LAPTOP"}, clear=True), \
+             patch.object(agent, "_load", return_value=fake_plan), \
+             patch.object(agent, "validate_plan"), \
+             patch.object(agent, "_ssh", return_value={
+                 "status": "BATCH_CLAIMED",
+                 "batch_code": "B001",
+                 "node_id": "NODE-LAPTOP",
+             }) as ssh_mock:
+            rc = agent.main([
+                "--transport", "ssh",
+                "--root", str(self.root / "state"),
+                "--plan", str(self.plan),
+                "claim",
+            ])
+        self.assertEqual(rc, 0)
+        self.assertEqual(ssh_mock.call_args.args[0], ["claim-next", "7200"])
+
     def test_ssh_upload_removes_only_transfer_bundle_after_verified_ingest(self):
         fake_plan = {"plan_sha256": "a" * 64}
         bundle = self.root / "bundle.jsonl"
