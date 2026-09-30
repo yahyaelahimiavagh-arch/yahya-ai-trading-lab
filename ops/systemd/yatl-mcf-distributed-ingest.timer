@@ -1,0 +1,12 @@
+[Unit]
+Description=Poll YATL distributed results for automatic ingest
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+Persistent=true
+AccuracySec=30s
+Unit=yatl-mcf-distributed-ingest.service
+
+[Install]
+WantedBy=timers.target
