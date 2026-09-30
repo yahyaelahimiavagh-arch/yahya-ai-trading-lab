@@ -172,7 +172,16 @@ def run_child_with_heartbeat(
         sleeper(min(5, heartbeat_seconds))
         now = monotonic()
         if now >= next_heartbeat:
-            control.heartbeat(batch_code, lease_seconds)
+            try:
+                control.heartbeat(batch_code, lease_seconds)
+            except Exception:
+                process.terminate()
+                try:
+                    process.wait(timeout=30)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    process.wait(timeout=30)
+                raise
             next_heartbeat = now + heartbeat_seconds
 
     stdout, _ = process.communicate()
