@@ -200,9 +200,22 @@ It is illegal to:
 - estimate a smaller independent-trial count after seeing performance;
 - remove losing/failed trials from the DSR population.
 
-The Sharpe population used to estimate cross-trial dispersion must represent
-the complete frozen executable batch under the same Development accounting
-contract.
+The Sharpe population used to estimate cross-trial dispersion must contain
+**exactly 6,852 entries**, one for every frozen executable candidate, under the
+same Development accounting contract. A partial Sharpe population is invalid
+even if `conservative_trial_count` is still written as 6,852.
+
+For batch orchestration, a candidate with a flat/undefined return series is not
+deleted from the experiment. The frozen convention is:
+
+- candidate statistical admission: **FAIL / NO EVIDENCE**;
+- global FDR p-value contribution: `1.0`;
+- cross-trial DSR dispersion value: periodic Sharpe `0.0` **for population
+  accounting only**.
+
+This convention prevents inactive/undefined trials from being dropped after
+outcomes are known. It does not permit that candidate itself to pass DSR or any
+economic gate.
 
 ---
 
@@ -217,7 +230,10 @@ PBO is applied within the frozen:
 
 `family × timeframe`
 
-variant panel.
+variant panel after the already-preregistered F1 activity/evaluability gate.
+F1 may remove candidates that cannot form a meaningful return comparison, but
+it may not filter on return sign, Sharpe, rank or any later profitability
+measure before the PBO panel is constructed.
 
 This scope tests hyperparameter/variant selection among economically comparable
 candidates rather than mixing unrelated mechanisms and different bar cadences.
@@ -297,9 +313,12 @@ No step below is authorized by this PR; this is the frozen future order.
 3. Reject missing, duplicated or foreign result identities.
 4. Verify every result belongs to Development and the frozen accounting engine.
 5. Build the complete candidate daily-return inventory.
-6. Compute one-sided Sharpe p-values for all candidates.
-7. Apply **global BY at 0.05**.
-8. Compute all candidate periodic Sharpes and complete-batch dispersion.
+6. Compute one-sided Sharpe p-values for all candidates; undefined/flat
+   candidates contribute p=1.0 and remain in the family size.
+7. Apply **global BY at 0.05** across all 6,852 hypotheses.
+8. Compute the complete 6,852-entry Sharpe population; undefined/flat
+   candidates contribute the frozen population-accounting value 0.0 and cannot
+   themselves pass statistical admission.
 9. Compute DSR with `N=6,852`.
 10. Build frozen family×timeframe common-return panels.
 11. Run PBO/CSCV where applicable.
