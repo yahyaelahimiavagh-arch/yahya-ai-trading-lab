@@ -169,6 +169,7 @@ def verify_bundle(root: Path, manifest: Mapping[str, object],
 
 
 ARCHIVE_MANIFEST_MEMBER = "worker-bundle-manifest.json"
+ARCHIVE_PLAN_MEMBER = "distributed-plan.json"
 ARCHIVE_PAYLOAD_PREFIX = "payload/"
 
 
@@ -213,6 +214,7 @@ def archive_bundle(
             allowZip64=True,
         ) as archive:
             archive.writestr(_zip_info(ARCHIVE_MANIFEST_MEMBER), canonical(dict(manifest)))
+            archive.writestr(_zip_info(ARCHIVE_PLAN_MEMBER), canonical(dict(distributed_plan)))
             for row in manifest["objects"]:
                 source = safe_path(runtime_root, str(row["relative"]))
                 member = ARCHIVE_PAYLOAD_PREFIX + str(row["relative"])
@@ -299,16 +301,32 @@ def _extract_verified_member(
 def import_bundle_archive(
     archive_path: Path,
     runtime_root: Path,
-    distributed_plan: Mapping[str, object],
+    distributed_plan: Mapping[str, object] | None = None,
 ) -> dict:
-    """Safely import a worker archive and verify the reconstructed runtime."""
+    """Safely import a worker archive, its plan, and reconstructed runtime."""
     runtime_root.mkdir(parents=True, exist_ok=True)
     guard_root(runtime_root)
     with zipfile.ZipFile(archive_path, mode="r") as archive:
         infos = archive.infolist()
         names = [x.filename for x in infos]
-        if len(names) != len(set(names)) or ARCHIVE_MANIFEST_MEMBER not in names:
+        if (
+            len(names) != len(set(names))
+            or ARCHIVE_MANIFEST_MEMBER not in names
+            or ARCHIVE_PLAN_MEMBER not in names
+        ):
             raise MCFError("worker archive member inventory invalid")
+        plan_info = archive.getinfo(ARCHIVE_PLAN_MEMBER)
+        if plan_info.file_size > 64 * 1024 * 1024:
+            raise MCFError("worker archive distributed plan exceeds bound")
+        plan_raw = archive.read(plan_info)
+        embedded_plan = json.loads(plan_raw)
+        if not isinstance(embedded_plan, Mapping) or canonical(embedded_plan) != plan_raw:
+            raise MCFError("worker archive distributed plan is not canonical")
+        validate_plan(embedded_plan)
+        if distributed_plan is not None and dict(distributed_plan) != dict(embedded_plan):
+            raise MCFError("worker archive distributed plan differs from expected plan")
+        plan = dict(embedded_plan)
+
         manifest_info = archive.getinfo(ARCHIVE_MANIFEST_MEMBER)
         if manifest_info.file_size > 32 * 1024 * 1024:
             raise MCFError("worker archive manifest exceeds bound")
@@ -316,9 +334,9 @@ def import_bundle_archive(
         manifest = json.loads(manifest_raw)
         if not isinstance(manifest, Mapping) or canonical(manifest) != manifest_raw:
             raise MCFError("worker archive manifest is not canonical")
-        validate_bundle_manifest(manifest, distributed_plan)
+        validate_bundle_manifest(manifest, plan)
 
-        expected_names = {ARCHIVE_MANIFEST_MEMBER}
+        expected_names = {ARCHIVE_MANIFEST_MEMBER, ARCHIVE_PLAN_MEMBER}
         for row in manifest["objects"]:
             expected_names.add(ARCHIVE_PAYLOAD_PREFIX + str(row["relative"]))
         if set(names) != expected_names:
@@ -336,11 +354,18 @@ def import_bundle_archive(
                 expected_sha256=str(row["raw_sha256"]),
             )
 
-    verified = verify_bundle(runtime_root, manifest, distributed_plan)
+    plan_path = safe_path(runtime_root, "distributed-plan.json")
+    write_once(plan_path, canonical(plan))
+    manifest_path = safe_path(runtime_root, "worker-bundle-manifest.json")
+    write_once(manifest_path, canonical(dict(manifest)))
+    verified = verify_bundle(runtime_root, manifest, plan)
     return {
         **verified,
         "status": "WORKER_BUNDLE_ARCHIVE_IMPORTED_VERIFIED_NO_PERFORMANCE",
         "archive_path": str(archive_path),
+        "plan_path": str(plan_path),
+        "manifest_path": str(manifest_path),
+        "plan_sha256": plan["plan_sha256"],
     }
 
 
