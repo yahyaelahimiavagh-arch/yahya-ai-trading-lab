@@ -28,18 +28,14 @@ def build_manifest() -> dict:
     graph = frozen.get("neighbor_graph", {}).get("graph")
     if not isinstance(graph, dict):
         raise MCFError("IB-002 requires exact frozen parameter-neighbor graph")
-    manifest = build_preoutcome_multiplicity_manifest(
+    return build_preoutcome_multiplicity_manifest(
         frozen["executable"],
         neighbor_graph=graph,
+        candidate_ledger_sha256=summary["candidate_ledger_sha256"],
+        neighbor_graph_sha256=summary["neighbor_graph_sha256"],
+        executable_freeze_sha256=summary["freeze_sha256"],
         expected_candidate_count=EXPECTED_EXECUTABLE_COUNT,
     )
-    return {
-        **manifest,
-        "generation_id": "MCF-PROD-001",
-        "candidate_ledger_sha256": summary["candidate_ledger_sha256"],
-        "neighbor_graph_sha256": summary["neighbor_graph_sha256"],
-        "executable_freeze_sha256": summary["freeze_sha256"],
-    }
 
 
 def main(argv=None) -> int:
