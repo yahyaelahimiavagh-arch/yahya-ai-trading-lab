@@ -10,3 +10,10 @@ database_id = "REPLACE_WITH_D1_DATABASE_ID"
 
 # YATL_ADMIN_TOKEN_SHA256 must be configured as a Worker secret/variable.
 # Never commit plaintext admin or node tokens.
+
+# Optional but preferred automatic result relay.
+# Create/activate the private R2 bucket, then uncomment:
+#
+# [[r2_buckets]]
+# binding = "RESULTS"
+# bucket_name = "yatl-distributed-results"
