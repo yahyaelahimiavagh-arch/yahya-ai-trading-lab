@@ -16,6 +16,7 @@ from research.mass_candidate_factory.production_distributed import (
     claim_batch,
     clear_pause,
     coordinator_status,
+    d1_seed_sql,
     heartbeat,
     init_coordinator,
     mark_ingested,
@@ -73,6 +74,14 @@ class DistributedExecutionTest(unittest.TestCase):
 
     def test_plan_is_deterministic(self):
         self.assertEqual(self.plan, build_execution_plan())
+
+    def test_d1_seed_contains_exact_plan_and_all_batches(self):
+        sql = d1_seed_sql(self.plan)
+        self.assertIn(self.plan["plan_sha256"], sql)
+        self.assertEqual(sql.count("INSERT INTO batches("), 14)
+        self.assertIn("'B001'", sql)
+        self.assertIn("'B014'", sql)
+        self.assertNotIn("NODE-", sql)
 
     def test_plan_tamper_rejected(self):
         changed = copy.deepcopy(self.plan)
