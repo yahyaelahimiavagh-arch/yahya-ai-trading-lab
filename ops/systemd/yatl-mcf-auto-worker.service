@@ -1,0 +1,36 @@
+[Unit]
+Description=YATL MCF autonomous VPS research worker
+After=local-fs.target
+ConditionPathExists=/var/lib/yatl/research/mcf-prod-001-distributed/authorization.json
+ConditionPathExists=/var/lib/yatl/research/mcf-prod-001-runtime-input/distributed-plan.json
+ConditionPathExists=/var/lib/yatl/research/mcf-prod-001-runtime-input/worker-bundle-manifest.json
+
+[Service]
+Type=simple
+User=yatl
+Group=yatl
+WorkingDirectory=/opt/yatl/mcf-distributed
+Environment=YATL_NODE_ID=NODE-VPS
+Environment=YATL_COORDINATOR_TRANSPORT=local
+ExecStart=/opt/yatl/app/.venv/bin/python -m research.mass_candidate_factory.production_worker_orchestrator --runtime-root /var/lib/yatl/research/mcf-prod-001-runtime-input --worker-root /var/lib/yatl/research/mcf-prod-001-results --authorization /var/lib/yatl/research/mcf-prod-001-distributed/authorization.json --transport local --coordinator-db /var/lib/yatl/research/mcf-prod-001-distributed/coordinator.sqlite3
+Restart=on-failure
+RestartSec=30
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+RestrictNamespaces=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX
+ReadWritePaths=/var/lib/yatl/research/mcf-prod-001-results /var/lib/yatl/research/mcf-prod-001-distributed
+
+[Install]
+WantedBy=multi-user.target
