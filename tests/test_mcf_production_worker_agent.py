@@ -104,6 +104,60 @@ class WorkerAgentTest(unittest.TestCase):
             ])
         self.assertEqual(rc, 2)
 
+    def test_ssh_claim_uses_same_single_entry_agent(self):
+        fake_plan = {"plan_sha256": "a" * 64}
+        with patch.dict(os.environ, {"YATL_NODE_ID": "NODE-LAPTOP"}, clear=True), \
+             patch.object(agent, "_load", return_value=fake_plan), \
+             patch.object(agent, "validate_plan"), \
+             patch.object(agent, "_ssh", return_value={
+                 "status": "BATCH_CLAIMED",
+                 "batch_code": "B003",
+                 "node_id": "NODE-LAPTOP",
+             }) as ssh_mock:
+            rc = agent.main([
+                "--transport", "ssh",
+                "--root", str(self.root / "state"),
+                "--plan", str(self.plan),
+                "claim", "B003",
+            ])
+        self.assertEqual(rc, 0)
+        self.assertEqual(ssh_mock.call_args.args[0], ["claim", "B003", "7200"])
+
+    def test_ssh_upload_removes_only_transfer_bundle_after_verified_ingest(self):
+        fake_plan = {"plan_sha256": "a" * 64}
+        bundle = self.root / "bundle.jsonl"
+        bundle.write_bytes(b"bundle")
+        bundle_doc = {
+            "status": "SSH_BATCH_BUNDLE_READY_NO_TRANSFER",
+            "batch_code": "B002",
+            "batch_result_manifest_sha256": "b" * 64,
+            "bundle_sha256": "c" * 64,
+            "bundle_bytes": 6,
+            "bundle_path": str(bundle),
+        }
+        with patch.dict(os.environ, {"YATL_NODE_ID": "NODE-WORKPC"}, clear=True), \
+             patch.object(agent, "_load", return_value=fake_plan), \
+             patch.object(agent, "validate_plan"), \
+             patch.object(agent, "build_batch_bundle", return_value=bundle_doc), \
+             patch.object(agent, "_ssh", return_value={
+                 "status": "SSH_BATCH_INGESTED_ACCEPTED",
+                 "batch_code": "B002",
+                 "batch_result_manifest_sha256": "b" * 64,
+             }) as ssh_mock:
+            rc = agent.main([
+                "--transport", "ssh",
+                "--root", str(self.root / "state"),
+                "--plan", str(self.plan),
+                "upload", "B002",
+            ])
+        self.assertEqual(rc, 0)
+        self.assertFalse(bundle.exists())
+        self.assertEqual(
+            ssh_mock.call_args.args[0],
+            ["upload", "B002", "b" * 64, "6", "c" * 64],
+        )
+        self.assertEqual(ssh_mock.call_args.kwargs["payload_path"], bundle)
+
 
 if __name__ == "__main__":
     unittest.main()
