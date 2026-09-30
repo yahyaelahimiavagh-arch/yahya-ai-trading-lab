@@ -402,10 +402,13 @@ def build_batch_manifest(root: Path, plan: Mapping[str, object], batch_code: str
     return {**base, "batch_result_manifest_sha256": digest(base)}
 
 
-def verify_batch_manifest(root: Path, plan: Mapping[str, object], manifest: Mapping[str, object]) -> dict:
+def validate_batch_manifest_structure(plan: Mapping[str, object], manifest: Mapping[str, object]) -> None:
+    """Validate a complete batch manifest without trusting worker-local files."""
     batch_code = str(manifest.get("batch_code", ""))
     frozen = batch(plan, batch_code)
+    expected = batch_candidates(plan, batch_code)
     base = {k: v for k, v in manifest.items() if k != "batch_result_manifest_sha256"}
+    artifacts = manifest.get("artifacts")
     if (
         manifest.get("schema") != BATCH_MANIFEST_SCHEMA
         or manifest.get("generation_id") != GENERATION_ID
@@ -414,9 +417,28 @@ def verify_batch_manifest(root: Path, plan: Mapping[str, object], manifest: Mapp
         or manifest.get("candidate_count") != frozen["candidate_count"]
         or not _sha(manifest.get("git_sha"))
         or not _sha(manifest.get("runner_input_sha256"))
+        or not isinstance(manifest.get("nodes"), list)
+        or not manifest.get("nodes")
+        or any(not isinstance(node, str) or not NODE_RE.fullmatch(node) for node in manifest["nodes"])
+        or manifest["nodes"] != sorted(set(manifest["nodes"]))
+        or not isinstance(artifacts, list)
+        or len(artifacts) != len(expected)
         or digest(base) != manifest.get("batch_result_manifest_sha256")
     ):
         raise MCFError("batch result manifest boundary mismatch")
+    for want, got in zip(expected, artifacts):
+        if (
+            not isinstance(got, Mapping)
+            or got.get("candidate_id") != want["candidate_id"]
+            or got.get("candidate_spec_sha256") != want["candidate_spec_sha256"]
+            or not _sha(got.get("result_artifact_sha256"))
+        ):
+            raise MCFError("batch result manifest candidate coverage mismatch")
+
+
+def verify_batch_manifest(root: Path, plan: Mapping[str, object], manifest: Mapping[str, object]) -> dict:
+    batch_code = str(manifest.get("batch_code", ""))
+    validate_batch_manifest_structure(plan, manifest)
     rebuilt = build_batch_manifest(root, plan, batch_code)
     if rebuilt != dict(manifest):
         raise MCFError("batch result manifest does not reconcile to artifacts")
@@ -540,10 +562,8 @@ def heartbeat(db_path: Path, plan: Mapping[str, object], *, node_id: str,
 def mark_ingested(db_path: Path, plan: Mapping[str, object], *, manifest: Mapping[str, object],
                   now_ms: int | None = None) -> dict:
     batch_code = str(manifest.get("batch_code", ""))
-    batch(plan, batch_code)
-    manifest_sha = str(manifest.get("batch_result_manifest_sha256", ""))
-    if not _sha(manifest_sha):
-        raise MCFError("invalid ingested manifest identity")
+    validate_batch_manifest_structure(plan, manifest)
+    manifest_sha = str(manifest["batch_result_manifest_sha256"])
     now = int(time.time() * 1000) if now_ms is None else int(now_ms)
     with sqlite3.connect(db_path, timeout=30, isolation_level=None) as con:
         con.execute("BEGIN IMMEDIATE")
