@@ -102,6 +102,30 @@ class ProductionRuntimeTest(unittest.TestCase):
         self.assertFalse(result["safety"]["fresh_oos_read"])
         self.assertFalse(result["safety"]["p10_read"])
 
+    def test_release_transient_features_keeps_source_bars_but_drops_derived_arrays(self):
+        runtime = ProductionRuntime(
+            synthetic_fixture=True,
+            executable_freeze=freeze_artifact(),
+            binding=binding(),
+            bars_by_timeframe={
+                "1h": {
+                    "AAAUSDT": bars("AAAUSDT"),
+                    "BBBUSDT": bars("BBBUSDT"),
+                }
+            },
+        )
+        caches = runtime._timeframe_caches("1h")
+        aaa = caches["AAAUSDT"]
+        original_bars = aaa.bars
+        aaa.rolling("closes", 4)
+        self.assertTrue(aaa._cache)
+        runtime._liquidity[("1h", 4)] = {"AAAUSDT": (0.5,)}
+        runtime.release_transient_features()
+        self.assertEqual(aaa._cache, {})
+        self.assertEqual(runtime._liquidity, {})
+        self.assertIs(aaa.bars, original_bars)
+        self.assertIn("1h", runtime._caches)
+
 
 if __name__ == "__main__":
     unittest.main()
