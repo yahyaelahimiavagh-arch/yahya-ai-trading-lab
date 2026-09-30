@@ -165,10 +165,10 @@ def expected_maximum_sharpe(
         raise MCFError("insufficient trial Sharpes for deflation")
     if (
         type(conservative_trial_count) is not int
-        or conservative_trial_count < len(sharpes)
+        or conservative_trial_count != len(sharpes)
         or conservative_trial_count < 2
     ):
-        raise MCFError("invalid conservative trial count")
+        raise MCFError("DSR requires the complete frozen trial Sharpe population")
     sigma = pstdev(sharpes)
     if not isfinite(sigma):
         raise MCFError("invalid cross-trial Sharpe dispersion")
