@@ -846,3 +846,45 @@ PR #174 distributed execution foundation:
 4. Foundation توزیع‌شده CI/merge شود؛
 5. auto-ingest relay و full runner با process restart/checkpoint بسته شوند؛
 6. اجرای ۶٬۸۵۲ فقط با مجوز جداگانه Director.
+
+
+## به‌روزرسانی ۳۰ سپتامبر ۲۰۲۶ — ادامه Director / Foundation پس از پذیرش #172
+
+PR #172 با CI سبز پذیرفته و squash-merge شد.
+
+- main پذیرفته‌شده: `4a205efe6a20bc01ad7a71403dd320d0acff7a06`;
+- tree نهایی PR #172 و tree merge روی main دقیقاً یکسان تأیید شد؛
+- bounded-memory remediation اکنون بخشی از main است؛
+- اجرای کامل ۶٬۸۵۲ همچنان مجوز ندارد.
+
+PR #174 پس از merge شدن #172 بدون force-push با main آشتی داده شد.
+Foundation فعلی شامل این اجزا است:
+
+- سه node همزمان: VPS / LAPTOP / WORKPC؛
+- ۱۴ batch ثابت و micro-shard حداکثر ۲۵؛
+- claim/lease/heartbeat و safe pause/resume؛
+- resultهای content-addressed و nondeterminism rejection؛
+- Cloudflare Worker + D1 coordinator؛
+- R2 result relay برای upload workerها؛
+- VPS auto-ingest با hash/plan/git/runner reconciliation؛
+- systemd oneshot + timer برای ingest دوره‌ای؛
+- worker bundle منجمد برای دقیقاً ۵۲۵ dataset + ۵۲۵ gap map؛
+- single-entry worker agent برای doctor/claim/status/pause/resume/upload/verify؛
+- هیچ production performance command در Foundation وجود ندارد.
+
+R2/D1 هنوز deploy یا account-configure نشده‌اند؛ وجود کد به معنی فعال بودن
+سرویس خارجی نیست. Hostinger در compute path قرار ندارد.
+
+پس از تغییر code identity در #172، runner input قدیمی
+`3d089036d8a2e3b91f2efe3190c0775bbcb957a76ff352b647cfb177e9587cd3`
+برای اجرای بعدی معتبر فرض نمی‌شود. قبل از هر performance execution باید
+runner input دوباره freeze و verify شود و benchmark ثابت ۲۴ نامزد دوباره اجرا شود.
+
+ممنوعیت‌ها بدون تغییر:
+- full 6,852 performance؛
+- F0-F7 selection/promotion؛
+- Fresh OOS؛
+- recent reserve؛
+- P10 read/write؛
+- P11؛
+- Live/order/futures/leverage/short.
