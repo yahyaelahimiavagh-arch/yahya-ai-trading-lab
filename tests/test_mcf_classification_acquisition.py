@@ -207,6 +207,45 @@ class ClassificationAcquisitionTest(unittest.TestCase):
             self.assertIn("BTSUSDT", cumulative["entries"])
             self.assertIn("OCEANUSDT", cumulative["entries"])
 
+    def test_overlap_is_rejected_before_new_evidence_is_written(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            output = root / "out"
+            output.mkdir()
+
+            ledger = root / "wave2-ledger.json"
+            ledger.write_bytes(canonical(_wave2_ledger()))
+            first = materialize(
+                acquisition_path=ledger,
+                wave_path=WAVE2,
+                output_root=output,
+            )
+
+            changed = _wave2_ledger()
+            changed["entries"]["BTSUSDT"]["source_title"] += " changed"
+            changed_ledger = root / "wave2-changed-ledger.json"
+            changed_ledger.write_bytes(canonical(changed))
+            before = {
+                path.relative_to(output)
+                for path in output.rglob("*")
+                if path.is_file()
+            }
+
+            with self.assertRaises(MCFError):
+                materialize(
+                    acquisition_path=changed_ledger,
+                    wave_path=WAVE2,
+                    output_root=output,
+                    base_classification_map=first["classification_map"],
+                )
+
+            after = {
+                path.relative_to(output)
+                for path in output.rglob("*")
+                if path.is_file()
+            }
+            self.assertEqual(after, before)
+
     def test_base_map_requires_immutable_referenced_evidence(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
