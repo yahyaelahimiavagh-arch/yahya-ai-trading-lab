@@ -81,6 +81,8 @@ async function claimSpecific(env, nodeId, batchCode, leaseSeconds, now) {
          AND state != 'INGESTED'
          AND state != 'AWAITING_INGEST'
          AND state != 'BLOCKED'
+         AND state != 'PAUSED'
+         AND state != 'PAUSE_REQUESTED'
          AND (
            state='AVAILABLE'
            OR (state='CLAIMED' AND owner_node=?1)
@@ -156,6 +158,58 @@ async function handleHeartbeat(request, env) {
   return response({ status: "HEARTBEAT_ACCEPTED", node_id: nodeId, batch_code: batchCode, lease_until_ms: until });
 }
 
+async function handlePauseRequest(request, env) {
+  const body = await parseJson(request);
+  const nodeId = String(body.node_id || "");
+  const batchCode = String(body.batch_code || "");
+  if (!(await nodeAuthorized(request, env, nodeId))) return response({ status: "UNAUTHORIZED" }, 401);
+  if (!BATCH_RE.test(batchCode)) return response({ status: "INVALID_BATCH" }, 400);
+  const now = Date.now();
+  const result = await env.DB.prepare(
+    `UPDATE batches SET state='PAUSE_REQUESTED',updated_at_ms=?1
+     WHERE batch_code=?2 AND state='CLAIMED' AND owner_node=?3 AND lease_until_ms>=?1`
+  ).bind(now, batchCode, nodeId).run();
+  if ((result.meta?.changes || 0) !== 1) return response({ status: "PAUSE_REQUEST_REJECTED" }, 409);
+  await event(env, "PAUSE_REQUESTED", nodeId, batchCode, {}, now);
+  return response({ status: "PAUSE_REQUESTED", batch_code: batchCode, node_id: nodeId });
+}
+
+async function handlePaused(request, env) {
+  const body = await parseJson(request);
+  const nodeId = String(body.node_id || "");
+  const batchCode = String(body.batch_code || "");
+  if (!(await nodeAuthorized(request, env, nodeId))) return response({ status: "UNAUTHORIZED" }, 401);
+  if (!BATCH_RE.test(batchCode)) return response({ status: "INVALID_BATCH" }, 400);
+  const now = Date.now();
+  const result = await env.DB.prepare(
+    `UPDATE batches SET state='PAUSED',lease_until_ms=NULL,updated_at_ms=?1
+     WHERE batch_code=?2 AND state='PAUSE_REQUESTED' AND owner_node=?3`
+  ).bind(now, batchCode, nodeId).run();
+  if ((result.meta?.changes || 0) !== 1) return response({ status: "PAUSED_ACK_REJECTED" }, 409);
+  await event(env, "PAUSED_SAFE", nodeId, batchCode, {}, now);
+  return response({ status: "PAUSED_SAFE", batch_code: batchCode, node_id: nodeId });
+}
+
+async function handleResume(request, env) {
+  const body = await parseJson(request);
+  const nodeId = String(body.node_id || "");
+  const batchCode = String(body.batch_code || "");
+  const leaseSeconds = Number(body.lease_seconds || DEFAULT_LEASE_SECONDS);
+  if (!(await nodeAuthorized(request, env, nodeId))) return response({ status: "UNAUTHORIZED" }, 401);
+  if (!BATCH_RE.test(batchCode) || !Number.isInteger(leaseSeconds) || leaseSeconds < 60 || leaseSeconds > 86400) {
+    return response({ status: "INVALID_RESUME" }, 400);
+  }
+  const now = Date.now();
+  const until = now + leaseSeconds * 1000;
+  const result = await env.DB.prepare(
+    `UPDATE batches SET state='CLAIMED',lease_until_ms=?1,updated_at_ms=?2
+     WHERE batch_code=?3 AND state='PAUSED' AND owner_node=?4`
+  ).bind(until, now, batchCode, nodeId).run();
+  if ((result.meta?.changes || 0) !== 1) return response({ status: "RESUME_REJECTED" }, 409);
+  await event(env, "BATCH_RESUMED", nodeId, batchCode, { lease_until_ms: until }, now);
+  return response({ status: "BATCH_RESUMED", batch_code: batchCode, node_id: nodeId, lease_until_ms: until });
+}
+
 async function handleRelease(request, env) {
   const body = await parseJson(request);
   const nodeId = String(body.node_id || "");
@@ -165,7 +219,7 @@ async function handleRelease(request, env) {
   const now = Date.now();
   const result = await env.DB.prepare(
     `UPDATE batches SET state='AVAILABLE',owner_node=NULL,lease_until_ms=NULL,updated_at_ms=?1
-     WHERE batch_code=?2 AND state='CLAIMED' AND owner_node=?3`
+     WHERE batch_code=?2 AND state IN ('CLAIMED','PAUSE_REQUESTED','PAUSED') AND owner_node=?3`
   ).bind(now, batchCode, nodeId).run();
   if ((result.meta?.changes || 0) !== 1) return response({ status: "RELEASE_REJECTED" }, 409);
   await event(env, "BATCH_RELEASED", nodeId, batchCode, {}, now);
@@ -356,6 +410,9 @@ export default {
 
       if (request.method === "POST" && url.pathname === "/v1/claim") return handleClaim(request, env);
       if (request.method === "POST" && url.pathname === "/v1/heartbeat") return handleHeartbeat(request, env);
+      if (request.method === "POST" && url.pathname === "/v1/pause-request") return handlePauseRequest(request, env);
+      if (request.method === "POST" && url.pathname === "/v1/paused") return handlePaused(request, env);
+      if (request.method === "POST" && url.pathname === "/v1/resume") return handleResume(request, env);
       if (request.method === "POST" && url.pathname === "/v1/release") return handleRelease(request, env);
       if (request.method === "POST" && url.pathname === "/v1/ready") return handleReady(request, env);
       if (request.method === "POST" && url.pathname === "/v1/ingested") return handleIngested(request, env);
