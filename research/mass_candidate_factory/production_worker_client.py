@@ -112,6 +112,7 @@ def release(base_url: str, node_id: str, batch_code: str, *,
 
 def ready(base_url: str, node_id: str, batch_code: str, *,
           result_manifest_sha256: str, result_count: int,
+          transfer_mode: str = "R2",
           token: str | None = None) -> dict:
     return request_json(
         base_url,
@@ -122,6 +123,7 @@ def ready(base_url: str, node_id: str, batch_code: str, *,
             "batch_code": batch_code,
             "result_manifest_sha256": result_manifest_sha256,
             "result_count": result_count,
+            "transfer_mode": transfer_mode,
         },
     )
 
@@ -158,6 +160,7 @@ def main(argv=None) -> int:
     p.add_argument("--batch", required=True)
     p.add_argument("--result-manifest-sha256", required=True)
     p.add_argument("--result-count", type=int, required=True)
+    p.add_argument("--transfer-mode", choices=("R2", "DIRECT_PULL"), default="R2")
 
     sub.add_parser("status")
 
@@ -180,6 +183,7 @@ def main(argv=None) -> int:
                 args.coordinator_url, args.node_id, args.batch,
                 result_manifest_sha256=args.result_manifest_sha256,
                 result_count=args.result_count,
+                transfer_mode=args.transfer_mode,
             )
         elif args.command == "status":
             result = status(args.coordinator_url, args.node_id)
