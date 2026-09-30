@@ -274,6 +274,7 @@ def main(argv=None) -> int:
 
 if __name__ == "__main__":
     # `python -m` executes this file as `__main__`; delegate to the canonical
-    # package module so FrozenRunnerInput keeps one nominal class identity.
+    # package module so FrozenRunnerInput keeps one nominal class identity and
+    # runtime type checks do not reject the verified reader.
     from . import production_runner_input as _canonical_module
     raise SystemExit(_canonical_module.main())
