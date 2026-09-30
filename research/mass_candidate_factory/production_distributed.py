@@ -33,6 +33,7 @@ MICROSHARD_SIZE = 25
 BATCH_RE = re.compile(r"^B\d{3}$")
 NODE_RE = re.compile(r"^NODE-[A-Z0-9][A-Z0-9_-]{1,31}$")
 SHA_RE = re.compile(r"^[0-9a-f]{64}$")
+GIT_SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 
 SAFETY = {
     "paper_research_only": True,
@@ -54,6 +55,10 @@ SAFETY = {
 
 def _sha(value: object) -> bool:
     return isinstance(value, str) and bool(SHA_RE.fullmatch(value))
+
+
+def _git_sha(value: object) -> bool:
+    return isinstance(value, str) and bool(GIT_SHA_RE.fullmatch(value))
 
 
 def _node(value: str) -> str:
@@ -249,7 +254,7 @@ def write_candidate_result(
 ) -> dict:
     """Persist one immutable candidate result; identical reruns are idempotent."""
     _node(node_id)
-    if not _sha(git_sha) or not _sha(runner_input_sha256):
+    if not _git_sha(git_sha) or not _sha(runner_input_sha256):
         raise MCFError("candidate result requires pinned git/runner identities")
     expected = {x["candidate_id"]: x for x in batch_candidates(plan, batch_code)}
     row = expected.get(candidate_id)
@@ -331,7 +336,7 @@ def _read_candidate_result(root: Path, plan: Mapping[str, object], batch_code: s
         or doc.get("batch_code") != batch_code
         or doc.get("candidate_id") != expected["candidate_id"]
         or doc.get("candidate_spec_sha256") != expected["candidate_spec_sha256"]
-        or not _sha(doc.get("git_sha"))
+        or not _git_sha(doc.get("git_sha"))
         or not _sha(doc.get("runner_input_sha256"))
         or not NODE_RE.fullmatch(str(doc.get("producer_node_id", "")))
         or digest(identity) != doc.get("result_artifact_sha256")
@@ -437,7 +442,7 @@ def validate_batch_manifest_structure(plan: Mapping[str, object], manifest: Mapp
         or manifest.get("plan_sha256") != plan["plan_sha256"]
         or manifest.get("batch_sha256") != frozen["batch_sha256"]
         or manifest.get("candidate_count") != frozen["candidate_count"]
-        or not _sha(manifest.get("git_sha"))
+        or not _git_sha(manifest.get("git_sha"))
         or not _sha(manifest.get("runner_input_sha256"))
         or not isinstance(manifest.get("nodes"), list)
         or not manifest.get("nodes")
