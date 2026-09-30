@@ -18,6 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 WAVE = ROOT / "docs/research/alpha-factory/MCF-PROD-001-CLASSIFICATION-WAVE-001.json"
 WAVE2 = ROOT / "docs/research/alpha-factory/MCF-PROD-001-CLASSIFICATION-WAVE-002.json"
 SHARDS = ROOT / "docs/research/alpha-factory/classification-wave-001"
+WAVE2_SHARDS = ROOT / "docs/research/alpha-factory/classification-wave-002"
 
 
 def _ledger():
@@ -206,6 +207,39 @@ class ClassificationAcquisitionTest(unittest.TestCase):
             self.assertEqual(cumulative["entries"]["BTCUSDT"], btc_relative)
             self.assertIn("BTSUSDT", cumulative["entries"])
             self.assertIn("OCEANUSDT", cumulative["entries"])
+
+    def test_frozen_wave2_source_shard_extends_wave1_cumulatively(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output = Path(tmp) / "out"
+            output.mkdir()
+
+            first = materialize(
+                source_shards_dir=SHARDS,
+                wave_path=WAVE,
+                output_root=output,
+            )
+            second = materialize(
+                source_shards_dir=WAVE2_SHARDS,
+                wave_path=WAVE2,
+                output_root=output,
+                base_classification_map=first["classification_map"],
+            )
+
+            self.assertEqual(second["resolved_count"], 2)
+            self.assertEqual(second["unresolved_count"], 0)
+            self.assertEqual(second["cumulative_resolved_count"], 178)
+            cumulative = json.loads(
+                (output / second["classification_map"]).read_text()
+            )
+            self.assertEqual(len(cumulative["entries"]), 178)
+            for symbol in ("BTSUSDT", "OCEANUSDT"):
+                classification, identity = _classification_evidence(
+                    output, symbol, cumulative["entries"][symbol]
+                )
+                self.assertEqual(classification, "ORDINARY_SPOT_CONFIRMED")
+                self.assertTrue(
+                    cumulative["entries"][symbol].endswith(f"{identity}.json")
+                )
 
     def test_overlap_is_rejected_before_new_evidence_is_written(self):
         with tempfile.TemporaryDirectory() as tmp:
