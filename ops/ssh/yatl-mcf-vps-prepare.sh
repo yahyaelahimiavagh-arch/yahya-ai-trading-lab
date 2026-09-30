@@ -64,6 +64,9 @@ if [[ ! -f "$PLAN" ]]; then
 fi
 
 run_yatl "$PY -m research.mass_candidate_factory.production_distributed coordinator-init --db '$DB' --plan '$PLAN'"
+chgrp yatl-mcf "$DB" "$PLAN"
+chmod 0660 "$DB"
+chmod 0640 "$PLAN"
 
 run_yatl "$PY -m research.mass_candidate_factory.production_runner_input verify   --runtime-root '$RUNTIME_ROOT'   --input-relative '$YATL_RUNNER_INPUT_RELATIVE'   --expected-input-sha256 '$YATL_RUNNER_INPUT_SHA256'"
 
@@ -71,15 +74,26 @@ if [[ ! -f "$MANIFEST" ]]; then
   run_yatl "$PY -m research.mass_candidate_factory.production_worker_bundle freeze     --runtime-root '$RUNTIME_ROOT'     --runner-input-relative '$YATL_RUNNER_INPUT_RELATIVE'     --expected-runner-input-sha256 '$YATL_RUNNER_INPUT_SHA256'     --plan '$PLAN'     --git-sha '$YATL_EXPECTED_GIT_SHA'     --output '$MANIFEST'"
 fi
 
+chgrp yatl-mcf "$MANIFEST"
+chmod 0640 "$MANIFEST"
+
 run_yatl "$PY -m research.mass_candidate_factory.production_worker_bundle verify   --runtime-root '$RUNTIME_ROOT'   --plan '$PLAN'   --manifest '$MANIFEST'"
 
 run_yatl "$PY -m research.mass_candidate_factory.production_worker_bundle archive   --runtime-root '$RUNTIME_ROOT'   --plan '$PLAN'   --manifest '$MANIFEST'   --output-root '$EXPORT_ROOT'"   | tee "$DIST_ROOT/worker-archive.json"
 
+chgrp -R yatl-mcf "$EXPORT_ROOT"
+chmod 0640 "$DIST_ROOT/worker-archive.json"
+chgrp yatl-mcf "$DIST_ROOT/worker-archive.json"
+find "$EXPORT_ROOT" -type d -exec chmod 0770 {} +
+find "$EXPORT_ROOT" -type f -exec chmod 0640 {} +
+
+install -o root -g root -m 0644 \
+  "$WORKTREE/ops/systemd/yatl-mcf-auto-worker.service" \
+  /etc/systemd/system/yatl-mcf-auto-worker.service
+systemctl daemon-reload
+
 chmod 0755 "$WORKTREE/ops/ssh/yatl-mcf-node-command"
 
-if ! id yatl-node >/dev/null 2>&1; then
-  useradd --create-home --shell /bin/sh yatl-node
-fi
 install -d -o yatl-node -g yatl-node -m 0700 /home/yatl-node/.ssh
 
 AUTH_TMP="$(mktemp)"
