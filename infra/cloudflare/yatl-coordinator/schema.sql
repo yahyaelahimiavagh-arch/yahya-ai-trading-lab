@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS batches (
   updated_at_ms INTEGER NOT NULL,
   result_manifest_sha256 TEXT,
   result_count INTEGER,
+  transfer_mode TEXT CHECK (transfer_mode IN ('R2','DIRECT_PULL') OR transfer_mode IS NULL),
   FOREIGN KEY(owner_node) REFERENCES nodes(node_id)
 );
 
