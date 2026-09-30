@@ -308,17 +308,20 @@ def pbo_cscv(
 def build_preoutcome_multiplicity_manifest(
     executable: Sequence[Mapping[str, object]],
     *,
+    neighbor_graph: Mapping[str, Sequence[str]],
     expected_candidate_count: int | None = None,
 ) -> dict:
     """Freeze metadata needed by later statistical adjudication without outcomes."""
     if not executable:
         raise MCFError("empty executable set")
+    if not isinstance(neighbor_graph, Mapping):
+        raise MCFError("missing frozen neighbor graph")
+
     seen: set[str] = set()
     family_counts: Counter[str] = Counter()
     mechanism_counts: Counter[str] = Counter()
     timeframe_counts: Counter[str] = Counter()
     dimension_counts: Counter[int] = Counter()
-    neighbor_edges = 0
 
     for row in executable:
         candidate_id = str(row.get("candidate_id", ""))
@@ -326,25 +329,37 @@ def build_preoutcome_multiplicity_manifest(
         mechanism = str(row.get("economic_mechanism_id", ""))
         timeframe = str(row.get("timeframe", ""))
         dimensions = row.get("free_parameter_dimensions")
-        neighbors = row.get("parameter_neighbor_ids", ())
         if not candidate_id or candidate_id in seen:
             raise MCFError("invalid/duplicate candidate in multiplicity manifest")
         if not family or not mechanism or timeframe not in {"15m", "1h", "4h"}:
             raise MCFError("incomplete candidate metadata in multiplicity manifest")
         if type(dimensions) is not int or dimensions < 0:
             raise MCFError("invalid parameter dimension metadata")
-        if not isinstance(neighbors, (tuple, list)) or any(not isinstance(x, str) or not x for x in neighbors):
-            raise MCFError("invalid neighbor metadata")
         seen.add(candidate_id)
         family_counts[family] += 1
         mechanism_counts[mechanism] += 1
         timeframe_counts[timeframe] += 1
         dimension_counts[dimensions] += 1
-        neighbor_edges += len(set(neighbors))
 
     candidate_count = len(seen)
     if expected_candidate_count is not None and candidate_count != expected_candidate_count:
         raise MCFError("multiplicity manifest candidate count mismatch")
+    if set(neighbor_graph) != seen:
+        raise MCFError("multiplicity neighbor graph identity mismatch")
+
+    neighbor_edges = 0
+    for candidate_id in sorted(seen):
+        neighbors = neighbor_graph[candidate_id]
+        if not isinstance(neighbors, (tuple, list)):
+            raise MCFError("invalid neighbor graph row")
+        unique = tuple(sorted(set(neighbors)))
+        if len(unique) != len(neighbors):
+            raise MCFError("duplicate parameter neighbor")
+        if candidate_id in unique or any(
+            not isinstance(other, str) or other not in seen for other in unique
+        ):
+            raise MCFError("invalid parameter neighbor identity")
+        neighbor_edges += len(unique)
 
     payload = {
         "schema": MANIFEST_SCHEMA,
