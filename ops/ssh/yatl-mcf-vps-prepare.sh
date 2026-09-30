@@ -84,7 +84,7 @@ run_yatl "$PY -m research.mass_candidate_factory.production_worker_bundle archiv
 chgrp -R yatl-mcf "$EXPORT_ROOT"
 chmod 0640 "$DIST_ROOT/worker-archive.json"
 chgrp yatl-mcf "$DIST_ROOT/worker-archive.json"
-find "$EXPORT_ROOT" -type d -exec chmod 0770 {} +
+find "$EXPORT_ROOT" -type d -exec chmod 2770 {} +
 find "$EXPORT_ROOT" -type f -exec chmod 0640 {} +
 
 install -o root -g root -m 0644 \
