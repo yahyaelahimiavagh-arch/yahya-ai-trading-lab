@@ -273,4 +273,7 @@ def main(argv=None) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    # `python -m` executes this file as `__main__`; delegate to the canonical
+    # package module so FrozenRunnerInput keeps one nominal class identity.
+    from . import production_runner_input as _canonical_module
+    raise SystemExit(_canonical_module.main())

@@ -1,6 +1,8 @@
 """Synthetic infrastructure fixtures only; never runs the production candidates."""
 import copy
 import json
+import runpy
+import sys
 import tempfile
 import unittest
 from decimal import localcontext, ROUND_DOWN
@@ -93,6 +95,17 @@ class RuntimeInputFreezeTest(unittest.TestCase):
     def reader(self):
         result = self.freeze()
         return runner.FrozenRunnerInput(self.output, result["artifact"], result["runner_input_sha256"])
+
+    def test_module_entrypoint_delegates_to_canonical_module(self):
+        with patch.object(sys, "argv", ["production_runner_input"]):
+            with patch.object(runner, "main", return_value=23) as canonical_main:
+                with self.assertRaises(SystemExit) as caught:
+                    runpy.run_module(
+                        "research.mass_candidate_factory.production_runner_input",
+                        run_name="__main__", alter_sys=True,
+                    )
+        self.assertEqual(caught.exception.code, 23)
+        canonical_main.assert_called_once_with()
 
     def test_wrong_membership_hash_rejected(self):
         with self.assertRaises(MCFError):
