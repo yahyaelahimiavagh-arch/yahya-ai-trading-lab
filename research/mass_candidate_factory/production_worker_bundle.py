@@ -362,6 +362,17 @@ def main(argv=None) -> int:
     p.add_argument("--plan", required=True, type=Path)
     p.add_argument("--manifest", required=True, type=Path)
 
+    p = sub.add_parser("archive")
+    p.add_argument("--runtime-root", required=True, type=Path)
+    p.add_argument("--plan", required=True, type=Path)
+    p.add_argument("--manifest", required=True, type=Path)
+    p.add_argument("--output-root", required=True, type=Path)
+
+    p = sub.add_parser("import-archive")
+    p.add_argument("--runtime-root", required=True, type=Path)
+    p.add_argument("--plan", required=True, type=Path)
+    p.add_argument("--archive", required=True, type=Path)
+
     args = parser.parse_args(argv)
     try:
         plan = json.loads(args.plan.read_bytes())
@@ -383,9 +394,14 @@ def main(argv=None) -> int:
                 "total_bytes": doc["total_bytes"],
                 "performance_execution_authorized": False,
             }
-        else:
+        elif args.command == "verify":
             manifest = json.loads(args.manifest.read_bytes())
             result = verify_bundle(args.runtime_root, manifest, plan)
+        elif args.command == "archive":
+            manifest = json.loads(args.manifest.read_bytes())
+            result = archive_bundle(args.runtime_root, manifest, plan, args.output_root)
+        else:
+            result = import_bundle_archive(args.archive, args.runtime_root, plan)
         print(json.dumps(result, sort_keys=True))
         return 0
     except (MCFError, OSError, ValueError, KeyError, TypeError) as exc:
