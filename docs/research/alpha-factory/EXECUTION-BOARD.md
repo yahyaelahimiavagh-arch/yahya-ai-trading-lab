@@ -745,3 +745,41 @@ recent reserve بسته و نخوانده؛ P10 read/write=false؛ LIVE_MASTER_L
 P11 قفل؛ PAPER/RESEARCH ONLY. شاخه RIE-006 و PR #152 دست‌نخورده می‌مانند.
 قرارداد و دستور VPS در
 `docs/research/alpha-factory/MCF-PROD-001-RUNTIME-INPUT-CONTRACT-v1.0.md` ثبت شده است.
+
+
+## به‌روزرسانی ۳۰ سپتامبر ۲۰۲۶ — PR #169 بسته / Capacity Gate جاری
+
+PR #169 با مجوز صریح Director پذیرفته و squash-merge شد.
+
+- main جدید: `ab3eea1436cc72c8e0a33631215bc649192c7c95`;
+- Final PR HEAD: `f86c62c042ee9630c36828e99cb1ace0217e1b22`;
+- GitHub Actions #402 / `36742674671`: **SUCCESS**؛
+- runner-input نهایی:
+  `3d089036d8a2e3b91f2efe3190c0775bbcb957a76ff352b647cfb177e9587cd3`;
+- runtime index:
+  `55c8c476cd5043a652c09f060e2a58b6b1dd9cfd9bffef33e3d8ff7a3a6092c3`;
+- ۵۲۵ dataset = ۱۷۵ نماد × ۳ timeframe؛
+- verify مستقل:
+  `RUNNER_INPUT_VERIFIED_NO_PERFORMANCE`.
+
+بنابراین شروط قدیمی شروع performance از نظر membership/runtime/input بسته شده‌اند، اما
+اجرای کامل ۶٬۸۵۲ نامزد هنوز مجوز ندارد.
+
+### CURRENT — Capacity Benchmark Gate
+
+واحد کاری جاری:
+
+`MCF-PROD-001-CAPACITY-BENCHMARK-GATE`
+
+هدف:
+- اجرای blind و ثابت ۲۴ نامزد فقط برای اندازه‌گیری throughput/CPU/RAM؛
+- انتخاب زیرمجموعه فقط از metadata منجمد و بدون outcome؛
+- عدم چاپ/ذخیره PnL، return، trade count، drawdown، ranking یا survivor state؛
+- استفاده نتیجه فقط برای تصمیم زیرساخت، shard size و worker count؛
+- عدم تغییر candidate/family/threshold/evidence بر اساس benchmark.
+
+اجرای کامل ۶٬۸۵۲ نامزد، F0-F7، Fresh OOS و هر promotion همچنان نیازمند gate و
+مجوز صریح جداگانه Director است.
+
+قرارداد:
+`docs/research/alpha-factory/MCF-PROD-001-CAPACITY-BENCHMARK-GATE-v1.0.md`.
