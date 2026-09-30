@@ -167,59 +167,6 @@ def run_microshard(
     }
 
 
-def run_batch_supervisor(
-    *,
-    root: Path,
-    plan_path: Path,
-    input_relative: str,
-    expected_input_sha256: str,
-    authorization_path: Path,
-    node_id: str,
-    batch_code: str,
-    expected_git_sha: str,
-    python_executable: str = sys.executable,
-    module: str = "research.mass_candidate_factory.production_worker_runner",
-    runner: Callable[..., object] = subprocess.run,
-) -> dict:
-    """Restart the Python worker after every micro-shard."""
-    plan = _load_canonical(plan_path)
-    validate_plan(plan)
-    current = current_git_sha()
-    if current != expected_git_sha:
-        raise MCFError("worker Git HEAD differs from authorized commit")
-    auth = _load_canonical(authorization_path)
-    validate_authorization(
-        auth,
-        plan_sha256=str(plan["plan_sha256"]),
-        runner_input_sha256=expected_input_sha256,
-        git_sha=expected_git_sha,
-    )
-    item = batch(plan, batch_code)
-    completed_shards = 0
-    for shard in item["microshards"]:
-        if pause_requested(root, plan, batch_code):
-            return {
-                "status": "BATCH_PAUSED_SAFE",
-                "batch_code": batch_code,
-                "completed_microshards_this_run": completed_shards,
-            }
-        cmd = [
-            python_executable,
-            "-m",
-            module,
-            "run-shard",
-            "--root",
-            str(root),
-            "--plan",
-            str(plan_path),
-            "--runtime-root",
-            str(ROOT if False else ""),  # replaced below by CLI supervisor
-        ]
-        # run_batch_supervisor is normally invoked through main(), which builds
-        # the exact child command with runtime-root. Tests may inject a runner.
-        raise MCFError("run_batch_supervisor requires explicit runtime-root")
-
-
 def _child_command(args, shard_code: str) -> list[str]:
     return [
         sys.executable,
