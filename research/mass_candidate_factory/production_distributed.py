@@ -20,6 +20,7 @@ from typing import Mapping, Sequence
 from .models import MCFError, canonical, digest, guard_root, safe_path, write_once
 from .production_generator import freeze_executable_generation
 from .production_rules import BLOCKED_FAMILIES
+from .production_result_projection import storage_result
 
 SCHEMA = "MCF_DISTRIBUTED_EXECUTION_PLAN/1.0.0"
 RESULT_SCHEMA = "MCF_DISTRIBUTED_CANDIDATE_RESULT/1.0.0"
@@ -254,7 +255,8 @@ def write_candidate_result(
     row = expected.get(candidate_id)
     if row is None:
         raise MCFError("candidate outside requested batch")
-    if result.get("candidate_id") != candidate_id or result.get("candidate_spec_sha256") != row["candidate_spec_sha256"]:
+    compact = storage_result(result)
+    if compact.get("candidate_id") != candidate_id or compact.get("candidate_spec_sha256") != row["candidate_spec_sha256"]:
         raise MCFError("candidate result identity mismatch")
     base = {
         "schema": RESULT_SCHEMA,
@@ -266,7 +268,7 @@ def write_candidate_result(
         "node_id": node_id,
         "git_sha": git_sha,
         "runner_input_sha256": runner_input_sha256,
-        "result": dict(result),
+        "result": compact,
     }
     doc = {**base, "result_artifact_sha256": digest(base)}
     directory = _candidate_result_dir(root, batch_code, candidate_id)
