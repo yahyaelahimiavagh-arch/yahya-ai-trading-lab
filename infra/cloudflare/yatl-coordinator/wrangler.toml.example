@@ -1,0 +1,12 @@
+name = "yatl-distributed-coordinator"
+main = "src/index.js"
+compatibility_date = "2026-09-30"
+
+# Create the D1 database first, then replace the placeholder database_id.
+[[d1_databases]]
+binding = "DB"
+database_name = "yatl-distributed-coordinator"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+
+# YATL_ADMIN_TOKEN_SHA256 must be configured as a Worker secret/variable.
+# Never commit plaintext admin or node tokens.
