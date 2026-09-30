@@ -265,6 +265,13 @@ def materialize(*, wave_path: Path, output_root: Path,
     base_entries, base_map_sha = _load_base_classification_map(
         output_root, base_classification_map
     )
+    overlap = set(base_entries) & set(doc["entries"])
+    if overlap:
+        raise MCFError(
+            "classification wave attempts to replace accepted evidence: "
+            + sorted(overlap)[0]
+        )
+
     wave_map_entries: dict[str, str] = {}
     for symbol in sorted(doc["entries"]):
         source = doc["entries"][symbol]
@@ -288,12 +295,6 @@ def materialize(*, wave_path: Path, output_root: Path,
         write_once(safe_path(output_root, relative), payload)
         wave_map_entries[symbol] = relative
 
-    overlap = set(base_entries) & set(wave_map_entries)
-    if overlap:
-        raise MCFError(
-            "classification wave attempts to replace accepted evidence: "
-            + sorted(overlap)[0]
-        )
     map_entries = {**base_entries, **wave_map_entries}
 
     cmap = {
