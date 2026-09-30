@@ -14,6 +14,7 @@ import hashlib
 import json
 import os
 import shlex
+import shutil
 import sqlite3
 import subprocess
 import sys
@@ -308,6 +309,7 @@ def execute_server_command(
     db: Path,
     results_root: Path,
     spool_root: Path,
+    export_root: Path | None = None,
 ) -> dict:
     if not NODE_RE.fullmatch(node_id):
         raise MCFError("invalid forced-command node id")
@@ -338,6 +340,28 @@ def execute_server_command(
         return coordinator_resume(db, plan, node_id=node_id, batch_code=args[0], lease_seconds=lease)
     if op == "release" and len(args) == 1:
         return coordinator_release(db, plan, node_id=node_id, batch_code=args[0])
+    if op == "runtime-export" and len(args) == 2:
+        bundle_manifest_sha, archive_sha = args
+        if export_root is None:
+            raise MCFError("SSH runtime export root is not configured")
+        if not SHA_RE.fullmatch(bundle_manifest_sha) or not SHA_RE.fullmatch(archive_sha):
+            raise MCFError("invalid SSH runtime export identity")
+        export_root.mkdir(parents=True, exist_ok=True)
+        path = safe_path(
+            export_root,
+            f"worker-runtime-{bundle_manifest_sha}-{archive_sha}.zip",
+        )
+        if not path.is_file():
+            raise MCFError("requested SSH runtime archive is unavailable")
+        actual_sha, actual_bytes = _file_sha256(path)
+        if actual_sha != archive_sha:
+            raise MCFError("SSH runtime archive identity mismatch")
+        return {
+            "_binary_path": str(path),
+            "_binary_sha256": actual_sha,
+            "_binary_bytes": actual_bytes,
+        }
+
     if op == "upload" and len(args) == 4:
         batch_code, manifest_sha, byte_text, raw_sha = args
         expected_bytes = int(byte_text)
@@ -433,6 +457,87 @@ def ssh_request(
     return doc
 
 
+
+def ssh_download(
+    *,
+    host: str,
+    user: str,
+    identity_file: Path,
+    known_hosts: Path,
+    remote_args: Sequence[str],
+    output_path: Path,
+    expected_sha256: str,
+    expected_bytes: int,
+    port: int = 22,
+    timeout: int = 3600,
+) -> dict:
+    if (
+        not SHA_RE.fullmatch(expected_sha256)
+        or not 1 <= expected_bytes
+        or not host
+        or not user
+        or not 1 <= port <= 65535
+        or not identity_file.is_file()
+        or not known_hosts.is_file()
+    ):
+        raise MCFError("invalid SSH download configuration")
+    for arg in remote_args:
+        if not isinstance(arg, str) or not arg or any(ch.isspace() for ch in arg):
+            raise MCFError("SSH download arguments must be whitespace-free tokens")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp_name = tempfile.mkstemp(prefix=".partial-ssh-download-", dir=output_path.parent)
+    tmp = Path(tmp_name)
+    os.close(fd)
+    cmd = [
+        "ssh",
+        "-T",
+        "-p", str(port),
+        "-i", str(identity_file),
+        "-o", "BatchMode=yes",
+        "-o", "IdentitiesOnly=yes",
+        "-o", "StrictHostKeyChecking=yes",
+        "-o", f"UserKnownHostsFile={known_hosts}",
+        "-o", "ClearAllForwardings=yes",
+        "-o", "ConnectTimeout=15",
+        f"{user}@{host}",
+        *remote_args,
+    ]
+    try:
+        with tmp.open("wb") as dst:
+            completed = subprocess.run(
+                cmd,
+                stdout=dst,
+                stderr=subprocess.PIPE,
+                timeout=timeout,
+                check=False,
+            )
+        if completed.returncode != 0:
+            raise MCFError(f"SSH runtime download rejected rc={completed.returncode}")
+        actual_sha, actual_bytes = _file_sha256(tmp)
+        if actual_sha != expected_sha256 or actual_bytes != expected_bytes:
+            raise MCFError("SSH runtime download hash/size mismatch")
+        if output_path.exists():
+            old_sha, old_bytes = _file_sha256(output_path)
+            if old_sha != actual_sha or old_bytes != actual_bytes:
+                raise MCFError("existing SSH runtime download collision")
+        else:
+            os.link(tmp, output_path)
+        return {
+            "status": "SSH_RUNTIME_ARCHIVE_DOWNLOADED_VERIFIED",
+            "archive_sha256": actual_sha,
+            "archive_bytes": actual_bytes,
+            "archive_path": str(output_path),
+        }
+    except (OSError, subprocess.SubprocessError) as exc:
+        if isinstance(exc, MCFError):
+            raise
+        raise MCFError("SSH runtime download transport failed") from exc
+    finally:
+        if tmp.exists():
+            tmp.unlink()
+
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -449,22 +554,58 @@ def main(argv=None) -> int:
     p.add_argument("--db", required=True, type=Path)
     p.add_argument("--results-root", required=True, type=Path)
     p.add_argument("--spool-root", required=True, type=Path)
+    p.add_argument("--export-root", required=True, type=Path)
+
+    p = sub.add_parser("client-download")
+    p.add_argument("--host", required=True)
+    p.add_argument("--user", required=True)
+    p.add_argument("--identity", required=True, type=Path)
+    p.add_argument("--known-hosts", required=True, type=Path)
+    p.add_argument("--port", type=int, default=22)
+    p.add_argument("--bundle-manifest-sha256", required=True)
+    p.add_argument("--archive-sha256", required=True)
+    p.add_argument("--archive-bytes", required=True, type=int)
+    p.add_argument("--output", required=True, type=Path)
 
     args = parser.parse_args(argv)
     try:
-        plan = _load_plan(args.plan)
-        if args.command == "bundle":
-            result = build_batch_bundle(args.root, plan, args.batch, args.output_root)
-        else:
-            original = os.environ.get("SSH_ORIGINAL_COMMAND", "")
-            result = execute_server_command(
-                original,
-                node_id=args.node_id,
-                plan=plan,
-                db=args.db,
-                results_root=args.results_root,
-                spool_root=args.spool_root,
+        if args.command == "client-download":
+            result = ssh_download(
+                host=args.host,
+                user=args.user,
+                identity_file=args.identity,
+                known_hosts=args.known_hosts,
+                port=args.port,
+                remote_args=[
+                    "runtime-export",
+                    args.bundle_manifest_sha256,
+                    args.archive_sha256,
+                ],
+                output_path=args.output,
+                expected_sha256=args.archive_sha256,
+                expected_bytes=args.archive_bytes,
             )
+        else:
+            plan = _load_plan(args.plan)
+            if args.command == "bundle":
+                result = build_batch_bundle(args.root, plan, args.batch, args.output_root)
+            else:
+                original = os.environ.get("SSH_ORIGINAL_COMMAND", "")
+                result = execute_server_command(
+                    original,
+                    node_id=args.node_id,
+                    plan=plan,
+                    db=args.db,
+                    results_root=args.results_root,
+                    spool_root=args.spool_root,
+                    export_root=args.export_root,
+                )
+                binary = result.get("_binary_path")
+                if binary:
+                    with Path(binary).open("rb") as src:
+                        shutil.copyfileobj(src, sys.stdout.buffer, length=1024 * 1024)
+                    sys.stdout.buffer.flush()
+                    return 0
         print(json.dumps(result, sort_keys=True))
         return 0
     except (MCFError, OSError, ValueError, KeyError, TypeError, sqlite3.Error) as exc:
