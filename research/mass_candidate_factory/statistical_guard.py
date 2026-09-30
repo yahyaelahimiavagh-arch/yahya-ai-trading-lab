@@ -29,7 +29,7 @@ def _probability(value: float, *, name: str) -> float:
     return value
 
 
-def _returns(values: Sequence[float], *, minimum: int = 5) -> tuple[float, ...]:
+def _returns(values: Sequence[float], *, minimum: int = 2) -> tuple[float, ...]:
     out = tuple(float(v) for v in values)
     if len(out) < minimum or any(not isfinite(v) for v in out):
         raise MCFError("invalid statistical return series")
@@ -95,7 +95,7 @@ def fdr_adjust(
 
 def _moments(values: Sequence[float]) -> tuple[float, float, float, float]:
     """Return mean, sample std, moment skewness and Pearson kurtosis."""
-    x = _returns(values)
+    x = _returns(values, minimum=5)
     mu = mean(x)
     sigma = stdev(x)
     n = len(x)
@@ -113,8 +113,8 @@ def _moments(values: Sequence[float]) -> tuple[float, float, float, float]:
 
 def periodic_sharpe(values: Sequence[float]) -> float:
     """Unannualized per-observation Sharpe used by the statistical guards."""
-    mu, sigma, _, _ = _moments(values)
-    return mu / sigma
+    x = _returns(values, minimum=2)
+    return mean(x) / stdev(x)
 
 
 def probabilistic_sharpe_ratio(
@@ -123,7 +123,7 @@ def probabilistic_sharpe_ratio(
     benchmark_sharpe: float = 0.0,
 ) -> float:
     """Probability that the true periodic Sharpe exceeds benchmark_sharpe."""
-    x = _returns(values)
+    x = _returns(values, minimum=5)
     sr = periodic_sharpe(x)
     _, _, skewness, kurtosis = _moments(x)
     benchmark = float(benchmark_sharpe)
