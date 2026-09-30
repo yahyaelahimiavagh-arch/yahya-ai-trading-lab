@@ -348,6 +348,19 @@ def _read_candidate_result(root: Path, plan: Mapping[str, object], batch_code: s
     return doc
 
 
+def candidate_completed(
+    root: Path,
+    plan: Mapping[str, object],
+    batch_code: str,
+    candidate_id: str,
+) -> bool:
+    expected = {x["candidate_id"]: x for x in batch_candidates(plan, batch_code)}
+    row = expected.get(candidate_id)
+    if row is None:
+        raise MCFError("candidate outside requested batch")
+    return _read_candidate_result(root, plan, batch_code, row) is not None
+
+
 def status(root: Path, plan: Mapping[str, object], batch_code: str) -> dict:
     rows = batch_candidates(plan, batch_code)
     complete = []
