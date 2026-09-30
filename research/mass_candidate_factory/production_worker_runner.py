@@ -76,6 +76,15 @@ def validate_authorization(
         or authorization.get("plan_sha256") != plan_sha256
         or authorization.get("runner_input_sha256") != runner_input_sha256
         or authorization.get("git_sha") != git_sha
+        or not isinstance(authorization.get("capacity_benchmark_sha256"), str)
+        or len(authorization.get("capacity_benchmark_sha256", "")) != 64
+        or any(ch not in "0123456789abcdef" for ch in authorization.get("capacity_benchmark_sha256", ""))
+        or authorization.get("capacity_benchmark_candidate_count") != 24
+        or authorization.get("candidate_count") != 6852
+        or authorization.get("batch_count") != 14
+        or authorization.get("max_concurrent_microshards_per_node") != 1
+        or authorization.get("selection_authorized") is not False
+        or authorization.get("promotion_authorized") is not False
         or authorization.get("fresh_oos_read") is not False
         or authorization.get("recent_reserve_read") is not False
         or authorization.get("p10_read") is not False
