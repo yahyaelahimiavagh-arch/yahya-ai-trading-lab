@@ -158,10 +158,11 @@ def main(argv=None) -> int:
                 result = local_status(args.root, plan, args.batch)
             elif args.transport == "ssh":
                 if args.command == "claim":
-                    remote = ["claim"]
-                    if args.batch is not None:
-                        remote.append(args.batch)
-                    remote.append(str(args.lease_seconds))
+                    remote = (
+                        ["claim-next", str(args.lease_seconds)]
+                        if args.batch is None
+                        else ["claim", args.batch, str(args.lease_seconds)]
+                    )
                     result = _ssh(remote)
                 elif args.command == "status":
                     result = _ssh(["status"])
