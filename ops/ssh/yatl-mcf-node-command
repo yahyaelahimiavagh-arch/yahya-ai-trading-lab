@@ -8,6 +8,7 @@ case "$NODE_ID" in
 esac
 
 cd /opt/yatl/mcf-distributed
+umask 007
 
 exec /opt/yatl/app/.venv/bin/python -m research.mass_candidate_factory.production_ssh_gateway server \
   --node-id "$NODE_ID" \
