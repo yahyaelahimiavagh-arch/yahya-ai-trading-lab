@@ -3,7 +3,9 @@
 Pre-performance data governance only. The tool accepts either one canonical
 acquisition ledger or a directory of canonical source shards, validates exact
 wave accounting, then emits content-addressed evidence and a classification
-map. It never reads strategy outcomes, Fresh OOS, recent reserve, P10, or Live.
+map. Later waves may extend one immutable prior classification map without
+replacing accepted evidence. It never reads strategy outcomes, Fresh OOS,
+recent reserve, P10, or Live.
 """
 from __future__ import annotations
 
@@ -180,9 +182,74 @@ def load_acquisition_shards(shard_dir: Path, wave_path: Path) -> tuple[dict, dic
     return doc, wave, ledger_identity, wave_sha
 
 
+def _load_base_classification_map(
+    output_root: Path, relative: str | None
+) -> tuple[dict[str, str], str | None]:
+    if relative is None:
+        return {}, None
+    path = safe_path(output_root, relative)
+    if not path.is_file() or path.is_symlink():
+        raise MCFError("missing base classification map")
+    raw = path.read_bytes()
+    try:
+        doc = json.loads(raw)
+    except (UnicodeError, ValueError) as exc:
+        raise MCFError("invalid base classification map JSON") from exc
+    entries = doc.get("entries") if isinstance(doc, dict) else None
+    if (
+        not isinstance(doc, dict)
+        or canonical(doc) != raw
+        or set(doc) != {"entries", "generation_id", "schema", "state"}
+        or doc.get("schema") != MAP_SCHEMA
+        or doc.get("generation_id") != "MCF-PROD-001"
+        or doc.get("state") != "FROZEN_BEFORE_PERFORMANCE"
+        or not isinstance(entries, dict)
+    ):
+        raise MCFError("invalid base classification map")
+
+    out: dict[str, str] = {}
+    for symbol, evidence_relative in entries.items():
+        if (
+            not isinstance(symbol, str)
+            or not symbol
+            or not isinstance(evidence_relative, str)
+            or not evidence_relative
+        ):
+            raise MCFError("invalid base classification map entry")
+        evidence_path = safe_path(output_root, evidence_relative)
+        if not evidence_path.is_file() or evidence_path.is_symlink():
+            raise MCFError(f"missing base classification evidence: {symbol}")
+        evidence_raw = evidence_path.read_bytes()
+        try:
+            evidence = json.loads(evidence_raw)
+        except (UnicodeError, ValueError) as exc:
+            raise MCFError(
+                f"invalid base classification evidence JSON: {symbol}"
+            ) from exc
+        identity = _sha(evidence_raw)
+        if (
+            not isinstance(evidence, dict)
+            or canonical(evidence) != evidence_raw
+            or evidence.get("schema") != EVIDENCE_SCHEMA
+            or evidence.get("symbol") != symbol
+            or evidence.get("classification") not in _ALLOWED_CLASSIFICATIONS
+            or evidence.get("reviewed") is not True
+            or evidence.get("source_type")
+            != "INDEPENDENT_HISTORICAL_PRODUCT_RECORD"
+            or not isinstance(evidence.get("source_reference"), str)
+            or not evidence["source_reference"].strip()
+            or "exchangeinfo" in evidence["source_reference"].lower()
+            or not evidence_relative.endswith(f"{identity}.json")
+        ):
+            raise MCFError(f"invalid base classification evidence: {symbol}")
+        out[symbol] = evidence_relative
+    return out, _sha(raw)
+
+
 def materialize(*, wave_path: Path, output_root: Path,
                 acquisition_path: Path | None = None,
-                source_shards_dir: Path | None = None) -> dict:
+                source_shards_dir: Path | None = None,
+                base_classification_map: str | None = None) -> dict:
     output_root = guard_root(output_root)
     if not output_root.is_dir():
         raise MCFError("classification output root must already exist")
@@ -195,7 +262,17 @@ def materialize(*, wave_path: Path, output_root: Path,
         assert acquisition_path is not None
         doc, wave, ledger_sha, wave_sha = load_acquisition(acquisition_path, wave_path)
 
-    map_entries: dict[str, str] = {}
+    base_entries, base_map_sha = _load_base_classification_map(
+        output_root, base_classification_map
+    )
+    overlap = set(base_entries) & set(doc["entries"])
+    if overlap:
+        raise MCFError(
+            "classification wave attempts to replace accepted evidence: "
+            + sorted(overlap)[0]
+        )
+
+    wave_map_entries: dict[str, str] = {}
     for symbol in sorted(doc["entries"]):
         source = doc["entries"][symbol]
         evidence = {
@@ -216,7 +293,9 @@ def materialize(*, wave_path: Path, output_root: Path,
         identity = _sha(payload)
         relative = f"evidence/{symbol}-{identity}.json"
         write_once(safe_path(output_root, relative), payload)
-        map_entries[symbol] = relative
+        wave_map_entries[symbol] = relative
+
+    map_entries = {**base_entries, **wave_map_entries}
 
     cmap = {
         "entries": map_entries,
@@ -242,6 +321,10 @@ def materialize(*, wave_path: Path, output_root: Path,
         "wave_id": wave["wave_id"],
         "wave_manifest_sha256": wave_sha,
     }
+    if base_map_sha is not None:
+        result["base_classification_map_sha256"] = base_map_sha
+        result["cumulative_resolved_count"] = len(map_entries)
+
     result_payload = canonical(result)
     result_sha = _sha(result_payload)
     result_relative = f"materialization/materialization-{result_sha}.json"
@@ -256,6 +339,10 @@ def main(argv=None) -> int:
     group.add_argument("--source-shards-dir", type=Path)
     parser.add_argument("--wave-manifest", required=True, type=Path)
     parser.add_argument("--output-root", required=True, type=Path)
+    parser.add_argument(
+        "--base-classification-map",
+        help="immutable prior map path relative to --output-root",
+    )
     args = parser.parse_args(argv)
     try:
         result = materialize(
@@ -263,6 +350,7 @@ def main(argv=None) -> int:
             source_shards_dir=args.source_shards_dir,
             wave_path=args.wave_manifest,
             output_root=args.output_root,
+            base_classification_map=args.base_classification_map,
         )
         print(json.dumps(result, sort_keys=True))
         return 0
