@@ -7,6 +7,7 @@ to measure operational throughput and memory before a separate full-batch gate.
 from __future__ import annotations
 
 import argparse
+import gc
 import json
 import resource
 import sys
@@ -130,17 +131,21 @@ def run_capacity_benchmark(
 
     for position, candidate in enumerate(selected, 1):
         started = clock()
-        result = runtime.run(str(candidate["candidate_id"]), director_authorized=True)
-        elapsed = max(0.0, clock() - started)
-        if (
-            result.get("candidate_id") != candidate["candidate_id"]
-            or result.get("candidate_spec_sha256") != candidate["candidate_spec_sha256"]
-        ):
-            raise MCFError("capacity benchmark runtime result identity mismatch")
-        key = (str(candidate["family"]), str(candidate["timeframe"]))
-        bucket_seconds[key] += elapsed
-        bucket_counts[key] += 1
-        del result
+        try:
+            result = runtime.run(str(candidate["candidate_id"]), director_authorized=True)
+            elapsed = max(0.0, clock() - started)
+            if (
+                result.get("candidate_id") != candidate["candidate_id"]
+                or result.get("candidate_spec_sha256") != candidate["candidate_spec_sha256"]
+            ):
+                raise MCFError("capacity benchmark runtime result identity mismatch")
+            key = (str(candidate["family"]), str(candidate["timeframe"]))
+            bucket_seconds[key] += elapsed
+            bucket_counts[key] += 1
+            del result
+        finally:
+            runtime.release_transient_features()
+            gc.collect()
         if progress is not None:
             progress(position, len(selected))
 
@@ -178,10 +183,22 @@ def run_capacity_benchmark(
     }
 
 
+def _current_rss_kib() -> int | None:
+    try:
+        for line in Path("/proc/self/status").read_text().splitlines():
+            if line.startswith("VmRSS:"):
+                return int(line.split()[1])
+    except (OSError, ValueError, IndexError):
+        return None
+    return None
+
+
 def _progress(position: int, total: int) -> None:
     percent = 100.0 * position / total
+    rss = _current_rss_kib()
+    suffix = "" if rss is None else f" RSS_KIB={rss}"
     print(
-        f"CAPACITY_BENCHMARK_PROGRESS={position}/{total} ({percent:.1f}%)",
+        f"CAPACITY_BENCHMARK_PROGRESS={position}/{total} ({percent:.1f}%){suffix}",
         file=sys.stderr,
         flush=True,
     )
