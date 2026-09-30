@@ -158,12 +158,18 @@ class StatisticalMultiplicityGuardTest(unittest.TestCase):
         result = build_preoutcome_multiplicity_manifest(
             executable,
             neighbor_graph=graph,
+            candidate_ledger_sha256="a" * 64,
+            neighbor_graph_sha256="b" * 64,
+            executable_freeze_sha256="c" * 64,
             expected_candidate_count=3,
         )
         self.assertEqual(result["state"], "PRE_OUTCOME_MULTIPLICITY_FROZEN")
         self.assertEqual(result["candidate_count"], 3)
         self.assertEqual(result["conservative_trial_count"], 3)
-        self.assertEqual(result["default_fdr_method"], "BY")
+        self.assertEqual(result["primary_fdr_method"], "BY")
+        self.assertEqual(result["global_fdr_alpha"], "0.05")
+        self.assertEqual(result["dsr_probability_threshold"], "0.95")
+        self.assertEqual(result["pbo_hard_stop"], "0.50")
         self.assertEqual(result["directed_parameter_neighbor_edge_count"], 2)
         self.assertFalse(result["performance_read"])
         self.assertFalse(result["fresh_oos_read"])
@@ -183,6 +189,9 @@ class StatisticalMultiplicityGuardTest(unittest.TestCase):
             build_preoutcome_multiplicity_manifest(
                 (row, dict(row)),
                 neighbor_graph={"X": ()},
+                candidate_ledger_sha256="a" * 64,
+                neighbor_graph_sha256="b" * 64,
+                executable_freeze_sha256="c" * 64,
             )
 
 
@@ -191,6 +200,7 @@ class StatisticalMultiplicityGuardTest(unittest.TestCase):
         self.assertEqual(frozen["summary"]["executable_candidate_count"], 6852)
         manifest = build_manifest()
         self.assertEqual(manifest["candidate_count"], 6852)
+        self.assertEqual(manifest["generation_id"], "MCF-PROD-001")
         self.assertEqual(manifest["conservative_trial_count"], 6852)
         self.assertEqual(
             manifest["candidate_ledger_sha256"],
