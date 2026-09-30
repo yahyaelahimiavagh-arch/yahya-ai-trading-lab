@@ -143,6 +143,41 @@ An independent later re-verification consumes exactly the returned identities:
 This prints `RUNNER_INPUT_VERIFIED_NO_PERFORMANCE` after rechecking all derived
 data and runtime wiring. It does not call candidate accounting.
 
+## Observed VPS acceptance evidence — 2026-09-30
+
+The real VPS checkpoint is now complete for input preparation only. No candidate
+performance was executed or authorized.
+
+- final reviewed PR HEAD before evidence closeout: `d32822e2fc94fcfabfad1b3882caacaf9451353d`;
+- matching GitHub Actions run: `36726454882` / #401, both jobs PASS;
+- complete unit-and-safety suite: **1,889 tests PASS**;
+- accepted evidence root: `/var/lib/yatl/research/mcf-prod-001-binding`;
+- runtime root: `/var/lib/yatl/research/mcf-prod-001-runtime-input`;
+- materialized dataset count: **525** = 175 symbols × 3 timeframes;
+- runtime index SHA-256: `55c8c476cd5043a652c09f060e2a58b6b1dd9cfd9bffef33e3d8ff7a3a6092c3`;
+- final runner-input SHA-256 on the reviewed code identity:
+  `3d089036d8a2e3b91f2efe3190c0775bbcb957a76ff352b647cfb177e9587cd3`;
+- re-freeze result: `RUNNER_INPUT_FROZEN_BEFORE_PERFORMANCE`, dataset_count=525,
+  `performance_authorized=false`;
+- independent pinned re-verification result:
+  `RUNNER_INPUT_VERIFIED_NO_PERFORMANCE`, dataset_count=525;
+- re-freeze log SHA-256:
+  `d874b97b875d3b860c0ab9ccbb6b4ea765a2202e73e0eaeebfbbaf595e36367b`.
+
+The earlier runner-input identity
+`1b6ac9ac43ace4385db1175564742f31a5494d1542b889f2e470f362f8a31e15`
+was generated before the module-entrypoint regression fix and is retained only
+as immutable historical evidence. It is not the accepted final runner input.
+The final accepted identity is the `3d0890...` manifest above.
+
+The independent verifier initially exposed a nominal-class identity bug when
+invoked with `python -m`. PR #169 was corrected to delegate the module entrypoint
+to the canonical package module, a regression test was added, and matching CI #401
+passed before the final VPS re-freeze and re-verification.
+
+Director checkpoint: **VPS_RUNTIME_INPUT_ACCEPTED_NO_PERFORMANCE**.
+Merge and any 6,852-candidate performance execution remain separate decisions.
+
 ## Safety and acceptance
 
 PAPER/RESEARCH ONLY; LIVE_MASTER_LOCK=OFF; no futures, leverage, short, Live,
@@ -153,6 +188,7 @@ is deleted, repaired or used to alter membership. RIE-006 / PR #152 are untouche
 Synthetic tests cover membership identity/tampering, admission boundaries,
 outside symbol/timeframe, gaps and incomplete buckets, idempotency/collisions,
 data/gap substitution, empty and 15-member months, manifest-only runtime,
-sealed roots, symlinks, safety and lack of performance side effects. Actual VPS
-outputs and Director acceptance remain separate checkpoints. Draft PR only;
-no merge, rebase, force-push or history rewrite is authorized.
+sealed roots, symlinks, safety and lack of performance side effects. Real VPS
+materialization, final runner-input freeze and independent no-performance verify
+are recorded above and accepted. Draft PR only; merge and any candidate performance
+execution remain separately controlled.
