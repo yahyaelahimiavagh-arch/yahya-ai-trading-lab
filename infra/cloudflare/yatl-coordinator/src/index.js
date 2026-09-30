@@ -224,18 +224,20 @@ async function handleArtifactPut(request, env, batchCode, candidateId, artifactS
   if (!row || row.owner_node !== nodeId || !["CLAIMED","AWAITING_INGEST"].includes(row.state)) {
     return response({ status: "ARTIFACT_UPLOAD_NOT_OWNED" }, 409);
   }
+  const rawSha = request.headers.get("x-yatl-body-sha256") || "";
+  if (!SHA_RE.test(rawSha)) return response({ status: "MISSING_RAW_SHA256" }, 400);
   const body = await readBoundedBody(request, MAX_ARTIFACT_BYTES);
-  if ((await sha256Bytes(body)) !== artifactSha) return response({ status: "ARTIFACT_SHA_MISMATCH" }, 400);
+  if ((await sha256Bytes(body)) !== rawSha) return response({ status: "ARTIFACT_RAW_SHA_MISMATCH" }, 400);
   const r2 = requireR2(env);
   const key = resultKey(row.plan_sha256, batchCode, candidateId, artifactSha);
   await r2.put(key, body, {
     httpMetadata: { contentType: "application/json" },
-    customMetadata: { node_id: nodeId, batch_code: batchCode, candidate_id: candidateId, sha256: artifactSha },
+    customMetadata: { node_id: nodeId, batch_code: batchCode, candidate_id: candidateId, semantic_sha256: artifactSha, raw_sha256: rawSha },
   });
   const now = Date.now();
   await touchNode(env, nodeId, now);
   await event(env, "RESULT_ARTIFACT_UPLOADED", nodeId, batchCode, { candidate_id: candidateId, artifact_sha256: artifactSha }, now);
-  return response({ status: "RESULT_ARTIFACT_STORED", batch_code: batchCode, candidate_id: candidateId, artifact_sha256: artifactSha });
+  return response({ status: "RESULT_ARTIFACT_STORED", batch_code: batchCode, candidate_id: candidateId, artifact_sha256: artifactSha, raw_sha256: rawSha });
 }
 
 async function handleManifestPut(request, env, batchCode, manifestSha) {
@@ -244,16 +246,18 @@ async function handleManifestPut(request, env, batchCode, manifestSha) {
   if (!BATCH_RE.test(batchCode) || !SHA_RE.test(manifestSha)) return response({ status: "INVALID_MANIFEST_PATH" }, 400);
   const row = await activeOwnedBatch(env, batchCode, nodeId);
   if (!row || row.owner_node !== nodeId || row.state !== "CLAIMED") return response({ status: "MANIFEST_UPLOAD_NOT_OWNED" }, 409);
+  const rawSha = request.headers.get("x-yatl-body-sha256") || "";
+  if (!SHA_RE.test(rawSha)) return response({ status: "MISSING_RAW_SHA256" }, 400);
   const body = await readBoundedBody(request, MAX_MANIFEST_BYTES);
-  if ((await sha256Bytes(body)) !== manifestSha) return response({ status: "MANIFEST_SHA_MISMATCH" }, 400);
+  if ((await sha256Bytes(body)) !== rawSha) return response({ status: "MANIFEST_RAW_SHA_MISMATCH" }, 400);
   const r2 = requireR2(env);
   const key = manifestKey(row.plan_sha256, batchCode, manifestSha);
   await r2.put(key, body, {
     httpMetadata: { contentType: "application/json" },
-    customMetadata: { node_id: nodeId, batch_code: batchCode, sha256: manifestSha },
+    customMetadata: { node_id: nodeId, batch_code: batchCode, semantic_sha256: manifestSha, raw_sha256: rawSha },
   });
   await event(env, "BATCH_MANIFEST_UPLOADED", nodeId, batchCode, { result_manifest_sha256: manifestSha }, Date.now());
-  return response({ status: "BATCH_MANIFEST_STORED", batch_code: batchCode, result_manifest_sha256: manifestSha });
+  return response({ status: "BATCH_MANIFEST_STORED", batch_code: batchCode, result_manifest_sha256: manifestSha, raw_sha256: rawSha });
 }
 
 async function handleArtifactGet(request, env, key) {
@@ -264,6 +268,8 @@ async function handleArtifactGet(request, env, key) {
   const headers = new Headers();
   object.writeHttpMetadata(headers);
   headers.set("etag", object.httpEtag);
+  if (object.customMetadata?.raw_sha256) headers.set("x-yatl-raw-sha256", object.customMetadata.raw_sha256);
+  if (object.customMetadata?.semantic_sha256) headers.set("x-yatl-semantic-sha256", object.customMetadata.semantic_sha256);
   return new Response(object.body, { headers });
 }
 
