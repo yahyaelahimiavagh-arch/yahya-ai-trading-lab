@@ -100,6 +100,36 @@ def heartbeat(base_url: str, node_id: str, batch_code: str, *,
     )
 
 
+def pause_request(base_url: str, node_id: str, batch_code: str, *,
+                  token: str | None = None) -> dict:
+    return request_json(
+        base_url,
+        "/v1/pause-request",
+        token=token or _token(),
+        body={"node_id": node_id, "batch_code": batch_code},
+    )
+
+
+def paused(base_url: str, node_id: str, batch_code: str, *,
+           token: str | None = None) -> dict:
+    return request_json(
+        base_url,
+        "/v1/paused",
+        token=token or _token(),
+        body={"node_id": node_id, "batch_code": batch_code},
+    )
+
+
+def resume(base_url: str, node_id: str, batch_code: str, *,
+           lease_seconds: int = 900, token: str | None = None) -> dict:
+    return request_json(
+        base_url,
+        "/v1/resume",
+        token=token or _token(),
+        body={"node_id": node_id, "batch_code": batch_code, "lease_seconds": lease_seconds},
+    )
+
+
 def release(base_url: str, node_id: str, batch_code: str, *,
             token: str | None = None) -> dict:
     return request_json(
@@ -153,6 +183,16 @@ def main(argv=None) -> int:
     p.add_argument("--batch", required=True)
     p.add_argument("--lease-seconds", type=int, default=900)
 
+    p = sub.add_parser("pause-request")
+    p.add_argument("--batch", required=True)
+
+    p = sub.add_parser("paused")
+    p.add_argument("--batch", required=True)
+
+    p = sub.add_parser("resume")
+    p.add_argument("--batch", required=True)
+    p.add_argument("--lease-seconds", type=int, default=900)
+
     p = sub.add_parser("release")
     p.add_argument("--batch", required=True)
 
@@ -175,6 +215,15 @@ def main(argv=None) -> int:
             )
         elif args.command == "heartbeat":
             result = heartbeat(
+                args.coordinator_url, args.node_id, args.batch,
+                lease_seconds=args.lease_seconds,
+            )
+        elif args.command == "pause-request":
+            result = pause_request(args.coordinator_url, args.node_id, args.batch)
+        elif args.command == "paused":
+            result = paused(args.coordinator_url, args.node_id, args.batch)
+        elif args.command == "resume":
+            result = resume(
                 args.coordinator_url, args.node_id, args.batch,
                 lease_seconds=args.lease_seconds,
             )
