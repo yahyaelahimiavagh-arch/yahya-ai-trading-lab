@@ -328,7 +328,7 @@ def ingest_ready_batches_once(
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--coordinator-url", required=True)
+    parser.add_argument("--coordinator-url", default=os.environ.get("YATL_COORDINATOR_URL"))
     parser.add_argument("--plan", required=True, type=Path)
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -347,6 +347,8 @@ def main(argv=None) -> int:
 
     args = parser.parse_args(argv)
     try:
+        if not args.coordinator_url:
+            raise MCFError("coordinator URL is required via arg or YATL_COORDINATOR_URL")
         plan = json.loads(args.plan.read_bytes())
         validate_plan(plan)
         if args.command == "upload-batch":
