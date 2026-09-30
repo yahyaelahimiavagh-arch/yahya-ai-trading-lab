@@ -365,6 +365,35 @@ def execute_server_command(
             "_binary_bytes": actual_bytes,
         }
 
+    if op == "authorization-export" and len(args) == 2:
+        authorization_sha, raw_sha = args
+        if export_root is None:
+            raise MCFError("SSH authorization export root is not configured")
+        if not SHA_RE.fullmatch(authorization_sha) or not SHA_RE.fullmatch(raw_sha):
+            raise MCFError("invalid SSH authorization export identity")
+        export_root.mkdir(parents=True, exist_ok=True)
+        path = safe_path(
+            export_root,
+            f"authorization-{authorization_sha}-{raw_sha}.json",
+        )
+        if not path.is_file():
+            raise MCFError("requested SSH authorization artifact is unavailable")
+        raw = path.read_bytes()
+        if hashlib.sha256(raw).hexdigest() != raw_sha:
+            raise MCFError("SSH authorization raw identity mismatch")
+        doc = json.loads(raw)
+        if (
+            not isinstance(doc, Mapping)
+            or canonical(doc) != raw
+            or doc.get("authorization_sha256") != authorization_sha
+        ):
+            raise MCFError("SSH authorization semantic identity mismatch")
+        return {
+            "_binary_path": str(path),
+            "_binary_sha256": raw_sha,
+            "_binary_bytes": len(raw),
+        }
+
     if op == "upload" and len(args) == 4:
         batch_code, manifest_sha, byte_text, raw_sha = args
         expected_bytes = int(byte_text)
@@ -559,6 +588,17 @@ def main(argv=None) -> int:
     p.add_argument("--spool-root", required=True, type=Path)
     p.add_argument("--export-root", required=True, type=Path)
 
+    p = sub.add_parser("client-auth-download")
+    p.add_argument("--host", required=True)
+    p.add_argument("--user", required=True)
+    p.add_argument("--identity", required=True, type=Path)
+    p.add_argument("--known-hosts", required=True, type=Path)
+    p.add_argument("--port", type=int, default=22)
+    p.add_argument("--authorization-sha256", required=True)
+    p.add_argument("--raw-sha256", required=True)
+    p.add_argument("--artifact-bytes", required=True, type=int)
+    p.add_argument("--output", required=True, type=Path)
+
     p = sub.add_parser("client-download")
     p.add_argument("--host", required=True)
     p.add_argument("--user", required=True)
@@ -587,6 +627,22 @@ def main(argv=None) -> int:
                 output_path=args.output,
                 expected_sha256=args.archive_sha256,
                 expected_bytes=args.archive_bytes,
+            )
+        elif args.command == "client-auth-download":
+            result = ssh_download(
+                host=args.host,
+                user=args.user,
+                identity_file=args.identity,
+                known_hosts=args.known_hosts,
+                port=args.port,
+                remote_args=[
+                    "authorization-export",
+                    args.authorization_sha256,
+                    args.raw_sha256,
+                ],
+                output_path=args.output,
+                expected_sha256=args.raw_sha256,
+                expected_bytes=args.artifact_bytes,
             )
         else:
             plan = _load_plan(args.plan)
