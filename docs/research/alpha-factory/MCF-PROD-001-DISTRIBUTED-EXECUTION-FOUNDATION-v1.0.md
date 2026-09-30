@@ -274,3 +274,27 @@ Not allowed by this work unit:
 - Live trading.
 
 Full performance execution remains separately Director-locked.
+
+
+## Compact result transport
+
+The raw MCF-03 simulator result contains three large structures that are not
+consumed by MCF-04 adjudication:
+
+- `per_symbol_base`;
+- `per_symbol_stress`;
+- `per_symbol_daily_return_series`.
+
+Before durable worker storage, the full result must:
+1. pass its original `result_sha256` integrity check;
+2. retain every field used by MCF-04 plus the F0-F3 audit summaries;
+3. record the source full-result SHA;
+4. drop only the three declared heavy fields;
+5. receive a new canonical `result_sha256`.
+
+The projection therefore reduces disk/network load without changing candidate
+performance, gates, daily return evidence, trial accounting, neighbor
+stability, DSR, PBO, reality-check or clustering inputs.
+
+The full unprojected result is ephemeral and must not be used as a reason to
+increase worker storage or network privileges.
