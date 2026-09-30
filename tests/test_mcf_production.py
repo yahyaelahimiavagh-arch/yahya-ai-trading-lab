@@ -61,6 +61,12 @@ def freeze_for(b):
 
 
 class ProductionRunnerTest(unittest.TestCase):
+    def test_explicit_empty_month_membership_is_valid(self):
+        empty = MembershipSnapshot(DEVELOPMENT_START_MS, (), H)
+        b = binding(empty)
+        b.validate()
+        self.assertEqual(b.symbols_at(DEVELOPMENT_START_MS), ())
+
     def test_next_bar_only_and_gap_cancellation(self):
         snap = MembershipSnapshot(DEVELOPMENT_START_MS, ("BTCUSDT",), H)
         b = binding(snap)
