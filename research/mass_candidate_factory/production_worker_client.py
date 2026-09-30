@@ -141,8 +141,8 @@ def status(base_url: str, node_id: str, *, token: str | None = None) -> dict:
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--coordinator-url", required=True)
-    parser.add_argument("--node-id", required=True)
+    parser.add_argument("--coordinator-url", default=os.environ.get("YATL_COORDINATOR_URL"))
+    parser.add_argument("--node-id", default=os.environ.get("YATL_NODE_ID"))
     sub = parser.add_subparsers(dest="command", required=True)
 
     p = sub.add_parser("claim")
@@ -166,6 +166,8 @@ def main(argv=None) -> int:
 
     args = parser.parse_args(argv)
     try:
+        if not args.coordinator_url or not args.node_id:
+            raise MCFError("coordinator URL and node ID are required via args or environment")
         if args.command == "claim":
             result = claim(
                 args.coordinator_url, args.node_id,
