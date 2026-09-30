@@ -33,7 +33,7 @@ from research.mass_candidate_factory.production_distributed import (
 )
 
 
-GIT_SHA = "a" * 64
+GIT_SHA = "a" * 40
 RUNNER_SHA = "b" * 64
 
 
