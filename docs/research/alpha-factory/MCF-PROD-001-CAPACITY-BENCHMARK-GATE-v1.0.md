@@ -155,3 +155,43 @@ Unchanged:
    6,852-candidate Development performance.
 
 Zero candidate economics are authorized in this work unit's user-visible output.
+
+
+## VPS OOM incident — 2026-09-30
+
+The first real VPS benchmark on merged main `21aa64e774f54b0399c561dab3f33e47d17630ff`
+was terminated after 8/24 candidates with exit code 137.
+
+Kernel evidence:
+- global OOM killer invoked by the Python benchmark process;
+- killed PID: 48793;
+- anonymous RSS at kill: 3,586,144 KiB;
+- total VPS RAM: approximately 3.7 GiB;
+- swap: 0 bytes.
+
+Classification:
+`CONFIRMED_OOM / ENGINEERING_CAPACITY_FAILURE / NO_SELECTION_OUTCOME`.
+
+No candidate economics were printed or persisted by the benchmark.
+
+Root mechanism:
+the long-lived `ProductionRuntime` retained candidate-derived feature arrays
+inside each `ProductionFeatureCache._cache` and retained liquidity matrices
+across candidates. The cache key space grows as parameter combinations change.
+
+Required remediation before any capacity rerun:
+- clear candidate-derived feature arrays after every candidate;
+- clear candidate-derived liquidity matrices after every candidate;
+- force garbage collection at the benchmark boundary;
+- expose current RSS with progress for operational diagnosis;
+- retain immutable source bars and the frozen input binding;
+- preserve the exact 24-candidate pre-outcome benchmark selection.
+
+Full-batch requirement is stronger:
+even after bounded in-process caches are accepted, the eventual 6,852-candidate
+runner must use bounded shards plus periodic process termination/restart,
+append-only checkpoints and deterministic resume. One unbounded Python process
+is forbidden for the production batch.
+
+This incident does not authorize strategy tuning, family changes, threshold
+changes, selection, Fresh OOS, recent reserve or P10 access.
