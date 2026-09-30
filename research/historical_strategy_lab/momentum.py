@@ -12,7 +12,7 @@ import argparse
 import hashlib
 import json
 from dataclasses import dataclass
-from decimal import Decimal, localcontext
+from decimal import Decimal, ROUND_HALF_EVEN, localcontext
 from pathlib import Path
 from typing import Mapping, Sequence
 
@@ -43,7 +43,7 @@ from research.crisis_lab import controls, replay
 from . import walk_forward as hsl1
 
 
-IMPLEMENTATION_ID = "HSL-004A-MOMENTUM/0.1.0"
+IMPLEMENTATION_ID = "HSL-004A-MOMENTUM/0.1.2"
 SCHEMA_VERSION = "0.1.0"
 DEFAULT_PROTOCOL_PATH = Path(
     "docs/research/historical-strategy-lab/"
@@ -87,6 +87,22 @@ def _plain(value: Decimal | None) -> str | None:
         return "0"
     text = format(value, "f")
     return text.rstrip("0").rstrip(".") if "." in text else text
+
+
+def _setup_plain(value: Decimal) -> str:
+    if not isinstance(value, Decimal) or not value.is_finite():
+        raise HSLMomentumError("HSL-004A setup arithmetic is not finite")
+    if value.as_tuple().exponent < -40:
+        with localcontext() as arithmetic:
+            arithmetic.prec = DECIMAL_PRECISION
+            value = value.quantize(
+                Decimal("1e-40"),
+                rounding=ROUND_HALF_EVEN,
+            )
+    result = _plain(value)
+    if result is None:
+        raise HSLMomentumError("HSL-004A setup serialization failed")
+    return result
 
 
 def _number(value: object, label: str) -> Decimal:
@@ -420,9 +436,9 @@ def _evaluate(
             **values,
         )
     setup = LongSetup(
-        _plain(close),
-        _plain(invalidation),
-        _plain(target),
+        _setup_plain(close),
+        _setup_plain(invalidation),
+        _setup_plain(target),
     )
     return MomentumDecision(
         StrategyAction.ENTER_LONG,
@@ -627,7 +643,7 @@ def _run_cell(
         maximum_drawdown_fraction,
     )
 
-    realized = sum(trade_pnls, Decimal(0))
+    realized = hsl1._sum_decimals(trade_pnls)
     if realized != final_snapshot.realized_pnl_quote:
         raise HSLMomentumError(
             "HSL-004A closed-trade accounting disagrees with ledger"
@@ -635,8 +651,8 @@ def _run_cell(
 
     wins = [item for item in trade_pnls if item > 0]
     losses = [item for item in trade_pnls if item < 0]
-    gross_profit = sum(wins, Decimal(0))
-    gross_loss = -sum(losses, Decimal(0))
+    gross_profit = hsl1._sum_decimals(wins)
+    gross_loss = -hsl1._sum_decimals(losses)
     completed = len(trade_pnls)
     with localcontext() as arithmetic:
         arithmetic.prec = DECIMAL_PRECISION
