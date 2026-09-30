@@ -8,14 +8,14 @@ ConditionPathExists=/var/lib/yatl/research/mcf-prod-001-distributed/worker-bundl
 [Service]
 Type=simple
 User=yatl
-Group=yatl
+Group=yatl-mcf
 WorkingDirectory=/opt/yatl/mcf-distributed
 Environment=YATL_NODE_ID=NODE-VPS
 Environment=YATL_COORDINATOR_TRANSPORT=local
 ExecStart=/opt/yatl/app/.venv/bin/python -m research.mass_candidate_factory.production_worker_orchestrator --runtime-root /var/lib/yatl/research/mcf-prod-001-runtime-input --worker-root /var/lib/yatl/research/mcf-prod-001-results --authorization /var/lib/yatl/research/mcf-prod-001-distributed/authorization.json --plan /var/lib/yatl/research/mcf-prod-001-distributed/plan.json --manifest /var/lib/yatl/research/mcf-prod-001-distributed/worker-bundle-manifest.json --transport local --coordinator-db /var/lib/yatl/research/mcf-prod-001-distributed/coordinator.sqlite3
 Restart=on-failure
 RestartSec=30
-UMask=0077
+UMask=0007
 NoNewPrivileges=true
 PrivateTmp=true
 PrivateDevices=true
