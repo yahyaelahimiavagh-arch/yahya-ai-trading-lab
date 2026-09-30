@@ -395,11 +395,15 @@ def main(argv=None) -> int:
 
     p = sub.add_parser("import-archive")
     p.add_argument("--runtime-root", required=True, type=Path)
-    p.add_argument("--plan", required=True, type=Path)
     p.add_argument("--archive", required=True, type=Path)
 
     args = parser.parse_args(argv)
     try:
+        if args.command == "import-archive":
+            result = import_bundle_archive(args.archive, args.runtime_root)
+            print(json.dumps(result, sort_keys=True))
+            return 0
+
         plan = json.loads(args.plan.read_bytes())
         validate_plan(plan)
         if args.command == "freeze":
@@ -422,11 +426,9 @@ def main(argv=None) -> int:
         elif args.command == "verify":
             manifest = json.loads(args.manifest.read_bytes())
             result = verify_bundle(args.runtime_root, manifest, plan)
-        elif args.command == "archive":
+        else:
             manifest = json.loads(args.manifest.read_bytes())
             result = archive_bundle(args.runtime_root, manifest, plan, args.output_root)
-        else:
-            result = import_bundle_archive(args.archive, args.runtime_root, plan)
         print(json.dumps(result, sort_keys=True))
         return 0
     except (MCFError, OSError, ValueError, KeyError, TypeError) as exc:
