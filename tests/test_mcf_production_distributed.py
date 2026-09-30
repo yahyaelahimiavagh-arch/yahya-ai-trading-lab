@@ -210,6 +210,14 @@ class DistributedExecutionTest(unittest.TestCase):
     def test_mark_ingested_is_idempotent_but_conflict_fails(self):
         init_coordinator(self.db, self.plan)
         item = batch(self.plan, "B014")
+        artifacts = [
+            {
+                "candidate_id": row["candidate_id"],
+                "candidate_spec_sha256": row["candidate_spec_sha256"],
+                "result_artifact_sha256": f"{i % 16:x}" * 64,
+            }
+            for i, row in enumerate(batch_candidates(self.plan, "B014"))
+        ]
         base = {
             "schema": "MCF_DISTRIBUTED_BATCH_RESULT_MANIFEST/1.0.0",
             "generation_id": "MCF-PROD-001",
@@ -220,15 +228,19 @@ class DistributedExecutionTest(unittest.TestCase):
             "git_sha": GIT_SHA,
             "runner_input_sha256": RUNNER_SHA,
             "nodes": ["NODE-LAPTOP"],
-            "artifacts": [],
+            "artifacts": artifacts,
         }
         from research.mass_candidate_factory.models import digest
         manifest = {**base, "batch_result_manifest_sha256": digest(base)}
         first = mark_ingested(self.db, self.plan, manifest=manifest, now_ms=1_000)
         second = mark_ingested(self.db, self.plan, manifest=manifest, now_ms=2_000)
         self.assertEqual(first["batch_result_manifest_sha256"], second["batch_result_manifest_sha256"])
-        bad = dict(manifest)
-        bad["batch_result_manifest_sha256"] = "e" * 64
+        bad = copy.deepcopy(manifest)
+        bad["artifacts"][0]["candidate_id"] = "WRONG"
+        from research.mass_candidate_factory.models import digest
+        bad["batch_result_manifest_sha256"] = digest({
+            k: v for k, v in bad.items() if k != "batch_result_manifest_sha256"
+        })
         with self.assertRaises(MCFError):
             mark_ingested(self.db, self.plan, manifest=bad, now_ms=3_000)
 
