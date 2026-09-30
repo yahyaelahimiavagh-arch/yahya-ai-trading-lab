@@ -147,8 +147,14 @@ class StatisticalMultiplicityGuardTest(unittest.TestCase):
                 "parameter_neighbor_ids": (),
             },
         )
+        graph = {
+            "MCF-PROD-001-000001": ("MCF-PROD-001-000002",),
+            "MCF-PROD-001-000002": ("MCF-PROD-001-000001",),
+            "MCF-PROD-001-000003": (),
+        }
         result = build_preoutcome_multiplicity_manifest(
             executable,
+            neighbor_graph=graph,
             expected_candidate_count=3,
         )
         self.assertEqual(result["state"], "PRE_OUTCOME_MULTIPLICITY_FROZEN")
@@ -171,7 +177,10 @@ class StatisticalMultiplicityGuardTest(unittest.TestCase):
             "parameter_neighbor_ids": (),
         }
         with self.assertRaises(MCFError):
-            build_preoutcome_multiplicity_manifest((row, dict(row)))
+            build_preoutcome_multiplicity_manifest(
+                (row, dict(row)),
+                neighbor_graph={"X": ()},
+            )
 
 
 if __name__ == "__main__":
