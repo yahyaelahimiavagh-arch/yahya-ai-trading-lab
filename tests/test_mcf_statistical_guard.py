@@ -1,6 +1,9 @@
 import unittest
 
 from research.mass_candidate_factory.models import MCFError
+from research.mass_candidate_factory.production_generator import freeze_executable_generation
+from research.mass_candidate_factory.production_rules import BLOCKED_FAMILIES
+from research.mass_candidate_factory.statistical_guard_cli import build_manifest
 from research.mass_candidate_factory.statistical_guard import (
     build_preoutcome_multiplicity_manifest,
     deflated_sharpe_probability,
@@ -181,6 +184,27 @@ class StatisticalMultiplicityGuardTest(unittest.TestCase):
                 (row, dict(row)),
                 neighbor_graph={"X": ()},
             )
+
+
+    def test_real_frozen_generation_builds_exact_preoutcome_manifest(self):
+        frozen = freeze_executable_generation(BLOCKED_FAMILIES)
+        self.assertEqual(frozen["summary"]["executable_candidate_count"], 6852)
+        manifest = build_manifest()
+        self.assertEqual(manifest["candidate_count"], 6852)
+        self.assertEqual(manifest["conservative_trial_count"], 6852)
+        self.assertEqual(
+            manifest["candidate_ledger_sha256"],
+            frozen["summary"]["candidate_ledger_sha256"],
+        )
+        self.assertEqual(
+            manifest["neighbor_graph_sha256"],
+            frozen["summary"]["neighbor_graph_sha256"],
+        )
+        self.assertGreater(manifest["directed_parameter_neighbor_edge_count"], 0)
+        self.assertFalse(manifest["performance_read"])
+        self.assertFalse(manifest["fresh_oos_read"])
+        self.assertFalse(manifest["p10_read"])
+        self.assertFalse(manifest["live_authorized"])
 
 
 if __name__ == "__main__":
