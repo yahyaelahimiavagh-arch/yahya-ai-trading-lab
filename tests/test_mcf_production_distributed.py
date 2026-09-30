@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from research.mass_candidate_factory.models import MCFError, canonical
+from research.mass_candidate_factory.models import MCFError, canonical, digest
 from research.mass_candidate_factory.production_distributed import (
     EXPECTED_EXECUTABLE_COUNT,
     SAFETY,
@@ -34,12 +34,33 @@ RUNNER_SHA = "b" * 64
 
 
 def result_for(row):
-    return {
+    body = {
+        "schema": "MCF_PRODUCTION_ACCOUNTING/1.0.0",
         "candidate_id": row["candidate_id"],
         "candidate_spec_sha256": row["candidate_spec_sha256"],
-        "net_return": "0.01",
+        "family_id": "FAM",
+        "economic_mechanism_id": row["family"],
+        "family_spec_sha256": "f" * 64,
+        "neighbor_graph_sha256": "e" * 64,
+        "evidence_partition": "DEVELOPMENT",
+        "exact_accounting": True,
         "completed_trades": 10,
+        "aggregate_stress_net_return": "0.01",
+        "median_symbol_stress_net_return": "0.01",
+        "fold_stress_returns": ("0.01",) * 6,
+        "maximum_normalized_drawdown": "0.01",
+        "mean_turnover": "1.0",
+        "f0_f3_state": "DEVELOPMENT_FAIL",
+        "daily_return_series": {
+            "calendar_days": (1, 2, 3),
+            "returns": ("0.0", "0.0", "0.0"),
+            "valid_mask": (True, True, True),
+        },
+        "per_symbol_base": ({"huge": "base"},),
+        "per_symbol_stress": ({"huge": "stress"},),
+        "per_symbol_daily_return_series": ({"huge": "daily"},),
     }
+    return {**body, "result_sha256": digest(body)}
 
 
 class DistributedExecutionTest(unittest.TestCase):
@@ -112,6 +133,13 @@ class DistributedExecutionTest(unittest.TestCase):
             runner_input_sha256=RUNNER_SHA, result=result_for(first),
         )
         self.assertEqual(saved, same)
+        artifact = self.root / saved["artifact"]
+        envelope = json.loads(artifact.read_bytes())
+        compact = envelope["result"]
+        self.assertNotIn("per_symbol_base", compact)
+        self.assertNotIn("per_symbol_stress", compact)
+        self.assertNotIn("per_symbol_daily_return_series", compact)
+        self.assertEqual(compact["projection_schema"], "MCF_PRODUCTION_RESULT_PROJECTION/1.0.0")
         report = status(self.root, self.plan, "B001")
         self.assertEqual(report["complete"], 1)
         self.assertEqual(report["remaining"], 499)
@@ -239,14 +267,12 @@ class DistributedExecutionTest(unittest.TestCase):
             "nodes": ["NODE-LAPTOP"],
             "artifacts": artifacts,
         }
-        from research.mass_candidate_factory.models import digest
         manifest = {**base, "batch_result_manifest_sha256": digest(base)}
         first = mark_ingested(self.db, self.plan, manifest=manifest, now_ms=1_000)
         second = mark_ingested(self.db, self.plan, manifest=manifest, now_ms=2_000)
         self.assertEqual(first["batch_result_manifest_sha256"], second["batch_result_manifest_sha256"])
         bad = copy.deepcopy(manifest)
         bad["artifacts"][0]["candidate_id"] = "WRONG"
-        from research.mass_candidate_factory.models import digest
         bad["batch_result_manifest_sha256"] = digest({
             k: v for k, v in bad.items() if k != "batch_result_manifest_sha256"
         })
