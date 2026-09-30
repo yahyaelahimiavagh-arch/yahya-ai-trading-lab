@@ -21,6 +21,13 @@ def authorization():
         "plan_sha256": PLAN_SHA,
         "runner_input_sha256": RUNNER_SHA,
         "git_sha": GIT_SHA,
+        "capacity_benchmark_sha256": "e" * 64,
+        "capacity_benchmark_candidate_count": 24,
+        "candidate_count": 6852,
+        "batch_count": 14,
+        "max_concurrent_microshards_per_node": 1,
+        "selection_authorized": False,
+        "promotion_authorized": False,
         "fresh_oos_read": False,
         "recent_reserve_read": False,
         "p10_read": False,
@@ -69,6 +76,8 @@ class DistributedWorkerRunnerTest(unittest.TestCase):
 
     def test_authorization_cannot_open_sealed_or_live_boundaries(self):
         for key in (
+            "selection_authorized",
+            "promotion_authorized",
             "fresh_oos_read",
             "recent_reserve_read",
             "p10_read",
