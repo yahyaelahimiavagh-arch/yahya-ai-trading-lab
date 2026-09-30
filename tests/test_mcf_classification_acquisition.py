@@ -16,6 +16,7 @@ from research.mass_candidate_factory.production_binding_preflight import (
 
 ROOT = Path(__file__).resolve().parents[1]
 WAVE = ROOT / "docs/research/alpha-factory/MCF-PROD-001-CLASSIFICATION-WAVE-001.json"
+WAVE2 = ROOT / "docs/research/alpha-factory/MCF-PROD-001-CLASSIFICATION-WAVE-002.json"
 SHARDS = ROOT / "docs/research/alpha-factory/classification-wave-001"
 
 
@@ -44,6 +45,34 @@ def _ledger():
         "source_preflight_sha256": wave["source_preflight_sha256"],
         "state": "REVIEWED_BEFORE_PERFORMANCE",
         "unresolved": unresolved,
+        "wave_id": wave["wave_id"],
+        "wave_manifest_sha256": wave_sha,
+    }
+
+
+def _wave2_ledger():
+    wave, wave_sha = load_wave(WAVE2)
+    entries = {}
+    for symbol in wave["frontier_symbols"]:
+        entries[symbol] = {
+            "classification": "ORDINARY_SPOT_CONFIRMED",
+            "evidence_basis": "FIRST_PARTY_BINANCE_HISTORICAL_SPOT_PAIR_RECORD",
+            "reviewed": True,
+            "source_published_at": "2020-01-01T00:00:00Z",
+            "source_reference": (
+                "https://www.binance.com/en/support/announcement/detail/"
+                + symbol.lower()
+            ),
+            "source_title": f"Historical Spot record for {symbol}",
+        }
+    return {
+        "entries": entries,
+        "generation_id": "MCF-PROD-001",
+        "safety": EXPECTED_SAFETY,
+        "schema": ACQUISITION_SCHEMA,
+        "source_preflight_sha256": wave["source_preflight_sha256"],
+        "state": "REVIEWED_BEFORE_PERFORMANCE",
+        "unresolved": {},
         "wave_id": wave["wave_id"],
         "wave_manifest_sha256": wave_sha,
     }
@@ -136,6 +165,74 @@ class ClassificationAcquisitionTest(unittest.TestCase):
                     "ORDINARY_SPOT_CONFIRMED": 173,
                 },
             )
+
+    def test_later_wave_extends_prior_map_without_replacing_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            output = root / "out"
+            output.mkdir()
+
+            first = materialize(
+                source_shards_dir=SHARDS,
+                wave_path=WAVE,
+                output_root=output,
+            )
+            first_map = json.loads(
+                (output / first["classification_map"]).read_text()
+            )
+            btc_relative = first_map["entries"]["BTCUSDT"]
+
+            ledger = root / "wave2-ledger.json"
+            ledger.write_bytes(canonical(_wave2_ledger()))
+            second = materialize(
+                acquisition_path=ledger,
+                wave_path=WAVE2,
+                output_root=output,
+                base_classification_map=first["classification_map"],
+            )
+
+            self.assertEqual(second["resolved_count"], 2)
+            self.assertEqual(second["unresolved_count"], 0)
+            self.assertEqual(second["cumulative_resolved_count"], 178)
+            self.assertEqual(
+                second["base_classification_map_sha256"],
+                first["classification_map_sha256"],
+            )
+
+            cumulative = json.loads(
+                (output / second["classification_map"]).read_text()
+            )
+            self.assertEqual(len(cumulative["entries"]), 178)
+            self.assertEqual(cumulative["entries"]["BTCUSDT"], btc_relative)
+            self.assertIn("BTSUSDT", cumulative["entries"])
+            self.assertIn("OCEANUSDT", cumulative["entries"])
+
+    def test_base_map_requires_immutable_referenced_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            output = root / "out"
+            output.mkdir()
+
+            first = materialize(
+                source_shards_dir=SHARDS,
+                wave_path=WAVE,
+                output_root=output,
+            )
+            first_map = json.loads(
+                (output / first["classification_map"]).read_text()
+            )
+            relative = first_map["entries"]["BTCUSDT"]
+            (output / relative).unlink()
+
+            ledger = root / "wave2-ledger.json"
+            ledger.write_bytes(canonical(_wave2_ledger()))
+            with self.assertRaises(MCFError):
+                materialize(
+                    acquisition_path=ledger,
+                    wave_path=WAVE2,
+                    output_root=output,
+                    base_classification_map=first["classification_map"],
+                )
 
     def test_noncanonical_ledger_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
