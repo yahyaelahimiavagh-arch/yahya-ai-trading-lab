@@ -6,6 +6,7 @@ set -euo pipefail
 
 : "${YATL_EXPECTED_GIT_SHA:?set exact accepted Git SHA}"
 
+SOURCE_REPO=/opt/yatl/app
 WORKTREE=/opt/yatl/mcf-distributed
 PY=/opt/yatl/app/.venv/bin/python
 RUNTIME_ROOT=/var/lib/yatl/research/mcf-prod-001-runtime-input
@@ -15,11 +16,18 @@ INDEX_SHA=55c8c476cd5043a652c09f060e2a58b6b1dd9cfd9bffef33e3d8ff7a3a6092c3
 INDEX_RELATIVE="runtime-data/index-${INDEX_SHA}.json"
 OUT="${DIST_ROOT}/runner-input-refreeze.json"
 
-[[ -d "$WORKTREE" ]] || { echo "missing distributed worktree" >&2; exit 2; }
-[[ "$(git -C "$WORKTREE" rev-parse HEAD)" = "$YATL_EXPECTED_GIT_SHA" ]] || {
-  echo "distributed worktree Git SHA mismatch" >&2
-  exit 2
-}
+git -C "$SOURCE_REPO" fetch origin
+git -C "$SOURCE_REPO" cat-file -e "$YATL_EXPECTED_GIT_SHA^{commit}"
+
+if [[ -e "$WORKTREE/.git" || -f "$WORKTREE/.git" ]]; then
+  [[ "$(git -C "$WORKTREE" rev-parse HEAD)" = "$YATL_EXPECTED_GIT_SHA" ]] || {
+    echo "existing distributed worktree Git SHA mismatch" >&2
+    exit 2
+  }
+else
+  [[ ! -e "$WORKTREE" ]] || { echo "worktree path exists but is not a Git worktree" >&2; exit 2; }
+  git -C "$SOURCE_REPO" worktree add --detach "$WORKTREE" "$YATL_EXPECTED_GIT_SHA"
+fi
 [[ -f "$RUNTIME_ROOT/$INDEX_RELATIVE" ]] || { echo "accepted runtime index missing" >&2; exit 2; }
 [[ -d "$EVIDENCE_ROOT" ]] || { echo "accepted evidence root missing" >&2; exit 2; }
 
