@@ -324,9 +324,12 @@ def execute_server_command(
 
     if op == "status" and not args:
         return coordinator_status(db, plan)
-    if op == "claim" and len(args) in {0, 1, 2}:
-        batch_code = None if not args else args[0]
-        lease = DEFAULT_LEASE_SECONDS if len(args) < 2 else int(args[1])
+    if op == "claim-next" and len(args) in {0, 1}:
+        lease = DEFAULT_LEASE_SECONDS if not args else int(args[0])
+        return claim_batch(db, plan, node_id=node_id, batch_code=None, lease_seconds=lease)
+    if op == "claim" and len(args) in {1, 2}:
+        batch_code = args[0]
+        lease = DEFAULT_LEASE_SECONDS if len(args) == 1 else int(args[1])
         return claim_batch(db, plan, node_id=node_id, batch_code=batch_code, lease_seconds=lease)
     if op == "heartbeat" and len(args) in {1, 2}:
         lease = DEFAULT_LEASE_SECONDS if len(args) == 1 else int(args[1])
