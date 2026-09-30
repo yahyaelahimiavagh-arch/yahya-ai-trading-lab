@@ -814,3 +814,35 @@ PR #169 با مجوز صریح Director پذیرفته و squash-merge شد.
 - full 6,852 همچنان قفل؛
 - full runner نهایی علاوه بر purge، shard + process restart + checkpoint/resume
   خواهد داشت.
+
+
+## به‌روزرسانی ۳۰ سپتامبر ۲۰۲۶ — Distributed Foundation در حال ساخت
+
+PR #172 bounded-memory:
+- HEAD: `4dc1cdbf4862dd398c408438b5bdc8dcd68ed3d2`;
+- Actions #405: **SUCCESS**؛
+- merge همچنان نیازمند اجازه صریح Director است.
+
+PR #174 distributed execution foundation:
+- سه node هدف: VPS / LAPTOP / WORKPC؛
+- ۶٬۸۵۲ نامزد -> ۱۴ batch منطقی؛
+- B001-B013 هرکدام ۵۰۰؛ B014 برابر ۳۵۲؛
+- micro-shard حداکثر ۲۵؛
+- claim/lease/heartbeat؛
+- pause/resume و crash recovery؛
+- resultهای content-addressed؛
+- coordinator محلی SQLite؛
+- Cloudflare Worker + D1 control plane؛
+- worker client HTTPS؛
+- node enrollment + hardware preflight؛
+- worker bundle شامل runner input + دقیقاً ۵۲۵ data + ۵۲۵ gap map؛
+- compact result projection برای حذف payloadهای سنگین غیرلازم MCF-04؛
+- هیچ production performance command در Foundation وجود ندارد.
+
+بعد از پذیرش #172:
+1. runner-input جدید با code identity پذیرفته‌شده refreeze شود؛
+2. benchmark ثابت ۲۴ نامزد دوباره روی VPS اجرا شود؛
+3. concurrency واقعی از RSS/CPU تعیین شود؛
+4. Foundation توزیع‌شده CI/merge شود؛
+5. auto-ingest relay و full runner با process restart/checkpoint بسته شوند؛
+6. اجرای ۶٬۸۵۲ فقط با مجوز جداگانه Director.
