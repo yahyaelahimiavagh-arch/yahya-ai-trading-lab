@@ -86,3 +86,11 @@ def validate_projection(result: Mapping[str, object]) -> None:
     n = len(daily.get("calendar_days", ()))
     if n < 2 or len(daily.get("returns", ())) != n or len(daily.get("valid_mask", ())) != n:
         raise MCFError("projected daily return evidence length mismatch")
+
+
+def storage_result(result: Mapping[str, object]) -> dict:
+    """Return one validated compact result suitable for durable transfer."""
+    if result.get("projection_schema") == SCHEMA:
+        validate_projection(result)
+        return dict(result)
+    return project_result(result)
