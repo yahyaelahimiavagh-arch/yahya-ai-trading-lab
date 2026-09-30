@@ -38,6 +38,10 @@ class FakeRuntime:
             "executable": inventory(),
         }
         self.calls = []
+        self.release_calls = 0
+
+    def release_transient_features(self):
+        self.release_calls += 1
 
     def run(self, candidate_id, *, director_authorized=False):
         self.calls.append((candidate_id, director_authorized))
@@ -104,6 +108,7 @@ class CapacityBenchmarkTest(unittest.TestCase):
         self.assertEqual(result["status"], "CAPACITY_BENCHMARK_COMPLETE_NO_SELECTION")
         self.assertEqual(result["benchmark_candidate_count"], BENCHMARK_CANDIDATE_COUNT)
         self.assertEqual(len(runtime.calls), BENCHMARK_CANDIDATE_COUNT)
+        self.assertEqual(runtime.release_calls, BENCHMARK_CANDIDATE_COUNT)
         self.assertTrue(all(authorized is True for _, authorized in runtime.calls))
         self.assertEqual(progress[-1], (BENCHMARK_CANDIDATE_COUNT, BENCHMARK_CANDIDATE_COUNT))
         self.assertEqual(result["cpu_user_seconds"], 6.5)
