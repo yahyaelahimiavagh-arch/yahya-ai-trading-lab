@@ -61,7 +61,7 @@ class MembershipSnapshot:
     def validate(self) -> None:
         if self.effective_ms < 0 or not _sha(self.eligibility_sha256):
             raise MCFError("invalid membership snapshot")
-        if not self.symbols or tuple(sorted(set(self.symbols))) != self.symbols:
+        if tuple(sorted(set(self.symbols))) != self.symbols:
             raise MCFError("membership symbols must be sorted and unique")
         dt = datetime.fromtimestamp(self.effective_ms / 1000, timezone.utc)
         if not (dt.day == 1 and dt.hour == dt.minute == dt.second == dt.microsecond == 0):
