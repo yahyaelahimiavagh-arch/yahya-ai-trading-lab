@@ -49,7 +49,7 @@ $sshDir = Split-Path -Parent $IdentityFile
 New-Item -ItemType Directory -Force -Path $sshDir | Out-Null
 
 if (-not (Test-Path $IdentityFile)) {
-    & ssh-keygen -q -t ed25519 -N '""' -f $IdentityFile
+    & ssh-keygen -q -t ed25519 -N "" -f $IdentityFile
     if ($LASTEXITCODE -ne 0) { throw "ssh-keygen failed" }
     Write-Host ""
     Write-Host "NODE_KEY_ENROLLMENT_REQUIRED=YES"
@@ -75,7 +75,7 @@ if (-not (Test-Path $RepoDir)) {
 & git -C $RepoDir fetch origin
 if ($LASTEXITCODE -ne 0) { throw "git fetch failed" }
 
-& git -C $RepoDir cat-file -e "$GitSha`^{commit}"
+& git -C $RepoDir cat-file -e "${GitSha}^{commit}"
 if ($LASTEXITCODE -ne 0) { throw "Expected Git commit is unavailable" }
 
 & git -C $RepoDir checkout --detach $GitSha
@@ -95,7 +95,7 @@ finally {
     Pop-Location
 }
 
-$python = Join-Path $RepoDir ".vent\Scripts\python.exe"
+$python = Join-Path $RepoDir ".venv\Scripts\python.exe"
 if (-not (Test-Path $python)) {
     throw "Pinned Python environment not found: $python"
 }
@@ -111,7 +111,7 @@ try {
     & $python -m research.mass_candidate_factory.production_ssh_gateway client-download `
         --host $VpsHost `
         --user $SshUser `
-          --identity $IdentityFile `
+        --identity $IdentityFile `
         --known-hosts $KnownHostsFile `
         --port $SshPort `
         --bundle-manifest-sha256 $BundleManifestSha256 `
@@ -151,7 +151,7 @@ $envFile = Join-Path $RuntimeRoot "yatl-worker-env.ps1"
 `$env:YATL_SSH_KNOWN_HOSTS="$KnownHostsFile"
 `$env:YATL_WORKER_ROOT="$WorkerStateRoot"
 `$env:YATL_DISTRIBUTED_PLAN="$planPath"
-@" | Set-Content -Encoding UTF8 $envFile
+"@ | Set-Content -Encoding UTF8 $envFile
 
 . $envFile
 
