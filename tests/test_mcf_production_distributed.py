@@ -146,6 +146,24 @@ class DistributedExecutionTest(unittest.TestCase):
         self.assertEqual(report["next_candidate_id"], rows[1]["candidate_id"])
         self.assertEqual(next_candidate(self.root, self.plan, "B001")["candidate_id"], rows[1]["candidate_id"])
 
+
+    def test_identical_cross_node_rerun_is_idempotent(self):
+        row = batch_candidates(self.plan, "B001")[0]
+        first = write_candidate_result(
+            self.root, self.plan, "B001", row["candidate_id"],
+            node_id="NODE-VPS", git_sha=GIT_SHA,
+            runner_input_sha256=RUNNER_SHA, result=result_for(row),
+        )
+        second = write_candidate_result(
+            self.root, self.plan, "B001", row["candidate_id"],
+            node_id="NODE-LAPTOP", git_sha=GIT_SHA,
+            runner_input_sha256=RUNNER_SHA, result=result_for(row),
+        )
+        self.assertEqual(first["result_artifact_sha256"], second["result_artifact_sha256"])
+        self.assertEqual(first["artifact"], second["artifact"])
+        doc = json.loads((self.root / first["artifact"]).read_bytes())
+        self.assertEqual(doc["producer_node_id"], "NODE-VPS")
+
     def test_nondeterministic_duplicate_result_rejected(self):
         row = batch_candidates(self.plan, "B001")[0]
         write_candidate_result(
