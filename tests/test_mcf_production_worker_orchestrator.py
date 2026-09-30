@@ -132,6 +132,28 @@ class AutoWorkerTest(unittest.TestCase):
         self.assertIn("b" * 40, joined)
         self.assertIn("/tmp/auth.json", joined)
 
+    def test_local_control_completes_batch_without_ssh(self):
+        control = orch.LocalControl(
+            node_id="NODE-VPS",
+            db_path=Path("/tmp/coordinator.sqlite3"),
+            plan={"plan_sha256": "a" * 64},
+        )
+        manifest = {
+            "batch_code": "B001",
+            "batch_result_manifest_sha256": "b" * 64,
+        }
+        with patch.object(orch, "build_batch_manifest", return_value=manifest), \
+             patch.object(orch, "verify_batch_manifest") as verify, \
+             patch.object(orch, "local_mark_ingested", return_value={"status": "BATCH_INGESTED"}) as mark:
+            out = control.complete_batch(
+                Path("/tmp/results"),
+                {"plan_sha256": "a" * 64},
+                "B001",
+            )
+        self.assertEqual(out["status"], "LOCAL_BATCH_INGESTED_ACCEPTED")
+        verify.assert_called_once()
+        mark.assert_called_once()
+
     def test_authorization_is_checked_before_remote_claim(self):
         plan = {"plan_sha256": "a" * 64, "batch_count": 14}
         manifest = {
