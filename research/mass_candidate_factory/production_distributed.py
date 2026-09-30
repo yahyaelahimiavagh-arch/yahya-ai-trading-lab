@@ -312,24 +312,20 @@ def write_candidate_result(
     }
 
 
-def _read_candidate_result(root: Path, plan: Mapping[str, object], batch_code: str,
-                           expected: Mapping[str, object]) -> dict | None:
-    directory = _candidate_result_dir(root, batch_code, expected["candidate_id"])
-    if not directory.exists():
-        return None
-    paths = sorted(directory.glob("result-*.json"))
-    if not paths:
-        return None
-    if len(paths) != 1:
-        raise MCFError("duplicate result artifacts for candidate")
-    raw = paths[0].read_bytes()
-    doc = json.loads(raw)
+def validate_candidate_result_document(
+    plan: Mapping[str, object],
+    batch_code: str,
+    expected: Mapping[str, object],
+    doc: Mapping[str, object],
+    *,
+    raw: bytes | None = None,
+) -> dict:
     identity = {
         k: v for k, v in doc.items()
         if k not in {"result_artifact_sha256", "producer_node_id"}
     }
     if (
-        canonical(doc) != raw
+        (raw is not None and canonical(doc) != raw)
         or doc.get("schema") != RESULT_SCHEMA
         or doc.get("generation_id") != GENERATION_ID
         or doc.get("plan_sha256") != plan["plan_sha256"]
@@ -343,9 +339,28 @@ def _read_candidate_result(root: Path, plan: Mapping[str, object], batch_code: s
     ):
         raise MCFError("candidate result artifact boundary mismatch")
     result = doc.get("result")
-    if not isinstance(result, Mapping) or result.get("candidate_id") != expected["candidate_id"] or result.get("candidate_spec_sha256") != expected["candidate_spec_sha256"]:
+    if (
+        not isinstance(result, Mapping)
+        or result.get("candidate_id") != expected["candidate_id"]
+        or result.get("candidate_spec_sha256") != expected["candidate_spec_sha256"]
+    ):
         raise MCFError("embedded candidate result identity mismatch")
-    return doc
+    return dict(doc)
+
+
+def _read_candidate_result(root: Path, plan: Mapping[str, object], batch_code: str,
+                           expected: Mapping[str, object]) -> dict | None:
+    directory = _candidate_result_dir(root, batch_code, expected["candidate_id"])
+    if not directory.exists():
+        return None
+    paths = sorted(directory.glob("result-*.json"))
+    if not paths:
+        return None
+    if len(paths) != 1:
+        raise MCFError("duplicate result artifacts for candidate")
+    raw = paths[0].read_bytes()
+    doc = json.loads(raw)
+    return validate_candidate_result_document(plan, batch_code, expected, doc, raw=raw)
 
 
 def candidate_completed(
