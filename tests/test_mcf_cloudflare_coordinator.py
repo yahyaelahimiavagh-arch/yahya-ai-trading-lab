@@ -30,9 +30,9 @@ class CloudflareCoordinatorSourceTest(unittest.TestCase):
             self.assertIn(needle, source)
 
         for literal, regex_form in (
-            ("/v1/artifact/", r"\\/v1\\/artifact\\/"),
-            ("/v1/manifest/", r"\\/v1\\/manifest\\/"),
-            ("/v1/admin/object/", r"\\/v1\\/admin\\/object\\/"),
+            ("/v1/artifact/", r"\/v1\/artifact\/"),
+            ("/v1/manifest/", r"\/v1\/manifest\/"),
+            ("/v1/admin/object/", r"\/v1\/admin\/object\/"),
         ):
             self.assertTrue(
                 literal in source or regex_form in source,
