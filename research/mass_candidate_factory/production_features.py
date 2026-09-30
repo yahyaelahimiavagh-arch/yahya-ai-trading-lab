@@ -214,6 +214,10 @@ class ProductionFeatureCache:
         self._cache[key] = out
         return out
 
+    def clear_transient(self) -> None:
+        """Release candidate-derived arrays while retaining immutable source bars."""
+        self._cache.clear()
+
     def identity(self) -> str:
         return digest({
             "version": VERSION,

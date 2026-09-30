@@ -783,3 +783,34 @@ PR #169 با مجوز صریح Director پذیرفته و squash-merge شد.
 
 قرارداد:
 `docs/research/alpha-factory/MCF-PROD-001-CAPACITY-BENCHMARK-GATE-v1.0.md`.
+
+
+## به‌روزرسانی ۳۰ سپتامبر ۲۰۲۶ — OOM ظرفیت تأیید شد
+
+نخستین benchmark واقعی ۲۴ نامزد روی main
+`21aa64e774f54b0399c561dab3f33e47d17630ff`
+در ۸/۲۴ با `RC=137` متوقف شد.
+
+شاهد kernel:
+- `oom-killer` فعال شد؛
+- Python PID 48793 کشته شد؛
+- anonymous RSS حدود `3,586,144 KiB`؛
+- RAM VPS حدود 3.7 GiB؛
+- swap صفر.
+
+طبقه‌بندی Director:
+`CONFIRMED_OOM / ENGINEERING_CAPACITY_FAILURE / NO_SELECTION_OUTCOME`.
+
+هیچ نتیجه اقتصادی نامزد برای انتخاب منتشر یا ذخیره نشد.
+
+کار جاری:
+`MCF-PROD-001-BOUNDED-MEMORY-RUNTIME`
+
+الزام‌ها:
+- purge feature/liquidity derived cache بعد از هر candidate؛
+- حفظ source bars و frozen input؛
+- ثبت RSS در progress benchmark؛
+- rerun همان benchmark ثابت ۲۴ نامزد پس از CI و merge؛
+- full 6,852 همچنان قفل؛
+- full runner نهایی علاوه بر purge، shard + process restart + checkpoint/resume
+  خواهد داشت.
