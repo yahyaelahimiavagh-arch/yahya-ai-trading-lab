@@ -1,8 +1,8 @@
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8" };
 const NODE_RE = /^NODE-[A-Z0-9][A-Z0-9_-]{1,31}$/;
-const BATCH_RE = /^B\\d{3}$/;
+const BATCH_RE = /^B[0-9]{3}$/;
 const SHA_RE = /^[0-9a-f]{64}$/;
-const CANDIDATE_RE = /^MCF-PROD-001-\\d{6}$/;
+const CANDIDATE_RE = /^MCF-PROD-001-[0-9]{6}$/;
 const MAX_ARTIFACT_BYTES = 8 * 1024 * 1024;
 const MAX_MANIFEST_BYTES = 2 * 1024 * 1024;
 const DEFAULT_LEASE_SECONDS = 900;
@@ -163,13 +163,6 @@ async function handleRelease(request, env) {
   if (!(await nodeAuthorized(request, env, nodeId))) return response({ status: "UNAUTHORIZED" }, 401);
   if (!BATCH_RE.test(batchCode)) return response({ status: "INVALID_BATCH" }, 400);
   const now = Date.now();
-  if (transferMode === "R2") {
-    const r2 = requireR2(env);
-    const current = await env.DB.prepare("SELECT plan_sha256 FROM batches WHERE batch_code=?1").bind(batchCode).first();
-    if (!current) return response({ status: "READY_REJECTED" }, 409);
-    const object = await r2.head(manifestKey(current.plan_sha256, batchCode, manifestSha));
-    if (!object) return response({ status: "MANIFEST_NOT_UPLOADED" }, 409);
-  }
   const result = await env.DB.prepare(
     `UPDATE batches SET state='AVAILABLE',owner_node=NULL,lease_until_ms=NULL,updated_at_ms=?1
      WHERE batch_code=?2 AND state='CLAIMED' AND owner_node=?3`
@@ -286,6 +279,15 @@ async function handleReady(request, env) {
     return response({ status: "INVALID_READY_PAYLOAD" }, 400);
   }
   const now = Date.now();
+  if (transferMode === "R2") {
+    const r2 = requireR2(env);
+    const current = await env.DB.prepare(
+      "SELECT plan_sha256 FROM batches WHERE batch_code=?1 AND state='CLAIMED' AND owner_node=?2"
+    ).bind(batchCode, nodeId).first();
+    if (!current) return response({ status: "READY_REJECTED" }, 409);
+    const object = await r2.head(manifestKey(current.plan_sha256, batchCode, manifestSha));
+    if (!object) return response({ status: "MANIFEST_NOT_UPLOADED" }, 409);
+  }
   const result = await env.DB.prepare(
     `UPDATE batches SET state='AWAITING_INGEST',lease_until_ms=NULL,updated_at_ms=?1,
        result_manifest_sha256=?2,result_count=?3,transfer_mode=?4
@@ -340,23 +342,28 @@ async function handleStatus(request, env) {
 
 export default {
   async fetch(request, env) {
-    const url = new URL(request.url);
-    if (url.pathname === "/health") {
-      return response({ status: "OK", service: "YATL_DISTRIBUTED_COORDINATOR" });
-    }
-    const artifactPut = url.pathname.match(/^\/v1\/artifact\/(B\\d{3})\/(MCF-PROD-001-\\d{6})\/([0-9a-f]{64})$/);
-    if (request.method === "PUT" && artifactPut) return handleArtifactPut(request, env, artifactPut[1], artifactPut[2], artifactPut[3]);
-    const manifestPut = url.pathname.match(/^\/v1\/manifest\/(B\\d{3})\/([0-9a-f]{64})$/);
-    if (request.method === "PUT" && manifestPut) return handleManifestPut(request, env, manifestPut[1], manifestPut[2]);
-    const artifactGet = url.pathname.match(/^\/v1\/admin\/object\/(.+)$/);
-    if (request.method === "GET" && artifactGet) return handleArtifactGet(request, env, decodeURIComponent(artifactGet[1]));
+    try {
+      const url = new URL(request.url);
+      if (url.pathname === "/health") {
+        return response({ status: "OK", service: "YATL_DISTRIBUTED_COORDINATOR" });
+      }
+      const artifactPut = url.pathname.match(/^\/v1\/artifact\/(B[0-9]{3})\/(MCF-PROD-001-[0-9]{6})\/([0-9a-f]{64})$/);
+      if (request.method === "PUT" && artifactPut) return handleArtifactPut(request, env, artifactPut[1], artifactPut[2], artifactPut[3]);
+      const manifestPut = url.pathname.match(/^\/v1\/manifest\/(B[0-9]{3})\/([0-9a-f]{64})$/);
+      if (request.method === "PUT" && manifestPut) return handleManifestPut(request, env, manifestPut[1], manifestPut[2]);
+      const artifactGet = url.pathname.match(/^\/v1\/admin\/object\/(.+)$/);
+      if (request.method === "GET" && artifactGet) return handleArtifactGet(request, env, decodeURIComponent(artifactGet[1]));
 
-    if (request.method === "POST" && url.pathname === "/v1/claim") return handleClaim(request, env);
-    if (request.method === "POST" && url.pathname === "/v1/heartbeat") return handleHeartbeat(request, env);
-    if (request.method === "POST" && url.pathname === "/v1/release") return handleRelease(request, env);
-    if (request.method === "POST" && url.pathname === "/v1/ready") return handleReady(request, env);
-    if (request.method === "POST" && url.pathname === "/v1/ingested") return handleIngested(request, env);
-    if (request.method === "GET" && url.pathname === "/v1/status") return handleStatus(request, env);
-    return response({ status: "NOT_FOUND" }, 404);
+      if (request.method === "POST" && url.pathname === "/v1/claim") return handleClaim(request, env);
+      if (request.method === "POST" && url.pathname === "/v1/heartbeat") return handleHeartbeat(request, env);
+      if (request.method === "POST" && url.pathname === "/v1/release") return handleRelease(request, env);
+      if (request.method === "POST" && url.pathname === "/v1/ready") return handleReady(request, env);
+      if (request.method === "POST" && url.pathname === "/v1/ingested") return handleIngested(request, env);
+      if (request.method === "GET" && url.pathname === "/v1/status") return handleStatus(request, env);
+      return response({ status: "NOT_FOUND" }, 404);
+    } catch (error) {
+      if (error instanceof Response) return error;
+      return response({ status: "INTERNAL_ERROR" }, 500);
+    }
   },
 };
