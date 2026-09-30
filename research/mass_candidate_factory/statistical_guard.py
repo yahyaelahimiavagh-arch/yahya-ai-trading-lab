@@ -20,6 +20,14 @@ MANIFEST_SCHEMA = "YATL_MULTIPLICITY_PREOUTCOME/1.0.0"
 EULER_MASCHERONI = 0.5772156649015329
 
 
+def _sha256(value: str) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and all(ch in "0123456789abcdef" for ch in value)
+    )
+
+
 def _probability(value: float, *, name: str) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise MCFError(f"{name} must be numeric")
@@ -309,6 +317,9 @@ def build_preoutcome_multiplicity_manifest(
     executable: Sequence[Mapping[str, object]],
     *,
     neighbor_graph: Mapping[str, Sequence[str]],
+    candidate_ledger_sha256: str,
+    neighbor_graph_sha256: str,
+    executable_freeze_sha256: str,
     expected_candidate_count: int | None = None,
 ) -> dict:
     """Freeze metadata needed by later statistical adjudication without outcomes."""
@@ -316,6 +327,13 @@ def build_preoutcome_multiplicity_manifest(
         raise MCFError("empty executable set")
     if not isinstance(neighbor_graph, Mapping):
         raise MCFError("missing frozen neighbor graph")
+    for identity in (
+        candidate_ledger_sha256,
+        neighbor_graph_sha256,
+        executable_freeze_sha256,
+    ):
+        if not _sha256(identity):
+            raise MCFError("invalid multiplicity source identity")
 
     seen: set[str] = set()
     family_counts: Counter[str] = Counter()
@@ -364,6 +382,10 @@ def build_preoutcome_multiplicity_manifest(
     payload = {
         "schema": MANIFEST_SCHEMA,
         "state": "PRE_OUTCOME_MULTIPLICITY_FROZEN",
+        "generation_id": "MCF-PROD-001",
+        "candidate_ledger_sha256": candidate_ledger_sha256,
+        "neighbor_graph_sha256": neighbor_graph_sha256,
+        "executable_freeze_sha256": executable_freeze_sha256,
         "candidate_count": candidate_count,
         "conservative_trial_count": candidate_count,
         "family_counts": tuple(sorted(family_counts.items())),
@@ -371,9 +393,13 @@ def build_preoutcome_multiplicity_manifest(
         "timeframe_counts": tuple(sorted(timeframe_counts.items())),
         "free_parameter_dimension_counts": tuple(sorted(dimension_counts.items())),
         "directed_parameter_neighbor_edge_count": neighbor_edges,
-        "default_fdr_method": "BY",
-        "bh_requires_dependency_justification": True,
+        "primary_fdr_method": "BY",
+        "global_fdr_alpha": "0.05",
+        "bh_diagnostic_only": True,
+        "dsr_probability_threshold": "0.95",
         "dsr_uses_full_trial_count_until_dependency_audit": True,
+        "pbo_scope": "FAMILY_X_TIMEFRAME",
+        "pbo_hard_stop": "0.50",
         "pbo_requires_common_complete_return_panel": True,
         "performance_read": False,
         "fresh_oos_read": False,
