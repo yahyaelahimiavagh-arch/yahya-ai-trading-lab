@@ -7,6 +7,8 @@ case "$NODE_ID" in
   *) echo '{"status":"SSH_DISTRIBUTED_GATEWAY_BLOCKED","reason":"invalid forced-command node"}'; exit 2 ;;
 esac
 
+cd /opt/yatl/mcf-distributed
+
 exec /opt/yatl/app/.venv/bin/python -m research.mass_candidate_factory.production_ssh_gateway server \
   --node-id "$NODE_ID" \
   --plan /var/lib/yatl/research/mcf-prod-001-distributed/plan.json \
