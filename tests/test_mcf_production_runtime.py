@@ -84,6 +84,7 @@ def freeze_artifact():
 class ProductionRuntimeTest(unittest.TestCase):
     def test_canonical_runtime_wires_rule_universe_and_decimal_accounting(self):
         runtime = ProductionRuntime(
+            synthetic_fixture=True,
             executable_freeze=freeze_artifact(),
             binding=binding(),
             bars_by_timeframe={

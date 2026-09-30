@@ -51,6 +51,9 @@ class ProductionBars:
             raise MCFError("production bars must be strictly increasing")
         if self.times[0] < POPULATION_START_MS or self.times[-1] >= DEVELOPMENT_END_MS:
             raise MCFError("production bars outside frozen Development population")
+        cadence = CADENCE_MS[self.timeframe]
+        if any(type(t) is not int or t % cadence or t + cadence > DEVELOPMENT_END_MS for t in self.times):
+            raise MCFError("production bar cadence/completion boundary mismatch")
         for field in fields:
             values = getattr(self, field)
             if any(not isfinite(float(v)) for v in values):

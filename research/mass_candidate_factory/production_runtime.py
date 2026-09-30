@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from typing import Mapping
+from types import MappingProxyType
 
 from .models import MCFError
 from .production import (
@@ -52,11 +53,25 @@ class ProductionRuntime:
     def __init__(self, *, executable_freeze: Mapping[str, object],
                  binding: ProductionUniverseBinding,
                  bars_by_timeframe: Mapping[str, Mapping[str, ProductionBars]],
-                 cost_policy: ProductionCostPolicy | None = None):
+                 cost_policy: ProductionCostPolicy | None = None,
+                 frozen_input=None, synthetic_fixture: bool = False):
+        from .production_runner_input import FrozenRunnerInput
+        self._frozen_input = frozen_input
+        if frozen_input is None:
+            if (not synthetic_fixture or not bars_by_timeframe
+                    or any(not b.dataset_id.startswith("SYNTHETIC-")
+                           for items in bars_by_timeframe.values() for b in items.values())
+                    or len(executable_freeze.get("registered_candidates", ())) != 1
+                    or executable_freeze.get("summary", {}).get("freeze_sha256") is not None):
+                raise MCFError("production runtime requires frozen runner input; raw data is forbidden")
+        elif not isinstance(frozen_input, FrozenRunnerInput) or bars_by_timeframe or synthetic_fixture:
+            raise MCFError("frozen runtime cannot accept replacement bars or synthetic mode")
         self.binding = binding
         self.binding.validate()
         self.cost_policy = cost_policy or ProductionCostPolicy()
         self.cost_policy.validate()
+        if frozen_input is not None:
+            frozen_input.require_runtime(executable_freeze, binding, self.cost_policy)
         self.executable_freeze = executable_freeze
         self.freeze = make_preoutcome_freeze(executable_freeze, binding, self.cost_policy)
         self._candidates = {
@@ -70,13 +85,30 @@ class ProductionRuntime:
             timeframe: dict(symbols)
             for timeframe, symbols in bars_by_timeframe.items()
         }
+        universe = {s for snapshot in binding.membership_snapshots for s in snapshot.symbols}
+        for timeframe, items in self._bars.items():
+            if timeframe not in ("15m", "1h", "4h") or set(items) - universe:
+                raise MCFError("runtime raw matrix contains unregistered symbol/timeframe")
         self._caches: dict[str, dict[str, ProductionFeatureCache]] = {}
         self._liquidity: dict[tuple[str, int], dict[str, tuple[float | None, ...]]] = {}
+
+    @classmethod
+    def from_frozen_input(cls, frozen_input):
+        from .production_generator import freeze_executable_generation
+        from .production_rules import BLOCKED_FAMILIES
+        return cls(executable_freeze=freeze_executable_generation(BLOCKED_FAMILIES),
+                   binding=frozen_input.binding, bars_by_timeframe={},
+                   cost_policy=frozen_input.cost_policy, frozen_input=frozen_input)
 
     def _timeframe_caches(self, timeframe: str) -> dict[str, ProductionFeatureCache]:
         if timeframe in self._caches:
             return self._caches[timeframe]
-        bars = self._bars.get(timeframe, {})
+        if self._frozen_input is not None:
+            if self._bars:
+                raise MCFError("external bars cannot replace frozen runtime data")
+            bars = self._frozen_input.load_timeframe(timeframe)
+        else:
+            bars = self._bars.get(timeframe, {})
         universe_symbols = {
             symbol
             for snapshot in self.binding.membership_snapshots
@@ -102,8 +134,8 @@ class ProductionRuntime:
             )
             for symbol, item in admitted.items()
         }
-        self._caches[timeframe] = caches
-        return caches
+        self._caches[timeframe] = MappingProxyType(caches)
+        return self._caches[timeframe]
 
     def _liquidity_percentiles(self, timeframe: str, window: int):
         key = (timeframe, window)
@@ -126,7 +158,13 @@ class ProductionRuntime:
             free_parameter_dimensions=int(candidate["free_parameter_dimensions"]),
         )
 
-    def run(self, candidate_id: str) -> dict:
+    def run(self, candidate_id: str, *, director_authorized: bool = False) -> dict:
+        if self._frozen_input is not None:
+            if director_authorized is not True:
+                raise MCFError("Director performance authorization required after input freeze")
+            self._frozen_input.require_runtime(self.executable_freeze, self.binding, self.cost_policy)
+            if self._bars:
+                raise MCFError("runtime data outside frozen input")
         candidate = self._candidates.get(candidate_id)
         if candidate is None:
             raise MCFError("candidate not in frozen executable generation")
