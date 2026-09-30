@@ -12,4 +12,5 @@ exec /opt/yatl/app/.venv/bin/python -m research.mass_candidate_factory.productio
   --plan /var/lib/yatl/research/mcf-prod-001-distributed/plan.json \
   --db /var/lib/yatl/research/mcf-prod-001-distributed/coordinator.sqlite3 \
   --results-root /var/lib/yatl/research/mcf-prod-001-results \
-  --spool-root /var/lib/yatl/research/mcf-prod-001-incoming
+  --spool-root /var/lib/yatl/research/mcf-prod-001-incoming \
+  --export-root /var/lib/yatl/research/mcf-prod-001-worker-export
