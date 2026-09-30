@@ -65,8 +65,10 @@ class StatisticalMultiplicityGuardTest(unittest.TestCase):
             trial_sharpes,
             conservative_trial_count=len(trial_sharpes),
         )
+        large_population = trial_sharpes * 1142
+        self.assertEqual(len(large_population), 6852)
         large = expected_maximum_sharpe(
-            trial_sharpes,
+            large_population,
             conservative_trial_count=6852,
         )
         self.assertGreater(large, small)
@@ -76,7 +78,8 @@ class StatisticalMultiplicityGuardTest(unittest.TestCase):
             0.020, 0.010, -0.004, 0.013, 0.008, -0.002,
             0.015, 0.006, 0.011, -0.003, 0.014, 0.009,
         )
-        trial_sharpes = (-0.2, -0.1, 0.0, 0.1, 0.2, 0.3)
+        trial_sharpes = (-0.2, -0.1, 0.0, 0.1, 0.2, 0.3) * 1142
+        self.assertEqual(len(trial_sharpes), 6852)
         result = deflated_sharpe_probability(
             values,
             trial_sharpes=trial_sharpes,
@@ -87,11 +90,16 @@ class StatisticalMultiplicityGuardTest(unittest.TestCase):
         self.assertLessEqual(result["dsr_probability"], 1.0)
         self.assertGreater(result["deflated_null_sharpe"], 0.0)
 
-    def test_trial_count_cannot_be_shrunk_below_observed_trials(self):
+    def test_dsr_requires_complete_frozen_trial_population(self):
         with self.assertRaises(MCFError):
             expected_maximum_sharpe(
                 (-0.2, 0.0, 0.2, 0.4),
                 conservative_trial_count=3,
+            )
+        with self.assertRaises(MCFError):
+            expected_maximum_sharpe(
+                (-0.2, 0.0, 0.2, 0.4),
+                conservative_trial_count=6852,
             )
 
     def test_cscv_pbo_stable_winner_is_zero(self):
