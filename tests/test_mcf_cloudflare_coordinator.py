@@ -16,6 +16,9 @@ class CloudflareCoordinatorSourceTest(unittest.TestCase):
             "/v1/claim",
             "/v1/heartbeat",
             "/v1/release",
+            "/v1/pause-request",
+            "/v1/paused",
+            "/v1/resume",
             "/v1/ready",
             "/v1/ingested",
             "/v1/status",
@@ -38,6 +41,8 @@ class CloudflareCoordinatorSourceTest(unittest.TestCase):
         for needle in (
             "AVAILABLE",
             "CLAIMED",
+            "PAUSE_REQUESTED",
+            "PAUSED",
             "AWAITING_INGEST",
             "INGESTED",
             "lease_until_ms",
