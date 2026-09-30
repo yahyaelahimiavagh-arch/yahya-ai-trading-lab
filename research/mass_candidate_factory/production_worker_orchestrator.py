@@ -23,7 +23,16 @@ from pathlib import Path
 from typing import Mapping
 
 from .models import MCFError, canonical
-from .production_distributed import batch, validate_plan
+from .production_distributed import (
+    batch,
+    build_batch_manifest,
+    claim_batch as local_claim_batch,
+    coordinator_status as local_coordinator_status,
+    heartbeat as local_heartbeat,
+    mark_ingested as local_mark_ingested,
+    validate_plan,
+    verify_batch_manifest,
+)
 from .production_ssh_gateway import build_batch_bundle, ssh_request
 from .production_worker_runner import current_git_sha, validate_authorization
 
@@ -36,6 +45,52 @@ def _load_canonical(path: Path) -> dict:
     if not isinstance(doc, dict) or canonical(doc) != raw:
         raise MCFError("expected canonical JSON object")
     return doc
+
+
+class LocalControl:
+    """VPS-local coordinator backend; no loopback SSH or external service."""
+
+    def __init__(self, *, node_id: str, db_path: Path, plan: Mapping[str, object]):
+        self.node_id = node_id
+        self.db_path = db_path
+        self.plan = plan
+
+    def status(self) -> dict:
+        return local_coordinator_status(self.db_path, self.plan)
+
+    def claim_next(self, lease_seconds: int) -> dict:
+        return local_claim_batch(
+            self.db_path,
+            self.plan,
+            node_id=self.node_id,
+            batch_code=None,
+            lease_seconds=lease_seconds,
+        )
+
+    def heartbeat(self, batch_code: str, lease_seconds: int) -> dict:
+        return local_heartbeat(
+            self.db_path,
+            self.plan,
+            node_id=self.node_id,
+            batch_code=batch_code,
+            lease_seconds=lease_seconds,
+        )
+
+    def complete_batch(
+        self,
+        worker_root: Path,
+        plan: Mapping[str, object],
+        batch_code: str,
+    ) -> dict:
+        manifest = build_batch_manifest(worker_root, plan, batch_code)
+        verify_batch_manifest(worker_root, plan, manifest)
+        accepted = local_mark_ingested(self.db_path, plan, manifest=manifest)
+        return {
+            "status": "LOCAL_BATCH_INGESTED_ACCEPTED",
+            "batch_code": batch_code,
+            "batch_result_manifest_sha256": manifest["batch_result_manifest_sha256"],
+            "coordinator_status": accepted["status"],
+        }
 
 
 class SshControl:
@@ -113,6 +168,27 @@ class SshControl:
             ],
             payload_path=path,
         )
+
+    def complete_batch(
+        self,
+        worker_root: Path,
+        plan: Mapping[str, object],
+        batch_code: str,
+    ) -> dict:
+        bundle = build_batch_bundle(
+            worker_root,
+            plan,
+            batch_code,
+            worker_root / "transfer-out",
+        )
+        accepted = self.upload_bundle(batch_code, bundle)
+        if accepted.get("status") != "SSH_BATCH_INGESTED_ACCEPTED":
+            raise MCFError("VPS did not acknowledge verified batch ingest")
+        try:
+            Path(str(bundle["bundle_path"])).unlink()
+        except OSError:
+            pass
+        return accepted
 
 
 def _child_command(
@@ -205,6 +281,8 @@ def run_auto_worker(
     worker_root: Path,
     authorization_path: Path,
     node_id: str,
+    transport: str = "ssh",
+    coordinator_db: Path | None = None,
     lease_seconds: int = 1800,
     heartbeat_seconds: int = 300,
     max_batches: int = 0,
@@ -236,7 +314,14 @@ def run_auto_worker(
         git_sha=git_sha,
     )
 
-    control = SshControl.from_environment(node_id)
+    if transport == "ssh":
+        control = SshControl.from_environment(node_id)
+    elif transport == "local":
+        if coordinator_db is None:
+            raise MCFError("local auto-worker requires coordinator DB")
+        control = LocalControl(node_id=node_id, db_path=coordinator_db, plan=plan)
+    else:
+        raise MCFError("unsupported auto-worker transport")
     worker_root.mkdir(parents=True, exist_ok=True)
     completed_batches: list[str] = []
     control_failures = 0
@@ -296,19 +381,12 @@ def run_auto_worker(
                 }
 
         control.heartbeat(batch_code, lease_seconds)
-        bundle = build_batch_bundle(
-            worker_root,
-            plan,
-            batch_code,
-            worker_root / "transfer-out",
-        )
-        accepted = control.upload_bundle(batch_code, bundle)
-        if accepted.get("status") != "SSH_BATCH_INGESTED_ACCEPTED":
-            raise MCFError("VPS did not acknowledge verified batch ingest")
-        try:
-            Path(str(bundle["bundle_path"])).unlink()
-        except OSError:
-            pass
+        accepted = control.complete_batch(worker_root, plan, batch_code)
+        if accepted.get("status") not in {
+            "SSH_BATCH_INGESTED_ACCEPTED",
+            "LOCAL_BATCH_INGESTED_ACCEPTED",
+        }:
+            raise MCFError("coordinator did not acknowledge verified batch ingest")
         completed_batches.append(batch_code)
 
     return {
@@ -324,6 +402,12 @@ def main(argv=None) -> int:
     parser.add_argument("--worker-root", required=True, type=Path)
     parser.add_argument("--authorization", required=True, type=Path)
     parser.add_argument("--node-id", default=os.environ.get("YATL_NODE_ID"))
+    parser.add_argument(
+        "--transport",
+        choices=("ssh", "local"),
+        default=os.environ.get("YATL_COORDINATOR_TRANSPORT", "ssh"),
+    )
+    parser.add_argument("--coordinator-db", type=Path)
     parser.add_argument("--lease-seconds", type=int, default=1800)
     parser.add_argument("--heartbeat-seconds", type=int, default=300)
     parser.add_argument("--max-batches", type=int, default=0)
@@ -337,6 +421,8 @@ def main(argv=None) -> int:
             worker_root=args.worker_root,
             authorization_path=args.authorization,
             node_id=args.node_id,
+            transport=args.transport,
+            coordinator_db=args.coordinator_db,
             lease_seconds=args.lease_seconds,
             heartbeat_seconds=args.heartbeat_seconds,
             max_batches=args.max_batches,
