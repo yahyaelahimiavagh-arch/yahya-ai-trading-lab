@@ -281,6 +281,8 @@ def run_auto_worker(
     worker_root: Path,
     authorization_path: Path,
     node_id: str,
+    plan_path: Path | None = None,
+    manifest_path: Path | None = None,
     transport: str = "ssh",
     coordinator_db: Path | None = None,
     lease_seconds: int = 1800,
@@ -294,8 +296,8 @@ def run_auto_worker(
     if max_batches < 0 or retry_seconds < 1 or max_control_failures < 1:
         raise MCFError("invalid auto-worker bounds")
 
-    plan_path = runtime_root / "distributed-plan.json"
-    manifest_path = runtime_root / "worker-bundle-manifest.json"
+    plan_path = plan_path or (runtime_root / "distributed-plan.json")
+    manifest_path = manifest_path or (runtime_root / "worker-bundle-manifest.json")
     plan = _load_canonical(plan_path)
     validate_plan(plan)
     manifest = _load_canonical(manifest_path)
@@ -401,6 +403,8 @@ def main(argv=None) -> int:
     parser.add_argument("--runtime-root", required=True, type=Path)
     parser.add_argument("--worker-root", required=True, type=Path)
     parser.add_argument("--authorization", required=True, type=Path)
+    parser.add_argument("--plan", type=Path)
+    parser.add_argument("--manifest", type=Path)
     parser.add_argument("--node-id", default=os.environ.get("YATL_NODE_ID"))
     parser.add_argument(
         "--transport",
@@ -421,6 +425,8 @@ def main(argv=None) -> int:
             worker_root=args.worker_root,
             authorization_path=args.authorization,
             node_id=args.node_id,
+            plan_path=args.plan,
+            manifest_path=args.manifest,
             transport=args.transport,
             coordinator_db=args.coordinator_db,
             lease_seconds=args.lease_seconds,
