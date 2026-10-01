@@ -6,7 +6,10 @@ from research.mass_candidate_factory.models import MCFError
 from research.mass_candidate_factory.production_capacity_benchmark import (
     BENCHMARK_CANDIDATE_COUNT,
     EXPECTED_EXECUTABLE_COUNT,
+    WORKER_SCHEMA,
+    _run_worker,
     run_capacity_benchmark,
+    run_capacity_benchmark_isolated,
     select_benchmark_candidates,
 )
 
@@ -122,6 +125,104 @@ class CapacityBenchmarkTest(unittest.TestCase):
         self.assertFalse(result["performance_artifacts_written"])
         self.assertFalse(result["selection_authorized"])
         self.assertFalse(result["full_batch_authorized"])
+
+    def test_worker_allows_only_fixed_blind_subset_and_hides_economics(self):
+        runtime = FakeRuntime()
+        selected = select_benchmark_candidates(runtime.executable_freeze["executable"])
+        row = selected[0]
+        usage_values = iter((Usage(1.0, 2.0, 100), Usage(2.5, 3.25, 123456)))
+        result = _run_worker(
+            runtime,
+            row["candidate_id"],
+            row["candidate_spec_sha256"],
+            clock=TickClock(),
+            usage=lambda: next(usage_values),
+        )
+        self.assertEqual(result["schema"], WORKER_SCHEMA)
+        self.assertEqual(result["candidate_id"], row["candidate_id"])
+        self.assertEqual(result["candidate_spec_sha256"], row["candidate_spec_sha256"])
+        self.assertEqual(result["peak_rss_kib"], 123456)
+        self.assertEqual(runtime.release_calls, 1)
+        encoded = json.dumps(result, sort_keys=True)
+        self.assertNotIn("net_return", encoded)
+        self.assertNotIn("completed_trades", encoded)
+        self.assertNotIn("ranking", encoded)
+
+        outside = next(
+            x for x in runtime.executable_freeze["executable"]
+            if x["candidate_id"] not in {s["candidate_id"] for s in selected}
+        )
+        with self.assertRaises(MCFError):
+            _run_worker(runtime, outside["candidate_id"], outside["candidate_spec_sha256"])
+
+    def test_isolated_benchmark_uses_one_worker_result_per_fixed_candidate(self):
+        runtime = FakeRuntime()
+        calls = []
+        progress = []
+
+        def worker(row):
+            calls.append(row["candidate_id"])
+            index = len(calls)
+            return {
+                "schema": WORKER_SCHEMA,
+                "status": "CAPACITY_BENCHMARK_WORKER_COMPLETE_NO_SELECTION",
+                "candidate_id": row["candidate_id"],
+                "candidate_spec_sha256": row["candidate_spec_sha256"],
+                "wall_seconds": float(index),
+                "cpu_user_seconds": 0.5,
+                "cpu_system_seconds": 0.25,
+                "peak_rss_kib": 100000 + index,
+                "candidate_performance_exposed": False,
+                "performance_artifacts_written": False,
+            }
+
+        result = run_capacity_benchmark_isolated(
+            runtime,
+            "a" * 64,
+            worker=worker,
+            clock=TickClock(),
+            progress=lambda position, total, rss: progress.append((position, total, rss)),
+        )
+
+        selected = select_benchmark_candidates(runtime.executable_freeze["executable"])
+        self.assertEqual(calls, [x["candidate_id"] for x in selected])
+        self.assertEqual(len(calls), BENCHMARK_CANDIDATE_COUNT)
+        self.assertEqual(result["benchmark_candidate_count"], BENCHMARK_CANDIDATE_COUNT)
+        self.assertEqual(result["peak_rss_kib"], 100000 + BENCHMARK_CANDIDATE_COUNT)
+        self.assertEqual(result["cpu_user_seconds"], 12.0)
+        self.assertEqual(result["cpu_system_seconds"], 6.0)
+        self.assertEqual(progress[-1], (
+            BENCHMARK_CANDIDATE_COUNT,
+            BENCHMARK_CANDIDATE_COUNT,
+            100000 + BENCHMARK_CANDIDATE_COUNT,
+        ))
+        self.assertEqual(runtime.calls, [])
+        self.assertEqual(runtime.release_calls, 0)
+
+    def test_isolated_benchmark_rejects_worker_performance_fields(self):
+        runtime = FakeRuntime()
+
+        def bad_worker(row):
+            return {
+                "schema": WORKER_SCHEMA,
+                "status": "CAPACITY_BENCHMARK_WORKER_COMPLETE_NO_SELECTION",
+                "candidate_id": row["candidate_id"],
+                "candidate_spec_sha256": row["candidate_spec_sha256"],
+                "wall_seconds": 1.0,
+                "cpu_user_seconds": 0.5,
+                "cpu_system_seconds": 0.25,
+                "peak_rss_kib": 100000,
+                "candidate_performance_exposed": False,
+                "performance_artifacts_written": False,
+                "net_return": "999",
+            }
+
+        with self.assertRaisesRegex(MCFError, "unexpected fields"):
+            run_capacity_benchmark_isolated(
+                runtime,
+                "a" * 64,
+                worker=bad_worker,
+            )
 
     def test_wrong_generation_size_fails_closed_before_run(self):
         runtime = FakeRuntime()
