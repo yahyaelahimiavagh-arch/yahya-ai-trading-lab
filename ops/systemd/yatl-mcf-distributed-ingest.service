@@ -1,0 +1,29 @@
+[Unit]
+Description=YATL MCF distributed result auto-ingest
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=yatl
+Group=yatl
+WorkingDirectory=/opt/yatl/app
+EnvironmentFile=/etc/yatl/mcf-distributed-ingest.env
+ExecStart=/opt/yatl/app/.venv/bin/python -m research.mass_candidate_factory.production_result_transfer --plan /var/lib/yatl/research/mcf-prod-001-distributed/plan.json ingest-once --root /var/lib/yatl/research/mcf-prod-001-results
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+RestrictNamespaces=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths=/var/lib/yatl/research/mcf-prod-001-results
+
