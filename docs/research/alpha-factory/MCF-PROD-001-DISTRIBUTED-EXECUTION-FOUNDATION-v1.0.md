@@ -298,3 +298,56 @@ stability, DSR, PBO, reality-check or clustering inputs.
 
 The full unprojected result is ephemeral and must not be used as a reason to
 increase worker storage or network privileges.
+
+## Director recovery audit — 30 September 2026
+
+The interrupted chat was recovered against GitHub, not cached refs:
+- accepted main: `4a205efe6a20bc01ad7a71403dd320d0acff7a06` (PR #172);
+- PR #174 observed HEAD: `56c87444fe989695aadcf86e2d177c5c97d3ed67`;
+- PR #174 remained open, draft and unmerged;
+- no deployment or full performance authority was inferred from continuation.
+
+The SSH transport, Windows setup/start scripts and VPS-local worker loop are
+already implemented. Cloudflare is optional; no account purchase is required.
+
+Recovery fixes:
+- create the dedicated `yatl-mcf` group and `yatl-node` SSH account before use;
+- use the existing `yatl` account for Git worktrees, avoiding root-owned Git
+  ownership checks and avoiding global `safe.directory=*` exceptions;
+- set shared coordinator/results directory permissions and narrowly scoped
+  ACLs for ancestor traversal, isolated code and the Python environment;
+- install the forced command under root-owned `/usr/local/libexec` rather than
+  changing the pinned Git worktree's executable bit;
+- retain enrolled node keys when preparation is repeated;
+- require a successful gateway status preflight under the actual `yatl-node`
+  account before reporting VPS preparation ready;
+- reject an uploaded batch/manifest that differs from the declared owned
+  batch BEFORE writing candidate artifacts or marking it ingested;
+- accept the existing capacity CLI's ordinary JSON output and bind its exact
+  raw bytes in the authorization, preserving the benchmark evidence unchanged.
+
+Free OS prerequisites on Ubuntu: OpenSSH, `runuser`, and `setfacl` (package
+`acl`). If `setfacl` is absent, prepare stops before account setup. Install it
+with `sudo apt-get install acl` before retrying. This is an OS utility, not a
+new paid service or Python package. Existing `yatl` and the accepted Python
+environment remain prerequisites.
+
+After explicit PR acceptance, the preparation order is:
+1. pin the accepted merged Git SHA;
+2. run `ops/ssh/yatl-mcf-vps-refreeze.sh` with sudo and that SHA;
+3. record the emitted runner-input relative path and SHA;
+4. run `ops/ssh/yatl-mcf-vps-prepare.sh` with sudo, the exact SHA, runner-input
+   values and VPS host label (no performance execution);
+5. enroll the separate laptop/work-PC public keys and pin the VPS host key;
+6. rerun the blind 24-candidate capacity benchmark on the refrozen input;
+7. verify archive import and SSH control on each physical device;
+8. separately authorize the 6,852 Development run only after these gates pass.
+
+Acceptance limits: local tests do not prove VPS memory capacity, Windows
+PowerShell installation, real SSH transfer, or simultaneous physical-device
+execution. Batch-complete auto-ingest is implemented. Partial candidate results
+remain local until completion; automatic cross-node recovery of an unfinished
+batch still needs a transfer gate before claiming that a different node can
+resume it without recomputing completed candidates. These are runtime gates,
+not strategy-selection evidence. P10, Fresh OOS, recent reserve, P11 and Live
+remain outside this work unit.

@@ -153,6 +153,8 @@ def ingest_batch_bundle(
     plan: Mapping[str, object],
     coordinator_db: Path,
     uploader_node_id: str,
+    expected_batch_code: str | None = None,
+    expected_manifest_sha256: str | None = None,
 ) -> dict:
     """Verify a received bundle before writing immutable candidate artifacts."""
     validate_plan(plan)
@@ -187,6 +189,17 @@ def ingest_batch_bundle(
             != manifest.get("batch_result_manifest_sha256")
         ):
             raise MCFError("SSH batch bundle boundary mismatch")
+
+        # Bind the received header to the owned batch BEFORE writing artifacts
+        # or mutating coordinator state. Checking only the returned receipt is
+        # too late: it would already have accepted a different batch.
+        if (
+            expected_batch_code is not None and batch_code != expected_batch_code
+        ) or (
+            expected_manifest_sha256 is not None
+            and manifest.get("batch_result_manifest_sha256") != expected_manifest_sha256
+        ):
+            raise MCFError("SSH upload declared batch/manifest mismatch")
 
         expected_rows = list(manifest["artifacts"])
         for row in expected_rows:
@@ -412,6 +425,8 @@ def execute_server_command(
             plan=plan,
             coordinator_db=db,
             uploader_node_id=node_id,
+            expected_batch_code=batch_code,
+            expected_manifest_sha256=manifest_sha,
         )
         if result["batch_result_manifest_sha256"] != manifest_sha:
             raise MCFError("SSH upload declared manifest SHA mismatch")

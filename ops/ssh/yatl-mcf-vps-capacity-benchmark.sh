@@ -5,6 +5,8 @@ set -euo pipefail
 # It does not expose or persist candidate economics and does not authorize 6,852.
 
 : "${YATL_EXPECTED_GIT_SHA:?set exact accepted Git SHA}"
+[[ "$(id -u)" -eq 0 ]] || { echo "Run with sudo" >&2; exit 2; }
+[[ "$YATL_EXPECTED_GIT_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "invalid Git SHA" >&2; exit 2; }
 
 WORKTREE=/opt/yatl/mcf-distributed
 PY=/opt/yatl/app/.venv/bin/python
@@ -15,7 +17,7 @@ OUT="$DIST_ROOT/capacity-benchmark.json"
 ERR="$DIST_ROOT/capacity-benchmark.stderr.log"
 
 [[ -d "$WORKTREE" ]] || { echo "missing distributed worktree" >&2; exit 2; }
-[[ "$(git -C "$WORKTREE" rev-parse HEAD)" = "$YATL_EXPECTED_GIT_SHA" ]] || {
+[[ "$(runuser -u yatl -- git -C "$WORKTREE" rev-parse HEAD)" = "$YATL_EXPECTED_GIT_SHA" ]] || {
   echo "distributed worktree Git SHA mismatch" >&2
   exit 2
 }

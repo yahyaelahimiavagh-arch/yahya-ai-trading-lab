@@ -5,6 +5,8 @@ set -euo pipefail
 # No candidate performance is executed.
 
 : "${YATL_EXPECTED_GIT_SHA:?set exact accepted Git SHA}"
+[[ "$(id -u)" -eq 0 ]] || { echo "Run refreeze with sudo" >&2; exit 2; }
+[[ "$YATL_EXPECTED_GIT_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "invalid Git SHA" >&2; exit 2; }
 
 SOURCE_REPO=/opt/yatl/app
 WORKTREE=/opt/yatl/mcf-distributed
@@ -16,17 +18,18 @@ INDEX_SHA=55c8c476cd5043a652c09f060e2a58b6b1dd9cfd9bffef33e3d8ff7a3a6092c3
 INDEX_RELATIVE="runtime-data/index-${INDEX_SHA}.json"
 OUT="${DIST_ROOT}/runner-input-refreeze.json"
 
-git -C "$SOURCE_REPO" fetch origin
-git -C "$SOURCE_REPO" cat-file -e "$YATL_EXPECTED_GIT_SHA^{commit}"
+runuser -u yatl -- git -C "$SOURCE_REPO" fetch origin
+runuser -u yatl -- git -C "$SOURCE_REPO" cat-file -e "$YATL_EXPECTED_GIT_SHA^{commit}"
 
 if [[ -e "$WORKTREE/.git" || -f "$WORKTREE/.git" ]]; then
-  [[ "$(git -C "$WORKTREE" rev-parse HEAD)" = "$YATL_EXPECTED_GIT_SHA" ]] || {
+  [[ "$(runuser -u yatl -- git -C "$WORKTREE" rev-parse HEAD)" = "$YATL_EXPECTED_GIT_SHA" ]] || {
     echo "existing distributed worktree Git SHA mismatch" >&2
     exit 2
   }
 else
   [[ ! -e "$WORKTREE" ]] || { echo "worktree path exists but is not a Git worktree" >&2; exit 2; }
-  git -C "$SOURCE_REPO" worktree add --detach "$WORKTREE" "$YATL_EXPECTED_GIT_SHA"
+  install -d -o yatl -g yatl -m 0750 "$WORKTREE"
+  runuser -u yatl -- git -C "$SOURCE_REPO" worktree add --detach "$WORKTREE" "$YATL_EXPECTED_GIT_SHA"
 fi
 [[ -f "$RUNTIME_ROOT/$INDEX_RELATIVE" ]] || { echo "accepted runtime index missing" >&2; exit 2; }
 [[ -d "$EVIDENCE_ROOT" ]] || { echo "accepted evidence root missing" >&2; exit 2; }

@@ -1,3 +1,4 @@
+import hashlib
 import json
 import tempfile
 import unittest
@@ -32,7 +33,8 @@ class FullRunAuthorizationTest(unittest.TestCase):
             benchmark_path = root / "benchmark.json"
             output = root / "authorization.json"
             plan_path.write_bytes(canonical(plan))
-            benchmark_path.write_bytes(canonical(self.benchmark(runner_sha)))
+            benchmark_raw = (json.dumps(self.benchmark(runner_sha), sort_keys=True) + "\n").encode()
+            benchmark_path.write_bytes(benchmark_raw)
 
             reader = SimpleNamespace(assert_unchanged=lambda: None)
             with patch.object(auth, "validate_plan"), \
@@ -52,6 +54,7 @@ class FullRunAuthorizationTest(unittest.TestCase):
 
             self.assertEqual(result["status"], "FULL_6852_DEVELOPMENT_AUTHORIZATION_FROZEN")
             doc = json.loads(output.read_bytes())
+            self.assertEqual(doc["capacity_benchmark_sha256"], hashlib.sha256(benchmark_raw).hexdigest())
             self.assertEqual(doc["capacity_benchmark_candidate_count"], 24)
             self.assertEqual(doc["candidate_count"], 6852)
             self.assertEqual(doc["batch_count"], 14)

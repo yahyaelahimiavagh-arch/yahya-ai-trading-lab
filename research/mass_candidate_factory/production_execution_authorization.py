@@ -68,7 +68,12 @@ def freeze_authorization(
     )
     reader.assert_unchanged()
 
-    benchmark, benchmark_raw = _load_canonical(benchmark_path)
+    # The accepted benchmark CLI emits ordinary sorted JSON, not canonical
+    # compact JSON. Bind its exact original bytes; do not rewrite the evidence.
+    benchmark_raw = benchmark_path.read_bytes()
+    benchmark = json.loads(benchmark_raw)
+    if not isinstance(benchmark, dict):
+        raise MCFError("capacity benchmark must be a JSON object")
     if (
         benchmark.get("status") != "CAPACITY_BENCHMARK_COMPLETE_NO_SELECTION"
         or benchmark.get("runner_input_sha256") != runner_input_sha256

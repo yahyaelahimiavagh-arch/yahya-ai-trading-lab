@@ -4,6 +4,8 @@ set -euo pipefail
 # Freezes but does NOT execute the 6,852-candidate authorization artifact.
 
 : "${YATL_EXPECTED_GIT_SHA:?set exact accepted Git SHA}"
+[[ "$(id -u)" -eq 0 ]] || { echo "Run with sudo" >&2; exit 2; }
+[[ "$YATL_EXPECTED_GIT_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "invalid Git SHA" >&2; exit 2; }
 : "${YATL_DIRECTOR_AUTHORIZATION:?explicit Director token required}"
 
 WORKTREE=/opt/yatl/mcf-distributed
@@ -16,7 +18,7 @@ REFREEZE="$DIST_ROOT/runner-input-refreeze.json"
 BENCHMARK="$DIST_ROOT/capacity-benchmark.json"
 AUTH="$DIST_ROOT/authorization.json"
 
-[[ "$(git -C "$WORKTREE" rev-parse HEAD)" = "$YATL_EXPECTED_GIT_SHA" ]] || {
+[[ "$(runuser -u yatl -- git -C "$WORKTREE" rev-parse HEAD)" = "$YATL_EXPECTED_GIT_SHA" ]] || {
   echo "distributed worktree Git SHA mismatch" >&2
   exit 2
 }

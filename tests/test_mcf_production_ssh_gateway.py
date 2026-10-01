@@ -163,6 +163,37 @@ class SshGatewayTest(unittest.TestCase):
             self.assertIn("ClearAllForwardings=yes", joined)
             self.assertNotIn("accept-new", joined)
 
+    def test_wrong_declared_batch_or_manifest_cannot_write_or_mark_ingested(self):
+        manifest = {
+            "batch_code": "B002", "candidate_count": 0,
+            "batch_result_manifest_sha256": "c" * 64, "artifacts": [],
+        }
+        header = {
+            "schema": ssh.BUNDLE_SCHEMA, "plan_sha256": "d" * 64,
+            "batch_code": "B002", "candidate_count": 0,
+            "batch_result_manifest_sha256": "c" * 64, "manifest": manifest,
+        }
+        for expected_batch, expected_sha in (("B001", "c" * 64), ("B002", "e" * 64)):
+            with self.subTest(batch=expected_batch), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                bundle = root / "bundle.jsonl"
+                bundle.write_bytes(canonical(header))
+                with patch.object(ssh, "validate_plan"), \
+                     patch.object(ssh, "validate_batch_manifest_structure"), \
+                     patch.object(ssh, "write_once") as write, \
+                     patch.object(ssh, "mark_ingested") as mark:
+                    with self.assertRaisesRegex(MCFError, "declared batch/manifest"):
+                        ssh.ingest_batch_bundle(
+                            bundle, results_root=root / "results",
+                            plan={"plan_sha256": "d" * 64},
+                            coordinator_db=root / "c.sqlite3",
+                            uploader_node_id="NODE-LAPTOP",
+                            expected_batch_code=expected_batch,
+                            expected_manifest_sha256=expected_sha,
+                        )
+                    write.assert_not_called()
+                    mark.assert_not_called()
+
     def test_upload_checks_owner_before_accepting_stdin(self):
         with tempfile.TemporaryDirectory() as tmp, \
              patch.object(ssh, "init_coordinator"), \

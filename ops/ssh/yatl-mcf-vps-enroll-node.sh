@@ -5,6 +5,8 @@ NODE_ID="${1:-}"
 PUBLIC_KEY="${2:-}"
 WORKTREE=/opt/yatl/mcf-distributed
 AUTH_KEYS=/home/yatl-node/.ssh/authorized_keys
+GATEWAY=/usr/local/libexec/yatl-mcf-node-command
+[[ "$(id -u)" -eq 0 ]] || { echo "Run enrollment with sudo" >&2; exit 2; }
 
 case "$NODE_ID" in
   NODE-LAPTOP|NODE-WORKPC) ;;
@@ -16,7 +18,7 @@ case "$PUBLIC_KEY" in
 esac
 
 id yatl-node >/dev/null 2>&1 || { echo "run VPS prepare first" >&2; exit 2; }
-[[ -x "$WORKTREE/ops/ssh/yatl-mcf-node-command" ]] || {
+[[ -x "$GATEWAY" ]] || {
   echo "restricted gateway command missing" >&2
   exit 2
 }
@@ -27,7 +29,7 @@ if [[ -f "$AUTH_KEYS" ]]; then
   grep -v "yatl-mcf-node-command $NODE_ID" "$AUTH_KEYS" > "$TMP" || true
 fi
 printf 'restrict,command="%s %s" %s\n' \
-  "$WORKTREE/ops/ssh/yatl-mcf-node-command" "$NODE_ID" "$PUBLIC_KEY" >> "$TMP"
+  "$GATEWAY" "$NODE_ID" "$PUBLIC_KEY" >> "$TMP"
 
 install -o yatl-node -g yatl-node -m 0600 "$TMP" "$AUTH_KEYS"
 echo "NODE_ENROLLMENT_STATUS=INSTALLED"
