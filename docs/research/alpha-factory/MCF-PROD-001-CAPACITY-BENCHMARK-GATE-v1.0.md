@@ -195,3 +195,69 @@ is forbidden for the production batch.
 
 This incident does not authorize strategy tuning, family changes, threshold
 changes, selection, Fresh OOS, recent reserve or P10 access.
+
+
+## Second VPS OOM incident — 2026-10-01
+
+The cache-release remediation merged in PR #172 was rerun on main
+\`4a205efe6a20bc01ad7a71403dd320d0acff7a06\` after deterministic reconstruction
+of the accepted pre-performance evidence.
+
+Reconstructed identities matched the previously accepted evidence:
+
+- classification map SHA-256:
+  \`e19cb8539c29e6a95c453b6a680b56b5b88bddad65df8a67ca32a14ceab41012\`;
+- production-binding preflight SHA-256:
+  \`f0a177cc98d3946ead55dc69016d65178539ecd0c778c9c4ae0a193e3ba61cfc\`;
+- monthly membership SHA-256:
+  \`c75aa5c4347dff5daeed1ca2625fb86e2df3f4e105fde55aed0248df4ce868b7\`;
+- runtime dataset count: 525;
+- runtime index SHA-256:
+  \`55c8c476cd5043a652c09f060e2a58b6b1dd9cfd9bffef33e3d8ff7a3a6092c3\`;
+- refrozen runner-input SHA-256 on the PR #172 code identity:
+  \`ac123936204b571a93982341dfaa79c2527370c3e2b4d5be3f1fbb3cddb3d561\`.
+
+Independent no-performance verification passed before the benchmark.
+
+The fixed 24-candidate benchmark again completed 8/24 candidates and then the
+Python process was killed with exit code 137. Progress checkpoints after
+completed candidates reported approximately 1.10-1.36 GiB current RSS, but the
+kernel recorded a much larger transient allocation before the next progress
+checkpoint:
+
+- OOM timestamp: 2026-10-01 08:09:55 UTC;
+- killed PID: 52959;
+- total VM: 3,580,284 KiB;
+- anonymous RSS: 3,531,456 KiB;
+- file RSS: 2,176 KiB;
+- total VPS RAM: approximately 3.7 GiB;
+- swap: 0 bytes.
+
+Classification:
+
+\`CONFIRMED_OOM_AFTER_IN_PROCESS_CACHE_RELEASE / ENGINEERING_CAPACITY_FAILURE / NO_SELECTION_OUTCOME\`.
+
+No candidate economics were printed or persisted.
+
+This second incident disproves the assumption that clearing transient feature
+caches and forcing garbage collection is sufficient for this VPS. Post-candidate
+RSS is not a safe upper bound on within-candidate transient memory. A single
+long-lived Python process may still approach the machine limit between progress
+checkpoints.
+
+Required remediation before another capacity rerun:
+
+- preserve the exact deterministic 24-candidate pre-outcome selection;
+- execute each selected candidate in a fresh Python subprocess;
+- independently verify inside each worker that its candidate belongs to that
+  fixed selection;
+- discard all candidate economics inside the worker;
+- permit only capacity-only worker fields to cross the process boundary;
+- aggregate wall time, CPU time, peak worker RSS and family/timeframe timings in
+  the parent;
+- fail closed if a worker returns any unexpected field or exits abnormally;
+- do not expose or authorize the 6,852-candidate Development batch.
+
+This process-isolation remediation is an engineering change only. It does not
+authorize parameter changes, family changes, selection, Fresh OOS, recent
+reserve, P10, P11 or Live execution.
