@@ -5,6 +5,7 @@ from typing import Mapping
 from types import MappingProxyType
 
 from .models import MCFError
+from .production_memory_telemetry import memory_stage
 from .production import (
     FrozenCandidateBinding,
     PreOutcomeFreeze,
@@ -106,42 +107,45 @@ class ProductionRuntime:
         if self._frozen_input is not None:
             if self._bars:
                 raise MCFError("external bars cannot replace frozen runtime data")
-            bars = self._frozen_input.load_timeframe(timeframe)
+            with memory_stage("dataset_loading"):
+                bars = self._frozen_input.load_timeframe(timeframe)
         else:
             bars = self._bars.get(timeframe, {})
-        universe_symbols = {
-            symbol
-            for snapshot in self.binding.membership_snapshots
-            for symbol in snapshot.symbols
-        }
-        admitted = {
-            symbol: item
-            for symbol, item in bars.items()
-            if symbol in universe_symbols
-        }
-        for symbol, item in admitted.items():
-            item.validate()
-            if item.symbol != symbol or item.timeframe != timeframe:
-                raise MCFError("runtime bars map identity mismatch")
-        caches = {
-            symbol: ProductionFeatureCache(
-                item,
-                {
-                    peer_symbol: peer
-                    for peer_symbol, peer in admitted.items()
-                    if peer_symbol in {"BTCUSDT", "ETHUSDT"} and peer_symbol != symbol
-                },
-            )
-            for symbol, item in admitted.items()
-        }
-        self._caches[timeframe] = MappingProxyType(caches)
+        with memory_stage("feature_cache_initialization"):
+            universe_symbols = {
+                symbol
+                for snapshot in self.binding.membership_snapshots
+                for symbol in snapshot.symbols
+            }
+            admitted = {
+                symbol: item
+                for symbol, item in bars.items()
+                if symbol in universe_symbols
+            }
+            for symbol, item in admitted.items():
+                item.validate()
+                if item.symbol != symbol or item.timeframe != timeframe:
+                    raise MCFError("runtime bars map identity mismatch")
+            caches = {
+                symbol: ProductionFeatureCache(
+                    item,
+                    {
+                        peer_symbol: peer
+                        for peer_symbol, peer in admitted.items()
+                        if peer_symbol in {"BTCUSDT", "ETHUSDT"} and peer_symbol != symbol
+                    },
+                )
+                for symbol, item in admitted.items()
+            }
+            self._caches[timeframe] = MappingProxyType(caches)
         return self._caches[timeframe]
 
     def _liquidity_percentiles(self, timeframe: str, window: int):
         key = (timeframe, window)
         if key not in self._liquidity:
             caches = self._timeframe_caches(timeframe)
-            self._liquidity[key] = liquidity_percentiles(caches, window, self.binding)
+            with memory_stage("liquidity_percentiles"):
+                self._liquidity[key] = liquidity_percentiles(caches, window, self.binding)
         return self._liquidity[key]
 
     def release_transient_features(self) -> None:
@@ -182,14 +186,15 @@ class ProductionRuntime:
             window = int(candidate["parameter_vector"]["liquidity_window"])
             percentile = self._liquidity_percentiles(timeframe, window)
 
-        series = {}
-        for symbol, cache in caches.items():
-            series[symbol] = compile_candidate(
-                candidate,
-                cache,
-                liquidity_percentile=None if percentile is None else percentile[symbol],
-                universe_binding=self.binding,
-            )
+        with memory_stage("feature_signal_compilation"):
+            series = {}
+            for symbol, cache in caches.items():
+                series[symbol] = compile_candidate(
+                    candidate,
+                    cache,
+                    liquidity_percentile=None if percentile is None else percentile[symbol],
+                    universe_binding=self.binding,
+                )
 
         return run_candidate(
             candidate=self.candidate_binding(candidate),

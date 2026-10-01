@@ -369,3 +369,13 @@ batch still needs a transfer gate before claiming that a different node can
 resume it without recomputing completed candidates. These are runtime gates,
 not strategy-selection evidence. P10, Fresh OOS, recent reserve, P11 and Live
 remain outside this work unit.
+
+## Process-isolation incident and current runtime hold
+
+On 2026-10-01 the isolated fixed benchmark still stopped after 8/24, with global
+OOM killing the ninth worker. See the capacity gate's third incident record.
+Process lifetime bounds cross-candidate accumulation but does not guarantee a
+single candidate fits. No distributed/full run or benchmark retry is authorized
+by the new diagnostic work. Its evidence cannot serve as a completed capacity
+benchmark or full-performance authorization. The new implementation-only path
+is documented in `MCF-PROD-001-SINGLE-CANDIDATE-MEMORY-DIAGNOSTIC-v1.0.md`.
