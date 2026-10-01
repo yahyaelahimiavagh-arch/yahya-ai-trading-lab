@@ -36,6 +36,15 @@ MAX_LINE = 4096
 MAX_CHECKPOINTS = 64
 
 
+def diagnostic_path(path):
+    guarded = guard_root(path)
+    for part in (*path.parts, *guarded.parts):
+        lowered = part.lower()
+        if 'p11' in lowered or lowered in {'live', 'live-execution', 'live_execution'}:
+            raise MCFError("diagnostic sealed/live path rejected")
+    return guarded
+
+
 def target_identity() -> dict:
     # Same production generator and unchanged benchmark selection; no data read.
     freeze = freeze_executable_generation(BLOCKED_FAMILIES)
@@ -77,7 +86,7 @@ def validate_authorization(doc, identity):
 
 
 def load_authorization(path, identity):
-    guard_root(path)
+    diagnostic_path(path)
     raw = path.read_bytes()
     doc = json.loads(raw)
     if canonical(doc) != raw:
@@ -213,7 +222,7 @@ class CheckpointJournal:
 
 
 def supervise(command_builder, identity, output_root):
-    guard_root(output_root)
+    diagnostic_path(output_root)
     # Fresh directory prevents overwrite/retry from destroying incident evidence.
     output_root.mkdir(parents=True, exist_ok=False)
     log_path = safe_path(output_root, "checkpoints.jsonl")
@@ -267,7 +276,7 @@ def main(argv=None):
         identity = identities(args.expected_input_sha256, args.expected_git_sha)
         if current_git_sha() != args.expected_git_sha:
             raise MCFError("diagnostic Git mismatch")
-        guard_root(args.runtime_root)
+        diagnostic_path(args.runtime_root)
         safe_path(args.runtime_root, args.input_relative)
         if args.input_relative != f"runner-input/input-{args.expected_input_sha256}.json":
             raise MCFError("diagnostic input path mismatch")

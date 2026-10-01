@@ -16,7 +16,7 @@ from research.mass_candidate_factory.production_generator import freeze_executab
 from research.mass_candidate_factory.production_rules import BLOCKED_FAMILIES
 from research.mass_candidate_factory.production_memory_diagnostic import (
     AUTH_SCHEMA, SCOPE, SAFETY, STAGES, CheckpointSink, CheckpointJournal,
-    identities, main, supervise, target_identity, validate_authorization, validate_checkpoint, execute_worker,
+    identities, main, supervise, target_identity, validate_authorization, validate_checkpoint, execute_worker, diagnostic_path,
 )
 from research.mass_candidate_factory.production_memory_telemetry import engineering_telemetry, memory_stage
 from research.mass_candidate_factory.production_worker_runner import validate_authorization as validate_full
@@ -193,7 +193,7 @@ class MemoryDiagnosticTest(unittest.TestCase):
             with contextlib.redirect_stdout(io.StringIO()):
                 self.assertEqual(main(['preflight',*args[1:]]),0)
             reader.assert_not_called()
-            for path in ('p10','fresh_oos','recent_reserve'):
+            for path in ('p10','fresh_oos','recent_reserve','p11','live'):
                 bad=list(args);bad[2]=str(Path(tmp)/path)
                 with contextlib.redirect_stdout(io.StringIO()):
                     self.assertEqual(main(bad),2)
@@ -231,6 +231,16 @@ class MemoryDiagnosticTest(unittest.TestCase):
     def test_cli_has_no_arbitrary_candidate_switch(self):
         with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
             main(['diagnose', '--candidate-id', 'MCF-PROD-001-000001'])
+
+    def test_sealed_paths_block_all_diagnostic_io(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            for name in ('fresh-oos','recent-reserve','p10','p11','live'):
+                root=Path(tmp)/name
+                with self.subTest(name=name), self.assertRaises(MCFError):
+                    diagnostic_path(root)
+                with self.assertRaises(MCFError):
+                    supervise(lambda fd:[],self.identity,root)
+                self.assertFalse(root.exists())
 
     def test_stage_order_pid_and_no_overwrite(self):
         with tempfile.TemporaryDirectory() as tmp:

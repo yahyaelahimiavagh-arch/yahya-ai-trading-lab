@@ -115,6 +115,8 @@ approval. PAPER/RESEARCH ONLY, LIVE_MASTER_LOCK=OFF, no futures/leverage/short,
 no live/order endpoint/AI execution, Fresh OOS/recent reserve unread, P10 unread
 and unwritten, P11 locked remain unchanged. All data access uses FrozenRunnerInput
 and its Development-only content-addressed admission and existing path guards.
+Diagnostic input, authorization and output paths additionally reject P11 and Live
+locations before any file access.
 No other evidence root or input substitution is provided.
 
 ## Code identity and acceptance hold
