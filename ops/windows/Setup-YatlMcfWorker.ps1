@@ -49,8 +49,12 @@ $sshDir = Split-Path -Parent $IdentityFile
 New-Item -ItemType Directory -Force -Path $sshDir | Out-Null
 
 if (-not (Test-Path $IdentityFile)) {
-    & ssh-keygen -q -t ed25519 -N "" -f $IdentityFile
-    if ($LASTEXITCODE -ne 0) { throw "ssh-keygen failed" }
+    # Windows PowerShell 5.1 drops empty native arguments with direct '&'
+    # invocation. Start-Process preserves the quoted empty passphrase.
+    $keygen = Start-Process -FilePath (Get-Command ssh-keygen).Source `
+        -ArgumentList @("-q", "-t", "ed25519", "-N", '""', "-f", ('"{0}"' -f $IdentityFile)) `
+        -NoNewWindow -Wait -PassThru
+    if ($keygen.ExitCode -ne 0) { throw "ssh-keygen failed" }
     Write-Host ""
     Write-Host "NODE_KEY_ENROLLMENT_REQUIRED=YES"
     Write-Host "Copy this PUBLIC key to the VPS enrollment step:"
