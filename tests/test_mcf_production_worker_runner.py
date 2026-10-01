@@ -54,6 +54,14 @@ class FakeRuntime:
 
 
 class DistributedWorkerRunnerTest(unittest.TestCase):
+    def test_multiple_candidates_in_one_process_are_rejected_after_second_oom(self):
+        for count in (2, 25):
+            with self.subTest(count=count), patch.object(runner, "batch", return_value={
+                "microshards": [{"microshard_code": "B001-S001", "candidate_count": count}],
+            }):
+                with self.assertRaisesRegex(MCFError, "bounded process size"):
+                    runner._microshard({}, "B001", "B001-S001")
+
     def test_authorization_is_content_addressed_and_exactly_bound(self):
         doc = authorization()
         accepted = runner.validate_authorization(

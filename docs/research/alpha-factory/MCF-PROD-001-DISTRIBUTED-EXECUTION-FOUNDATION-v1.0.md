@@ -275,6 +275,24 @@ Not allowed by this work unit:
 
 Full performance execution remains separately Director-locked.
 
+## Post-PR-175 process lifetime correction — 1 October 2026
+
+The accepted PR #175 isolates each capacity candidate in a fresh process after
+the second confirmed VPS OOM. The distributed runner must use the same
+one-candidate process lifetime; a 25-candidate child would retain the unproven
+long-lived execution model.
+
+New execution plans therefore use exactly one candidate per micro-shard:
+6,852 micro-shards across the same 14 logical batches (13 x 500 + 352).
+Plan validation and the guarded shard runner reject multi-candidate shards.
+The orchestrator already creates a fresh child for each micro-shard.
+
+This changes the operational plan SHA and requires fresh plan/bundle freeze
+before deployment. Older 25-candidate plans are rejected. Candidate identities,
+specifications, batch membership, data, costs and selection gates are unchanged.
+It does not authorize performance or establish runtime capacity. Real VPS and
+laptop evidence and explicit full-run authorization remain required.
+
 
 ## Compact result transport
 

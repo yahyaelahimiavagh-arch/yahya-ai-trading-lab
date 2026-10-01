@@ -21,6 +21,7 @@ from typing import Callable, Mapping
 
 from .models import MCFError, canonical, digest
 from .production_distributed import (
+    MICROSHARD_SIZE,
     batch,
     candidate_completed,
     pause_requested,
@@ -104,7 +105,7 @@ def _microshard(plan: Mapping[str, object], batch_code: str, shard_code: str) ->
     found = next((x for x in item["microshards"] if x["microshard_code"] == shard_code), None)
     if found is None:
         raise MCFError("micro-shard not in frozen distributed batch")
-    if not 1 <= int(found["candidate_count"]) <= 25:
+    if int(found["candidate_count"]) != MICROSHARD_SIZE:
         raise MCFError("micro-shard exceeds bounded process size")
     return found
 

@@ -29,7 +29,9 @@ COORDINATOR_SCHEMA = "MCF_DISTRIBUTED_COORDINATOR/1.0.0"
 GENERATION_ID = "MCF-PROD-001"
 EXPECTED_EXECUTABLE_COUNT = 6852
 LOGICAL_BATCH_SIZE = 500
-MICROSHARD_SIZE = 25
+# The second VPS OOM demonstrated that in-process cache release is not
+# sufficient. Match accepted PR #175's one-candidate process lifetime.
+MICROSHARD_SIZE = 1
 BATCH_RE = re.compile(r"^B\d{3}$")
 NODE_RE = re.compile(r"^NODE-[A-Z0-9][A-Z0-9_-]{1,31}$")
 SHA_RE = re.compile(r"^[0-9a-f]{64}$")
@@ -83,7 +85,7 @@ def _atomic_replace(path: Path, payload: bytes) -> None:
 
 
 def build_execution_plan(executable_freeze: Mapping[str, object] | None = None) -> dict:
-    """Freeze 6,852 candidates into 14 logical batches and 25-candidate micro-shards."""
+    """Freeze 6,852 candidates into 14 batches and one-candidate micro-shards."""
     freeze = dict(executable_freeze or freeze_executable_generation(BLOCKED_FAMILIES))
     summary = freeze.get("summary")
     executable = tuple(freeze.get("executable", ()))
@@ -184,6 +186,8 @@ def validate_plan(plan: Mapping[str, object]) -> None:
                 raise MCFError("distributed microshard hash mismatch")
             if shard.get("candidate_count") != len(shard.get("candidates", ())):
                 raise MCFError("distributed microshard count mismatch")
+            if shard["candidate_count"] != MICROSHARD_SIZE:
+                raise MCFError("distributed microshard must isolate exactly one candidate")
             local.extend(shard["candidates"])
         if batch.get("candidate_count") != len(local):
             raise MCFError("distributed batch count mismatch")

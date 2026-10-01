@@ -89,10 +89,10 @@ class DistributedExecutionTest(unittest.TestCase):
         self.assertFalse(plan["safety"]["performance_execution_authorized"])
         self.assertEqual(
             sum(len(x["microshards"]) for x in plan["batches"]),
-            13 * 20 + 15,
+            EXPECTED_EXECUTABLE_COUNT,
         )
         self.assertTrue(all(
-            shard["candidate_count"] <= 25
+            shard["candidate_count"] == 1
             for item in plan["batches"]
             for shard in item["microshards"]
         ))
