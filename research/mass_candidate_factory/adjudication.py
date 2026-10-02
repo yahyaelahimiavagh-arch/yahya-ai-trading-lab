@@ -17,6 +17,7 @@ import json
 
 from .manifest import domain_values, validate as validate_manifest
 from .models import MCFError, digest
+from .forward_binding import ForwardIdentity, bind_forward_evidence, require_forward_binding
 
 VERSION = "MCF_ADJUDICATION/1.0.0"
 NEIGHBOR_VERSION = "MCF_NEIGHBOR_GRAPH/1.0.0"
@@ -25,6 +26,25 @@ PBO_VERSION = "MCF_CSCV_PBO/1.0.0"
 REALITY_VERSION = "MCF_REALITY_CHECK/1.0.0"
 CLUSTER_VERSION = "MCF_COMMON_FACTOR_CLUSTER/1.0.0"
 SURVIVOR_VERSION = "MCF_DEVELOPMENT_SURVIVOR_FREEZE/1.0.0"
+FORWARD_ADJUDICATION_VERSION = "MCF_FORWARD_PROVENANCE_ADJUDICATION/1.0.0"
+
+
+def adjudicate_forward_provenance(*, expected: ForwardIdentity, binding: object) -> dict:
+    """Only entry point for an MCF candidate-specific forward provenance claim.
+
+    This prerequisite is subsequent to Development freeze, not a replacement
+    for forward economics or Director approval. No P10 baseline inheritance.
+    """
+    require_forward_binding(expected, binding)
+    row = {
+        "schema": FORWARD_ADJUDICATION_VERSION,
+        "candidate_id": expected.candidate_id,
+        "binding_sha256": bind_forward_evidence(expected)["binding_sha256"],
+        "state": "CANDIDATE_SPECIFIC_FORWARD_PROVENANCE_VERIFIED",
+        "promotion_authorized": False,
+        "live_authorized": False,
+    }
+    return {**row, "adjudication_sha256": digest(row)}
 
 DSR_MIN_CONFIDENCE = 0.95
 PBO_MAX = 0.20
