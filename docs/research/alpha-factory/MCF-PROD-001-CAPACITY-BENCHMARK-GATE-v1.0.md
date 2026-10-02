@@ -261,3 +261,27 @@ Required remediation before another capacity rerun:
 This process-isolation remediation is an engineering change only. It does not
 authorize parameter changes, family changes, selection, Fresh OOS, recent
 reserve, P10, P11 or Live execution.
+
+## Third VPS OOM incident — 2026-10-01, after process isolation
+
+Director-provided runtime/kernel evidence (not independently read from VPS in
+this implementation unit): accepted main `da0b34adf83f0e824b501d54e3597717c8dc4ea6`,
+GitHub Actions #493 successful. The one fixed blind benchmark attempt completed
+8/24 workers. Their peak RSS values in KiB were 2,458,312; 667,072; 2,502,676;
+680,140; 2,637,232; 708,444; 2,610,468; 705,640. The next isolated worker exited 137.
+
+Artifact: `CAPACITY_BENCHMARK_BLOCKED`, reason
+`isolated capacity worker failed with exit code 137`; selection and full batch
+remain unauthorized. Kernel approximately 20:40:46 UTC: global OOM killed python
+PID 56813, UID 999; total-vm 3,591,404 kB, anon-rss 3,533,404 kB, file-rss 2,432 kB.
+MemTotal 3,911,552 kB; SwapTotal 0 kB.
+
+Classification: `CONFIRMED_SINGLE-CANDIDATE_OOM_AFTER_PROCESS_ISOLATION` /
+`NO_SELECTION_OUTCOME`. This disproves the engineering assumption that fresh
+processes alone fit each candidate on this VPS. The first and second incidents
+above remain negative evidence; none is superseded or erased.
+
+Current next unit is implementation-only instrumentation for the deterministic
+ninth member. **No 24-candidate retry is authorized.** Historical acceptance and
+refreeze instructions above are not a new runtime permission. See
+`MCF-PROD-001-SINGLE-CANDIDATE-MEMORY-DIAGNOSTIC-v1.0.md`.

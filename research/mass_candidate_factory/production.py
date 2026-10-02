@@ -6,6 +6,8 @@ without opening Fresh OOS, P10, Futures, leverage, shorting or Live.
 """
 from __future__ import annotations
 
+from .production_memory_telemetry import memory_stage
+
 from dataclasses import dataclass
 from bisect import bisect_right
 from decimal import Decimal, localcontext
@@ -543,133 +545,137 @@ def run_candidate(*, candidate: FrozenCandidateBinding,
     if set(series_by_symbol) - set(universe_symbols):
         raise MCFError("series contains symbol outside frozen universe")
 
-    base_results = []
-    stress_results = []
-    missing_symbols = []
-    for symbol in universe_symbols:
-        series = series_by_symbol.get(symbol)
-        if series is None:
-            missing_symbols.append(symbol)
-            continue
-        if series.symbol != symbol:
-            raise MCFError("series map/symbol mismatch")
-        base_results.append(_simulate(series, binding, policy, stress=False))
-        stress_results.append(_simulate(series, binding, policy, stress=True))
+    with memory_stage("simulation_replay"):
+        base_results = []
+        stress_results = []
+        missing_symbols = []
+        for symbol in universe_symbols:
+            series = series_by_symbol.get(symbol)
+            if series is None:
+                missing_symbols.append(symbol)
+                continue
+            if series.symbol != symbol:
+                raise MCFError("series map/symbol mismatch")
+            base_results.append(_simulate(series, binding, policy, stress=False))
+            stress_results.append(_simulate(series, binding, policy, stress=True))
 
-    base_eval = [x for x in base_results if x["evaluable"]]
-    stress_eval = [x for x in stress_results if x["evaluable"]]
-    if [x["symbol"] for x in base_eval] != [x["symbol"] for x in stress_eval]:
-        raise MCFError("base/stress evaluable universe mismatch")
+    with memory_stage("result_accounting"):
+        base_eval = [x for x in base_results if x["evaluable"]]
+        stress_eval = [x for x in stress_results if x["evaluable"]]
+        if [x["symbol"] for x in base_eval] != [x["symbol"] for x in stress_eval]:
+            raise MCFError("base/stress evaluable universe mismatch")
 
-    evaluable_symbols = len(base_eval)
-    total_trades = sum(int(x["completed_trades"]) for x in base_eval)
-    symbols_5_trades = sum(int(x["completed_trades"]) >= 5 for x in base_eval)
-    base_returns = [Decimal(x["net_return"]) for x in base_eval]
-    stress_returns = [Decimal(x["net_return"]) for x in stress_eval]
-    initial = Decimal(policy.initial_equity)
+        evaluable_symbols = len(base_eval)
+        total_trades = sum(int(x["completed_trades"]) for x in base_eval)
+        symbols_5_trades = sum(int(x["completed_trades"]) >= 5 for x in base_eval)
+        base_returns = [Decimal(x["net_return"]) for x in base_eval]
+        stress_returns = [Decimal(x["net_return"]) for x in stress_eval]
+        initial = Decimal(policy.initial_equity)
 
-    fold_base = []
-    fold_stress = []
-    for start, end in FOLDS:
-        br = [_fold_return(x, start, end, initial) for x in base_eval]
-        sr = [_fold_return(x, start, end, initial) for x in stress_eval]
-        br = [x for x in br if x is not None]
-        sr = [x for x in sr if x is not None]
-        fold_base.append(None if not br else str(sum(br, Decimal(0)) / Decimal(len(br))))
-        fold_stress.append(None if not sr else str(sum(sr, Decimal(0)) / Decimal(len(sr))))
+        fold_base = []
+        fold_stress = []
+        for start, end in FOLDS:
+            br = [_fold_return(x, start, end, initial) for x in base_eval]
+            sr = [_fold_return(x, start, end, initial) for x in stress_eval]
+            br = [x for x in br if x is not None]
+            sr = [x for x in sr if x is not None]
+            fold_base.append(None if not br else str(sum(br, Decimal(0)) / Decimal(len(br))))
+            fold_stress.append(None if not sr else str(sum(sr, Decimal(0)) / Decimal(len(sr))))
 
-    failures = []
-    if evaluable_symbols < 15:
-        failures.append("F1_EVALUABLE_SYMBOLS_LT_15")
-    if total_trades < 250:
-        failures.append("F1_COMPLETED_TRADES_LT_250")
-    if symbols_5_trades < 10:
-        failures.append("F1_SYMBOLS_WITH_5_TRADES_LT_10")
+        failures = []
+        if evaluable_symbols < 15:
+            failures.append("F1_EVALUABLE_SYMBOLS_LT_15")
+        if total_trades < 250:
+            failures.append("F1_COMPLETED_TRADES_LT_250")
+        if symbols_5_trades < 10:
+            failures.append("F1_SYMBOLS_WITH_5_TRADES_LT_10")
 
-    base_aggregate = sum(base_returns, Decimal(0)) / Decimal(len(base_returns)) if base_returns else Decimal(0)
-    stress_aggregate = sum(stress_returns, Decimal(0)) / Decimal(len(stress_returns)) if stress_returns else Decimal(0)
-    base_median = median(base_returns) if base_returns else Decimal(0)
-    stress_median = median(stress_returns) if stress_returns else Decimal(0)
-    stress_positive_fraction = (
-        Decimal(sum(x > 0 for x in stress_returns)) / Decimal(len(stress_returns))
-        if stress_returns else Decimal(0)
-    )
-    if base_aggregate <= 0:
-        failures.append("F2_AGGREGATE_BASE_NOT_POSITIVE")
-    if stress_aggregate <= 0:
-        failures.append("F2_AGGREGATE_STRESS_NOT_POSITIVE")
-    if base_median <= 0:
-        failures.append("F2_MEDIAN_SYMBOL_BASE_NOT_POSITIVE")
-    if stress_median <= 0:
-        failures.append("F2_MEDIAN_SYMBOL_STRESS_NOT_POSITIVE")
-    if stress_positive_fraction < Decimal("0.60"):
-        failures.append("F2_STRESS_POSITIVE_SYMBOL_FRACTION_LT_0_60")
+        base_aggregate = sum(base_returns, Decimal(0)) / Decimal(len(base_returns)) if base_returns else Decimal(0)
+        stress_aggregate = sum(stress_returns, Decimal(0)) / Decimal(len(stress_returns)) if stress_returns else Decimal(0)
+        base_median = median(base_returns) if base_returns else Decimal(0)
+        stress_median = median(stress_returns) if stress_returns else Decimal(0)
+        stress_positive_fraction = (
+            Decimal(sum(x > 0 for x in stress_returns)) / Decimal(len(stress_returns))
+            if stress_returns else Decimal(0)
+        )
+        if base_aggregate <= 0:
+            failures.append("F2_AGGREGATE_BASE_NOT_POSITIVE")
+        if stress_aggregate <= 0:
+            failures.append("F2_AGGREGATE_STRESS_NOT_POSITIVE")
+        if base_median <= 0:
+            failures.append("F2_MEDIAN_SYMBOL_BASE_NOT_POSITIVE")
+        if stress_median <= 0:
+            failures.append("F2_MEDIAN_SYMBOL_STRESS_NOT_POSITIVE")
+        if stress_positive_fraction < Decimal("0.60"):
+            failures.append("F2_STRESS_POSITIVE_SYMBOL_FRACTION_LT_0_60")
 
-    base_positive_folds = sum(x is not None and Decimal(x) > 0 for x in fold_base)
-    stress_positive_folds = sum(x is not None and Decimal(x) > 0 for x in fold_stress)
-    if base_positive_folds < 5:
-        failures.append("F3_BASE_POSITIVE_FOLDS_LT_5")
-    if stress_positive_folds < 4:
-        failures.append("F3_STRESS_POSITIVE_FOLDS_LT_4")
-    if any(x is None for x in fold_base + fold_stress):
-        failures.append("F3_MISSING_FOLD")
+        base_positive_folds = sum(x is not None and Decimal(x) > 0 for x in fold_base)
+        stress_positive_folds = sum(x is not None and Decimal(x) > 0 for x in fold_stress)
+        if base_positive_folds < 5:
+            failures.append("F3_BASE_POSITIVE_FOLDS_LT_5")
+        if stress_positive_folds < 4:
+            failures.append("F3_STRESS_POSITIVE_FOLDS_LT_4")
+        if any(x is None for x in fold_base + fold_stress):
+            failures.append("F3_MISSING_FOLD")
 
-    exposure = [Decimal(x["exposure_coverage"]) for x in base_eval]
-    turnover = [Decimal(x["turnover"]) for x in base_eval]
-    max_dd = [Decimal(x["maximum_drawdown_fraction"]) for x in base_eval]
-    daily = _daily_candidate_returns(base_eval, binding, initial)
+        exposure = [Decimal(x["exposure_coverage"]) for x in base_eval]
+        turnover = [Decimal(x["turnover"]) for x in base_eval]
+        max_dd = [Decimal(x["maximum_drawdown_fraction"]) for x in base_eval]
+        daily = _daily_candidate_returns(base_eval, binding, initial)
 
-    result = {
-        "schema": VERSION,
-        "candidate_id": candidate.candidate_id,
-        "candidate_spec_sha256": candidate.candidate_spec_sha256,
-        "family_id": candidate.family_id,
-        "economic_mechanism_id": candidate.economic_mechanism_id,
-        "family_spec_sha256": candidate.family_spec_sha256,
-        "parameter_neighbor_ids": candidate.parameter_neighbor_ids,
-        "neighbor_graph_sha256": candidate.neighbor_graph_sha256,
-        "free_parameter_dimensions": candidate.free_parameter_dimensions,
-        "batch_id": freeze.batch_id,
-        "evidence_partition": "DEVELOPMENT",
-        "accounting_engine": "MCF_PRODUCTION_DECIMAL/1.0.0",
-        "exact_accounting": True,
-        "development_start_ms": DEVELOPMENT_START_MS,
-        "development_end_ms": DEVELOPMENT_END_MS,
-        "evaluable_symbol_count": evaluable_symbols,
-        "missing_symbol_series": tuple(missing_symbols),
-        "completed_trades": total_trades,
-        "symbols_with_5_completed_trades": symbols_5_trades,
-        "aggregate_base_net_return": str(base_aggregate),
-        "aggregate_stress_net_return": str(stress_aggregate),
-        "median_symbol_base_net_return": str(base_median),
-        "median_symbol_stress_net_return": str(stress_median),
-        "stress_positive_symbol_fraction": str(stress_positive_fraction),
-        "mean_exposure_coverage": str(sum(exposure, Decimal(0)) / Decimal(len(exposure)) if exposure else Decimal(0)),
-        "mean_turnover": str(sum(turnover, Decimal(0)) / Decimal(len(turnover)) if turnover else Decimal(0)),
-        "maximum_normalized_drawdown": str(max(max_dd) if max_dd else Decimal(0)),
-        "fold_base_returns": tuple(fold_base),
-        "fold_stress_returns": tuple(fold_stress),
-        "base_positive_fold_count": base_positive_folds,
-        "stress_positive_fold_count": stress_positive_folds,
-        "per_symbol_base": tuple(base_eval),
-        "per_symbol_stress": tuple(stress_eval),
-        "daily_return_series": daily,
-        "per_symbol_daily_return_series": _daily_per_symbol_returns(base_eval, initial),
-        "f0_f3_state": "F0_F3_PASS" if not failures else "DEVELOPMENT_FAIL",
-        "failure_reasons": tuple(sorted(set(failures))),
-        "safety": {
-            "paper_research_only": True,
-            "p10_read": False,
-            "p10_write": False,
-            "fresh_oos_read": False,
-            "recent_reserve_read": False,
-            "futures": False,
-            "leverage": False,
-            "short": False,
-            "live": False,
-            "order_endpoint": False,
-            "ai_direct_execution": False,
-            "p11_locked": True,
-        },
-    }
-    return {**result, "result_sha256": digest(result)}
+    with memory_stage("result_construction"):
+        result = {
+            "schema": VERSION,
+            "candidate_id": candidate.candidate_id,
+            "candidate_spec_sha256": candidate.candidate_spec_sha256,
+            "family_id": candidate.family_id,
+            "economic_mechanism_id": candidate.economic_mechanism_id,
+            "family_spec_sha256": candidate.family_spec_sha256,
+            "parameter_neighbor_ids": candidate.parameter_neighbor_ids,
+            "neighbor_graph_sha256": candidate.neighbor_graph_sha256,
+            "free_parameter_dimensions": candidate.free_parameter_dimensions,
+            "batch_id": freeze.batch_id,
+            "evidence_partition": "DEVELOPMENT",
+            "accounting_engine": "MCF_PRODUCTION_DECIMAL/1.0.0",
+            "exact_accounting": True,
+            "development_start_ms": DEVELOPMENT_START_MS,
+            "development_end_ms": DEVELOPMENT_END_MS,
+            "evaluable_symbol_count": evaluable_symbols,
+            "missing_symbol_series": tuple(missing_symbols),
+            "completed_trades": total_trades,
+            "symbols_with_5_completed_trades": symbols_5_trades,
+            "aggregate_base_net_return": str(base_aggregate),
+            "aggregate_stress_net_return": str(stress_aggregate),
+            "median_symbol_base_net_return": str(base_median),
+            "median_symbol_stress_net_return": str(stress_median),
+            "stress_positive_symbol_fraction": str(stress_positive_fraction),
+            "mean_exposure_coverage": str(sum(exposure, Decimal(0)) / Decimal(len(exposure)) if exposure else Decimal(0)),
+            "mean_turnover": str(sum(turnover, Decimal(0)) / Decimal(len(turnover)) if turnover else Decimal(0)),
+            "maximum_normalized_drawdown": str(max(max_dd) if max_dd else Decimal(0)),
+            "fold_base_returns": tuple(fold_base),
+            "fold_stress_returns": tuple(fold_stress),
+            "base_positive_fold_count": base_positive_folds,
+            "stress_positive_fold_count": stress_positive_folds,
+            "per_symbol_base": tuple(base_eval),
+            "per_symbol_stress": tuple(stress_eval),
+            "daily_return_series": daily,
+            "per_symbol_daily_return_series": _daily_per_symbol_returns(base_eval, initial),
+            "f0_f3_state": "F0_F3_PASS" if not failures else "DEVELOPMENT_FAIL",
+            "failure_reasons": tuple(sorted(set(failures))),
+            "safety": {
+                "paper_research_only": True,
+                "p10_read": False,
+                "p10_write": False,
+                "fresh_oos_read": False,
+                "recent_reserve_read": False,
+                "futures": False,
+                "leverage": False,
+                "short": False,
+                "live": False,
+                "order_endpoint": False,
+                "ai_direct_execution": False,
+                "p11_locked": True,
+            },
+        }
+    with memory_stage("result_digest"):
+        return {**result, "result_sha256": digest(result)}

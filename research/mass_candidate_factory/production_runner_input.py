@@ -33,6 +33,7 @@ from .production_runtime_data import (
 VERSION = "MCF_PRODUCTION_RUNNER_INPUT/1.0.0"
 ROOT = Path(__file__).resolve().parents[2]
 CODE_PATHS = (
+    "research/mass_candidate_factory/production_memory_telemetry.py",
     "research/mass_candidate_factory/production_runtime_data.py",
     "research/mass_candidate_factory/production_runner_input.py",
     "research/mass_candidate_factory/production_runtime.py",
