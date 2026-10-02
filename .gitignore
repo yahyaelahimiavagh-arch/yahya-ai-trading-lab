@@ -8,6 +8,7 @@ __pycache__/
 /data/
 .coverage
 htmlcov/
+research/experiments/ai_paper_week/*/inputs/
 .ruff_cache/
 
 !.env.example
