@@ -285,3 +285,21 @@ Current next unit is implementation-only instrumentation for the deterministic
 ninth member. **No 24-candidate retry is authorized.** Historical acceptance and
 refreeze instructions above are not a new runtime permission. See
 `MCF-PROD-001-SINGLE-CANDIDATE-MEMORY-DIAGNOSTIC-v1.0.md`.
+
+## Fourth OOM incident — one-time memory diagnostic
+
+Director-provided diagnostic/kernel evidence on accepted main
+`890c47ce2c75774ab5f5e4aebcc0cbfddfb7c866`: fixed ninth member
+`MCF-PROD-001-004784` completed dataset loading at RSS 3,181,220 KiB
+(approximately 3.034 GiB), peak 3,213,048 KiB, elapsed 343.646712 seconds.
+It was globally OOM-killed during `feature_cache_initialization`, with no end
+checkpoint for that stage. Diagnostic was `DIAGNOSTIC_INCOMPLETE`, child -9 /
+137 / signal 9; kernel identified the same PID 59773, anon-rss 3,563,328 kB,
+total-vm 3,628,592 kB, file-rss 2,432 kB. Host MemTotal about 3,911,552 kB,
+SwapTotal 0. Classification: `CONFIRMED_OOM_DURING_FEATURE_CACHE_INITIALIZATION`.
+
+No economics/performance artifact, selection, benchmark retry or full run.
+All first/second/third incidents above remain preserved negative evidence.
+Engineering remediation and synthetic-only equivalence/memory evidence are in
+`MCF-PROD-001-FEATURE-CACHE-MEMORY-REMEDIATION-001.md`. That implementation
+does not grant refreeze, real candidate runtime, benchmark retry or batch authority.

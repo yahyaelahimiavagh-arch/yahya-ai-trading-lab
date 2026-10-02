@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from decimal import Decimal
 from math import isfinite, sqrt
+from itertools import chain, pairwise
 from statistics import median
 from typing import Mapping
 
@@ -47,7 +48,7 @@ class ProductionBars:
         fields = ("opens", "highs", "lows", "closes", "base_volume", "quote_volume", "trade_count")
         if any(len(getattr(self, field)) != n for field in fields):
             raise MCFError("production bars length mismatch")
-        if any(a >= b for a, b in zip(self.times, self.times[1:])):
+        if any(a >= b for a, b in pairwise(self.times)):
             raise MCFError("production bars must be strictly increasing")
         if self.times[0] < POPULATION_START_MS or self.times[-1] >= DEVELOPMENT_END_MS:
             raise MCFError("production bars outside frozen Development population")
@@ -58,9 +59,9 @@ class ProductionBars:
             values = getattr(self, field)
             if any(not isfinite(float(v)) for v in values):
                 raise MCFError("nonfinite production bar")
-        if any(v <= 0 for v in self.opens + self.highs + self.lows + self.closes):
+        if any(v <= 0 for v in chain(self.opens, self.highs, self.lows, self.closes)):
             raise MCFError("nonpositive production price")
-        if any(v < 0 for v in self.base_volume + self.quote_volume + self.trade_count):
+        if any(v < 0 for v in chain(self.base_volume, self.quote_volume, self.trade_count)):
             raise MCFError("negative production activity")
         if any(h < max(o, c) or l > min(o, c) or h < l
                for o, h, l, c in zip(self.opens, self.highs, self.lows, self.closes)):
@@ -72,9 +73,8 @@ class ProductionFeatureCache:
         bars.validate()
         self.bars = bars
         self.peers = dict(peers or {})
-        self._index = {t: i for i, t in enumerate(bars.times)}
-        if len(self._index) != len(bars.times):
-            raise MCFError("duplicate production timestamp")
+        # Strictly increasing timestamps are already enforced by bars.validate().
+        # No cache consumer needs a retained timestamp-to-position dictionary.
         for symbol, peer in self.peers.items():
             peer.validate()
             if symbol != peer.symbol or peer.timeframe != bars.timeframe:
