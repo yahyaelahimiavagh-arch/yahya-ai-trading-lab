@@ -141,6 +141,29 @@ class RuntimeInputFreezeTest(unittest.TestCase):
             with self.assertRaises(MCFError):
                 reader.load("ASSET00USDT", "1d")
 
+    def test_eager_timeframe_retains_exact_union_order_and_identical_bars(self):
+        reader = self.reader()
+        symbols = self.membership['selected_union_symbols']
+        # Synthetic content-addressed CSV fixtures; loading does not run candidates.
+        with patch.object(reader, 'load', wraps=reader.load) as load:
+            matrix = reader.load_timeframe('4h')
+        self.assertEqual(tuple(matrix), symbols)
+        self.assertEqual([call.args for call in load.call_args_list], [(s, '4h') for s in symbols])
+        for symbol, item in matrix.items():
+            self.assertEqual(item, reader.load(symbol, '4h'))
+
+    def test_previous_code_identity_cannot_admit_after_remediation(self):
+        result = self.freeze()
+        path = self.output / result['artifact']
+        doc = json.loads(path.read_bytes())
+        doc['runtime_code_sha256']['research/mass_candidate_factory/production_features.py'] = 'f'*64
+        doc['runner_input_sha256'] = digest({k:v for k,v in doc.items() if k != 'runner_input_sha256'})
+        changed_ref = f"runner-input/input-{doc['runner_input_sha256']}.json"
+        (self.output / changed_ref).write_bytes(canonical(doc))
+        with patch.object(runner, 'read_dataset', side_effect=AssertionError('data read before code admission')):
+            with self.assertRaises(MCFError):
+                runner.FrozenRunnerInput(self.output, changed_ref, doc['runner_input_sha256'])
+
     def test_after_development_rejected(self):
         with self.assertRaises(OpportunityError):
             data.materialize_symbol(self.output, "ASSET00USDT", source_rows() + (candle(DEVELOPMENT_END_MS),), [])
