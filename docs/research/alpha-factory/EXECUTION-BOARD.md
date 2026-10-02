@@ -1,6 +1,6 @@
 # YATL Alpha Factory — Execution Board
 
-Status date: **2026-09-30**
+Status date: **2026-10-02**
 Mode: **PAPER / RESEARCH ONLY**
 Authority: **LIVE_MASTER_LOCK=OFF / P11 LOCKED**
 
@@ -8,8 +8,30 @@ This board is the operational view of
 `ALPHA-FACTORY-MASTER-PLAN-v1.0.md`. It should stay short and should always
 answer four questions:
 
-The final section dated 2026-09-30 supersedes older `CURRENT` markers in this
-file when they conflict with the latest repository state.
+The 2026-10-02 Director closeout below supersedes older `CURRENT` markers and
+automatic next-run wording. Historical execution sequences are not permission.
+
+## Current Director gate — 2026-10-02 / STOP
+
+- PR #178 merged; accepted main `58b6c74a834d51f0d68e06fbe5f1885057e9df9a`.
+- Exact final-HEAD CI `37015968189`: completed/success.
+- Director-reported VPS no-performance refreeze/verify: 525/525;
+  `RUNNER_INPUT_VERIFIED_NO_PERFORMANCE`; runner input
+  `74a00b855883b399fdb153e94e836fd310d3eab2cb14996e46609be38e65e07c`.
+- New-runner diagnostic: NOT STARTED / NOT AUTHORIZED.
+- Benchmark-24 retry and full-6852: NOT STARTED / LOCKED.
+- Capacity and concurrency: NOT ESTABLISHED. Five historical OOM incidents
+  preserved. Engineering/synthetic PASS is not production capacity evidence.
+- Forward-binding implementation and Hakoman/Orbit archive are published on
+  separate unmerged branches; neither is accepted main behavior.
+- Next: STOP. A separate Director decision must bind any future metadata
+  preflight/one-time diagnostic to current exact identities; it does not confer
+  benchmark, batch, selection, performance inspection or promotion authority.
+- Fresh OOS/recent reserve sealed; P10 untouched; P11 locked; all live/order/AI,
+  futures/leverage/short prohibitions unchanged.
+
+Evidence and today's chat reconciliation:
+[Director daily closeout](YATL-DIRECTOR-DAILY-CLOSEOUT-2026-10-02.md).
 
 1. What is open now?
 2. What is next?
