@@ -95,3 +95,15 @@ uv run --locked python -m research.research_intake.reproduction validate \
 ```
 
 No reproduction packet is permission to execute a trade or mutate P10.
+
+## External-system forensic closeouts
+
+External systems that are useful mainly as risk/provenance case studies are
+archived without being promoted into the candidate registry:
+
+- `EXTSYS-FORENSIC-ARCHIVE-2026-10-02.md`
+- `EXTSYS-HAKOMAN-CLOSEOUT-v1.0.md`
+- `EXTSYS-ORBIT-NETWORK-CLOSEOUT-v1.0.md`
+
+These closeouts preserve negative/uncertain findings and explicit evidence
+boundaries. They grant no implementation, Forward, P10/P11, or Live authority.
