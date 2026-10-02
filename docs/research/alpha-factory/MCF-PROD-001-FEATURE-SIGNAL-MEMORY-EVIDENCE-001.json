@@ -1,0 +1,347 @@
+{
+  "evidence": [
+    {
+      "evidence": "SYNTHETIC_ONLY_NOT_PRODUCTION_CAPACITY",
+      "feature_cache_bytes_after": 23040128,
+      "feature_cache_bytes_before": 0,
+      "mode": "baseline",
+      "per_symbol": [
+        {
+          "rss_after_compile_kib": 236264,
+          "symbol": "ASSET00USDT",
+          "traced_after_compile_bytes": null,
+          "traced_before_bytes": null,
+          "traced_symbol_peak_bytes": null
+        },
+        {
+          "rss_after_compile_kib": 243384,
+          "symbol": "ASSET01USDT",
+          "traced_after_compile_bytes": null,
+          "traced_before_bytes": null,
+          "traced_symbol_peak_bytes": null
+        },
+        {
+          "rss_after_compile_kib": 248396,
+          "symbol": "ASSET02USDT",
+          "traced_after_compile_bytes": null,
+          "traced_before_bytes": null,
+          "traced_symbol_peak_bytes": null
+        },
+        {
+          "rss_after_compile_kib": 253412,
+          "symbol": "ASSET03USDT",
+          "traced_after_compile_bytes": null,
+          "traced_before_bytes": null,
+          "traced_symbol_peak_bytes": null
+        },
+        {
+          "rss_after_compile_kib": 258420,
+          "symbol": "ASSET04USDT",
+          "traced_after_compile_bytes": null,
+          "traced_before_bytes": null,
+          "traced_symbol_peak_bytes": null
+        },
+        {
+          "rss_after_compile_kib": 263360,
+          "symbol": "ASSET05USDT",
+          "traced_after_compile_bytes": null,
+          "traced_before_bytes": null,
+          "traced_symbol_peak_bytes": null
+        },
+        {
+          "rss_after_compile_kib": 268300,
+          "symbol": "ASSET06USDT",
+          "traced_after_compile_bytes": null,
+          "traced_before_bytes": null,
+          "traced_symbol_peak_bytes": null
+        },
+        {
+          "rss_after_compile_kib": 273372,
+          "symbol": "ASSET07USDT",
+          "traced_after_compile_bytes": null,
+          "traced_before_bytes": null,
+          "traced_symbol_peak_bytes": null
+        }
+      ],
+      "process_peak_rss_kib": 273252,
+      "rows_per_symbol": 90000,
+      "rss_after_kib": 273384,
+      "rss_before_kib": 231612,
+      "series_owned_bytes": 11521024,
+      "symbols": 8,
+      "traced_compilation_peak_bytes": null,
+      "traced_total_retained_bytes": null
+    },
+    {
+      "evidence": "SYNTHETIC_ONLY_NOT_PRODUCTION_CAPACITY",
+      "feature_cache_bytes_after": 0,
+      "feature_cache_bytes_before": 0,
+      "mode": "remediated",
+      "per_symbol": [
+        {
+          "rss_after_compile_kib": 236452,
+          "rss_after_release_kib": 234728,
+          "symbol": "ASSET00USDT",
+          "traced_after_compile_bytes": null,
+          "traced_after_release_bytes": null,
+          "traced_before_bytes": null,
+          "traced_symbol_peak_bytes": null
+        },
+        {
+          "rss_after_compile_kib": 240044,
+          "rss_after_release_kib": 239028,
+          "symbol": "ASSET01USDT",
+          "traced_after_compile_bytes": null,
+          "traced_after_release_bytes": null,
+          "traced_before_bytes": null,
+          "traced_symbol_peak_bytes": null
+        },
+        {
+          "rss_after_compile_kib": 242236,
+          "rss_after_release_kib": 241216,
+          "symbol": "ASSET02USDT",
+          "traced_after_compile_bytes": null,
+          "traced_after_release_bytes": null,
+          "traced_before_bytes": null,
+          "traced_symbol_peak_bytes": null
+        },
+        {
+          "rss_after_compile_kib": 243712,
+          "rss_after_release_kib": 242688,
+          "symbol": "ASSET03USDT",
+          "traced_after_compile_bytes": null,
+          "traced_after_release_bytes": null,
+          "traced_before_bytes": null,
+          "traced_symbol_peak_bytes": null
+        },
+        {
+          "rss_after_compile_kib": 245120,
+          "rss_after_release_kib": 243088,
+          "symbol": "ASSET04USDT",
+          "traced_after_compile_bytes": null,
+          "traced_after_release_bytes": null,
+          "traced_before_bytes": null,
+          "traced_symbol_peak_bytes": null
+        },
+        {
+          "rss_after_compile_kib": 246524,
+          "rss_after_release_kib": 244476,
+          "symbol": "ASSET05USDT",
+          "traced_after_compile_bytes": null,
+          "traced_after_release_bytes": null,
+          "traced_before_bytes": null,
+          "traced_symbol_peak_bytes": null
+        },
+        {
+          "rss_after_compile_kib": 247936,
+          "rss_after_release_kib": 245888,
+          "symbol": "ASSET06USDT",
+          "traced_after_compile_bytes": null,
+          "traced_after_release_bytes": null,
+          "traced_before_bytes": null,
+          "traced_symbol_peak_bytes": null
+        },
+        {
+          "rss_after_compile_kib": 249420,
+          "rss_after_release_kib": 247372,
+          "symbol": "ASSET07USDT",
+          "traced_after_compile_bytes": null,
+          "traced_after_release_bytes": null,
+          "traced_before_bytes": null,
+          "traced_symbol_peak_bytes": null
+        }
+      ],
+      "process_peak_rss_kib": 249344,
+      "rows_per_symbol": 90000,
+      "rss_after_kib": 247380,
+      "rss_before_kib": 231524,
+      "series_owned_bytes": 11521024,
+      "symbols": 8,
+      "traced_compilation_peak_bytes": null,
+      "traced_total_retained_bytes": null
+    },
+    {
+      "evidence": "SYNTHETIC_ONLY_NOT_PRODUCTION_CAPACITY",
+      "feature_cache_bytes_after": 23040128,
+      "feature_cache_bytes_before": 0,
+      "mode": "baseline",
+      "per_symbol": [
+        {
+          "rss_after_compile_kib": 245528,
+          "symbol": "ASSET00USDT",
+          "traced_after_compile_bytes": 4328280,
+          "traced_before_bytes": 6544,
+          "traced_symbol_peak_bytes": 6568816
+        },
+        {
+          "rss_after_compile_kib": 262268,
+          "symbol": "ASSET01USDT",
+          "traced_after_compile_bytes": 8649575,
+          "traced_before_bytes": 4328623,
+          "traced_symbol_peak_bytes": 10890215
+        },
+        {
+          "rss_after_compile_kib": 278336,
+          "symbol": "ASSET02USDT",
+          "traced_after_compile_bytes": 12970670,
+          "traced_before_bytes": 8649726,
+          "traced_symbol_peak_bytes": 15211318
+        },
+        {
+          "rss_after_compile_kib": 290304,
+          "symbol": "ASSET03USDT",
+          "traced_after_compile_bytes": 17291757,
+          "traced_before_bytes": 12970821,
+          "traced_symbol_peak_bytes": 19532413
+        },
+        {
+          "rss_after_compile_kib": 302264,
+          "symbol": "ASSET04USDT",
+          "traced_after_compile_bytes": 21612836,
+          "traced_before_bytes": 17291908,
+          "traced_symbol_peak_bytes": 23853500
+        },
+        {
+          "rss_after_compile_kib": 322428,
+          "symbol": "ASSET05USDT",
+          "traced_after_compile_bytes": 25933939,
+          "traced_before_bytes": 21613019,
+          "traced_symbol_peak_bytes": 28174611
+        },
+        {
+          "rss_after_compile_kib": 334388,
+          "symbol": "ASSET06USDT",
+          "traced_after_compile_bytes": 30255210,
+          "traced_before_bytes": 25934298,
+          "traced_symbol_peak_bytes": 32495890
+        },
+        {
+          "rss_after_compile_kib": 346356,
+          "symbol": "ASSET07USDT",
+          "traced_after_compile_bytes": 34576257,
+          "traced_before_bytes": 30255361,
+          "traced_symbol_peak_bytes": 36816953
+        }
+      ],
+      "process_peak_rss_kib": 346200,
+      "rows_per_symbol": 90000,
+      "rss_after_kib": 329992,
+      "rss_before_kib": 231684,
+      "series_owned_bytes": 11521024,
+      "symbols": 8,
+      "traced_compilation_peak_bytes": 36816953,
+      "traced_total_retained_bytes": 34570976
+    },
+    {
+      "evidence": "SYNTHETIC_ONLY_NOT_PRODUCTION_CAPACITY",
+      "feature_cache_bytes_after": 0,
+      "feature_cache_bytes_before": 0,
+      "mode": "remediated",
+      "per_symbol": [
+        {
+          "rss_after_compile_kib": 245520,
+          "rss_after_release_kib": 241524,
+          "symbol": "ASSET00USDT",
+          "traced_after_compile_bytes": 4328280,
+          "traced_after_release_bytes": 1450751,
+          "traced_before_bytes": 6544,
+          "traced_symbol_peak_bytes": 6568816
+        },
+        {
+          "rss_after_compile_kib": 249660,
+          "rss_after_release_kib": 248656,
+          "symbol": "ASSET01USDT",
+          "traced_after_compile_bytes": 5769670,
+          "traced_after_release_bytes": 2891949,
+          "traced_before_bytes": 1451078,
+          "traced_symbol_peak_bytes": 8010310
+        },
+        {
+          "rss_after_compile_kib": 251144,
+          "rss_after_release_kib": 251144,
+          "symbol": "ASSET02USDT",
+          "traced_after_compile_bytes": 7210860,
+          "traced_after_release_bytes": 4333139,
+          "traced_before_bytes": 2892276,
+          "traced_symbol_peak_bytes": 9451508
+        },
+        {
+          "rss_after_compile_kib": 253340,
+          "rss_after_release_kib": 253344,
+          "symbol": "ASSET03USDT",
+          "traced_after_compile_bytes": 8652042,
+          "traced_after_release_bytes": 5774321,
+          "traced_before_bytes": 4333466,
+          "traced_symbol_peak_bytes": 10892698
+        },
+        {
+          "rss_after_compile_kib": 254736,
+          "rss_after_release_kib": 254736,
+          "symbol": "ASSET04USDT",
+          "traced_after_compile_bytes": 10093216,
+          "traced_after_release_bytes": 7215527,
+          "traced_before_bytes": 5774648,
+          "traced_symbol_peak_bytes": 12333880
+        },
+        {
+          "rss_after_compile_kib": 256856,
+          "rss_after_release_kib": 257884,
+          "symbol": "ASSET05USDT",
+          "traced_after_compile_bytes": 11534414,
+          "traced_after_release_bytes": 8656901,
+          "traced_before_bytes": 7215854,
+          "traced_symbol_peak_bytes": 13775086
+        },
+        {
+          "rss_after_compile_kib": 258972,
+          "rss_after_release_kib": 259996,
+          "symbol": "ASSET06USDT",
+          "traced_after_compile_bytes": 12975780,
+          "traced_after_release_bytes": 10098059,
+          "traced_before_bytes": 8657228,
+          "traced_symbol_peak_bytes": 15216460
+        },
+        {
+          "rss_after_compile_kib": 259996,
+          "rss_after_release_kib": 261020,
+          "symbol": "ASSET07USDT",
+          "traced_after_compile_bytes": 14416922,
+          "traced_after_release_bytes": 11539201,
+          "traced_before_bytes": 10098386,
+          "traced_symbol_peak_bytes": 16657618
+        }
+      ],
+      "process_peak_rss_kib": 260964,
+      "rows_per_symbol": 90000,
+      "rss_after_kib": 261036,
+      "rss_before_kib": 231688,
+      "series_owned_bytes": 11521024,
+      "symbols": 8,
+      "traced_compilation_peak_bytes": 16657618,
+      "traced_total_retained_bytes": 11534096
+    },
+    {
+      "evidence": "SYNTHETIC_ONLY_NOT_PRODUCTION_CAPACITY",
+      "prewarmed_trend_baseline_current_peak": [
+        321656,
+        1294512
+      ],
+      "prewarmed_trend_remediated_current_peak": [
+        321480,
+        814344
+      ],
+      "rows": 20000,
+      "validation_baseline_current_peak": [
+        400,
+        4506578
+      ],
+      "validation_remediated_current_peak": [
+        176,
+        900
+      ]
+    }
+  ],
+  "python": "3.12.14",
+  "scope": "ENGINEERING_SYNTHETIC_ONLY_NO_PRODUCTION_CAPACITY",
+  "starting_main": "37ed99d4c636646909cb23cf59b0f9ad554fedb0"
+}
