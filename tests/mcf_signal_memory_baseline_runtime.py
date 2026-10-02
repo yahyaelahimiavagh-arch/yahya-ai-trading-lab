@@ -1,12 +1,13 @@
+# Test-only synthetic baseline from accepted main 37ed99d4c636646909cb23cf59b0f9ad554fedb0. Never imported by production.
 """Canonical MCF-03 runtime wiring frozen candidates to production accounting."""
 from __future__ import annotations
 
 from typing import Mapping
 from types import MappingProxyType
 
-from .models import MCFError
-from .production_memory_telemetry import memory_stage
-from .production import (
+from research.mass_candidate_factory.models import MCFError
+from research.mass_candidate_factory.production_memory_telemetry import memory_stage
+from research.mass_candidate_factory.production import (
     FrozenCandidateBinding,
     PreOutcomeFreeze,
     ProductionCostPolicy,
@@ -14,8 +15,8 @@ from .production import (
     freeze_digest,
     run_candidate,
 )
-from .production_features import ProductionBars, ProductionFeatureCache, liquidity_percentiles
-from .production_rules import compile_candidate
+from research.mass_candidate_factory.production_features import ProductionBars, ProductionFeatureCache, liquidity_percentiles
+from mcf_signal_memory_baseline_rules import compile_candidate
 
 
 def make_preoutcome_freeze(executable_freeze: Mapping[str, object],
@@ -56,7 +57,7 @@ class ProductionRuntime:
                  bars_by_timeframe: Mapping[str, Mapping[str, ProductionBars]],
                  cost_policy: ProductionCostPolicy | None = None,
                  frozen_input=None, synthetic_fixture: bool = False):
-        from .production_runner_input import FrozenRunnerInput
+        from research.mass_candidate_factory.production_runner_input import FrozenRunnerInput
         self._frozen_input = frozen_input
         if frozen_input is None:
             if (not synthetic_fixture or not bars_by_timeframe
@@ -95,8 +96,8 @@ class ProductionRuntime:
 
     @classmethod
     def from_frozen_input(cls, frozen_input):
-        from .production_generator import freeze_executable_generation
-        from .production_rules import BLOCKED_FAMILIES
+        from research.mass_candidate_factory.production_generator import freeze_executable_generation
+        from research.mass_candidate_factory.production_rules import BLOCKED_FAMILIES
         return cls(executable_freeze=freeze_executable_generation(BLOCKED_FAMILIES),
                    binding=frozen_input.binding, bars_by_timeframe={},
                    cost_policy=frozen_input.cost_policy, frozen_input=frozen_input)
@@ -181,34 +182,20 @@ class ProductionRuntime:
             raise MCFError("candidate not in frozen executable generation")
         timeframe = str(candidate["timeframe"])
         caches = self._timeframe_caches(timeframe)
-        # Runtime reuse retains source bars, not features from earlier candidates.
-        self.release_transient_features()
         percentile = None
-        try:
-            if candidate["family"] == "LIQUIDITY_CONDITIONED_ENTRY":
-                window = int(candidate["parameter_vector"]["liquidity_window"])
-                percentile = self._liquidity_percentiles(timeframe, window)
-                # Ranking has consumed all trailing sums. Its output is independent.
-                for cache in caches.values():
-                    cache.clear_transient()
+        if candidate["family"] == "LIQUIDITY_CONDITIONED_ENTRY":
+            window = int(candidate["parameter_vector"]["liquidity_window"])
+            percentile = self._liquidity_percentiles(timeframe, window)
 
-            with memory_stage("feature_signal_compilation"):
-                series = {}
-                for symbol, cache in caches.items():
-                    try:
-                        series[symbol] = compile_candidate(
-                            candidate,
-                            cache,
-                            liquidity_percentile=None if percentile is None else percentile[symbol],
-                            universe_binding=self.binding,
-                        )
-                    finally:
-                        # ProductionSeries owns boolean outputs and source references;
-                        # no feature array is consumed after this compiler returns.
-                        cache.clear_transient()
-        finally:
-            self.release_transient_features()
-            percentile = None
+        with memory_stage("feature_signal_compilation"):
+            series = {}
+            for symbol, cache in caches.items():
+                series[symbol] = compile_candidate(
+                    candidate,
+                    cache,
+                    liquidity_percentile=None if percentile is None else percentile[symbol],
+                    universe_binding=self.binding,
+                )
 
         return run_candidate(
             candidate=self.candidate_binding(candidate),

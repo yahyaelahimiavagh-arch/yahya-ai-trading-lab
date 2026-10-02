@@ -303,3 +303,31 @@ All first/second/third incidents above remain preserved negative evidence.
 Engineering remediation and synthetic-only equivalence/memory evidence are in
 `MCF-PROD-001-FEATURE-CACHE-MEMORY-REMEDIATION-001.md`. That implementation
 does not grant refreeze, real candidate runtime, benchmark retry or batch authority.
+
+## Fifth OOM incident — post-cache-remediation diagnostic
+
+Director-provided diagnostic/kernel evidence on accepted main
+`37ed99d4c636646909cb23cf59b0f9ad554fedb0`, fixed ninth member
+`MCF-PROD-001-004784`, candidate spec
+`73395d80d49f24818b9aedf8dbbfac35df3ad585f7d510a11d90778e0861f6c9`.
+Runner input `2b6f9d63fbf6224b178dbc3cf46762220777dfb2f4110e7042efb5b83434a5f8`;
+authorization `a24140f8ca19d994af625570d6218644654fe9202543490cb5b346a53d588647`;
+unchanged benchmark selection
+`03f02f30f576b9e71c906d47ee15c200364f04cd187f229c00e54030c50a5248`.
+
+Dataset loading ended at elapsed 360.224187 seconds, RSS 3,183,108 KiB,
+peak 3,213,016 KiB. Feature-cache initialization began at 360.224468 and
+completed at 490.108808 seconds with the same RSS/peak. Signal compilation
+began at 490.109322 seconds; no END checkpoint. Diagnostic was
+`DIAGNOSTIC_INCOMPLETE`, child -9 / exit 137 / signal 9. Kernel identified
+the same PID 62418 as a global OOM victim: total-vm 3,633,116 kB,
+anon-rss 3,572,800 kB, file-rss 2,432 kB, shmem-rss 0, swap 0.
+Classification: `CONFIRMED_OOM_DURING_FEATURE_SIGNAL_COMPILATION`.
+
+This is a new stage boundary. PR #177 completed its intended stage and is
+preserved as effective engineering evidence. All five historical OOM incidents
+remain separate records. No performance exposed/written, selection, benchmark
+retry or full batch authorized. The evidence was supplied by Director, not
+independently collected from the VPS in this work unit. See
+`MCF-PROD-001-FEATURE-SIGNAL-MEMORY-REMEDIATION-001.md` for synthetic-only
+engineering remediation; it grants no runtime authority.

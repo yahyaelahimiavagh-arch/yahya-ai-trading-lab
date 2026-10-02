@@ -1,3 +1,4 @@
+# Test-only synthetic baseline from accepted main 37ed99d4c636646909cb23cf59b0f9ad554fedb0. Never imported by production.
 """Exact typed rule compiler for executable MCF-PROD-001 families.
 
 Families whose frozen prose is insufficient for one deterministic
@@ -9,10 +10,10 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Mapping, Sequence
 
-from .models import MCFError
-from .production import ProductionSeries, ProductionUniverseBinding
-from .production_features import ProductionFeatureCache
-from .production_generator import SEARCH_BUDGET
+from research.mass_candidate_factory.models import MCFError
+from research.mass_candidate_factory.production import ProductionSeries, ProductionUniverseBinding
+from research.mass_candidate_factory.production_features import ProductionFeatureCache
+from research.mass_candidate_factory.production_generator import SEARCH_BUDGET
 
 VERSION = "MCF_PRODUCTION_RULES/1.0.0"
 
@@ -100,6 +101,9 @@ def compile_candidate(candidate: Mapping[str, object], cache: ProductionFeatureC
 
     p = dict(candidate["parameter_vector"])
     n = len(cache.bars.times)
+    entry = [False] * n
+    exit_ = [False] * n
+    available = [False] * n
 
     if family == "TREND_CROSSOVER":
         fast = cache.rolling("closes", _integer(p["fast_window"]), lag=0, statistic="mean")
@@ -109,10 +113,6 @@ def compile_candidate(candidate: Mapping[str, object], cache: ProductionFeatureC
             cache.bars.symbol, cache.bars.timeframe, cache.bars.times,
             cache.bars.opens, cache.bars.closes, desired, valid,
         )
-
-    entry = [False] * n
-    exit_ = [False] * n
-    available = [False] * n
 
     if family == "BREAKOUT_CHANNEL":
         high = cache.rolling("highs", _integer(p["entry_window"]), lag=1, statistic="max")

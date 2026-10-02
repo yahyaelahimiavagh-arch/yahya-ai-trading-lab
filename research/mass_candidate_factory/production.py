@@ -13,6 +13,7 @@ from bisect import bisect_right
 from decimal import Decimal, localcontext
 from datetime import datetime, timezone
 from statistics import median
+from itertools import chain, pairwise
 from typing import Mapping, Sequence
 
 from .models import MCFError, digest
@@ -215,16 +216,21 @@ class ProductionSeries:
             raise MCFError("invalid production series identity")
         if any(len(x) != n for x in (self.opens, self.closes, self.desired_state, self.feature_available)):
             raise MCFError("production series length mismatch")
-        if any(a >= b for a, b in zip(self.times, self.times[1:])):
+        if any(a >= b for a, b in pairwise(self.times)):
             raise MCFError("production series must be strictly increasing")
         cadence = CADENCE_MS[self.timeframe]
         if any(t % cadence != 0 for t in self.times):
             raise MCFError("production timestamps must align to timeframe cadence")
         for seq in (self.opens, self.closes):
-            vals = [Decimal(str(v)) for v in seq]
-            if any(not v.is_finite() or v <= 0 for v in vals):
+            invalid = False
+            for raw in seq:
+                value = Decimal(str(raw))
+                # Convert every value before rejecting, preserving conversion-error
+                # precedence of the former materialized list, without retaining it.
+                invalid = invalid or not value.is_finite() or value <= 0
+            if invalid:
                 raise MCFError("invalid production prices")
-        if any(type(v) is not bool for v in self.desired_state + self.feature_available):
+        if any(type(v) is not bool for v in chain(self.desired_state, self.feature_available)):
             raise MCFError("nonboolean production state")
 
 
