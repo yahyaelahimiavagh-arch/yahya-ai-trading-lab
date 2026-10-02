@@ -1,8 +1,9 @@
 # YATL — نقشه مرجع اجرا و وضعیت پروژه
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
-وضعیت جاری: **P0 تا P10 ENGINEERING / OPERATIONS ACCEPTED — REAL FORWARD EVIDENCE COLLECTING — P11 LOCKED**
-قدم جاری: **دو مسیر موازی: P10 جمع‌آوری شواهد آینده‌نگر + MCF-PROD-001 بستن جهان ماهانه قبل از اجرای عملکرد — P11 LOCKED**
+آخرین همگام‌سازی Director: **2026-10-02**
+وضعیت جاری: **P0 تا P10 ENGINEERING / OPERATIONS ACCEPTED — P10 REAL FORWARD CONTINUES — MCF-PROD-001 CAPACITY NOT YET PROVEN — P11 LOCKED**
+قدم جاری: **MCF-PROD-001 پس از PR #178 و refreeze بدون performance آماده‌ی validation محدود است؛ candidate #9، benchmark 24تایی و اجرای 6,852 هنوز بدون مجوز Director ممنوع‌اند.**
 مسیر تحقیقاتی موازی از **2026-09-23**: **CRISIS & REGIME STRESS LAB — RESEARCH ONLY — P10 UNTOUCHED**
 
 ## منشأ و حدود سند
@@ -2699,3 +2700,208 @@ recent reserve بسته و نخوانده؛ P10 read/write=false؛ LIVE_MASTER_L
 P11 قفل؛ PAPER/RESEARCH ONLY. شاخه RIE-006 و PR #152 دست‌نخورده می‌مانند.
 قرارداد و دستور VPS در
 `docs/research/alpha-factory/MCF-PROD-001-RUNTIME-INPUT-CONTRACT-v1.0.md` ثبت شده است.
+
+
+## Director Sync — 2026-10-02 — وضعیت authoritative فعلی
+
+این بخش، همه‌ی «مرحله جاری»های قدیمی‌تر در همین سند را برای وضعیت روز
+**۲ اکتبر ۲۰۲۶** supersede می‌کند. GitHub برای کد/PR/CI منبع authoritative است؛
+گفت‌وگوهای Director فقط برای تصمیم‌ها، مجوزها، runtime evidence و کارهای باز استفاده می‌شوند.
+
+### 1) GitHub و خط پایه پذیرفته‌شده
+
+- `main` فعلی:
+  `58b6c74a834d51f0d68e06fbe5f1885057e9df9a`.
+- این commit حاصل merge شدن PR #178 با عنوان
+  `research: bound feature-signal compilation memory with exact semantics` است.
+- Final PR HEAD #178:
+  `0168492f514ed59aae2f38dccc4185eb0dd92709`.
+- GitHub Actions #498 روی همان HEAD:
+  **SUCCESS**؛ full suite **2006/2006 PASS**.
+- Final-HEAD workflow روی `main`، Run #499:
+  **SUCCESS** روی `58b6c74a...`.
+- زنجیره‌ی memory/capacity قبل از آن نیز روی main حفظ شده است:
+  PR #176 → diagnostic foundation،
+  PR #177 → feature-cache remediation،
+  PR #178 → feature-signal compilation remediation.
+- merge شدن remediation فقط پذیرش engineering است؛
+  **production-capacity proof، performance acceptance یا مجوز اجرای انبوه نیست**.
+
+### 2) MCF-PROD-001 — آنچه واقعاً بسته شده است
+
+ورودی و جهان تولیدی قبل از outcome بسته شده‌اند:
+
+- **9,176** ترکیب خام؛
+- **8,640** ترکیب structurally valid؛
+- **1,788** blocked؛
+- **6,852** candidate قابل اجرا؛
+- جمعیت تاریخی AF-01C:
+  **9,306** هویت ماهانه،
+  **6,443** success،
+  **2,863** source-gap / non-success حفظ‌شده؛
+- classification cumulative:
+  **178** مورد، با frontier تصمیم‌ساز بسته؛
+- monthly point-in-time membership:
+  **34 ماه**، union دقیق **175 symbol**؛
+- runtime data:
+  **525 dataset = 175 × 3 timeframe (15m / 1h / 4h)**؛
+- Fresh OOS، recent reserve و P10 برای این انتخاب تاریخی همچنان unread/unwritten هستند.
+
+Latest no-performance refreeze/verify بعد از PR #178 روی main فعلی:
+
+- Git SHA:
+  `58b6c74a834d51f0d68e06fbe5f1885057e9df9a`;
+- dataset count:
+  **525**؛
+- runner input SHA-256:
+  `74a00b855883b399fdb153e94e836fd310d3eab2cb14996e46609be38e65e07c`;
+- نتیجه:
+  **VERIFIED / NO PERFORMANCE**؛
+- هیچ performance، selection، benchmark 24تایی یا full 6,852 run مجاز یا اجرا نشده است.
+
+### 3) Capacity / Memory incident chain
+
+ظرفیت واقعی VPS هنوز اثبات نشده است.
+
+1. اولین blind capacity benchmark در **8/24** با
+   `RC=137 / Killed` متوقف شد؛ اجرای 6,852 مسدود شد.
+2. process isolation و bounded-cache cleanup به‌عنوان guard مهندسی اضافه شدند.
+3. diagnostic ثابت candidate نهم
+   `MCF-PROD-001-004784`
+   با spec
+   `73395d80d49f24818b9aedf8dbbfac35df3ad585f7d510a11d90778e0861f6c9`
+   در `feature_cache_initialization` OOM شد؛ RSS حدود
+   **3.18–3.21 GiB** و exit **137** ثبت شد؛ هیچ economics/performance افشا نشد.
+4. PR #177 feature-cache allocation را بدون تغییر semantics کاهش داد؛
+   در diagnostic بعدی مرز حافظه از cache initialization به
+   `feature_signal_compilation` منتقل شد.
+5. PR #178 compilation memory را باز هم bounded کرد.
+   synthetic allocation peak از
+   **36,816,953 → 16,657,618 bytes**
+   کاهش یافت (حدود **54.76%**)، retained feature storage از
+   **23,040,128 → 0 bytes** رسید و canonical outputs در fixtureها یکسان ماندند.
+   این نتایج **synthetic engineering evidence** هستند، نه production-capacity evidence.
+
+بنابراین وضعیت صحیح امروز:
+**MEMORY REMEDIATION MERGED / INPUT REFROZEN / CAPACITY UNPROVEN**.
+
+### 4) Distributed execution foundation
+
+PR #174 foundation اجرای distributed و worker isolation را وارد main کرده است:
+coordinator/worker contracts، checkpoint/resume، compact result transport،
+restricted SSH paths و one-candidate-per-process isolation وجود دارند.
+
+اما وجود distributed infrastructure به‌تنهایی مجوز یا اثبات ظرفیت نیست.
+هر node باید exact code/input identity را بپذیرد و performance فقط پس از gate
+مجزای Director مجاز می‌شود.
+
+Operational observations فعلی:
+
+- VPS اصلی: حدود **2 CPU / 4 GB RAM / بدون swap**؛
+- work-PC preflight: **8 logical CPU / ~16.9 GB RAM**؛
+- enrollment/worker execution روی work-PC هنوز proof اجرای production محسوب نمی‌شود.
+
+### 5) مرحله مجاز بعدی MCF
+
+در وضعیت این snapshot:
+
+- no-performance refreeze/verify انجام شده است؛
+- اجرای candidate #9 مجاز نیست مگر با دستور جدید Director؛
+- retry benchmark 24تایی مجاز نیست مگر با دستور جدید Director؛
+- اجرای 6,852 candidate مجاز نیست؛
+- selection / F0–F7 performance adjudication هنوز شروع نشده است.
+
+مرحله بعد فقط با authorization جدید می‌تواند یک
+**bounded runtime/capacity validation** باشد.
+تا قبل از آن، هیچ outcome یا performance نباید خوانده شود.
+
+### 6) P10 Forward Validation
+
+P10 مستقل از Alpha Factory / MCF ادامه دارد:
+
+- real forward collection از **2026-09-22** فعال است؛
+- engineering، collector، local read-only Dashboard و outbound-only Telegram پذیرفته شده‌اند؛
+- warm-up milestone گذشته است، اما این به معنی economic acceptance نیست؛
+- earliest registered 90-day economic evaluation:
+  **2026-12-21T00:00:00Z**؛
+- candidate/gates/thresholds نباید بر اساس داده forward جاری retune شوند؛
+- P11 همچنان **LOCKED** است.
+
+### 7) Research tracks و نتایج منفی حفظ‌شده
+
+- Crisis & Regime Stress Lab و Historical Strategy Lab مستقل از P10 باقی می‌مانند.
+- HSL-004A Momentum نتیجه منفی داشت:
+  **1,357 trade**، **934 loss** و expectancy منفی؛
+  automatic promotion=false و نتیجه بدون rescue/retune حفظ شد.
+- RIE-006 COT PIT در وضعیت
+  `COT_PIT_PROVENANCE_NOT_VALIDATED` بسته شد؛ performance اجرا نشد.
+- PR #152 `research-institutional-edge-intelligence`
+  همچنان **OPEN / DRAFT / UNMERGED** است.
+  در برابر main فعلی branch آن **21 commit ahead / 163 behind** و diverged است؛
+  هیچ rebase/merge/history rewrite بدون دستور جداگانه Director مجاز نیست.
+
+### 8) External trading-system forensics
+
+MR Crypto / Kings Bot AI:
+
+- historical WEEX presence تأیید شد، اما lineage دقیق با OneBullEx/نسخه‌های بعدی
+  و مکانیزم دقیق شکست کامل اثبات نشد؛
+- loss-deferral pattern شواهد حمایتی دارد، اما martingale/grid/liquidation
+  به‌عنوان مکانیزم قطعی اثبات نشد؛
+- نتیجه تحقیق:
+  `MR-CRYPTO-EVIDENCE-STILL-INCOMPLETE`;
+- درس‌های YATL به‌صورت design/audit استخراج شدند؛ performance authority ایجاد نشد.
+
+Candidate-specific forward-evidence binding:
+
+- branch:
+  `research/mcf-forward-evidence-binding-001`;
+- commit:
+  `ef32288ddce8ad66762b0fd460c2ca29af770999`;
+- نسبت به main فعلی: **1 ahead / 1 behind / diverged**؛
+- unmerged و بدون hosted CI/PR acceptance؛
+- هدف: جلوگیری از انتقال forward credibility بین candidate/spec/dataset/code identityهای متفاوت.
+
+Hakoman / Orbit Network:
+
+- archive branch:
+  `research/external-system-forensics-archive-20261002`;
+- commit:
+  `8e05ee561c70193ac6454c440c342099a4046c1b`;
+- نسبت به main فعلی: **1 ahead / 1 behind / diverged**؛
+- unmerged.
+- Hakoman:
+  فقط `REPEATED_MARKETING_PATTERN_ONLY` قابل دفاع است؛
+  shared algorithm/risk architecture با MR Crypto اثبات نشد.
+- Orbit:
+  trading edge قابل‌اثبات پیدا نشد؛
+  شرکت UK با شماره **11759133** در **2025-03-11** dissolved شده است.
+  dissolution به‌تنهایی bankruptcy/fraud را ثابت نمی‌کند و payout نیز trading edge را ثابت نمی‌کند.
+- هیچ‌یک از این external systems حق انتقال مستقیم strategy/risk rule به P10 یا Live را ندارند.
+
+### 9) قفل‌های authoritative
+
+تا دستور صریح بعدی Director:
+
+- **PAPER / RESEARCH ONLY**؛
+- `LIVE_MASTER_LOCK=OFF`؛
+- **NO LIVE EXECUTION**؛
+- **NO ORDER ENDPOINT**؛
+- **NO AI DIRECT EXECUTION**؛
+- **NO FUTURES**؛
+- **NO LEVERAGE**؛
+- **NO SHORT**؛
+- Fresh OOS و recent reserve بسته می‌مانند؛
+- P10 برای MCF historical selection خوانده/نوشته نمی‌شود؛
+- P11 **LOCKED** است؛
+- negative resultها حفظ می‌شوند؛
+- outcome-dependent retune/retry روی همان evidence ممنوع است؛
+- merge فقط با دستور صریح Director انجام می‌شود.
+
+### 10) وضعیت یک‌خطی پروژه
+
+**Core platform و P10 engineering عملیاتی‌اند؛ P10 forward evidence هنوز در حال بلوغ است؛
+Alpha Factory/MCF ورودی 6,852 candidate را قبل از outcome با موفقیت بسته،
+اما اجرای production هنوز پشت capacity gate است. PR #178 مشکل حافظه را از نظر
+engineering به‌طور معنی‌دار کاهش داده و refreeze جدید بدون performance تأیید شده،
+ولی تا زمان proof محدود ظرفیت، هیچ اجرای candidate/benchmark/full batch مجاز نیست و P11 بسته می‌ماند.**
