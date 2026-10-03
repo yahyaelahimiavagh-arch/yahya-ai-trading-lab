@@ -34,8 +34,44 @@ These commands refer to the separate June experiment. They do not refreeze or al
 
 Eleven synthetic June-specific tests cover exact date/data admission, request bounds and page hashes, future exclusion, frozen identity/safety, sizing, accepted cost accounting, loss latches, no forced trades, deterministic simultaneous-signal priority, intrabar no-reentry and exclusive run reservation. Thirty-three existing tests cover accepted fill/cost models and the frozen trend/regime logic. All passed before data acquisition.
 
-## Evidence status
+## Completed single-run evidence
 
-Preregistered; June public acquisition and the single canonical replay are pending. Actual data and results will be appended without changing this protocol. One month cannot establish a stable profitable edge, authorize live trading, select a candidate or promote a strategy.
+Preregistration commit `be1b6db5850868b069c104faee8ecc00f167904e` was published before any June acquisition; exact data commit `205adbe28737b3f77507ea73952a58fd23f69547` was published before replay. The protocol SHA256 is `ad8cea566868ca3443aa2faa9eaaddc323b948e9ceaa032deecb14702acb5585` and admitted manifest SHA256 is `e1dd5fbf91c1f9b80af1cc5d744485e1717f11531c8c803c01ebca3b119f8678`. Dataset identities:
+
+- BTCUSDT: `2e79e8a2e70449ed3967ddf168d3fe123918f6298c7b6b81bd4a91c8a3642aef`.
+- ETHUSDT: `9bdd49bc2e48f15e746e7fff1597bba74fa695186945a28a6d054229491c59a1`.
+
+Both assets admitted exactly 2,880 June rows with zero gaps/duplicates. The exclusive reservation remains at `research/experiments/june_2026_backtest/results/reservation.json`; exactly one real-data replay completed with status `COMPLETED_SEEN_RESEARCH` and process exit0. Source/protocol parameters were not changed after freezing or observing results.
+
+| Metric | Conservative | Aggressive |
+| --- | ---: | ---: |
+| Initial virtual equity, USDT | 10,000.00 | 10,000.00 |
+| Final virtual equity, USDT | 9,992.83 | 9,982.07 |
+| Net PnL, USDT | -7.17 | -17.93 |
+| Net return | -0.0717% | -0.1793% |
+| Observed maximum drawdown | 0.1424% | 0.3558% |
+| Closed trades / wins / losses | 4 / 1 / 3 | 4 / 1 / 3 |
+| Win rate | 25% | 25% |
+| Profit factor | 0.4426 | 0.4425 |
+| Average net PnL per trade, USDT | -1.79 | -4.48 |
+| Largest net trade loss, USDT | -4.57 | -11.45 |
+| Fees, USDT | 7.99 | 19.99 |
+| Modeled slippage, USDT | 4.00 | 9.99 |
+| Maximum committed capital at entry | 10.0000% | 25.0000% |
+| Positions remaining at end | 0 | 0 |
+
+The capital percentages shown above are rounded; exact values stayed below the10%/25% ceilings. Both accounts made the same four virtual trades (one ETH and three BTC), then latched `THREE_CONSECUTIVE_LOSSES` at **2026-06-16T08:00:00Z** (11:00 Istanbul). No later entries occurred. There were9 later setup signals vetoed by the latch in each account. Costs and stop budgets are retained unrounded in the ledgers.
+
+| Passive control, final equity in USDT | Conservative capital ceiling | Aggressive capital ceiling |
+| --- | ---: | ---: |
+| Remain in cash | 10,000.00 | 10,000.00 |
+| BTC from June9 12:00UTC, same costs | 9,932.04 | 9,830.10 |
+| ETH from June9 12:00UTC, same costs | 9,937.40 | 9,843.51 |
+
+The rule strategy lost less than these passive controls in this interval but underperformed cash. Controls match the allowed capital allocation, not stop risk, trading activity or realized exposure. This is not benchmark-24 or the sealed MCF batch.
+
+An independent audit of the already-written ledgers (without another replay) reconciled every fill cash flow, fees/slippage, terminal equity and trade PnL; verified no overlapping or outside-June fills, no negative cash, planned stop-risk/capital ceilings, no post-latch entry, identity/safety matches, and716 hourly equity observations per account. The11 June tests and33 accepted-model tests passed before acquisition. See `results/validation.json` and `results/summary.json` for machine-readable evidence and the two ledgers for every decision digest, virtual fill, trade and equity observation.
+
+**Conclusion:** this fixed strategy did not produce a positive net result in this June experiment. Four trades after limited within-month warmup and a permanent loss latch are too few to establish stable profitability or its absence. No strategy selection, live promotion, tuning or second run is authorized by these results. June remains seen research and cannot be reused as an untouched Fresh OOS validation month for work informed by this exposure.
 
 Safety remains paper-only, live master lock OFF, P11 locked, no futures/leverage/short/orders/withdrawal, no P10 read/write, no recent reserve or other Fresh OOS reads, no selection, benchmark-24 retry or full-6852 authorization. Existing main, frozen MCF artifacts and the separate seven-day paper experiment remain unchanged.
