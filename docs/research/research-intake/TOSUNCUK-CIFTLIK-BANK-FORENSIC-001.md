@@ -746,7 +746,7 @@ R01–R05 and R09 were read at the inspected main SHA above. Source inspection e
 - Inspected base main: 58b6c74a834d51f0d68e06fbe5f1885057e9df9a.
 - Dedicated branch: research/tosuncuk-ciftlik-bank-forensic-001-20261005.
 - Archive path: docs/research/research-intake/TOSUNCUK-CIFTLIK-BANK-FORENSIC-001.md.
-- Archive receipt: pending branch publication and draft PR verification; this line will be replaced with the actual result before delivery.
+- Archive receipt: [PR #183](https://github.com/yahyaelahimiavagh-arch/yahya-ai-trading-lab/pull/183), verified OPEN / DRAFT / UNMERGED on 2026-10-05. One new documentation file; no deletions. Main unchanged at the inspected base. Initial archive commit: 0cf7304e5040c9ca0890b67724e39f985851e162; subsequent documentation-only receipt update records this PR.
 - Scope: one new research Markdown report. Existing forensic files, application code, risk thresholds and protected evidence remain unchanged.
 - Verification: source/counter-source review, arithmetic and document-scope checks only. No performance tests, OOS, P10, P11 or live execution.
 - Terminal classification: TOSUNCUK-FORENSIC-PARTIALLY-RESOLVED.
