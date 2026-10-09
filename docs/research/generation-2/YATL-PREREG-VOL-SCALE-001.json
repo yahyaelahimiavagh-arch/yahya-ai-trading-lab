@@ -1,0 +1,168 @@
+{
+  "schema": "YATL_VOL_SCALE_PREREG_PROTOCOL",
+  "schema_version": "0.1.0",
+  "protocol_id": "YATL-PREREG-VOL-SCALE-001",
+  "status": "REGISTERED_PREREGISTRATION",
+  "candidate_id": "EXP-VOL-SCALE-001",
+  "title": "Median EMA Survivor (11,491) Total-Volatility Position Sizing Edge Validation",
+  "hypothesis": "A frozen 1h EMA(11,491) trend-following strategy with lagged, no-leverage total-volatility position sizing improves after-cost economics, exposure-normalized returns, and risk/drawdown behavior compared with the identical frozen strategy using fixed sizing.",
+  "research_question": "Does source-style lagged total-volatility position sizing improve after-cost economics, drawdown, or risk-adjusted return compared to fixed sizing for the frozen 1h EMA(11,491) strategy, without leverage or directional changes?",
+  "candidate_selection": {
+    "frozen_id": "HSSE004A-SURV-002",
+    "family": "TREND_MA_EMA",
+    "parameters": {
+      "n1": 11,
+      "n2": 491
+    },
+    "selection_rule": "Deterministic parameter median among frozen HSSE EMA survivor pairs (471, 491, 511). Family-level selection bias acknowledged."
+  },
+  "universe": [
+    "BTCUSDT",
+    "ETHUSDT"
+  ],
+  "trial_matrix": {
+    "conditions": [
+      "CONTROL_UNSCALED",
+      "SOURCE_STYLE_TOTAL_VOL_SCALED_NO_LEVERAGE"
+    ],
+    "total_arms": 2
+  },
+  "source_method_basis": {
+    "provenance": "GEN2-003 / RIE-CAND-0027",
+    "total_volatility_estimator": "sigma_total,m = sqrt(sum_{d in month m}(r_day^2))",
+    "scale_normalization": "c_total,t = stdev({f_m}) / stdev({z_m}) where z_m = f_m / sigma_total,m-1, expanding window with minimum 6 valid pairs",
+    "raw_scale": "raw_scale_t = c_total,t / sigma_total,t-1",
+    "effective_scale": "min(1.0, raw_scale_t)",
+    "scale_cap": "1.0",
+    "leverage_forbidden": true,
+    "short_forbidden": true,
+    "directional_signals_identical": true
+  },
+  "missing_data_policy": {
+    "gap_semantics": "Exposed gaps poison day and month for training. Carry previous valid scale during uncomputable months. Initial scale is 1.0.",
+    "fill_invalidation": "Missing required execution fill bar fails closed."
+  },
+  "execution_and_costs": {
+    "timeframe": "1h",
+    "mode": "LONG_ONLY_SPOT_RESEARCH",
+    "base_quantity": "0.001",
+    "initial_equity_quote": "10000",
+    "base_fee_bps": 10,
+    "base_adverse_slippage_bps": 5,
+    "stress_fee_bps": 20,
+    "stress_adverse_slippage_bps": 10,
+    "month_boundary_rebalance": "When monthly scale changes while long, rebalance delta quantity at first contiguous 1h open strictly after decision timestamp and charge costs on delta notional."
+  },
+  "development_scope": {
+    "corpus_id": "CRL-CONTROL-DEV-POOL-001",
+    "warmup_start_utc": "2020-01-01T00:00:00Z",
+    "first_managed_month_utc": "2020-02-01T00:00:00Z",
+    "scored_start_utc": "2020-08-01T00:00:00Z",
+    "scored_end_utc": "2023-01-01T00:00:00Z",
+    "folds": [
+      {
+        "fold_id": "DEV-FOLD-001",
+        "start_utc": "2020-08-01T00:00:00Z",
+        "end_utc": "2021-01-01T00:00:00Z"
+      },
+      {
+        "fold_id": "DEV-FOLD-002",
+        "start_utc": "2021-01-01T00:00:00Z",
+        "end_utc": "2021-07-01T00:00:00Z"
+      },
+      {
+        "fold_id": "DEV-FOLD-003",
+        "start_utc": "2021-07-01T00:00:00Z",
+        "end_utc": "2022-01-01T00:00:00Z"
+      },
+      {
+        "fold_id": "DEV-FOLD-004",
+        "start_utc": "2022-01-01T00:00:00Z",
+        "end_utc": "2022-07-01T00:00:00Z"
+      },
+      {
+        "fold_id": "DEV-FOLD-005",
+        "start_utc": "2022-07-01T00:00:00Z",
+        "end_utc": "2023-01-01T00:00:00Z"
+      }
+    ],
+    "evidence_status": "PREVIOUSLY_EXPOSED_DEVELOPMENT_DATA_NOT_NEW_VALIDATION"
+  },
+  "evidence_and_gates": {
+    "min_completed_trades_threshold": 30,
+    "insufficient_evidence_label": "INSUFFICIENT_EVIDENCE",
+    "minimum_valid_new_scale_decision_fraction": "0.50",
+    "opportunity_preservation": {
+      "directional_entry_signal_count_must_equal_control": true,
+      "completed_directional_trade_count_must_equal_control": true,
+      "active_exposure_hours_fraction_vs_control_minimum": "1.0",
+      "notional_exposure_ratio_vs_control_minimum": "0.25"
+    },
+    "proposal_gate": {
+      "require_aggregate_base_net_positive": true,
+      "require_aggregate_stress_net_positive": true,
+      "require_aggregate_base_net_exceed_control": true,
+      "require_aggregate_stress_net_exceed_control": true,
+      "require_nonworse_drawdown_vs_control": true,
+      "require_scaler_activation_below_one": true,
+      "require_min_trades_per_symbol": 30,
+      "opportunity_preservation_required": true,
+      "require_no_unresolved_evaluation_blockers": true
+    },
+    "required_metrics": [
+      "base_net",
+      "stress_net",
+      "maximum_drawdown",
+      "completed_trades",
+      "entry_signals",
+      "monthly_rebalance_count",
+      "total_rebalance_notional",
+      "scaled_entry_count",
+      "active_hours",
+      "notional_exposure",
+      "average_active_notional_quote",
+      "pnl_over_average_active_notional_base",
+      "pnl_over_average_active_notional_stress",
+      "mean_active_scale",
+      "median_active_scale",
+      "minimum_active_scale",
+      "expectancy_base",
+      "profit_factor_base",
+      "notional_exposure_ratio_vs_control",
+      "active_exposure_hours_fraction_vs_control",
+      "valid_new_scale_decision_fraction",
+      "evidence_status"
+    ],
+    "unimplemented_benchmarks_and_risk_metrics": {
+      "cash_matched_benchmark": "PENDING_IMPLEMENTATION_BLOCKER",
+      "exposure_matched_buy_and_hold_benchmark": "PENDING_IMPLEMENTATION_BLOCKER",
+      "per_period_sharpe_ratio": "PENDING_IMPLEMENTATION_BLOCKER",
+      "per_period_sortino_ratio": "PENDING_IMPLEMENTATION_BLOCKER"
+    }
+  },
+  "safety_boundary": {
+    "paper_research_only": true,
+    "spot_only": true,
+    "futures": false,
+    "short": false,
+    "leverage": false,
+    "live_execution": false,
+    "p10_read": false,
+    "p10_write_allowed": false,
+    "p11_locked": true,
+    "live_master_lock": "OFF",
+    "holdout_read_forbidden": true,
+    "fresh_oos_read_forbidden": true,
+    "recent_reserve_read_forbidden": true
+  },
+  "bindings": {
+    "survivor_freeze": {
+      "relative_path": "docs/research/historical-strategy-search/HSSE-004A-SURVIVOR-FREEZE-v0.1.0.json",
+      "git_blob_sha": "bb1b0f9c25a013e766558419f6fa08bf2a1f70c2"
+    },
+    "gen2_downside_protocol": {
+      "relative_path": "docs/research/generation-2/GEN2-003-DOWNSIDE-VOL-SCALING-PROTOCOL-v0.1.0.json",
+      "git_blob_sha": "0847b963fed9a687bb3934eb5969a0f7513c7f47"
+    }
+  }
+}
