@@ -204,6 +204,408 @@ def load_market_data(*args, **kwargs) -> Any:
     )
 
 
+DAY_MS = 86400 * 1000
+
+
+@_exact
+def compute_sharpe_ratio(
+    returns: Sequence[Decimal],
+    annualization_days: int = 365,
+    rf_daily: Decimal = ZERO,
+) -> dict[str, Any]:
+    """Compute annualized Sharpe ratio using daily net-of-cost returns.
+
+    Assumptions:
+    - Return frequency: Daily UTC calendar days (1d).
+    - Annualization factor: sqrt(annualization_days) where annualization_days=365
+      for continuous 24/7 cryptocurrency markets.
+    - Risk-free rate: rf_daily = 0 (Cash benchmark pays zero interest).
+    - Sample variance is Bessel-corrected (divisor N - 1).
+    - For N < 2: cannot compute sample variance, returns None and insufficient_samples=True.
+    - For N < 30: flagged with insufficient_samples=True per protocol threshold.
+    - For sample std = 0:
+        if mean == rf: sharpe = 0, zero_variance = True
+        if mean > rf: sharpe = None, zero_variance = True, sharpe_infinite = True
+        if mean < rf: sharpe = None, zero_variance = True, sharpe_infinite = False
+    """
+    n = len(returns)
+    if n < 2:
+        return {
+            "sharpe": None,
+            "sharpe_infinite": False,
+            "zero_variance": False,
+            "insufficient_samples": True,
+            "n_periods": n,
+            "mean_daily_return": None,
+            "daily_std": None,
+            "annualized_return": None,
+            "annualized_std": None,
+        }
+
+    rf = Decimal(rf_daily)
+    mean_r = hsse3._sum(returns) / Decimal(n)
+    var = hsse3._sum([(r - mean_r) ** 2 for r in returns]) / Decimal(n - 1)
+    s = var.sqrt()
+    ann_factor = Decimal(annualization_days).sqrt()
+
+    if s == ZERO:
+        if mean_r == rf:
+            sharpe = ZERO
+            infinite = False
+        elif mean_r > rf:
+            sharpe = None
+            infinite = True
+        else:
+            sharpe = None
+            infinite = False
+        return {
+            "sharpe": sharpe,
+            "sharpe_infinite": infinite,
+            "zero_variance": True,
+            "insufficient_samples": n < MIN_TRADES_THRESHOLD,
+            "n_periods": n,
+            "mean_daily_return": mean_r,
+            "daily_std": ZERO,
+            "annualized_return": mean_r * Decimal(annualization_days),
+            "annualized_std": ZERO,
+        }
+
+    sharpe = ann_factor * (mean_r - rf) / s
+    return {
+        "sharpe": sharpe,
+        "sharpe_infinite": False,
+        "zero_variance": False,
+        "insufficient_samples": n < MIN_TRADES_THRESHOLD,
+        "n_periods": n,
+        "mean_daily_return": mean_r,
+        "daily_std": s,
+        "annualized_return": mean_r * Decimal(annualization_days),
+        "annualized_std": s * ann_factor,
+    }
+
+
+@_exact
+def compute_sortino_ratio(
+    returns: Sequence[Decimal],
+    annualization_days: int = 365,
+    mar_daily: Decimal = ZERO,
+) -> dict[str, Any]:
+    """Compute annualized Sortino ratio using daily net-of-cost returns.
+
+    Assumptions:
+    - Minimum Acceptable Return (MAR): mar_daily = 0 (daily cash rate).
+    - Downside deviation divisor: N (standard population-style semi-deviation below
+      fixed exogenous target MAR, without degree-of-freedom loss).
+    - Annualization factor: sqrt(annualization_days) where annualization_days=365.
+    - If downside deviation == 0:
+        if mean > mar: sortino = None, zero_downside_deviation = True, sortino_infinite = True
+        if mean == mar: sortino = ZERO, zero_downside_deviation = True, sortino_infinite = False
+    - For N < 2: returns None and insufficient_samples=True.
+    - For N < 30: flagged with insufficient_samples=True.
+    """
+    n = len(returns)
+    if n < 2:
+        return {
+            "sortino": None,
+            "sortino_infinite": False,
+            "zero_downside_deviation": False,
+            "insufficient_samples": True,
+            "n_periods": n,
+            "mean_daily_return": None,
+            "downside_deviation": None,
+            "annualized_return": None,
+            "annualized_downside_deviation": None,
+        }
+
+    mar = Decimal(mar_daily)
+    mean_r = hsse3._sum(returns) / Decimal(n)
+    downside_diffs = [min(ZERO, r - mar) for r in returns]
+    downside_sq_sum = hsse3._sum([d ** 2 for d in downside_diffs])
+    downside_dev = (downside_sq_sum / Decimal(n)).sqrt()
+    ann_factor = Decimal(annualization_days).sqrt()
+
+    if downside_dev == ZERO:
+        if mean_r == mar:
+            sortino = ZERO
+            infinite = False
+        elif mean_r > mar:
+            sortino = None
+            infinite = True
+        else:
+            sortino = None
+            infinite = False
+        return {
+            "sortino": sortino,
+            "sortino_infinite": infinite,
+            "zero_downside_deviation": True,
+            "insufficient_samples": n < MIN_TRADES_THRESHOLD,
+            "n_periods": n,
+            "mean_daily_return": mean_r,
+            "downside_deviation": ZERO,
+            "annualized_return": mean_r * Decimal(annualization_days),
+            "annualized_downside_deviation": ZERO,
+        }
+
+    sortino = ann_factor * (mean_r - mar) / downside_dev
+    return {
+        "sortino": sortino,
+        "sortino_infinite": False,
+        "zero_downside_deviation": False,
+        "insufficient_samples": n < MIN_TRADES_THRESHOLD,
+        "n_periods": n,
+        "mean_daily_return": mean_r,
+        "downside_deviation": downside_dev,
+        "annualized_return": mean_r * Decimal(annualization_days),
+        "annualized_downside_deviation": downside_dev * ann_factor,
+    }
+
+
+@_exact
+def compute_cash_benchmark(
+    *,
+    initial_equity: Decimal,
+    start_ms: int,
+    end_ms: int,
+    strategy_base_net: Decimal,
+    strategy_stress_net: Decimal,
+) -> dict[str, Any]:
+    """Compute clearly defined Cash benchmark ($r_f = 0$).
+
+    Assumptions:
+    - Cash benchmark holds 100% quote currency throughout [start_ms, end_ms).
+    - r_f = 0 (zero interest on uninvested cash).
+    - Initial equity = final equity = initial_equity ($10,000).
+    - Net PnL = 0.00.
+    - Maximum Drawdown = 0.00.
+    - Active exposure = 0.00.
+    - Strategy excess return over Cash:
+        strategy_excess_net_base = strategy_base_net - 0 = strategy_base_net
+        strategy_excess_net_stress = strategy_stress_net - 0 = strategy_stress_net
+    """
+    return {
+        "benchmark_id": "CASH_RF_ZERO",
+        "initial_equity": initial_equity,
+        "final_equity": initial_equity,
+        "base_net": ZERO,
+        "stress_net": ZERO,
+        "maximum_drawdown": ZERO,
+        "notional_exposure": ZERO,
+        "active_hours": 0,
+        "strategy_excess_net_base": strategy_base_net,
+        "strategy_excess_net_stress": strategy_stress_net,
+        "daily_return": ZERO,
+        "sharpe_ratio": ZERO,
+        "sortino_ratio": ZERO,
+    }
+
+
+@_exact
+def compute_buy_and_hold_benchmark(
+    *,
+    exact: hsse3.ExactSeries,
+    start_ms: int,
+    end_ms: int,
+    policy: Mapping[str, Any],
+    strategy_notional_exposure: Decimal,
+    strategy_base_net: Decimal,
+    strategy_stress_net: Decimal,
+) -> dict[str, Any]:
+    """Compute lookahead-free Buy & Hold benchmark and exposure-matched comparison.
+
+    Lookahead-free capital allocation rule:
+    - Buy base quantity at first contiguous 1h open strictly at/after scored_start_ms.
+    - Charge base/stress trading fees and adverse slippage on entry open price.
+    - Hold through scored period to end_ms.
+    - Mark-to-market daily closing equity and track hourly maximum drawdown.
+    - Liquidate / mark at scored end close (end-1) charging base/stress fees and slippage.
+
+    Exposure matching:
+    - Fixed B&H total notional exposure: E_bnh_fixed = sum(qty * close_i)
+    - Strategy total notional exposure: E_strat
+    - Exposure scaling factor: kappa = E_strat / E_bnh_fixed (if E_bnh_fixed > 0 else 0)
+    - Exposure-matched B&H base net: kappa * bnh_fixed_base_net
+    - Exposure-matched B&H stress net: kappa * bnh_fixed_stress_net
+    - Strategy excess vs exposure-matched B&H:
+        strategy_excess_base = strategy_base_net - exposure_matched_bnh_base_net
+        strategy_excess_stress = strategy_stress_net - exposure_matched_bnh_stress_net
+    """
+    start = bisect.bisect_left(exact.times, start_ms)
+    end = bisect.bisect_left(exact.times, end_ms)
+    if start >= end:
+        raise VolScalePreregError("empty scored cell for Buy & Hold benchmark")
+
+    initial = Decimal(policy["initial_equity_quote"])
+    qty = Decimal(policy["base_quantity"])
+    bf, bs = Decimal(policy["base_fee_bps"]), Decimal(policy["base_adverse_slippage_bps"])
+    sf, ss = Decimal(policy["stress_fee_bps"]), Decimal(policy["stress_adverse_slippage_bps"])
+
+    entry_price = Decimal(exact.opens[start])
+    bnh_base = shared._new_account(initial)
+    bnh_stress = shared._new_account(initial)
+    shared._buy(bnh_base, reference=entry_price, quantity=qty, fee_bps=bf, slippage_bps=bs, start_cycle=True)
+    shared._buy(bnh_stress, reference=entry_price, quantity=qty, fee_bps=sf, slippage_bps=ss, start_cycle=True)
+
+    peak = initial
+    dd = ZERO
+    notional_exp = ZERO
+    bnh_daily_equities = [initial]
+
+    for i in range(start, end):
+        t = exact.times[i]
+        close = Decimal(exact.closes[i])
+        notional_exp += qty * close
+        eq = shared._equity(bnh_base, mark=close, fee_bps=bf, slippage_bps=bs)
+        peak = max(peak, eq)
+        dd = max(dd, (peak - eq) / peak)
+
+        is_day_end = (i == end - 1) or ((exact.times[i + 1] // DAY_MS) != (t // DAY_MS))
+        if is_day_end:
+            bnh_daily_equities.append(eq)
+
+    last = Decimal(exact.closes[end - 1])
+    bnh_base_net = shared._equity(bnh_base, mark=last, fee_bps=bf, slippage_bps=bs) - initial
+    bnh_stress_net = shared._equity(bnh_stress, mark=last, fee_bps=sf, slippage_bps=ss) - initial
+
+    bnh_daily_returns = [
+        (bnh_daily_equities[j] - bnh_daily_equities[j - 1]) / bnh_daily_equities[j - 1]
+        for j in range(1, len(bnh_daily_equities))
+    ]
+
+    total_hours = end - start
+    avg_notional = notional_exp / Decimal(total_hours) if total_hours > 0 else ZERO
+
+    kappa = strategy_notional_exposure / notional_exp if notional_exp > ZERO else ZERO
+    exp_matched_base_net = bnh_base_net * kappa
+    exp_matched_stress_net = bnh_stress_net * kappa
+
+    return {
+        "fixed_quantity": {
+            "benchmark_id": "BUY_AND_HOLD_FIXED_QUANTITY",
+            "quantity": qty,
+            "entry_price": entry_price,
+            "base_net": bnh_base_net,
+            "stress_net": bnh_stress_net,
+            "maximum_drawdown": dd,
+            "notional_exposure": notional_exp,
+            "active_hours": total_hours,
+            "average_active_notional_quote": avg_notional,
+            "pnl_over_average_active_notional_base": (
+                bnh_base_net / avg_notional if avg_notional > ZERO else ZERO
+            ),
+            "sharpe_ratio": compute_sharpe_ratio(bnh_daily_returns),
+            "sortino_ratio": compute_sortino_ratio(bnh_daily_returns),
+        },
+        "exposure_matched": {
+            "benchmark_id": "BUY_AND_HOLD_EXPOSURE_MATCHED",
+            "exposure_scaling_factor_kappa": kappa,
+            "matched_notional_exposure": strategy_notional_exposure,
+            "exposure_matched_base_net": exp_matched_base_net,
+            "exposure_matched_stress_net": exp_matched_stress_net,
+            "strategy_excess_net_base": strategy_base_net - exp_matched_base_net,
+            "strategy_excess_net_stress": strategy_stress_net - exp_matched_stress_net,
+        },
+    }
+
+
+@_exact
+def simulate_daily_equities(
+    *,
+    signal: hsse2.SearchSeries,
+    exact: hsse3.ExactSeries,
+    short_values: Sequence[float],
+    long_values: Sequence[float],
+    start_ms: int,
+    end_ms: int,
+    policy: Mapping[str, Any],
+    decisions: Mapping[int, Mapping[str, Any]],
+    condition: str,
+) -> tuple[list[Decimal], list[Decimal]]:
+    """Simulate exact daily closing net-of-cost equity points for base and stress accounts.
+
+    Guarantees bit-for-bit compounding consistency with _simulate_cell:
+    daily_equities_base[-1] - initial_equity == base_net.
+    """
+    if signal.times != exact.times:
+        raise VolScalePreregError("signal/exact timestamps differ")
+    start = bisect.bisect_left(exact.times, start_ms)
+    end = bisect.bisect_left(exact.times, end_ms)
+    if start >= end:
+        raise VolScalePreregError("empty scored cell")
+
+    scaled = condition != CONDITIONS[0]
+    quantity = Decimal(policy["base_quantity"])
+    initial = Decimal(policy["initial_equity_quote"])
+    bf, bs = Decimal(policy["base_fee_bps"]), Decimal(policy["base_adverse_slippage_bps"])
+    sf, ss = Decimal(policy["stress_fee_bps"]), Decimal(policy["stress_adverse_slippage_bps"])
+    base, stress = shared._new_account(initial), shared._new_account(initial)
+    month = shared._month_start_ms(exact.times[start])
+    current = decisions[month]["scale"] if scaled else ONE
+    logical = False
+    pending = None
+    daily_equities_base = [initial]
+    daily_equities_stress = [initial]
+
+    for i in range(start, end):
+        t = exact.times[i]
+        close = Decimal(exact.closes[i])
+        eq_b = shared._equity(base, mark=close, fee_bps=bf, slippage_bps=bs)
+        eq_s = shared._equity(stress, mark=close, fee_bps=sf, slippage_bps=ss)
+
+        is_day_end = (i == end - 1) or ((exact.times[i + 1] // DAY_MS) != (t // DAY_MS))
+        if is_day_end:
+            daily_equities_base.append(eq_b)
+            daily_equities_stress.append(eq_s)
+
+        if i == 0:
+            continue
+        vals = (short_values[i], long_values[i], short_values[i - 1], long_values[i - 1])
+        enter = exit_ = False
+        if all(math.isfinite(v) for v in vals):
+            sn, ln, sp, lp = vals
+            enter = not logical and sn > ln and sp <= lp
+            exit_ = logical and sn < ln and sp >= lp
+
+        boundary = scaled and t in decisions and decisions[t]["new"]
+        newscale = decisions[t]["scale"] if boundary else current
+        if boundary and logical and newscale != current:
+            pending = newscale
+        if not (enter or exit_ or pending is not None):
+            if boundary:
+                current = newscale
+            continue
+
+        fi = i + 1
+        if fi >= end:
+            continue
+        if fi >= len(exact.times) or exact.times[fi] != t + shared.HOUR_MS:
+            raise VolScalePreregError("required execution fill bar missing; event invalidated")
+        price = Decimal(exact.opens[fi])
+        if exit_:
+            shared._sell(base, reference=price, quantity=base.quantity, fee_bps=bf, slippage_bps=bs, close_cycle=True)
+            shared._sell(stress, reference=price, quantity=stress.quantity, fee_bps=sf, slippage_bps=ss, close_cycle=True)
+            logical = False
+            pending = None
+        elif enter:
+            target = quantity * newscale
+            shared._buy(base, reference=price, quantity=target, fee_bps=bf, slippage_bps=bs, start_cycle=True)
+            shared._buy(stress, reference=price, quantity=target, fee_bps=sf, slippage_bps=ss, start_cycle=True)
+            logical = True
+            pending = None
+        elif pending is not None:
+            delta = quantity * pending - base.quantity
+            if delta > ZERO:
+                shared._buy(base, reference=price, quantity=delta, fee_bps=bf, slippage_bps=bs, start_cycle=False)
+                shared._buy(stress, reference=price, quantity=delta, fee_bps=sf, slippage_bps=ss, start_cycle=False)
+            elif delta < ZERO:
+                shared._sell(base, reference=price, quantity=-delta, fee_bps=bf, slippage_bps=bs, close_cycle=False)
+                shared._sell(stress, reference=price, quantity=-delta, fee_bps=sf, slippage_bps=ss, close_cycle=False)
+            pending = None
+        if boundary:
+            current = newscale
+
+    return daily_equities_base, daily_equities_stress
+
+
 @_exact
 def run_two_arm_single_symbol(
     *,
@@ -295,14 +697,112 @@ def run_two_arm_single_symbol(
         condition=CONDITIONS[1],
     )
 
-    # 8. Enrich with transparent exposure metrics and evidence classification
-    def enrich_arm(cell: dict[str, Any], is_scaled: bool) -> dict[str, Any]:
+    # 8. Enrich with transparent exposure metrics, periodic risk ratios, and benchmarks
+    daily_a_base, daily_a_stress = simulate_daily_equities(
+        signal=signal,
+        exact=exact,
+        short_values=short_values,
+        long_values=long_values,
+        start_ms=scored_start_ms,
+        end_ms=end_ms,
+        policy=policy,
+        decisions={},
+        condition=CONDITIONS[0],
+    )
+    daily_b_base, daily_b_stress = simulate_daily_equities(
+        signal=signal,
+        exact=exact,
+        short_values=short_values,
+        long_values=long_values,
+        start_ms=scored_start_ms,
+        end_ms=end_ms,
+        policy=policy,
+        decisions=total_schedule,
+        condition=CONDITIONS[1],
+    )
+
+    rets_a_base = [
+        (daily_a_base[j] - daily_a_base[j - 1]) / daily_a_base[j - 1]
+        for j in range(1, len(daily_a_base))
+    ]
+    rets_a_stress = [
+        (daily_a_stress[j] - daily_a_stress[j - 1]) / daily_a_stress[j - 1]
+        for j in range(1, len(daily_a_stress))
+    ]
+    rets_b_base = [
+        (daily_b_base[j] - daily_b_base[j - 1]) / daily_b_base[j - 1]
+        for j in range(1, len(daily_b_base))
+    ]
+    rets_b_stress = [
+        (daily_b_stress[j] - daily_b_stress[j - 1]) / daily_b_stress[j - 1]
+        for j in range(1, len(daily_b_stress))
+    ]
+
+    sharpe_a_base = compute_sharpe_ratio(rets_a_base)
+    sortino_a_base = compute_sortino_ratio(rets_a_base)
+    sharpe_a_stress = compute_sharpe_ratio(rets_a_stress)
+    sortino_a_stress = compute_sortino_ratio(rets_a_stress)
+
+    sharpe_b_base = compute_sharpe_ratio(rets_b_base)
+    sortino_b_base = compute_sortino_ratio(rets_b_base)
+    sharpe_b_stress = compute_sharpe_ratio(rets_b_stress)
+    sortino_b_stress = compute_sortino_ratio(rets_b_stress)
+
+    init_eq = Decimal(policy.get("initial_equity_quote", "10000"))
+    cash_a = compute_cash_benchmark(
+        initial_equity=init_eq,
+        start_ms=scored_start_ms,
+        end_ms=end_ms,
+        strategy_base_net=res_control.get("base_net", ZERO),
+        strategy_stress_net=res_control.get("stress_net", ZERO),
+    )
+    cash_b = compute_cash_benchmark(
+        initial_equity=init_eq,
+        start_ms=scored_start_ms,
+        end_ms=end_ms,
+        strategy_base_net=res_scaled.get("base_net", ZERO),
+        strategy_stress_net=res_scaled.get("stress_net", ZERO),
+    )
+
+    bnh_a = compute_buy_and_hold_benchmark(
+        exact=exact,
+        start_ms=scored_start_ms,
+        end_ms=end_ms,
+        policy=policy,
+        strategy_notional_exposure=res_control.get("notional_exposure", ZERO),
+        strategy_base_net=res_control.get("base_net", ZERO),
+        strategy_stress_net=res_control.get("stress_net", ZERO),
+    )
+    bnh_b = compute_buy_and_hold_benchmark(
+        exact=exact,
+        start_ms=scored_start_ms,
+        end_ms=end_ms,
+        policy=policy,
+        strategy_notional_exposure=res_scaled.get("notional_exposure", ZERO),
+        strategy_base_net=res_scaled.get("base_net", ZERO),
+        strategy_stress_net=res_scaled.get("stress_net", ZERO),
+    )
+
+    def enrich_arm(
+        cell: dict[str, Any],
+        is_scaled: bool,
+        daily_base: list[Decimal],
+        daily_stress: list[Decimal],
+        rets_base: list[Decimal],
+        rets_stress: list[Decimal],
+        sharpe_base: dict[str, Any],
+        sortino_base: dict[str, Any],
+        sharpe_stress: dict[str, Any],
+        sortino_stress: dict[str, Any],
+        cash: dict[str, Any],
+        bnh: dict[str, Any],
+    ) -> dict[str, Any]:
         out = dict(cell)
-        act_hours = out["active_hours"]
-        notional_exp = out["notional_exposure"]
-        base_net = out["base_net"]
-        stress_net = out["stress_net"]
-        completed = out["completed_trades"]
+        act_hours = out.get("active_hours", 0)
+        notional_exp = out.get("notional_exposure", ZERO)
+        base_net = out.get("base_net", ZERO)
+        stress_net = out.get("stress_net", ZERO)
+        completed = out.get("completed_trades", 0)
 
         avg_notional = (
             notional_exp / Decimal(act_hours) if act_hours > 0 else ZERO
@@ -336,10 +836,52 @@ def run_two_arm_single_symbol(
         out["unimplemented_evaluations"] = dict(
             UNIMPLEMENTED_BENCHMARKS_AND_RISK_METRICS
         )
+        out["cash_benchmark"] = cash
+        out["buy_and_hold_benchmark"] = bnh
+        out["sharpe_ratio_base"] = sharpe_base
+        out["sortino_ratio_base"] = sortino_base
+        out["sharpe_ratio_stress"] = sharpe_stress
+        out["sortino_ratio_stress"] = sortino_stress
+        out["daily_equities_base"] = daily_base
+        out["daily_returns_base"] = rets_base
+        out["benchmarks_and_risk_metrics"] = {
+            "cash_benchmark": cash,
+            "buy_and_hold_benchmark": bnh,
+            "sharpe_ratio_base": sharpe_base,
+            "sortino_ratio_base": sortino_base,
+            "sharpe_ratio_stress": sharpe_stress,
+            "sortino_ratio_stress": sortino_stress,
+        }
         return out
 
-    arm_a = enrich_arm(res_control, is_scaled=False)
-    arm_b = enrich_arm(res_scaled, is_scaled=True)
+    arm_a = enrich_arm(
+        res_control,
+        is_scaled=False,
+        daily_base=daily_a_base,
+        daily_stress=daily_a_stress,
+        rets_base=rets_a_base,
+        rets_stress=rets_a_stress,
+        sharpe_base=sharpe_a_base,
+        sortino_base=sortino_a_base,
+        sharpe_stress=sharpe_a_stress,
+        sortino_stress=sortino_a_stress,
+        cash=cash_a,
+        bnh=bnh_a,
+    )
+    arm_b = enrich_arm(
+        res_scaled,
+        is_scaled=True,
+        daily_base=daily_b_base,
+        daily_stress=daily_b_stress,
+        rets_base=rets_b_base,
+        rets_stress=rets_b_stress,
+        sharpe_base=sharpe_b_base,
+        sortino_base=sortino_b_base,
+        sharpe_stress=sharpe_b_stress,
+        sortino_stress=sortino_b_stress,
+        cash=cash_b,
+        bnh=bnh_b,
+    )
 
     # Ratios vs control
     ctrl_hours = arm_a["active_hours"]
@@ -369,6 +911,30 @@ def run_two_arm_single_symbol(
         ),
         "delta_rebalances": arm_b["rebalances"],
         "delta_rebalance_notional": arm_b["rebalance_notional"],
+        "delta_sharpe_ratio_base": (
+            sharpe_b_base["sharpe"] - sharpe_a_base["sharpe"]
+            if (
+                sharpe_b_base.get("sharpe") is not None
+                and sharpe_a_base.get("sharpe") is not None
+            )
+            else None
+        ),
+        "delta_sortino_ratio_base": (
+            sortino_b_base["sortino"] - sortino_a_base["sortino"]
+            if (
+                sortino_b_base.get("sortino") is not None
+                and sortino_a_base.get("sortino") is not None
+            )
+            else None
+        ),
+        "delta_excess_net_vs_exposure_matched_bnh_base": (
+            bnh_b["exposure_matched"]["strategy_excess_net_base"]
+            - bnh_a["exposure_matched"]["strategy_excess_net_base"]
+        ),
+        "delta_excess_net_vs_cash_base": (
+            cash_b["strategy_excess_net_base"]
+            - cash_a["strategy_excess_net_base"]
+        ),
     }
 
     return {
@@ -595,6 +1161,135 @@ def adjudicate_universe(
         "valid_scale_decision_fraction": valid_scale_fraction,
     }
 
+    # Aggregate suite for implemented economic benchmarks and periodic risk metrics
+    has_daily_eq = all(
+        "daily_equities_base" in symbol_evaluations[s].get("arm_a_control", {})
+        and "daily_equities_base" in symbol_evaluations[s].get("arm_b_scaled", {})
+        for s in symbols
+    )
+    if has_daily_eq:
+        n_days_a = min(len(symbol_evaluations[s]["arm_a_control"]["daily_equities_base"]) for s in symbols)
+        port_eq_a_base = [
+            sum(symbol_evaluations[s]["arm_a_control"]["daily_equities_base"][j] for s in symbols)
+            for j in range(n_days_a)
+        ]
+        port_rets_a_base = [
+            (port_eq_a_base[j] - port_eq_a_base[j - 1]) / port_eq_a_base[j - 1]
+            for j in range(1, len(port_eq_a_base))
+        ]
+        agg_sharpe_a = compute_sharpe_ratio(port_rets_a_base)
+        agg_sortino_a = compute_sortino_ratio(port_rets_a_base)
+
+        n_days_b = min(len(symbol_evaluations[s]["arm_b_scaled"]["daily_equities_base"]) for s in symbols)
+        port_eq_b_base = [
+            sum(symbol_evaluations[s]["arm_b_scaled"]["daily_equities_base"][j] for s in symbols)
+            for j in range(n_days_b)
+        ]
+        port_rets_b_base = [
+            (port_eq_b_base[j] - port_eq_b_base[j - 1]) / port_eq_b_base[j - 1]
+            for j in range(1, len(port_eq_b_base))
+        ]
+        agg_sharpe_b = compute_sharpe_ratio(port_rets_b_base)
+        agg_sortino_b = compute_sortino_ratio(port_rets_b_base)
+    else:
+        agg_sharpe_a = {"status": "NOT_AVAILABLE_IN_INPUT_CELLS"}
+        agg_sortino_a = {"status": "NOT_AVAILABLE_IN_INPUT_CELLS"}
+        agg_sharpe_b = {"status": "NOT_AVAILABLE_IN_INPUT_CELLS"}
+        agg_sortino_b = {"status": "NOT_AVAILABLE_IN_INPUT_CELLS"}
+
+    has_bnh = all(
+        "buy_and_hold_benchmark" in symbol_evaluations[s].get("arm_a_control", {})
+        and "buy_and_hold_benchmark" in symbol_evaluations[s].get("arm_b_scaled", {})
+        for s in symbols
+    )
+    if has_bnh:
+        agg_bnh_exp_matched_a = sum(
+            symbol_evaluations[s]["arm_a_control"]["buy_and_hold_benchmark"]["exposure_matched"]["exposure_matched_base_net"]
+            for s in symbols
+        )
+        agg_bnh_exp_matched_b = sum(
+            symbol_evaluations[s]["arm_b_scaled"]["buy_and_hold_benchmark"]["exposure_matched"]["exposure_matched_base_net"]
+            for s in symbols
+        )
+        agg_excess_vs_bnh_a = agg_a["base_net"] - agg_bnh_exp_matched_a
+        agg_excess_vs_bnh_b = agg_b["base_net"] - agg_bnh_exp_matched_b
+    else:
+        agg_bnh_exp_matched_a = None
+        agg_bnh_exp_matched_b = None
+        agg_excess_vs_bnh_a = None
+        agg_excess_vs_bnh_b = None
+
+    economic_metrics_suite = {
+        "cash_benchmark": {
+            "initial_equity": Decimal("20000"),
+            "final_equity": Decimal("20000"),
+            "base_net": ZERO,
+            "stress_net": ZERO,
+            "arm_a_excess_net_base": agg_a["base_net"],
+            "arm_b_excess_net_base": agg_b["base_net"],
+            "delta_excess_net_base": agg_b["base_net"] - agg_a["base_net"],
+        },
+        "exposure_matched_buy_and_hold_benchmark": {
+            "arm_a_exposure_matched_bnh_base_net": agg_bnh_exp_matched_a,
+            "arm_b_exposure_matched_bnh_base_net": agg_bnh_exp_matched_b,
+            "arm_a_excess_net_base": agg_excess_vs_bnh_a,
+            "arm_b_excess_net_base": agg_excess_vs_bnh_b,
+            "delta_excess_net_base": (
+                (agg_excess_vs_bnh_b - agg_excess_vs_bnh_a)
+                if (agg_excess_vs_bnh_b is not None and agg_excess_vs_bnh_a is not None)
+                else None
+            ),
+        },
+        "periodic_sharpe_ratio": {
+            "arm_a_control": agg_sharpe_a,
+            "arm_b_scaled": agg_sharpe_b,
+            "delta_sharpe": (
+                (agg_sharpe_b["sharpe"] - agg_sharpe_a["sharpe"])
+                if (
+                    agg_sharpe_b.get("sharpe") is not None
+                    and agg_sharpe_a.get("sharpe") is not None
+                )
+                else None
+            ),
+        },
+        "periodic_sortino_ratio": {
+            "arm_a_control": agg_sortino_a,
+            "arm_b_scaled": agg_sortino_b,
+            "delta_sortino": (
+                (agg_sortino_b["sortino"] - agg_sortino_a["sortino"])
+                if (
+                    agg_sortino_b.get("sortino") is not None
+                    and agg_sortino_a.get("sortino") is not None
+                )
+                else None
+            ),
+        },
+        "per_symbol_breakdown": {
+            s: {
+                "arm_a_control": {
+                    "sharpe_base": symbol_evaluations[s].get("arm_a_control", {}).get("sharpe_ratio_base"),
+                    "sortino_base": symbol_evaluations[s].get("arm_a_control", {}).get("sortino_ratio_base"),
+                    "cash_excess_base": symbol_evaluations[s].get("arm_a_control", {}).get("cash_benchmark", {}).get("strategy_excess_net_base"),
+                    "bnh_excess_base": symbol_evaluations[s].get("arm_a_control", {}).get("buy_and_hold_benchmark", {}).get("exposure_matched", {}).get("strategy_excess_net_base"),
+                },
+                "arm_b_scaled": {
+                    "sharpe_base": symbol_evaluations[s].get("arm_b_scaled", {}).get("sharpe_ratio_base"),
+                    "sortino_base": symbol_evaluations[s].get("arm_b_scaled", {}).get("sortino_ratio_base"),
+                    "cash_excess_base": symbol_evaluations[s].get("arm_b_scaled", {}).get("cash_benchmark", {}).get("strategy_excess_net_base"),
+                    "bnh_excess_base": symbol_evaluations[s].get("arm_b_scaled", {}).get("buy_and_hold_benchmark", {}).get("exposure_matched", {}).get("strategy_excess_net_base"),
+                },
+            }
+            for s in symbols
+        },
+        "annualization_parameters": {
+            "annualization_days": 365,
+            "frequency": "1d_daily_utc",
+            "risk_free_rate_daily": "0",
+            "sortino_mar_daily": "0",
+        },
+        "engineering_status": "IMPLEMENTATION_COMPLETE",
+    }
+
     # Strict economic verdict: Never return PASS while blockers remain!
     verdict_reasons = list(gate_failures)
     if insufficient_symbols or zero_decisions:
@@ -625,6 +1320,7 @@ def adjudicate_universe(
         "aggregate_deltas": agg_deltas,
         "symbols": symbols,
         "unimplemented_evaluations": dict(unimplemented_dict),
+        "economic_metrics_suite": economic_metrics_suite,
     }
 
 

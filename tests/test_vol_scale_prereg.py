@@ -564,6 +564,270 @@ class VolScalePreregSyntheticTests(unittest.TestCase):
         self.assertTrue(any("MISSING_MANDATORY_METRIC:BTCUSDT:arm_a_control:profit_factor_base" in r for r in reasons))
         self.assertTrue(any("MISSING_MANDATORY_METRIC:BTCUSDT:arm_a_control:maximum_drawdown" in r for r in reasons))
 
+    def test_cash_benchmark_accounting(self):
+        """Sprint 04 Test 1: Clearly defined Cash benchmark with r_f=0 and zero drawdown."""
+        cash = vsp.compute_cash_benchmark(
+            initial_equity=D("10000"),
+            start_ms=1577836800000,
+            end_ms=1604188800000,
+            strategy_base_net=D("25.50"),
+            strategy_stress_net=D("18.20"),
+        )
+        self.assertEqual(cash["benchmark_id"], "CASH_RF_ZERO")
+        self.assertEqual(cash["initial_equity"], D("10000"))
+        self.assertEqual(cash["final_equity"], D("10000"))
+        self.assertEqual(cash["base_net"], D("0"))
+        self.assertEqual(cash["stress_net"], D("0"))
+        self.assertEqual(cash["maximum_drawdown"], D("0"))
+        self.assertEqual(cash["notional_exposure"], D("0"))
+        self.assertEqual(cash["active_hours"], 0)
+        self.assertEqual(cash["strategy_excess_net_base"], D("25.50"))
+        self.assertEqual(cash["strategy_excess_net_stress"], D("18.20"))
+        self.assertEqual(cash["sharpe_ratio"], D("0"))
+        self.assertEqual(cash["sortino_ratio"], D("0"))
+
+    def test_buy_and_hold_benchmark_lookahead_free_and_exposure_matching(self):
+        """Sprint 04 Test 2: Lookahead-free Buy & Hold with exposure matching."""
+        start_ms = 1577836800000
+        end_ms = start_ms + 750 * HOUR_MS
+        exact, _ = self._build_synthetic_series("BTCUSDT", n_bars=750, start_ms=start_ms)
+
+        strat_notional = D("5000")
+        strat_base_net = D("30")
+        strat_stress_net = D("20")
+
+        bnh = vsp.compute_buy_and_hold_benchmark(
+            exact=exact,
+            start_ms=start_ms,
+            end_ms=end_ms,
+            policy=self.policy,
+            strategy_notional_exposure=strat_notional,
+            strategy_base_net=strat_base_net,
+            strategy_stress_net=strat_stress_net,
+        )
+
+        fixed = bnh["fixed_quantity"]
+        matched = bnh["exposure_matched"]
+
+        self.assertEqual(fixed["benchmark_id"], "BUY_AND_HOLD_FIXED_QUANTITY")
+        self.assertEqual(fixed["quantity"], D(self.policy["base_quantity"]))
+        self.assertEqual(fixed["entry_price"], D("100.0"))
+        self.assertEqual(fixed["active_hours"], 750)
+        self.assertGreater(fixed["notional_exposure"], D("0"))
+        self.assertGreaterEqual(fixed["maximum_drawdown"], D("0"))
+
+        # Exposure matching
+        with vsp.localcontext() as ctx:
+            ctx.prec = vsp.DECIMAL_PRECISION
+            kappa = strat_notional / fixed["notional_exposure"]
+            self.assertEqual(matched["exposure_scaling_factor_kappa"], kappa)
+            self.assertEqual(matched["matched_notional_exposure"], strat_notional)
+            self.assertEqual(matched["exposure_matched_base_net"], fixed["base_net"] * kappa)
+            self.assertEqual(matched["exposure_matched_stress_net"], fixed["stress_net"] * kappa)
+            self.assertEqual(
+                matched["strategy_excess_net_base"],
+                strat_base_net - fixed["base_net"] * kappa,
+            )
+
+    def test_periodic_sharpe_ratio_edge_cases(self):
+        """Sprint 04 Test 3: Sharpe ratio edge cases: N<2, N<30, zero variance."""
+        # 1. N < 2: cannot compute sample variance
+        res_empty = vsp.compute_sharpe_ratio([])
+        self.assertIsNone(res_empty["sharpe"])
+        self.assertTrue(res_empty["insufficient_samples"])
+
+        res_single = vsp.compute_sharpe_ratio([D("0.01")])
+        self.assertIsNone(res_single["sharpe"])
+        self.assertTrue(res_single["insufficient_samples"])
+
+        # 2. N < 30: computes Sharpe but flags insufficient_samples
+        rets_10 = [D("0.01"), D("-0.005"), D("0.02"), D("0.001")] * 3
+        res_12 = vsp.compute_sharpe_ratio(rets_10)
+        self.assertIsNotNone(res_12["sharpe"])
+        self.assertTrue(res_12["insufficient_samples"])
+
+        # 3. N >= 30: normal computation without insufficient_samples flag
+        rets_40 = [D("0.01"), D("-0.005"), D("0.02"), D("0.001")] * 10
+        res_40 = vsp.compute_sharpe_ratio(rets_40)
+        self.assertIsNotNone(res_40["sharpe"])
+        self.assertFalse(res_40["insufficient_samples"])
+        self.assertFalse(res_40["zero_variance"])
+
+        # 4. Zero variance with zero mean (all 0 cash returns)
+        res_zero = vsp.compute_sharpe_ratio([D("0")] * 50)
+        self.assertEqual(res_zero["sharpe"], D("0"))
+        self.assertTrue(res_zero["zero_variance"])
+        self.assertFalse(res_zero["sharpe_infinite"])
+
+        # 5. Zero variance with positive mean (all +1% constant return) -> infinite
+        res_inf = vsp.compute_sharpe_ratio([D("0.01")] * 50)
+        self.assertIsNone(res_inf["sharpe"])
+        self.assertTrue(res_inf["zero_variance"])
+        self.assertTrue(res_inf["sharpe_infinite"])
+
+    def test_periodic_sortino_ratio_edge_cases(self):
+        """Sprint 04 Test 4: Sortino ratio edge cases: N<2, zero downside deviation."""
+        # 1. N < 2
+        res_empty = vsp.compute_sortino_ratio([])
+        self.assertIsNone(res_empty["sortino"])
+        self.assertTrue(res_empty["insufficient_samples"])
+
+        # 2. Zero downside deviation with positive returns (all returns >= MAR 0)
+        res_all_pos = vsp.compute_sortino_ratio([D("0.01")] * 50)
+        self.assertIsNone(res_all_pos["sortino"])
+        self.assertTrue(res_all_pos["zero_downside_deviation"])
+        self.assertTrue(res_all_pos["sortino_infinite"])
+
+        # 3. Zero downside deviation with zero returns (all returns == MAR 0)
+        res_all_zero = vsp.compute_sortino_ratio([D("0")] * 50)
+        self.assertEqual(res_all_zero["sortino"], D("0"))
+        self.assertTrue(res_all_zero["zero_downside_deviation"])
+        self.assertFalse(res_all_zero["sortino_infinite"])
+
+        # 4. Normal Sortino with downside returns
+        rets_var = [D("0.02"), D("-0.01"), D("0.015"), D("-0.005")] * 10
+        res_var = vsp.compute_sortino_ratio(rets_var)
+        self.assertIsNotNone(res_var["sortino"])
+        self.assertFalse(res_var["zero_downside_deviation"])
+        self.assertFalse(res_var["sortino_infinite"])
+        self.assertFalse(res_var["insufficient_samples"])
+        self.assertGreater(res_var["downside_deviation"], D("0"))
+
+    def test_daily_equity_compounding_matches_base_net_exact(self):
+        """Sprint 04 Test 5: Verify bit-for-bit exact compounding between daily returns and cell base_net."""
+        jan = 1577836800000  # 2020-01-01T00:00:00Z
+        feb = int(datetime(2020, 2, 1, tzinfo=timezone.utc).timestamp() * 1000)
+        aug = int(datetime(2020, 8, 1, tzinfo=timezone.utc).timestamp() * 1000)
+        nov = int(datetime(2020, 11, 1, tzinfo=timezone.utc).timestamp() * 1000)
+
+        exact, signal = self._build_multimonth_synthetic_series("BTCUSDT", start_ms=jan, end_ms=nov)
+
+        res = vsp.run_two_arm_single_symbol(
+            signal=signal,
+            exact=exact,
+            warmup_start_ms=jan,
+            first_managed_ms=feb,
+            scored_start_ms=aug,
+            end_ms=nov,
+            policy=self.policy,
+        )
+
+        init_eq = D(self.policy["initial_equity_quote"])
+
+        with vsp.localcontext() as ctx:
+            ctx.prec = vsp.DECIMAL_PRECISION
+            # Arm A compounding check
+            daily_a = res["arm_a_control"]["daily_equities_base"]
+            self.assertGreater(len(daily_a), 30)
+            compounded_pnl_a = daily_a[-1] - init_eq
+            self.assertEqual(compounded_pnl_a, res["arm_a_control"]["base_net"])
+
+            # Arm B compounding check
+            daily_b = res["arm_b_scaled"]["daily_equities_base"]
+            self.assertGreater(len(daily_b), 30)
+            compounded_pnl_b = daily_b[-1] - init_eq
+            self.assertEqual(compounded_pnl_b, res["arm_b_scaled"]["base_net"])
+
+    def test_separate_and_aggregated_economic_metrics_suite_reporting(self):
+        """Sprint 04 Test 6: Separate BTC/ETH reporting and aggregated universe economic metrics suite."""
+        jan = 1577836800000
+        feb = int(datetime(2020, 2, 1, tzinfo=timezone.utc).timestamp() * 1000)
+        aug = int(datetime(2020, 8, 1, tzinfo=timezone.utc).timestamp() * 1000)
+        nov = int(datetime(2020, 11, 1, tzinfo=timezone.utc).timestamp() * 1000)
+
+        exact_btc, signal_btc = self._build_multimonth_synthetic_series("BTCUSDT", start_ms=jan, end_ms=nov)
+        exact_eth, signal_eth = self._build_multimonth_synthetic_series("ETHUSDT", start_ms=jan, end_ms=nov)
+
+        res_btc = vsp.run_two_arm_single_symbol(
+            signal=signal_btc,
+            exact=exact_btc,
+            warmup_start_ms=jan,
+            first_managed_ms=feb,
+            scored_start_ms=aug,
+            end_ms=nov,
+            policy=self.policy,
+        )
+        res_eth = vsp.run_two_arm_single_symbol(
+            signal=signal_eth,
+            exact=exact_eth,
+            warmup_start_ms=jan,
+            first_managed_ms=feb,
+            scored_start_ms=aug,
+            end_ms=nov,
+            policy=self.policy,
+        )
+
+        # Separate reporting checks
+        for s, r in (("BTCUSDT", res_btc), ("ETHUSDT", res_eth)):
+            self.assertEqual(r["symbol"], s)
+            self.assertIn("cash_benchmark", r["arm_a_control"])
+            self.assertIn("buy_and_hold_benchmark", r["arm_a_control"])
+            self.assertIn("sharpe_ratio_base", r["arm_a_control"])
+            self.assertIn("sortino_ratio_base", r["arm_a_control"])
+
+            self.assertIn("cash_benchmark", r["arm_b_scaled"])
+            self.assertIn("buy_and_hold_benchmark", r["arm_b_scaled"])
+            self.assertIn("sharpe_ratio_base", r["arm_b_scaled"])
+            self.assertIn("sortino_ratio_base", r["arm_b_scaled"])
+
+            self.assertIn("delta_sharpe_ratio_base", r["deltas"])
+            self.assertIn("delta_sortino_ratio_base", r["deltas"])
+            self.assertIn("delta_excess_net_vs_exposure_matched_bnh_base", r["deltas"])
+            self.assertIn("delta_excess_net_vs_cash_base", r["deltas"])
+
+        # Aggregate adjudication checks
+        protocol, _, _ = vsp.validate_protocol()
+        evals = {"BTCUSDT": res_btc, "ETHUSDT": res_eth}
+        adjudication = vsp.adjudicate_universe(evals, protocol)
+
+        self.assertIn("economic_metrics_suite", adjudication)
+        suite = adjudication["economic_metrics_suite"]
+
+        self.assertEqual(suite["engineering_status"], "IMPLEMENTATION_COMPLETE")
+        self.assertEqual(suite["annualization_parameters"]["annualization_days"], 365)
+        self.assertEqual(suite["annualization_parameters"]["frequency"], "1d_daily_utc")
+
+        # Confirm Cash benchmark aggregation
+        cash_suite = suite["cash_benchmark"]
+        self.assertEqual(cash_suite["initial_equity"], D("20000"))
+        self.assertEqual(cash_suite["final_equity"], D("20000"))
+        self.assertEqual(cash_suite["base_net"], D("0"))
+
+        # Confirm Buy & Hold benchmark aggregation
+        bnh_suite = suite["exposure_matched_buy_and_hold_benchmark"]
+        self.assertIsNotNone(bnh_suite["arm_a_exposure_matched_bnh_base_net"])
+        self.assertIsNotNone(bnh_suite["arm_b_exposure_matched_bnh_base_net"])
+
+        # Confirm periodic Sharpe & Sortino aggregate portfolio
+        self.assertIn("periodic_sharpe_ratio", suite)
+        self.assertIn("periodic_sortino_ratio", suite)
+
+        # Confirm per-symbol breakdown in suite
+        self.assertIn("BTCUSDT", suite["per_symbol_breakdown"])
+        self.assertIn("ETHUSDT", suite["per_symbol_breakdown"])
+
+        # In this synthetic run with 2 crossovers, completed trades < 30 per symbol,
+        # so fail-closed evaluation status is INSUFFICIENT_EVIDENCE
+        self.assertEqual(adjudication["status"], "INSUFFICIENT_EVIDENCE")
+        self.assertEqual(adjudication["proposal_count"], 0)
+        self.assertEqual(adjudication["implementation_readiness"], "READY_FOR_INDEPENDENT_REVIEW")
+        self.assertEqual(adjudication["economic_qualification"], "INSUFFICIENT_EVIDENCE")
+        self.assertIn("UNRESOLVED_EVALUATION_BLOCKER:cash_matched_benchmark", adjudication["blockers"])
+
+        # When all economic gates pass, presence of evaluation blockers forces BLOCKED (proposal_count=0)
+        evals_gates_pass = {
+            "BTCUSDT": self._make_eval_cell(trades=35, base_net=D(20), stress_net=D(10), dd=D("0.05")),
+            "ETHUSDT": self._make_eval_cell(trades=40, base_net=D(25), stress_net=D(12), dd=D("0.04")),
+        }
+        adj_blocked = vsp.adjudicate_universe(evals_gates_pass, protocol)
+        self.assertEqual(adj_blocked["status"], "BLOCKED")
+        self.assertEqual(adj_blocked["proposal_count"], 0)
+        self.assertEqual(adj_blocked["implementation_readiness"], "READY_FOR_INDEPENDENT_REVIEW")
+        self.assertEqual(adj_blocked["economic_qualification"], "BLOCKED")
+        self.assertEqual(len(adj_blocked["blockers"]), 4)
+
 
 if __name__ == "__main__":
     unittest.main()
+
+
