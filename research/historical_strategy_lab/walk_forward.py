@@ -45,7 +45,7 @@ from research.crisis_lab import acquisition as acq
 from research.crisis_lab import controls, replay
 
 
-IMPLEMENTATION_ID = "HSL-001-WALK-FORWARD/0.1.0"
+IMPLEMENTATION_ID = "HSL-001-WALK-FORWARD/0.1.1"
 SCHEMA_VERSION = "0.1.0"
 DEFAULT_PROTOCOL_PATH = Path(
     "docs/research/historical-strategy-lab/"
@@ -109,6 +109,13 @@ def _number(value: object, label: str) -> Decimal:
     if not result.is_finite():
         raise HSLImplementationError(f"{label} is not finite")
     return result
+
+
+def _sum_decimals(values: Sequence[Decimal]) -> Decimal:
+    """Sum accounting values at the same precision used by PortfolioLedger."""
+    with localcontext() as arithmetic:
+        arithmetic.prec = DECIMAL_PRECISION
+        return sum(values, Decimal(0))
 
 
 def load_protocol(
@@ -521,7 +528,7 @@ def _run_cell(
         maximum_drawdown_fraction,
     )
 
-    realized = sum(trade_pnls, Decimal(0))
+    realized = _sum_decimals(trade_pnls)
     if realized != final_snapshot.realized_pnl_quote:
         raise HSLImplementationError(
             "HSL closed-trade accounting disagrees with ledger"
@@ -529,8 +536,8 @@ def _run_cell(
 
     wins = [item for item in trade_pnls if item > 0]
     losses = [item for item in trade_pnls if item < 0]
-    gross_profit = sum(wins, Decimal(0))
-    gross_loss = -sum(losses, Decimal(0))
+    gross_profit = _sum_decimals(wins)
+    gross_loss = -_sum_decimals(losses)
     completed = len(trade_pnls)
     with localcontext() as arithmetic:
         arithmetic.prec = DECIMAL_PRECISION

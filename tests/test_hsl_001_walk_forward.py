@@ -1,6 +1,6 @@
 import inspect
 import unittest
-from decimal import Decimal
+from decimal import Decimal, localcontext
 from pathlib import Path
 
 from research.historical_strategy_lab import walk_forward as hsl
@@ -119,6 +119,22 @@ class HSL001WalkForwardTests(unittest.TestCase):
         self.assertIn("TOTAL_NET_PNL_NOT_POSITIVE", reasons)
         self.assertIn("EXPECTANCY_NOT_POSITIVE", reasons)
         self.assertIn("PROFIT_FACTOR_GATE_FAILED", reasons)
+
+    def test_trade_accounting_sum_uses_ledger_precision(self):
+        values = (
+            Decimal("1." + "1" * 80),
+            Decimal("2." + "2" * 80),
+        )
+        expected = Decimal("3." + "3" * 80)
+        with localcontext() as arithmetic:
+            arithmetic.prec = 28
+            rounded = sum(values, Decimal(0))
+        self.assertNotEqual(rounded, expected)
+        self.assertEqual(hsl._sum_decimals(values), expected)
+        self.assertEqual(
+            hsl.IMPLEMENTATION_ID,
+            "HSL-001-WALK-FORWARD/0.1.1",
+        )
 
     def test_profit_factor_handles_no_loss_without_nonfinite_json(self):
         value, infinite = hsl._profit_factor(
