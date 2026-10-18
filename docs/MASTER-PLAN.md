@@ -2790,3 +2790,63 @@ P11 قفل؛ PAPER/RESEARCH ONLY. شاخه RIE-006 و PR #152 دست‌نخور�
 - [ ] **Only if justified:** بررسی داده ریزمعاملات، Order Flow، Market Depth و Scanner؛ فعلاً هیچ خرید و deploy جدیدی.
 
 **مرز اختیار این اصلاح:** تنها مستندات ایده‌ها و ترتیب پژوهش تغییر می‌کنند؛ این ضمیمه دستور کار و مجوز مالی/اجرایی مستقل نیست. نه strategy code، نه backtest، نه VPS، نه candidate/gate P10 و نه کلید/قفل معاملات واقعی توسط ثبت این برنامه تغییر داده می‌شود.
+
+---
+
+## به‌روزرسانی ممیزی P10 و اولویت اجرایی — ۱۸ اکتبر ۲۰۲۶
+
+**وضعیت:** `P10-FORENSIC-20261018-001 = ROOT_CAUSE_IDENTIFIED / READ_ONLY / USER-SUPPLIED VPS EVIDENCE`؛ پیگیری علت اولیه `FAILURE_RECOVERY` در ضمیمه پژوهشی همین تاریخ از «نامشخص» به «شناسایی‌شده» تغییر می‌کند. این نتیجه، وضعیت اقتصادی P10 را PASS نمی‌کند و هیچ مجوز Reset، retune، معامله یا اجرای پژوهش حجیم نمی‌دهد.
+
+### ۱. منشأ شواهد و مرز اعتماد
+
+- منبع: خروجی ترمینال VPS ارائه‌شده توسط Director در گفت‌وگو، از اجرای واقعی `yatl.validation.cli summary` و `yatl.validation.cli export` روی داده اصلی P10 با **پردازش روی کپی موقت داده و محاسبه read-only**. گزارش export در مسیر موقت VPS باقی مانده بود؛ **نسخه کامل JSON در GitHub آپلود نشده و خروجی‌ها مستقلاً از VPS توسط این تغییر سند بازیابی نشده‌اند**.
+- اجرای Summary با `SUMMARY_READY` و `EXIT_CODE=0`، پایگاه/اسنپ‌شات آن: `database_snapshot_sha256=beaa5bfe8a5c0084bd1909475409ed9e0ad6d4295752324e6deff05ca2a35378`، `ingestion_snapshot_sha256=8048bd5d252adaedb67ceebd0a810d65336068e9e3a8f697042805d88af471eb` و `gate_sha256=39a86d6768882bd845582181773f8bc8293acb513b273b1865dfa6601b3cf18c`.
+- اجرای Export بعدی با `EXPORTED`، `EXPORT_EXIT_CODE=0`، `audit_sha256=77e1617d0b4ad60c1fe35a2fde731df8637366ac46ec938978b73c094a4e13f2`، `database_snapshot_sha256=2e592b74d837ab29e9b243d56d4656e41a2610b2fbe1790190b00625f07c506a` و `gate_sha256=ac8e09956ecacd6a62e50e4564f9448c2101d268e0e9ad1f8201408efa5e744f`.
+- **دو Snapshot متفاوت‌اند؛ نتیجه‌های Summary و Export را یک snapshot یکسان نخوانیم.** هیچ بازسازی مستقل این شواهد در این commit انجام نشده است.
+
+### ۲. یافته قطعی Gate-level
+
+| معیار/جزئیات | شاهد ثبت‌شده | تفسیر مجاز |
+|---|---|---|
+| `disposition` | `FAIL` | قاعده تقدم `FAIL > INSUFFICIENT_DATA > PASS_CANDIDATE` |
+| `FAILURE_RECOVERY` | `FAIL` | علت مستقیم FAIL کلی؛ دو recovery حل‌نشده |
+| `RISK_CONTROLS` | `PASS` | صفر نقض policy، صفر order endpoint، صفر AI-execution event |
+| `SAMPLE_SIZE` | `INSUFFICIENT_DATA` | ۹ معامله بسته‌شده / ۲۶٫۶۷ روز مشاهده در Summary؛ کمتر از ۶۰ pooled، ۲۰ per-symbol و ۹۰ روز |
+| `NET_PNL_AFTER_COSTS`, `MAX_DRAWDOWN`, `CONSISTENCY`, `REGIME_STABILITY` | همگی `INSUFFICIENT_DATA` | شکست اقتصادی قطعی با sample کامل اثبات نشده؛ PASS نیز اثبات نشده |
+| `kill_switch_latched_symbols` | `BTCUSDT`, `ETHUSDT` | هر دو در انتهای Replay قفل‌شده |
+| `unresolved_recovery_events` | `2` | سبب FAIL شدن FAILURE_RECOVERY |
+| خطاهای quality/reconciliation/safety | همگی `0` | اینها علت Fail نبوده‌اند |
+| ورود هنگام Kill Switch فعال | `0` | ممنوعیت ورود با قفل رعایت شده است |
+| سیگنال ورود مسدودشده | BTC=`2`، ETH=`0` | شمارنده‌های Replay از Export |
+
+معامله‌های بسته‌شده در Summary: BTC تعداد `5`، ETH تعداد `4`؛ بازده خالص تجمیعی `-0.000125292131091044199625714702663348619867110507068825` و سود/زیان خالص quote برابر `-2.5058426218208839925142940532669723973422101413765` بوده است. `profit_factor_after_costs ≈ 0.01436`، **صرفاً مشاهده مقدماتی، نه داوری نهایی پس از حداقل نمونه**.
+
+### ۳. زنجیره زیان متوالی و علت فعال‌سازی
+
+با خواندن بخش `economics.symbols[*].trades` از همان **گزارش Export با SHA ممیزی بالا**، Director توالی معاملات خروج را گزارش کرد:
+
+| نماد | زمان خروج UTC | Net PnL (quote USDT؛ گرد شده) | تعداد زیان متوالی بعد از خروج |
+|---|---|---:|---:|
+| BTCUSDT | 2026-10-03 21:00 | -0.452405 | 1 |
+| BTCUSDT | 2026-10-04 07:00 | +0.029978 | 0 |
+| BTCUSDT | 2026-10-05 13:00 | -0.614256 | 1 |
+| BTCUSDT | 2026-10-05 14:00 | -0.974503 | 2 |
+| BTCUSDT | 2026-10-06 00:00 | -0.439694 | **3** |
+| ETHUSDT | 2026-10-04 22:00 | +0.006535 | 0 |
+| ETHUSDT | 2026-10-05 13:00 | -0.022995 | 1 |
+| ETHUSDT | 2026-10-05 14:00 | -0.024738 | 2 |
+| ETHUSDT | 2026-10-06 16:00 | -0.013765 | **3** |
+
+در `yatl/validation/paper_runner.py`، `_RiskTracker.observe()` شمارنده متوالی را پس از معامله بسته‌شده منفی افزایش می‌دهد و وقتی `consecutive_losses >= RiskPolicy().max_consecutive_losses` شود Kill Switch را latch می‌کند؛ مسیر reset خودکار ندارد. ترتیب زمانی بالا، حد **۳ باخت متوالی در هر نماد** و وضعیت latched در Export با این سازوکار سازگار است. زمان‌های ردیف آخر **زمان خروج معامله** هستند؛ فعال‌شدن قفل در مشاهده بعدی Replay ممکن است ثبت شود. بدون trace کاملِ event-level، ادعای زمان دقیق transition فراتر از شواهد است.
+
+در `yatl/validation/gate.py`، `FAILURE_RECOVERY` برابر FAIL می‌شود اگر unresolved recovery باقی باشد؛ Report به‌صراحت `P10_005_HAS_NO_AUTO_RESET; ANY_LATCH_WITHOUT_ACCEPTED_CLEAR_AND_MANUAL_RESET_EVIDENCE_REMAINS_UNRESOLVED` می‌گوید. بنابراین علت مستقیم شناخته‌شده: **دو Kill Switch لاتچ‌شده ناشی از توالی زیان و بازیابی حل‌نشده، نه نقض Risk Controls یا خطای داده**. اگر قرار است وضعیت P10 عوض شود، فقط مطابق سیاست از پیش قفل‌شده و با اثبات clear observation و manual reset معتبر و ممیزی مستقل؛ reset به هدف رسیدن به ۶۰ معامله یا دستکاری نتیجه ممنوع است.
+
+### ۴. تصمیم ثبت‌شده، اثر و مسیر مجاز
+
+1. **P10 — Root cause closeout:** ممیزی علت اصلی FAIL در سطح گزارش انجام و ثبت شد. طبقه‌بندی عملیاتی `UNRESOLVED_KILL_SWITCH_RECOVERY`؛ طبقه‌بندی edge اقتصادی هنوز `INSUFFICIENT_EVIDENCE` است، نه `NO_EDGE` قطعی. P10 evidence و candidate/gates/window بدون تغییر نگه داشته شوند؛ collector و monitoring می‌توانند به شکل فعلی و مستقل، بدون دستکاری شواهد، ادامه دهند.
+2. **Recovery protocol review — read-only:** پیش از هر reset، بررسی شود که P10 منجمد چه نوع reset/clear را اصولاً می‌تواند در زنجیره immutable شواهد ثبت و در Replay بازتولید کند. اگر سازوکار قابل‌قبول موجود نیست، failure را صریح نگه داریم و برای نسل بعدی پروتکل جداگانه preregister کنیم. نه auto-reset و نه reset دستی غیرقابل بازتولید مجاز است.
+3. **MCF-PROD-001 — قدم مهندسی بعدی مطابق مسترپلن و آخرین مدارک GitHub:** membership تاریخی ۳۴ ماه/۱۷۵ نماد و datasetهای `525` روی VPS در پرونده RUNTIME-INPUT ثبت و پذیرفته شده‌اند. ۶٬۸۵۲ کاندید منجمد هستند. در **پنج حادثه OOM متمایز**، حتی پس از Process Isolation، کاندید نهم `MCF-PROD-001-004784` روی VPS حدود ۴GiB به سقف حافظه برخورد کرده؛ تازه‌ترین مورد در `feature_signal_compilation` بوده است. تغییر مهندسی `PR #178` با عنوان `bound feature-signal compilation memory with exact semantics` روی main ادغام شده و **فقط شواهد Synthetic** دارد. قبل از هر اجرای واقعی تازه، بازبینی شواهد #178، تطبیق code identity، ظرفیت و پروتکل no-performance refreeze و **مجوز صریح جداگانه Director برای diagnostic تک‌کاندیدی محدود** لازم است؛ نتیجه قبلی پنج OOM با موفقیت synthetic پاک نمی‌شود.
+4. **هیچ اجرای دسته‌ای جدید مجاز نیست:** Retry خودکار ۲۴ کاندید benchmark، اجرا یا رتبه‌بندی ۶٬۸۵۲ کاندید، بازکردن Fresh OOS/recent reserve و تغییر/دستکاری P10 ممنوع است. در صورت موفقیت diagnostic محدود، برنامه bounded/sharded/worker-process، checkpoints و محافظت از OOM با پروتکل و مجوز تازه طراحی شود؛ در صورت شکست همان مرز داده/ظرفیت ثبت شود.
+5. **EDGE-001 و سایر ایده‌های ویدیوها:** در backlog باقی می‌مانند؛ Price-only در برابر Price+Volume فقط پس از audit قابلیت موجود و preregistration مستقل، با Development مجاز. هیچ ایده جدید یا تغییر P10 به‌سبب این ممیزی پیاده‌سازی یا اجرا نشده است.
+
+**Safety/authority:** `PAPER/RESEARCH ONLY`; `LIVE_MASTER_LOCK=OFF`; `P11 LOCKED`; `NO FUTURES/SHORT/LEVERAGE`; `NO ORDER ENDPOINT`; `NO AI DIRECT EXECUTION`; sealed Fresh OOS و recent reserve نخوانده؛ `P10 READ/WRITE=false` برای تحقیقات دیگر. **این به‌روزرسانی صرفاً سند است؛ نه اجرای سرور، نه reset، نه تغییر استراتژی، نه تأیید اقتصادی.**
