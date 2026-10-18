@@ -2699,3 +2699,94 @@ recent reserve بسته و نخوانده؛ P10 read/write=false؛ LIVE_MASTER_L
 P11 قفل؛ PAPER/RESEARCH ONLY. شاخه RIE-006 و PR #152 دست‌نخورده می‌مانند.
 قرارداد و دستور VPS در
 `docs/research/alpha-factory/MCF-PROD-001-RUNTIME-INPUT-CONTRACT-v1.0.md` ثبت شده است.
+
+
+---
+
+## ضمیمه پژوهشی ۲۰۲۶-۱۰-۱۸ — جمع‌بندی نیازهای واقعی و ایده‌های قابل‌آزمایش YATL
+
+**وضعیت: PROPOSED RESEARCH INTAKE / NOT ECONOMICALLY CERTIFIED / NO EXECUTION AUTHORITY**
+
+منشأ: گفت‌وگو و ویدیوهای ارسالی کاربر درباره SAGE scanner، Price Action، VWAP، Volume Profile، Footprint، Delta، Big Trade، Sweep، Absorption، Order Book/Heatmap، ریسک اسکالپ، اخبار اقتصادی، و اتصال MCP/MoonPay. این ویدیوها «ایده پژوهشی» هستند؛ نمودارهای انتخاب‌شده، مثال‌های تبلیغاتی، تعداد اسکن و سخن مدرس به‌هیچ‌وجه شواهد مزیت معاملاتی یا نتایج مستقل قابل‌تکرار نیستند. این ضمیمه status فازهای قبلی را supersede نمی‌کند و هیچ آزمایش یا کدی را خودبه‌خود مجاز نمی‌کند.
+
+### ۱. اصول لازم، نه قابلیت‌های تجملی
+
+- هدف نهایی: یک یا چند edge دارای **Net PnL مثبت بعد از هزینه‌ها، روی داده واقعاً ندیده**، با sample کافی، drawdown، failure/recovery، consistency و regime stability قابل قبول. **Profitability > Complexity** و **Evidence > Number of Signals**.
+- اول مدل ساده، بعد داده پیچیده. برای هر ویژگی جدید باید با baseline بدون ویژگی و CASH/Buy-and-Hold و هزینه واقعی مقایسه incremental / ablation انجام شود. افزودن همه اندیکاتورها به یک strategy، راه اثبات edge نیست.
+- فقط Spot، Long-only، Paper/Research؛ هیچ Short/Futures/Margin/Leverage، هیچ live order endpoint، برداشت، AI direct execution یا اختیار انتقال وجه. وضعیت P10 بدون هیچ تغییر در candidate/gates/window/collector ادامه می‌یابد؛ P11 و LIVE_MASTER_LOCK قفل باقی می‌مانند.
+- Fresh OOS، recent reserve و داده‌های آینده‌نگر P10 برای انتخاب استراتژی، تنظیم threshold یا جبران شکست candidate مجاز نیستند. داده و منطق باید point-in-time، بدون lookahead یا انتخاب حمایت/سقف پس از دیدن برگشت قیمت باشند.
+- استفاده دوباره از معماری پذیرفته‌شده P1/P2/P3/P4/P6/P7/P8/Alpha Factory، به‌جای ساخت مجدد data layer، backtester، risk manager و dashboard. وضعیت واقعی پیاده‌سازی هر مورد قبل از شروع تأیید شود.
+- هر hypothesis جدید: ID مستقل، registration پیش از دیدن outcome، trial ledger، سیاست هزینه و گیت کافی‌بودن نمونه. طبقه‌بندی failure مطابق [Blind-Spot & Conditional-Edge Governance](research/alpha-factory/BLIND-SPOT-AND-CONDITIONAL-EDGE-GOVERNANCE-v1.0.md)؛ FAIL الزاماً به معنی NO_EDGE نیست، اما مجوز retuning همان candidate روی همان evidence نیز نیست.
+
+### ۲. اقدام نخست: ممیزی P10 FAIL به‌صورت فقط‌خواندنی
+
+کاربر ده پیام Telegram ارائه کرد که در واقع **پنج نوبت گزارش برای دو نماد** بودند، نه ده معامله متفاوت. در همه آنها BTCUSDT برابر ۵ معامله بسته‌شده Paper و بازده اعشاری خالص حدود -0.00024508793508 و ETHUSDT برابر ۴ معامله و بازده حدود -0.00000549632710 بوده است. هر دو نماد disposition برابر FAIL، pooled sample برابر INSUFFICIENT_DATA، evidence برابر INSUFFICIENT_EVIDENCE و P11 قفل گزارش شده‌اند؛ اعداد در نوبت‌های متوالی ثابت مانده‌اند.
+
+طبق [P10 Implementation Plan](P10-IMPLEMENTATION-PLAN.md)، عدم کفایت ۹۰ روز/۶۰ معامله pooled/۲۰ معامله هر نماد به‌تنهایی نباید FAIL بسازد؛ Safety/Risk/Failure-Recovery و Gateهای مستقل می‌توانند فوراً Fail شوند. بنابراین علت مشخص FAIL را **نباید از روی بازده منفی حدس زد**.
+
+- نخست gate-level breakdown را از status/summary مستندِ فقط‌خواندنی و شواهد Risk Manager بررسی کن: علت Gate، Kill Switch latch، clear observation و manual reset، داده/quality/reconciliation و عدم افزایش completed trades.
+- هیچ تغییر P10، reset دستی بدون مدارک معتبر، تغییر stop، retune یا اجرای سفارش برای رفع FAIL مجاز نیست.
+- در صورت نیاز به بهبود Telegram/monitor، تفکیک «status تکراری»، «تغییر واقعی status» و «runtime crash» با نمایش علت gate انجام شود؛ خروجی اصلی P10 تغییر نکند. هشدار import مربوط به runpy به‌تنهایی اثبات خرابی نیست.
+- P10 همان حدود/شروط منجمد از جمله حداقل ۹۰ روز، ۶۰ pooled، ۲۰ per-symbol، net return حداقل +۲٪ و PF حداقل ۱٫۱۰ را حفظ می‌کند. مانیتورینگ و engineering acceptance به معنای Economic PASS نیستند.
+
+### ۳. دسته‌بندی ایده‌ها و نیازهای بالقوه، با حذف همپوشانی
+
+| خانواده | نکته‌های جمع‌آوری‌شده | نیاز واقعی و محدودیت |
+|---|---|---|
+| **Price Structure** | حمایت/مقاومت، شکست ناموفق، Reclaim، Retest، واکنش ناحیه، Seller Trap، repeated tests | اولین گروه کم‌هزینه. سطح، شکست، اعتبار و پایان عمر سطح باید پیش از مشاهده حرکت بعدی قابل محاسبه باشد. |
+| **Daily / Time Context** | جهت کندل روز قبل، محدودیت session، جلوگیری از Overtrading | پژوهش مجزا با کندل بسته و timezone معلوم؛ ادعای «دو ساعت حداکثر اسکالپ انسانی» قانون خودکار ربات نیست. سیگنال نزولی در سیستم Long-only فقط می‌تواند NO_TRADE باشد. |
+| **VWAP / Volume** | Session VWAP، Anchored VWAP، Relative Volume، Volume Concentration، Volume Profile/HVN، Volume-based Support/Resistance، عمر/کیفیت ناحیه | باید نسبت به Price-only مزیت افزایشی ایجاد کنند؛ Anchoring باید point-in-time باشد. Volume-at-Price دقیق با OHLCV کندلی قابل بازسازی نیست. |
+| **Order Flow / Trades** | Footprint، Taker Buy/Sell، Delta/CVD، Big Trade، Sweep، Buy/Sell Absorption، Failed Auction، Trapped Traders | یک خانواده واحد Microstructure، نه چند strategy مستقل. Delta مثبت یا معامله بزرگ جهت آینده را تضمین نمی‌کند؛ نیت معامله‌گر از نمودار اثبات نمی‌شود. |
+| **Market Depth** | DOM، Liquidity Heatmap، Order Book Imbalance، Consumption، Cancellation، Replenishment | نیازمند sequence و event-time صحیح؛ داده عمومی Spot همه سفارش‌های پنهان، order identity یا Level-3 واقعی را آشکار نمی‌کند. |
+| **Macro Event / Risk** | CPI، FOMC، NFP، GDP؛ actual-consensus surprise، volatility/spread before/after release | اول سنجش event-risk filter و missed opportunity، سپس تنها با evidence کافی جهت‌یابی. Vintage، consensus واقعاً منتشرشده و زمان دقیق انتشار لازم‌اند؛ UK GDP/GBPUSD قابل تعمیم خودکار به BTC/ETH نیست. |
+| **Scanner (SAGE-like)** | اسکن نمادها، WATCH/PRACTICE، reason-for-reject، نمایش وضعیت لحظه‌ای | ابزار کشف فرصت و گزارش‌دهی است؛ شمار اسکن/رد/۰ LIVE مزیت اقتصادی نیست. از Alpha Factory و gateهای موجود شروع شود. |
+| **AI / MCP** | دستیار read-only برای سؤال از شواهد، P10 status، journal و دلیل رد معاملات | اختیاری و فقط پس از audit دسترسی. MoonPay buy/swap/transfer و هر ابزار اجرای مالی/انتقال وجه برای YATL ممنوع؛ MCP خودش alpha نیست. |
+| **Risk and Execution** | حد ضرر معتبر، ریسک تجمیعی Scale-in، ممنوعیت Martingale زیان، سقف زیان جلسه، Kill Switch، slippage | نیاز ایمنی است، نه سیگنال سود. پوشش فعلی P4/P5 ابتدا ممیزی شود؛ هیچ سیگنال Big Trade مجوز افزایش حجم، حذف Stop یا عبور از Kill Switch نیست. |
+
+**ادغام پژوهشی:** Delta، Footprint، Sweep، Big Trade، Absorption، Volume Zones و Seller Trap غالباً ابعاد مرتبط یک رفتار هستند. نباید بدون ablation یا independence test هریک را edge مستقل شمرد. مقایسه اصلی: **Price-only → Price+Volume → Price+Microstructure** همراه با هزینه و فرصت ازدست‌رفته.
+
+### ۴. اولین آزمایش حداقلی پیشنهادی: EDGE-001
+
+**نام پژوهشی پیشنهادی:** Failed Breakdown & Reclaim، با دو نسخه A/B. **وضعیت: IDEA / AUDIT-AND-PREREG REQUIRED**؛ ID نهایی باید با registry نامزدها و سایر طرح‌های موجود تطبیق داده شود. این ضمیمه اجازه اجرای اقتصادی نمی‌دهد.
+
+1. ابتدا ممیزی کد و داده Development مجاز، scope/risk/fee/exit policy و تطبیق با Alpha Factory. بدون خواندن sealed OOS، recent reserve یا داده‌های P10. اگر داده در دسترس نیست، DATA_BLOCKED و توقف.
+2. پروتکل جدید و immutable پیش از outcome: تعریف سطح حمایت با کندل‌های بسته، شکست ناموفق، شرایط reclaim، پنجره اعتبار، حد ضرر، هدف/خروج، وضعیت عدم معامله، تعداد معاملات نمونه، baseline، رجیستر trial و failure criteria.
+3. **A — Price-only:** ورود Long صرفاً بعد از تأیید بسته‌شدن و طبق next-allowed execution؛ هیچ انتخاب کفِ نهایی یا fill فرضی پیش از لحظه تشخیص مجاز نیست.
+4. **B — Price + Relative Volume:** همان منطق A با یک شرط حجم مشخص و ازپیش‌ثبت‌شده. VWAP، Macro، Delta یا AI به‌طور هم‌زمان افزوده نشوند.
+5. ابتدا BTCUSDT/ETHUSDT روی Development مجاز 1H با 4H/15m تنها در صورت امکان point-in-time و نیاز اثبات‌شده. در هر run داده/کد/پارامتر/نتیجه digest و تعداد trials ثبت شود.
+6. هزینه به‌صورت costed fills از موتور موجود. فرض مرجع P10 برابر ۱۰ bps fee و ۵ bps slippage نامطلوب **در هر سمت** (حدود ۳۰ bps برای round trip) است؛ برای پروتکل جدید سیاست و سناریوهای حساسیت هزینه باید مستقل ثبت شوند، نه بی‌توجه به spread/latency.
+7. گزارش: completed trades، net PnL و net expectancy، PF، max drawdown، turnover، cost share، regime stability، opportunity starvation، missed opportunities، baseline/CASH/Buy-and-Hold و ablation نتیجه B نسبت به A.
+8. اگر نه A و نه B ارزش خالص و شواهد کافی نداشتند، ثبت mechanism و توقف؛ افزودن ابزارهای پیچیده صرفاً برای زیبا کردن بک‌تست ممنوع.
+
+### ۵. صف تحقیقاتی پس از پایلوت؛ مشروط، نه خودکار
+
+- **Low-cost candidate comparisons:** جهت کندل بسته روز قبل، Session VWAP، Anchored VWAP با anchor از پیش قابل شناسایی، Level Retest/Zone Freshness. هر ایده جداگانه در برابر baseline ثابت، با trial accounting؛ نه ترکیب هم‌زمان و نامحدود.
+- **Macro event filter:** بدون فیلتر در برابر فیلتر زمان رویداد از پیش اعلام‌شده و فیلتر نوسان قابل مشاهده؛ opportunity cost و delay بررسی شود. نتیجه خبر/actual در تصمیم *قبل از اعلام* قابل استفاده نیست.
+- **Microstructure feasibility قبل از خرید ابزار:** ممیزی اینکه داده کنونی چه چیزهایی ذخیره می‌کند؛ اگر ارزش پژوهشی داشت، پایلوت کم‌حجم با public Spot trade/aggTrade/depth برای BTC/ETH و time sync، sequence، gap/reconnect، storage size، latency و aggressor-side. فرض «L3 کامل» یا انتساب معامله‌ها به یک معامله‌گر مجاز نیست.
+- **Microstructure feature tests:** Trade-size percentile، signed taker volume / Delta، impact / follow-through / reversal، imbalance و جذب احتمالی همراه با price response. ابتدا آزمون توصیفی و قدرت پیش‌بینی قابل تکرار، بعد فقط با هزینه/latency واقع‌بینانه آزمایش ورود/خروج.
+- **Optional downstream scanner:** پس از qualification اقتصادی، اسکن چندنمادی و داشبورد دلایل رد و حالت Watch/Shadow/Paper با مرز دسترسی روشن؛ از زیرساخت موجود استفاده شود.
+- **Optional read-only MCP:** ابزارهای allowlisted و sanitized برای پاسخ «چرا Gate شکست خورد؟»، «کدام آزمایش بهتر از baseline بود؟» و «شواهد کجا هستند؟». AI هیچ trade/transfer/withdrawal/risk reset/retune یا write authority ندارد.
+
+### ۶. استاندارد داده، آزمون و جلوگیری از خودفریبی
+
+- تمام candidateها preregistered، point-in-time، با snapshot/manifest/hash و strict no-peek هستند. روز معاملاتی و timezone، کندل باز/بسته، signal time، fill time و delay صریح باشد.
+- Historical microstructure از OHLCV قابل جعل یا بازسازی دقیق نیست. اگر داده tick/depth معتبر و قابل تکرار موجود نیست، همان بخش DATA_BLOCKED بماند؛ هیچ ادعای backtest دقیق Footprint بر اساس کندل نکنیم.
+- مقایسه‌های A/B/C باید روی نمونه یکسان، هزینه و شرایط قابل مقایسه، با امکان confidence interval/uncertainty و correction مناسب برای multiple testing باشند. یک نمودار موفق یا R² تاریخی به معنی درصد موفقیت معاملاتی نیست.
+- کنترل رژیم و فیلترها باید false activation/deactivation، delay، opportunity cost و loss-before-shutdown را نشان دهند؛ «معامله‌نکردن» نباید به‌صورت مصنوعی معیار موفقیت شود.
+- نتایج با وضعیت‌های **ENGINEERING_PASS، ECONOMIC_PASS، FORWARD_PASS و LIVE_AUTHORIZED** خلط نشوند. تنها واجد شرایط شدن تحقیق بعدی مجاز است؛ Live نیازمند فرآیند جداگانه P11 است.
+- برای ظرفیت، اول tiny/focused tests و bounded development runtime. سند [MCF Capacity Benchmark](research/alpha-factory/MCF-PROD-001-CAPACITY-BENCHMARK-GATE-v1.0.md) چند OOM واقعی VPS و remediation را ثبت می‌کند؛ ۶٬۸۵۲ نامزد، benchmark نامجاز، tick/depth جمع‌آوری حجیم یا ارتقای سرور با این ضمیمه مجاز نمی‌شود.
+- Cost discipline: اول Python/SQLite/GitHub/VPS موجود و public market data. اشتراک، دیتای پولی، API، Cloud، ابزار Footprint یا MoonPay فعلاً ضروری نیست. خرید فقط بعد از بررسی ارزان‌ترین گزینه، renewal/hidden fees، ۳ جایگزین و ارزش افزوده اقتصادی.
+- گزارش استاندارد: hypothesis/candidate ID و commit، hashes/provenance، sample و folds، تعداد آزمایش‌ها، بازده خالص با هزینه، baseline/ablation، rejection reason، risks، next gate و اثبات untouched بودن P10/P11.
+
+### ۷. چک‌لیست اجرایی و مرز مجوزها
+
+- [x] **Document only:** خلاصه نیازهای واقعی این گفت‌وگو و taxonomy آزمایش‌ها به Master Plan افزوده شد؛ هیچ ادعای edge معتبر ایجاد نشده است.
+- [ ] **P10 forensic / read-only:** پیدا کردن علت دقیق gate FAIL، بررسی وضعیت Kill Switch و ثابت‌ماندن معاملات و صحت اعلان‌ها؛ هیچ تغییر شواهد و lock.
+- [ ] **Existing capabilities and data audit:** مشخص شود Alpha Factory، backtester، schema حجم و sourceهای historical واقعاً چه چیزهایی دارند.
+- [ ] **Preregister EDGE-001:** ابتدا فقط A/B و قوانین ثابت روی شاخه تحقیق مستقل، با گیت مجوز مربوطه و بدون بازکردن OOS.
+- [ ] **Focused implementation + bounded Development:** فقط بعد از انطباق audit، تست‌های کوچک و مجاز؛ گزارش اقتصادی تنها بعد از عبور از gate.
+- [ ] **Evidence review:** qualified for next research / rejected with mechanism / insufficient evidence / data or capacity blocked؛ بدون rescue tuning.
+- [ ] **Separate authorization for Fresh OOS and Forward Paper:** پس از نتایج مستقل و مجوز جداگانه. Candidate/gates P10 جاری immutable؛ P11 همچنان locked.
+- [ ] **Only if justified:** بررسی داده ریزمعاملات، Order Flow، Market Depth و Scanner؛ فعلاً هیچ خرید و deploy جدیدی.
+
+**مرز اختیار این اصلاح:** تنها مستندات ایده‌ها و ترتیب پژوهش تغییر می‌کنند؛ این ضمیمه دستور کار و مجوز مالی/اجرایی مستقل نیست. نه strategy code، نه backtest، نه VPS، نه candidate/gate P10 و نه کلید/قفل معاملات واقعی توسط ثبت این برنامه تغییر داده می‌شود.
