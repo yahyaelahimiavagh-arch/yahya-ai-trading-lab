@@ -169,6 +169,56 @@ class SignalMemoryTest(unittest.TestCase):
         self.compare_sequence([('SESSION_TIME_EFFECT', {'return_lookback':1,
             'return_threshold':'0','session_start_utc':0,'session_length_hours':4})], '15m')
 
+    def test_compact_bars_preserve_all_families_complete_results(self):
+        from array import array
+
+        numeric_fields = (
+            "opens", "highs", "lows", "closes",
+            "base_volume", "quote_volume", "trade_count",
+        )
+
+        for timeframe in ("15m", "1h", "4h"):
+            original, bound = fixture(timeframe)
+
+            compact = {
+                symbol: replace(
+                    bars,
+                    times=array("q", bars.times),
+                    **{
+                        name: array("d", getattr(bars, name))
+                        for name in numeric_fields
+                    },
+                )
+                for symbol, bars in original.items()
+            }
+
+            for family, params in FAMILIES.items():
+                with self.subTest(timeframe=timeframe, family=family):
+                    freeze = frozen_fixture([(family, params)], timeframe)
+                    candidate_id = freeze["executable"][0]["candidate_id"]
+
+                    old_runtime = runtime(
+                        runtime_module.ProductionRuntime,
+                        freeze, original, bound,
+                    )
+                    new_runtime = runtime(
+                        runtime_module.ProductionRuntime,
+                        freeze, compact, bound,
+                    )
+
+                    expected = canonical(
+                        old_runtime.run(
+                            candidate_id, director_authorized=True
+                        )
+                    )
+                    actual = canonical(
+                        new_runtime.run(
+                            candidate_id, director_authorized=True
+                        )
+                    )
+
+                    self.assertEqual(actual, expected)
+
     def test_multi_symbol_peak_and_retention_regression(self):
         root=Path(__file__).resolve().parents[1]
         env={**os.environ,'PYTHONPATH':str(root/'tests')+os.pathsep+str(root)}

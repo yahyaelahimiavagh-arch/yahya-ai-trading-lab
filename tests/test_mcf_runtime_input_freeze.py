@@ -152,6 +152,343 @@ class RuntimeInputFreezeTest(unittest.TestCase):
         for symbol, item in matrix.items():
             self.assertEqual(item, reader.load(symbol, '4h'))
 
+    def test_compact_runtime_columns_preserve_exact_values(self):
+        from array import array
+        from dataclasses import replace
+        from research.mass_candidate_factory.production_features import (
+            ProductionFeatureCache,
+        )
+
+        reader = self.reader()
+        symbol = self.membership["selected_union_symbols"][0]
+
+        for timeframe in ("15m", "1h", "4h"):
+            with self.subTest(timeframe=timeframe):
+                packed = reader.load(symbol, timeframe)
+                rows = runner.read_dataset(
+                    self.output, reader._rows[(symbol, timeframe)]
+                )
+
+                self.assertIsInstance(packed.times, array)
+                self.assertEqual(packed.times.typecode, "q")
+                self.assertEqual(
+                    tuple(packed.times),
+                    tuple(x.open_time_ms for x in rows),
+                )
+
+                fields = (
+                    ("opens", 1), ("highs", 2),
+                    ("lows", 3), ("closes", 4),
+                    ("base_volume", 5), ("quote_volume", 7),
+                    ("trade_count", 8),
+                )
+                legacy_fields = {}
+                for name, index in fields:
+                    values = getattr(packed, name)
+                    self.assertIsInstance(values, array)
+                    self.assertEqual(values.typecode, "d")
+                    expected = tuple(float(x.values[index]) for x in rows)
+                    self.assertEqual(tuple(values), expected)
+                    legacy_fields[name] = expected
+
+                legacy = replace(
+                    packed,
+                    times=tuple(packed.times),
+                    **legacy_fields,
+                )
+
+                self.assertEqual(
+                    ProductionFeatureCache(packed).rolling(
+                        "closes", 2, lag=0
+                    ),
+                    ProductionFeatureCache(legacy).rolling(
+                        "closes", 2, lag=0
+                    ),
+                )
+
+    def test_research_streaming_reader_matches_frozen_bars(self):
+        from research.mass_candidate_factory.production_streaming_loader import (
+            load_streaming_bars,
+        )
+
+        reader = self.reader()
+        symbol = self.membership["selected_union_symbols"][0]
+
+        for timeframe in ("15m", "1h", "4h"):
+            with self.subTest(timeframe=timeframe):
+                row = reader._rows[(symbol, timeframe)]
+                expected = reader.load(symbol, timeframe)
+                actual = load_streaming_bars(self.output, row)
+                self.assertEqual(actual, expected)
+
+    def test_research_streaming_reader_rejects_modified_csv_and_gap(self):
+        from research.mass_candidate_factory.production_streaming_loader import (
+            load_streaming_bars,
+        )
+
+        self.make_index()
+        row = self.index["datasets"][0]
+
+        for field in ("data_ref", "gap_ref"):
+            with self.subTest(field=field):
+                path = self.output / row[field]
+                original = path.read_bytes()
+                try:
+                    path.write_bytes(original + b"tampered")
+                    with self.assertRaises((MCFError, OpportunityError)):
+                        load_streaming_bars(self.output, row)
+                finally:
+                    path.write_bytes(original)
+
+    def test_streaming_rejects_rehashed_chunk_boundary_corruption(self):
+        from research.crisis_lab.acquisition import _canonical_csv
+        from research.opportunity_data.models import sha256
+        from research.mass_candidate_factory import (
+            production_streaming_loader as stream,
+        )
+
+        boundary_index = stream.CHUNK_SIZE
+        originals = [
+            candle(DEVELOPMENT_START_MS + i * 900_000)
+            for i in range(boundary_index + 4)
+        ]
+
+        row = data.materialize_symbol(
+            self.output, "ASSET00USDT", tuple(originals), []
+        )[0]
+
+        self.assertEqual(
+            len(stream.load_streaming_bars(self.output, row).times),
+            boundary_index + 4,
+        )
+
+        boundary = originals[boundary_index]
+
+        def modified_column(index, value):
+            fields = list(boundary.values)
+            fields[index] = str(value)
+            return CanonicalRow(tuple(fields))
+
+        cases = {
+            "duplicate_boundary": originals[boundary_index - 1],
+            "backward_boundary": originals[boundary_index - 2],
+            "unaligned_timestamp": candle(
+                boundary.open_time_ms + 1
+            ),
+            "negative_price": modified_column(1, "-1"),
+            "negative_volume": modified_column(5, "-1"),
+            "invalid_close_time": modified_column(
+                6, int(boundary.values[6]) + 1
+            ),
+        }
+
+        for label, invalid in cases.items():
+            with self.subTest(case=label):
+                rows = list(originals)
+                rows[boundary_index] = invalid
+
+                raw = _canonical_csv(rows)
+                relative = (
+                    "runtime-data/"
+                    f"synthetic-invalid-{label}.csv"
+                )
+
+                (self.output / relative).write_bytes(raw)
+
+                changed = {
+                    **row,
+                    "data_ref": relative,
+                    "content_sha256": sha256(raw),
+                }
+
+                with patch.object(
+                    stream,
+                    "read_json",
+                    side_effect=AssertionError(
+                        "invalid CSV reached gap validation"
+                    ),
+                ):
+                    with self.assertRaises(
+                        (MCFError, OpportunityError)
+                    ):
+                        stream.load_streaming_bars(
+                            self.output, changed
+                        )
+
+    def test_streaming_rejects_corrupt_csv_and_forged_gap(self):
+        from research.opportunity_data.models import sha256
+        from research.mass_candidate_factory.production_streaming_loader import (
+            load_streaming_bars,
+        )
+
+        self.make_index(missing=(2,))
+        row = self.index["datasets"][0]
+
+        original = (
+            self.output / row["data_ref"]
+        ).read_bytes()
+
+        cases = {
+            "invalid_utf8": original + b"\xff",
+            "wrong_columns": original + b"1,2,3\n",
+            "noncanonical_crlf": original.replace(
+                b"\n", b"\r\n", 1
+            ),
+            "unnecessary_quotes": original.replace(
+                b",100,102,", b',"100",102,', 1
+            ),
+            "wrong_sha": original,
+        }
+
+        for label, contents in cases.items():
+            with self.subTest(case=label):
+                if label != "wrong_sha":
+                    self.assertNotEqual(
+                        contents, original,
+                        "corruption fixture was unchanged",
+                    )
+                relative = (
+                    f"runtime-data/synthetic-corrupt-{label}.csv"
+                )
+                (self.output / relative).write_bytes(contents)
+
+                changed = {
+                    **row,
+                    "data_ref": relative,
+                    "content_sha256": (
+                        "0" * 64 if label == "wrong_sha"
+                        else sha256(contents)
+                    ),
+                }
+
+                with self.assertRaises(
+                    (MCFError, OpportunityError)
+                ):
+                    load_streaming_bars(self.output, changed)
+
+        gap, _ = data.read_json(
+            self.output, row["gap_ref"]
+        )
+        forged = copy.deepcopy(gap)
+        forged["missing_ranges"] = []
+        forged["gap_count"] = 0
+
+        payload = canonical(forged)
+        relative = "runtime-data/synthetic-forged-gap.json"
+        (self.output / relative).write_bytes(payload)
+
+        changed = {
+            **row,
+            "gap_ref": relative,
+            "gap_sha256": sha256(payload),
+            "gap_count": 0,
+            "validity": "PASS_CONTIGUOUS",
+        }
+
+        with self.assertRaises(MCFError):
+            load_streaming_bars(self.output, changed)
+
+    def test_streaming_digest_precedes_malformed_csv(self):
+        from research.mass_candidate_factory.production_streaming_loader import (
+            load_streaming_bars,
+        )
+
+        self.make_index()
+        row = self.index["datasets"][0]
+
+        original = (
+            self.output / row["data_ref"]
+        ).read_bytes()
+
+        corrupted = original + b"invalid,row\n"
+        assert corrupted != original
+
+        relative = "runtime-data/synthetic-digest-first.csv"
+        (self.output / relative).write_bytes(corrupted)
+
+        changed = {
+            **row,
+            "data_ref": relative,
+        }
+
+        for loader in (
+            runner.read_dataset,
+            load_streaming_bars,
+        ):
+            with self.subTest(loader=loader.__name__):
+                with self.assertRaises(OpportunityError):
+                    loader(self.output, changed)
+
+    def test_streaming_digest_contract_and_code_identity(self):
+        from research.mass_candidate_factory.production_streaming_loader import (
+            load_streaming_bars,
+        )
+        from research.opportunity_data.models import OpportunityError, sha256
+
+        code_path = (
+            "research/mass_candidate_factory/"
+            "production_streaming_loader.py"
+        )
+
+        self.assertIn(code_path, runner.CODE_PATHS)
+        self.assertEqual(
+            runner.code_identity()[code_path],
+            sha256((runner.ROOT / code_path).read_bytes()),
+        )
+
+        self.make_index()
+        row = self.index["datasets"][0]
+
+        relative = "runtime-data/synthetic-wrong-digest.csv"
+        (self.output / relative).write_bytes(
+            (self.output / row["data_ref"]).read_bytes()
+        )
+
+        changed = {
+            **row,
+            "data_ref": relative,
+            "content_sha256": "0" * 64,
+        }
+
+        for loader in (runner.read_dataset, load_streaming_bars):
+            with self.subTest(loader=loader.__name__):
+                with self.assertRaises(OpportunityError):
+                    loader(self.output, changed)
+
+    def test_integrated_frozen_loader_uses_streaming(self):
+        from array import array
+
+        reader = self.reader()
+        symbol = self.membership["selected_union_symbols"][0]
+
+        for timeframe in ("15m", "1h", "4h"):
+            with self.subTest(timeframe=timeframe):
+                row = reader._rows[(symbol, timeframe)]
+
+                with patch.object(
+                    runner,
+                    "read_dataset",
+                    side_effect=AssertionError(
+                        "legacy CSV materialization was called"
+                    ),
+                ):
+                    result = reader.load(symbol, timeframe)
+
+                self.assertIsInstance(result.times, array)
+                self.assertEqual(
+                    len(result.times), row["row_count"]
+                )
+
+                original = runner.read_dataset(self.output, row)
+                self.assertEqual(
+                    tuple(result.times),
+                    tuple(x.open_time_ms for x in original),
+                )
+                self.assertEqual(
+                    tuple(result.closes),
+                    tuple(float(x.values[4]) for x in original),
+                )
+
     def test_previous_code_identity_cannot_admit_after_remediation(self):
         result = self.freeze()
         path = self.output / result['artifact']
