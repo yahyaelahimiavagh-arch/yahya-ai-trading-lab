@@ -57,8 +57,11 @@ def load_streaming_bars(root: Path, row: dict) -> ProductionBars:
         if not chunk:
             return
 
+        # Exact canonical bytes and whole-file SHA are already checked.
+        # Keep every row validation, omit only the unused chunk SHA.
         validate_rows(
-            chunk, timeframe, as_of_ms=DEVELOPMENT_END_MS
+            chunk, timeframe, as_of_ms=DEVELOPMENT_END_MS,
+            hash_canonical=False,
         )
 
         for item in chunk:

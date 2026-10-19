@@ -9,7 +9,7 @@ from research.crisis_lab.acquisition import CanonicalRow, _canonical_csv, _valid
 from .models import CADENCE_MS, OpportunityError, sha256
 
 
-def validate_rows(rows: Sequence[CanonicalRow], interval: str, *, as_of_ms: int) -> str:
+def validate_rows(rows: Sequence[CanonicalRow], interval: str, *, as_of_ms: int, hash_canonical: bool = True) -> str | None:
     if interval not in CADENCE_MS or not rows:
         raise OpportunityError("unsupported cadence or empty data")
     cadence = CADENCE_MS[interval]
@@ -30,4 +30,4 @@ def validate_rows(rows: Sequence[CanonicalRow], interval: str, *, as_of_ms: int)
         if min(base, quote, taker_base, taker_quote) < Decimal(0) or trades < 0 or taker_base > base or taker_quote > quote:
             raise OpportunityError("invalid volume/trade count")
         previous = opened
-    return sha256(_canonical_csv(rows))
+    return sha256(_canonical_csv(rows)) if hash_canonical else None

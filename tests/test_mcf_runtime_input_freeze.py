@@ -419,6 +419,36 @@ class RuntimeInputFreezeTest(unittest.TestCase):
                 with self.assertRaises(OpportunityError):
                     loader(self.output, changed)
 
+    def test_streaming_omits_only_redundant_chunk_hash(self):
+        from research.opportunity_data import canonical as validator
+        from research.mass_candidate_factory.production_streaming_loader import (
+            load_streaming_bars,
+        )
+
+        self.make_index()
+        row = self.index["datasets"][0]
+
+        with patch.object(
+            validator, "_canonical_csv",
+            side_effect=AssertionError("redundant chunk serialization"),
+        ):
+            loaded = load_streaming_bars(self.output, row)
+            self.assertEqual(len(loaded.times), row["row_count"])
+
+            self.assertIsNone(
+                validator.validate_rows(
+                    source_rows(), "15m",
+                    as_of_ms=DEVELOPMENT_END_MS,
+                    hash_canonical=False,
+                )
+            )
+
+            with self.assertRaises(AssertionError):
+                validator.validate_rows(
+                    source_rows(), "15m",
+                    as_of_ms=DEVELOPMENT_END_MS,
+                )
+
     def test_streaming_digest_contract_and_code_identity(self):
         from research.mass_candidate_factory.production_streaming_loader import (
             load_streaming_bars,
