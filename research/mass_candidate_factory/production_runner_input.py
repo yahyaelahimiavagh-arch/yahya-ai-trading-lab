@@ -23,6 +23,7 @@ from .production_features import ProductionBars
 from .production_freeze import build_payloads
 from .production_generator import freeze_executable_generation
 from .production_rules import BLOCKED_FAMILIES
+from .production_streaming_loader import load_streaming_bars
 from .production_runtime_data import (
     BOUNDS, CLASSIFICATION_SHA, EXPECTED_PLAN_SHA256,
     EXPECTED_POPULATION_RECONCILIATION_SHA256, MEMBERSHIP_SHA, PREFLIGHT_SHA,
@@ -36,6 +37,7 @@ CODE_PATHS = (
     "research/mass_candidate_factory/production_memory_telemetry.py",
     "research/mass_candidate_factory/production_runtime_data.py",
     "research/mass_candidate_factory/production_runner_input.py",
+    "research/mass_candidate_factory/production_streaming_loader.py",
     "research/mass_candidate_factory/production_runtime.py",
     "research/mass_candidate_factory/production_features.py",
     "research/mass_candidate_factory/production.py",
@@ -224,14 +226,7 @@ class FrozenRunnerInput:
         row = self._rows.get((symbol, timeframe))
         if row is None:
             raise MCFError("symbol/timeframe outside frozen runner input")
-        data = read_dataset(self.root, row)
-        def field(i):
-            return tuple(float(x.values[i]) for x in data)
-        bars = ProductionBars(row["dataset_id"], symbol, timeframe,
-                              tuple(x.open_time_ms for x in data),
-                              field(1), field(2), field(3), field(4), field(5), field(7), field(8))
-        bars.validate()
-        return bars
+        return load_streaming_bars(self.root, row)
 
     def load_timeframe(self, timeframe: str) -> dict[str, ProductionBars]:
         if timeframe not in TIMEFRAMES:

@@ -102,6 +102,49 @@ class ProductionRuntimeTest(unittest.TestCase):
         self.assertFalse(result["safety"]["fresh_oos_read"])
         self.assertFalse(result["safety"]["p10_read"])
 
+    def test_compact_columns_preserve_complete_synthetic_runtime_result(self):
+        from array import array
+        from dataclasses import replace
+        from research.mass_candidate_factory.models import canonical
+
+        original = {
+            symbol: bars(symbol)
+            for symbol in ("AAAUSDT", "BBBUSDT")
+        }
+
+        compact = {
+            symbol: replace(
+                item,
+                times=array("q", item.times),
+                opens=array("d", item.opens),
+                highs=array("d", item.highs),
+                lows=array("d", item.lows),
+                closes=array("d", item.closes),
+                base_volume=array("d", item.base_volume),
+                quote_volume=array("d", item.quote_volume),
+                trade_count=array("d", item.trade_count),
+            )
+            for symbol, item in original.items()
+        }
+
+        def execute(matrix):
+            runtime = ProductionRuntime(
+                synthetic_fixture=True,
+                executable_freeze=freeze_artifact(),
+                binding=binding(),
+                bars_by_timeframe={"1h": matrix},
+            )
+            return runtime.run("MCF-PROD-001-000000")
+
+        legacy_result = execute(original)
+        compact_result = execute(compact)
+
+        self.assertEqual(legacy_result, compact_result)
+        self.assertEqual(
+            canonical(legacy_result),
+            canonical(compact_result),
+        )
+
     def test_release_transient_features_keeps_source_bars_but_drops_derived_arrays(self):
         runtime = ProductionRuntime(
             synthetic_fixture=True,
