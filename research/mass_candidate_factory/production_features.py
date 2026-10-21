@@ -6,6 +6,8 @@ feature returns None until its exact required cadence window is complete.
 """
 from __future__ import annotations
 
+from array import array
+
 from dataclasses import dataclass
 from decimal import Decimal
 from math import isfinite, sqrt
@@ -116,12 +118,32 @@ class ProductionFeatureCache:
             return self._cache[key]
         source = self._field(field)
         out: list[float | None] = []
+        # Every rolling call walks consecutive endpoints in chronological order.
+        # Keep the start of the current unbroken cadence run instead of scanning
+        # every timestamp in every window. Missing bars still invalidate windows.
+        run_start = 0
+        cadence = self.cadence
+        valid_window = isinstance(window, int) and window >= 1
         for i in range(len(source)):
-            indexes = self._complete_indexes(i - lag, window)
-            if indexes is None:
+            end = i - lag
+            if end < 0:
                 out.append(None)
                 continue
-            values = [float(source[j]) for j in indexes]
+            if end > 0 and self.bars.times[end] != self.bars.times[end - 1] + cadence:
+                run_start = end
+            if not valid_window:
+                out.append(None)
+                continue
+            start = end - window + 1
+            if start < 0 or start < run_start:
+                out.append(None)
+                continue
+            # array('d') slices already iterate Python float values: retain
+            # the legacy accumulation order without per-element Python indexing.
+            # Other sequence types still use the legacy explicit float coercion.
+            values = source[start:end + 1]
+            if not (isinstance(values, array) and values.typecode == "d"):
+                values = [float(value) for value in values]
             if statistic == "mean":
                 value = sum(values) / len(values)
             elif statistic == "std":
