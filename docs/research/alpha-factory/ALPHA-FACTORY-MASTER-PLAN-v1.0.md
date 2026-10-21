@@ -746,6 +746,104 @@ completed safely in CHAT_DIRECTOR. If yes, stay in chat.
 
 Astra remains reserved for corpus-scale synthesis.
 
+
+## 15. Million-Idea Discovery Program — DS-00..DS-08 (2026-10-21)
+
+**Status: approved research direction only; no performance-run, deployment,
+live-order or unlimited-crawl authorization.** Long-term scalable target:
+**1,000,000+ preregistered, provenance-bound idea/candidate specifications**.
+The currently accepted 1k → 10k → 100k MCF engineering targets remain
+*mandatory intermediate capacity gates*, not a ceiling or a license to run
+one million economic trials. Count economically independent mechanisms,
+canonical specs, effective trials, tested candidates and survivors separately.
+One million parameter variants do not imply one million independent ideas.
+
+### 15.1 Reconciled starting inventory
+
+- **RIE external hypothesis intake:** 24 candidates/20 sources initially;
+  currently **31 candidate records referencing 27 distinct source URLs**
+  in `docs/research/research-intake/CANDIDATE-REGISTRY-V2-v1.0.json`.
+  The 31 records comprise 28 published/working-paper-derived hypothesis
+  records plus 3 Chinese FMZ lecture/strategy-library records. Registrations
+  include SSRN, ScienceDirect, arXiv, NBER, Wiley and FMZ provenance; source
+  publication or claimed Sharpe never counts as YATL evidence. Many remain
+  `SOURCE_BOUND`, with blocked and negative records retained.
+- **MCF deterministic family expansion:** 12 preregistered mechanism families,
+  **9,176 raw combinations**, **8,640 structurally admissible** and **6,852
+  technically executable** preregistered candidates. **1,788** variants from
+  two incompletely specified families remain pre-performance blocked.
+  Source: `MCF-PROD-001-PREOUTCOME-FREEZE-CHECKPOINT-v1.0.json`.
+  These are variants of 12 family domains, **not** direct extractions from
+  6,852 external publications; missing RIE-to-MCF lineage cannot be inferred.
+- Current *technical* milestone: merged MCF streaming loader PR #184 passed
+  frozen-cache admission at 4h (175 symbols, 606,900 candles) and 15m
+  (175 symbols, 9,710,400 candles). **Draft PR #186** targets rolling MA200
+  bottlenecks; CI passed but real old/new code parity and performance gate
+  is pending. Neither milestone is economic candidate performance acceptance.
+
+### 15.2 Scalable funnel (new DS track; no gate preaccepted)
+
+| Stage | Research deliverable | Non-negotiable acceptance |
+|---|---|---|
+| **DS-00 Inventory** | Versioned RIE and MCF baseline, source/idea/spec/family/effective-trial counters | Provenance, negative records and distinct-count definitions independently reconciled |
+| **DS-01 Discover** | Connectors for papers/citations, preprints, open code/notebooks, books/transcripts, reproducible libraries, EN/ZH and additional licensed markets | Immutable URL/author/license/retrieval timestamp/version/commit/content digest; provider ToS, copyright, robots and rate caps; no unauthorized scraping |
+| **DS-02 Extract** | Exact equations, entry/exit/stop/sizing, horizon, lag, data, point-in-time timing, costs, caveats and falsifiable mechanism | Missing method/source is BLOCKED, never an AI-invented fill; reported source metrics are untrusted |
+| **DS-03 Canonicalize** | Append-only source and mechanism lineage, normalized-rule fingerprint, parameter-neighbor and family dedupe | Truly duplicated/reworded variants are not independent alpha; immutable spec identities before any outcome |
+| **DS-04 Generate** | Lazy deterministic Cartesian generator, sharded ledgers, content-addressed manifests, resume and batch audit | Cheap and bounded 1k → 10k → 100k → 1M+ *registrations* only after throughput/RAM/storage/idempotency gates; no one PR/file per variant |
+| **DS-05 Pre-screen** | F0 structure, source feasibility, observable point-in-time features, data gaps, estimated cost/activity, duplicate and implementation blockers | Fully outcome-free, all rejection reasons retained; million-scale candidates do not automatically become a million backtests |
+| **DS-06 Development** | Approved small/bounded economic batches with fixed universe/calendar/trials/fees/slippage/baselines, resource quotas | **Separate explicit performance-run authorization for every new budgeted batch**; P10 unaffected; all negative trials retained |
+| **DS-07 Adjudicate** | Walk-forward chronology, no-lookahead audit, family/neighbor robustness, economic-cost and regime stress, correlated-trial multiple-testing correction | Zero survivors valid; no ranking-based gate bypass, no new post-outcome tuning to rescue rejected trials |
+| **DS-08 Promote** | Freeze audited shortlist, exact independent recompute, Fresh OOS then crisis/Forward in calendar time | No OOS reuse; P10/P11 current locks retained; no live authority inherited from historical results |
+
+### 15.3 Scale gates and engineering design
+
+- **1k spec calibration:** source quality, method extraction, numerical parity,
+  deterministic IDs, rejection ledger, unit resource cost.
+- **10k spec expansion:** diversity of mechanism families, dedupe false
+  positives/false negatives, reproducible sharding, complete trial accounting.
+- **100k spec registration/pre-screen:** bounded memory and streaming I/O,
+  CPU/disk throughput curves, restart/retry idempotence, manifest reconciliation,
+  stop/backpressure protection against interfering with P10.
+- **1M+ spec registration/pre-screen:** permitted only after the previous
+  acceptance evidence, finite explicit storage/compute budget, effective-trial
+  burden characterization and review of marginal independent family diversity.
+  This milestone is **not** approval for 1M market-performance tests.
+
+Do not allocate one huge in-memory Cartesian array; use streaming/lazy
+enumeration and content-addressed shards, compact columnar datasets where
+appropriate, checkpoints and atomic durable append-only result ledgers.
+Report `discovered_sources`, `unique_source_uris`, `unique_methods`,
+`raw_candidates`, `structurally_valid`, `technically_executable`,
+`effective_trials`, `development_tested`, `OOS_tested`,
+`independent_mechanisms`, `negative_closeouts` and `survivors`;
+each field has a documented denominator and artifact hash.
+
+Statistical safeguards must account for correlated parameter neighbors and
+family reuse, sample selection, repeated looks and multiple comparisons;
+predeclare how error rates and effective tests are estimated. Historical
+Development processing can speed up; independent Fresh OOS/Forward
+**cannot** be shortened by adding compute. Stop when marginal diversity
+or validity stops improving, even if the million-count target is unmet.
+
+### 15.4 Next work order and frozen boundary
+
+1. Complete Draft **PR #186** real Development BTCUSDT old-vs-new
+   numerical-parity and MA200 benchmark before merge decision.
+2. If the `production_features.py` code change is accepted, repeat official
+   525-dataset reconciliation and create a **new** frozen runner input;
+   old frozen input code-identity must not be bypassed.
+3. Design/version DS-00..DS-05 schemas, source discovery connectors and
+   dedupe tests on an isolated research branch; then run **small nonperformance
+   intake/calibration tests** before any mass-generation milestone.
+4. Request new explicit human authorization for **each** Development
+   performance batch; do not automatically schedule million-scale runs.
+5. Preserve P10 timer/service/config and P11 locked status. No deployment,
+   Live/Futures/leverage/orders or sealed Fresh OOS/recent-reserve reads.
+
+Canonical global summary: `docs/MASTER-PLAN.md`.
+This program is an **architecture + staged research plan**, not an assertion
+that million-scale collection, execution or an economic edge currently exists.
+
 ## Mass Canonical Candidate Factory — MCF track
 
 Authoritative design:
