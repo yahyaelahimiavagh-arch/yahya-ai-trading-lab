@@ -512,6 +512,62 @@ Recommended engineering progression:
 This is not a requirement to stop at 100,000; architecture should avoid a hard
 candidate-count ceiling.
 
+
+## 22A. Million-spec scalability extension (roadmap, 2026-10-21)
+
+This extension **does not** mark the 100,000 candidate stage complete or
+authorize an unbounded economic search. The architecture must aim for
+**1,000,000+ canonical idea/spec registrations** *after* the existing 1k,
+10k and 100k reliability, diversity and multiple-testing gates pass. This
+is an incremental roadmap milestone, not 1M independent economic ideas,
+1M profitable strategies or 1M approved performance tests.
+
+**Two distinct origin streams:**
+- Source-driven RIE: 31 hypothesis registrations, 27 distinct source URLs;
+  initial batch was 24 candidates / 20 sources. Includes academic/published
+  research plus FMZ Chinese lecture/strategy-library idea mining. See
+  `docs/research/research-intake/CANDIDATE-REGISTRY-V2-v1.0.json`.
+- Frozen MCF-PROD-001: 12 preregistered mechanism families, 9,176 raw
+  parameter variants, 8,640 structurally valid, 6,852 technically executable
+  (1,788 blocked for pre-performance implementation ambiguity). See
+  `MCF-PROD-001-PREOUTCOME-FREEZE-CHECKPOINT-v1.0.json`.
+  These are not direct one-to-one descendants of external RIE candidates;
+  source lineage must be explicit or recorded as independent/internal.
+
+**Execution architecture and evidence gates:**
+1. Ingest sources through lawful/rate-limited versioned collectors; retain
+   source URL, publication/retrieval dates, author, language, permission/license,
+   exact reference and sha256 where permitted. No copying unverifiable returns.
+2. Extract exact falsifiable rules or **block** missing methods. AI may help
+   organize and propose; cannot grant performance/order authority.
+3. Normalize source/mechanism/parameter identities and deterministic
+   fingerprints; dedupe clones before trial accounting. Keep source and
+   synthetic/internal origin types distinct.
+4. Generate specs lazily into resumable, content-addressed, deterministic
+   shards; avoid millions of Python objects in RAM, per-candidate files/PRs,
+   and post-result expansion.
+5. Apply cheap **outcome-free** F0/F1 checks to very large populations;
+   reject missing point-in-time data, impossible/corrupt rules and duplicates.
+6. Run actual Development after-cost tests only on explicitly authorized,
+   preregistered, resource-bounded shortlists; collect **all** outcomes,
+   including zero-trade and negative results, with family/effective-trial
+   counts and reproducibility.
+7. Use family-dependent multiplicity adjustments, walk-forward, cost stress,
+   neighbor stability and independent freeze before rare OOS promotion.
+   Stop expansion if independent mechanism diversity and marginal evidence
+   do not justify more compute. Zero survivors is valid.
+
+**Acceptance path:** calibrated 1k → 10k → 100k registrations → 1M+
+registrations/pre-screen only after measured CPU/RSS/disk cost curves,
+idempotent restart, independent audits, scheduler isolation from P10, and
+budgeted approval. Scaling performance testing requires *separate* approval
+per batch and evidence gate; no blanket 1M backtest authorization exists.
+Fresh OOS/recent reserve remain sealed. P10 and P11 protections unchanged.
+
+Further stage definitions and immediate PR #186/official refreeze dependency
+are tracked in `docs/research/alpha-factory/ALPHA-FACTORY-MASTER-PLAN-v1.0.md`
+and `docs/MASTER-PLAN.md`.
+
 ## 23. Safety boundary
 
 Unchanged:
