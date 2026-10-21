@@ -287,8 +287,11 @@ def _simulate(series: ProductionSeries, binding: ProductionUniverseBinding,
         source_gap_cancellations = forced_membership_exits = 0
         forced_exit_days: list[int] = []
         turnover_notional = Decimal(0)
-        marks: list[tuple[int, Decimal]] = []
-        member_marks: list[tuple[int, Decimal]] = []
+        # Store the final immutable text representation immediately instead of
+        # retaining a full Decimal tuple matrix alongside a later string copy.
+        # Equity itself remains Decimal throughout every accounting operation.
+        marks: list[tuple[int, str]] = []
+        member_marks: list[tuple[int, str]] = []
 
         scored = [i for i, t in enumerate(series.times) if DEVELOPMENT_START_MS <= t < DEVELOPMENT_END_MS]
         if not scored:
@@ -389,10 +392,11 @@ def _simulate(series: ProductionSeries, binding: ProductionUniverseBinding,
             peak = max(peak, equity)
             if peak > 0:
                 max_dd = max(max_dd, (peak - equity) / peak)
-            marks.append((t, equity))
+            equity_text = str(equity)
+            marks.append((t, equity_text))
 
             if current_member or held_before:
-                member_marks.append((t, equity))
+                member_marks.append((t, equity_text))
                 evaluable_bars += 1
                 if qty is not None:
                     exposure_bars += 1
@@ -400,7 +404,8 @@ def _simulate(series: ProductionSeries, binding: ProductionUniverseBinding,
             previous_scored = i
             previous_member = current_member
 
-        final_equity = marks[-1][1]
+        # The latest Decimal equity is retained in scope; do not reparse text.
+        final_equity = equity
         return {
             "symbol": series.symbol,
             "evaluable": bool(member_marks),
@@ -416,8 +421,8 @@ def _simulate(series: ProductionSeries, binding: ProductionUniverseBinding,
             "forced_exit_days": tuple(sorted(set(forced_exit_days))),
             "timeframe": series.timeframe,
             "cadence_ms": cadence,
-            "marks": tuple((t, str(v)) for t, v in marks),
-            "member_marks": tuple((t, str(v)) for t, v in member_marks),
+            "marks": tuple(marks),
+            "member_marks": tuple(member_marks),
         }
 
 
