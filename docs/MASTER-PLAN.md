@@ -70,6 +70,79 @@ Dashboard به‌تنهایی معیار موفقیت اقتصادی نیستن�
 این اصل، ترتیب ایمنی فازها را تغییر نمی‌دهد؛ بلکه معیار تصمیم‌گیری درباره ارزش هر
 قابلیت و موفقیت نهایی سیستم را روشن می‌کند.
 
+
+## الحاقیه رسمی 2026-10-21 — کشف و آزمون مقیاس‌پذیر تا میلیون‌ها ایده
+
+**وضعیت: ROADMAP APPROVED AS RESEARCH DIRECTION / NOT PERFORMANCE-RUN AUTHORIZATION.**
+این الحاقیه، جهت بلندمدت Alpha Factory را از ظرفیت ۱۰۰هزار مشخصات به
+**۱میلیون+ ایده/مشخصات کاندیدا** گسترش می‌دهد. هدف، کشف سازوکارهای مستقل
+و یافتن مزیت اقتصادی قابل‌تکرار پس از هزینه‌ها است؛ **۱میلیون پارامتر یا یک
+میلیون بک‌تست، یک میلیون ایده اقتصادی مستقل یا اثبات سودآوری نیست**.
+هیچ هدف عددی، quota برای survivor، الزامی برای اجرای تمام کاندیداها،
+یا حق اجرای خودکار اقتصادی/معاملاتی ایجاد نمی‌کند.
+
+### موجودی واقعی و منشأ فرضیه‌ها (baseline معتبر در 2026-10-21)
+
+- **مسیر منبع‌محور RIE:** رجیستری قدیمی شامل ۲۴ فرضیه از ۲۰ منبع بود؛
+  رجیستری V2 فعلی **۳۱ فرضیه از ۲۷ URI منبع متمایز** دارد
+  (۲۸ رکورد مبتنی بر مقاله، سه رکورد از سخنرانی/کتابخانه استراتژی چینی).
+  منابع ثبت‌شده شامل SSRN، ScienceDirect، arXiv، NBER، Wiley و FMZ هستند.
+  این‌ها ایده‌های برداشت‌شده از منابع و دارای provenance هستند، نه نتایج
+  اقتصادی تأییدشده. بخش بزرگی هنوز فقط SOURCE_BOUND است؛ رکوردهای
+  مسدود/نامعتبر/ردشده حذف یا موفق قلمداد نمی‌شوند.
+- **مسیر تولید داخلی MCF-PROD-001:** ۱۲ خانواده سازوکار/قاعده با domainهای
+  منجمد، **۹٬۱۷۶ ترکیب خام**، **۸٬۶۴۰ ترکیب معتبر ساختاری** و
+  **۶٬۸۵۲ کاندیدای قابل‌اجرای فنی** قبل از سنجش عملکرد ثبت شده‌اند.
+  **۱٬۷۸۸ کاندیدای دو خانواده** به‌دلیل ابهام تعریف اجرایی قبل از performance
+  مسدود شده‌اند. این ۶٬۸۵۲ مورد عمدتاً ترکیب پارامترِ خانواده‌ها هستند؛
+  ادعای استخراج تک‌تک آن‌ها از ۳۱ پژوهش خارجی نداریم.
+- مدارک: `docs/research/research-intake/CANDIDATE-REGISTRY-V2-v1.0.json`،
+  `docs/research/research-intake/RIE-002-RESEARCH-SWEEP-001.md`،
+  `docs/research/alpha-factory/MCF-PROD-001-PREOUTCOME-FREEZE-CHECKPOINT-v1.0.json`،
+  `docs/research/alpha-factory/MCF-PROD-001-PRE-RUN-DOMAIN-AUDIT-v1.0.md`.
+  کاتالوگ RIE و تولید MCF دو رجیستری با هویت متفاوت هستند و
+  **جمع عددی آن‌ها به‌معنی تعداد فرضیه‌های مستقل نیست**.
+
+### برنامه رسمی مقیاس میلیونی (AF-DISCOVERY-SCALE)
+
+| گیت | خروجی قابل‌ممیزی | شرط عبور |
+|---|---|---|
+| DS-00 Provenance & Baseline | موجودی RIE/MCF، منبع، family، evidence/authorization state و شمارش distinct/effective trials ثبت شود | هیچ ادعای performance، source-replication یا diversity بدون سند نباشد |
+| DS-01 Discovery Connectors | کشف دوره‌ای و نسخه‌مند از پژوهش‌های دانشگاهی، کتاب‌ها، مخازن کد، استراتژی‌لایبرری، مستندات صرافی/بازار، FMZ و منابع چندزبانه | احترام به مجوز نشر، نرخ درخواست، دسترسی قانونی، ثبت زمان دریافت/نسخه/URI/SHA و عدم اعتماد به claims |
+| DS-02 Method Extraction | استخراج معادله دقیق، ورود/خروج، latency/lag، universe، داده لازم، هزینه، محدودیت و فرضیه ابطال‌پذیر | نبود مشخصات دقیق = BLOCKED؛ مدل AI هیچ قانون نامعلوم را حدس نمی‌زند |
+| DS-03 Canonical Registry & Dedupe | fingerprint قطعی، family اقتصادی، mechanism، lineage، منبع، parameter vector، label تکرار/نزدیکی و ledgers append-only | cloneها و تغییر نام پارامتر به‌عنوان edge مستقل شمرده نشوند |
+| DS-04 Million-scale Generation | تولید deterministic/sharded/streaming با canonical IDs، checksum، immutable manifest، replay، backpressure و resume | آزمون ظرفیت و ذخیره‌سازی؛ سقف مرحله‌ای ۱هزار → ۱۰هزار → ۱۰۰هزار → ۱میلیون+ مشخصات؛ بدون ایجاد PR/فایل برای هر ایده |
+| DS-05 Cheap Pre-screen | غربال F0 ساختاری، قابل‌تأمین‌بودن داده، point-in-time، تشخیص duplicate، viability/فرصت و هزینه محاسبه، بدون خواندن outcome | ردها همراه دلیل نگه داشته شوند؛ فقط shortlist وارد صف اقتصادی شود |
+| DS-06 Budgeted Development | **صرفاً با مجوز جداگانه**: اجرای پژوهشی محدود با سقف CPU/RAM/time/trials، کارمزد/slippage، baseline و گزارش منفی‌ها | آزمون واحد ظرفیت، deterministic replay، isolation از P10 و بودجه آماری قبل از گسترش هر batch |
+| DS-07 Statistical Adjudication | walk-forward/زمانی، neighbor stability، اصلاح multiple testing و وابستگی خانوادگی، کنترل false discovery و clustering | تعداد آزمون‌های مؤثر و همه trialها ثبت؛ توقف در صورت overfitting/هزینه/ظرفیت نامقبول |
+| DS-08 Freeze → OOS → Forward | فقط survivorهای محدود، با مستقل‌سازی و Freeze، به Fresh OOS و stress/audit و نهایتاً Forward جدید می‌روند | holdoutها sealed باقی بمانند؛ زمان Forward فشرده یا ساختگی نمی‌شود؛ بدون ارتقای خودکار P10/P11 |
+
+**اصول ظرفیت:** یک میلیون `candidate specification` هدف معماری است، نه
+فرمان اجرای یک میلیون آزمون معاملاتی. افزایش دامنه فقط پس از گزارش
+زمان/حافظه/هزینه ذخیره‌سازی، شمارش آزمون مؤثر، پایداری replay، نسبت familyهای
+مستقل و نرخ نتایج منفی مجاز است. در هر مرحله اگر تنوع سازوکار یا ارزش اطلاعاتی
+بهبود پیدا نکند، گسترش متوقف می‌شود. AI می‌تواند پیدا/برچسب‌گذاری/پیشنهاد کند؛
+اجازه دست‌کاری outcome، تأیید اقتصادی، معامله یا بازکردن قفل‌ها ندارد.
+
+### وابستگی‌های اجرایی فوری
+
+1. اتمام review و benchmark parity/speed برای **Draft PR #186**؛ CI آن PASS
+   شده، ولی benchmark واقعی هنوز gate است و ادغام آن از قبل تأیید نشده.
+2. هر تغییر در `production_features.py` هویت `CODE_PATHS` را عوض می‌کند:
+   قبل از admission نسخه جدید، reconciliation رسمی و **Freeze جدید** لازم است.
+   Freeze قبلی با کد جدید دور زده نمی‌شود.
+3. تدوین نسخه‌بندی و گیت‌های DS-01 تا DS-05 روی شاخه تحقیقاتی؛
+   اول پایلوت discovery محدود با منابع حقیقی، آنگاه capacity benchmark مستقل.
+4. هیچ batch اقتصادی، دسترسی Fresh OOS/recent reserve، تغییر P10،
+   بازکردن P11، استقرار VPS یا Live بدون تصمیم و مجوز صریح جداگانه اجرا نمی‌شود.
+   `LIVE_MASTER_LOCK=OFF` و اصل `P11 LOCKED` پابرجاست.
+
+جزئیات معماری و گیت‌های این مسیر در
+`docs/research/alpha-factory/ALPHA-FACTORY-MASTER-PLAN-v1.0.md`
+و `docs/research/alpha-factory/MASS-CANONICAL-CANDIDATE-FACTORY-v1.0.md`
+نگه‌داری می‌شود. این الحاقیه **جهت تحقیقاتی** را تصویب و مراحل آینده
+را ثبت می‌کند؛ قبول شدن یک گیت یا خودکار شدن اجرای آن را اعلام نمی‌کند.
+
 ## ترتیب ثابت فازها
 
 | فاز | خروجی مورد انتظار | وضعیت امروز |
