@@ -58,6 +58,10 @@ def main(argv):
     if len(argv) != 2 or argv[1] not in {"legacy", "proposed"}:
         raise SystemExit("expected mode legacy or proposed")
     mode = argv[1]
+    # Limit *this* synthetic worker, not the host or the CI runner.
+    # RLIMIT_AS constrains virtual memory; VmRSS/HWM are measured separately.
+    resource.setrlimit(resource.RLIMIT_AS, (512 * 1024 * 1024, 512 * 1024 * 1024))
+    resource.setrlimit(resource.RLIMIT_CPU, (75, 80))
     simulator = baseline_simulate if mode == "legacy" else p._simulate
     membership, series = fixture()
     policy = p.ProductionCostPolicy()
