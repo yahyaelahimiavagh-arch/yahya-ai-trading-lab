@@ -211,7 +211,10 @@ def observe(args):
         blind, smart = rank_wallets(screened)
         if len(smart) < 2:
             raise ValueError("need >=2 independent qualified wallets; no bypass")
-        lab = PaperLab(int(time.time()), blind, smart)
+        # Free-tier pilot: at most four wallets per strategy, <=8 unique.
+        # The 1s/3s/10s arms are post-detection scheduling only, NOT full
+        # chain-to-trader execution latencies at 180-second polling.
+        lab = PaperLab(int(time.time()), blind[:4], smart[:4])
         quotes, polls, skips, last_polls = {}, 0, {}, {}
         write_json(path, snapshot(lab, quotes, lab.start_at, polls, skips, last_polls))
     finish = lab.start_at + args.hours * 3600
@@ -381,7 +384,7 @@ def main(argv=None):
     live.add_argument("--report", default="data/smart_money/report.json")
     live.add_argument("--html", default="data/smart_money/dashboard.html")
     live.add_argument("--hours", type=int, default=24)
-    live.add_argument("--poll-seconds", type=int, default=30)
+    live.add_argument("--poll-seconds", type=int, default=180)
     live.add_argument("--resume", action="store_true")
     report = commands.add_parser("report", help="print saved paper snapshot")
     report.add_argument("--state", default="data/smart_money/state.json")
@@ -400,8 +403,8 @@ def main(argv=None):
             parser.error("screen bounds exceeded")
         screen(args)
     elif args.command == "observe":
-        if not (args.hours == 24 and 15 <= args.poll_seconds <= 600):
-            parser.error("only fixed 24h experiment and >=15s polling allowed")
+        if not (args.hours == 24 and 180 <= args.poll_seconds <= 600):
+            parser.error("fixed 24h and >=180s polling required for free-tier pilot")
         observe(args)
     else:
         cmd_report(args)
