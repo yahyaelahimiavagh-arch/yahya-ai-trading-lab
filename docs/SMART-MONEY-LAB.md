@@ -85,3 +85,17 @@ This PR **does not deploy to the VPS**, because authenticated host access and a 
 5. Only then run a continuously supervised 24h trial with periodic retained snapshots and independent data-quality alerts.
 
 Sources: [Helius enhanced transaction history](https://github.com/helius-labs/core-ai/blob/main/helius-plugin/skills/build/references/enhanced-transactions.md), [DEX Screener official API reference](https://docs.dexscreener.com/api/reference), [Helius pricing](https://www.helius.dev/pricing).
+
+
+## Free-tier 24h pilot settings — 2026-10-31
+
+This first run deliberately prioritizes a completed observation over low latency:
+
+- **One existing free Helius key; no subscription.** Enhanced-history calls cost about 110 credits/call per published Helius reference. Our code reserves one persistent request in `data/smart_money/helius_budget.json` before each Helius history request, and refuses requests after **5,000 calls**. This is a **conservative approximate** ~550,000 credits, *not* provider-reported actual credit usage; verify remaining credits on the dashboard. It does not automatically reset. Do not delete the budget file to evade the stop.
+- **At most 4 blind + 4 smart wallets**, i.e. 8 different wallets maximum. The observer uses 180 seconds between polling cycles, rather than 30. Theoretical regular polls: at most `8 × (24 × 3600 / 180) = 3,840` calls, before screening, discovery, network retries, or any unrelated Helius usage. Actual credits can differ. Stop and audit if the free account approaches its quota.
+- **Up to 5,000 requests across every phase and restart** on one host. Do not run discovery/screen/observe simultaneously; this budget file is a **single-process** lock and is not multi-process safe.
+- **300-second maximum signal age** and 300-second consensus window are exploratory concessions to coarse polling. Because the leader's trade may precede detection by minutes, this test cannot verify the effectiveness of 1s/3s/10s live copy trading. All simulated delays are counted after signal observation; the report also preserves chain-to-fill seconds.
+- If the screening criteria select fewer than 2 eligible wallets, the experiment will **refuse to trade in paper mode**. This is a valid screening outcome, not a reason to invent traders, override filters or consume paid API credits.
+- If requests exhaust the cap, monitoring stops with partial snapshots and marks data coverage as incomplete. No manual deposit, real wallet or trading API is used.
+
+The basic chronological procedure is `discover` → `screen` → confirm `eligible >= 2` → `observe` for 24h. All data is paper-only, and VPS deployment needs separate authorized host access and a securely stored API key. If `data/smart_money/state.json` already exists from a previous run, use `--resume` only to continue the **same** window, otherwise archive old output and start a new window.
