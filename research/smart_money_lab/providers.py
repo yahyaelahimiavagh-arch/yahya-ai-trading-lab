@@ -95,11 +95,19 @@ class Helius:
 
 
 def _token_amount(t: dict):
-    # Helius tokens may be ui-token quantities or raw base-unit amounts.
+    # Enhanced SwapEvent uses signed balance DELTAS; explicit inputs are often
+    # negative. Sign is encoded by tokenInputs vs tokenOutputs, not magnitude.
     raw = t.get("rawTokenAmount")
     if isinstance(raw, dict) and raw.get("tokenAmount") is not None:
-        return dec(raw["tokenAmount"]) / (Decimal(10) ** int(raw.get("decimals", 0)))
-    return dec(t.get("tokenAmount", t.get("amount", 0)))
+        amount = Decimal(str(raw["tokenAmount"]))
+        digits = int(raw.get("decimals", 0))
+        if not amount.is_finite() or not 0 <= digits <= 18:
+            raise ValueError("invalid signed balance delta")
+        return abs(amount) / (Decimal(10) ** digits)
+    amount = Decimal(str(t.get("tokenAmount", t.get("amount", 0))))
+    if not amount.is_finite():
+        raise ValueError("invalid balance delta")
+    return abs(amount)
 
 
 def _entries(event: dict, side: str):
@@ -115,10 +123,14 @@ def _entries(event: dict, side: str):
     native = event.get("nativeInput" if side == "tokenInputs" else "nativeOutput")
     if isinstance(native, dict) and native.get("amount"):
         try:
-            n = dec(native["amount"]) / Decimal(1_000_000_000)
-            if n > 0:
+            signed = Decimal(str(native["amount"]))
+            if not signed.is_finite():
+                raise ValueError("invalid native delta")
+            n = abs(signed) / Decimal(1_000_000_000)
+            # Do not double-count wrapped SOL and native SOL if both present.
+            if n > 0 and not any(m == SOL for m, _ in result):
                 result.append((SOL, n))
-        except ValueError:
+        except (ValueError, ArithmeticError):
             pass
     return result
 
