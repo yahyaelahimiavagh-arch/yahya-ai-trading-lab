@@ -20,7 +20,7 @@ h1{font-size:25px;line-height:1.4;margin-bottom:1px;letter-spacing:-.4px}
 .pill{border:1px solid var(--line);padding:7px 11px;border-radius:100px;color:var(--muted);font-size:12px;display:flex;gap:7px;align-items:center;background:#17223577}
 .dot{width:8px;height:8px;border-radius:50%;background:#a4aec2}
 .dot.running{background:var(--cyan);box-shadow:0 0 0 5px #56dbc418}
-.dot.stale,.dot.interrupted{background:var(--warn)}
+.dot.stale,.dot.interrupted,.dot.degraded{background:var(--warn)}
 .dot.completed{background:var(--blue)}
 .hero{padding:26px 28px;border-radius:22px;border:1px solid #315a64;background:linear-gradient(110deg,#183a49 0,#14263b 51%,#121d2f 100%);display:flex;align-items:center;justify-content:space-between;gap:22px;flex-wrap:wrap;margin-bottom:18px}
 .hero-label{color:#a4d4dc;font-size:12px;letter-spacing:.3px;font-weight:700}
@@ -126,6 +126,9 @@ footer{color:var(--muted);font-size:11px;margin-top:13px;line-height:1.9}
     </section>
     <section class="panel">
       <div class="panel-head"><h2>سلامت داده‌ها</h2><span class="small" id="quality">—</span></div>
+      <div class="stat-row"><span>وضعیت دریافت‌کننده Helius</span><strong id="collector-health">—</strong></div>
+      <div class="stat-row"><span>کیف پول‌های دارای دریافت تازه</span><strong id="fresh-wallets">—</strong></div>
+      <div class="stat-row"><span>قدیمی‌ترین دریافت موفق</span><strong id="oldest-poll-age">—</strong></div>
       <div class="stat-row"><span>تراکنش‌های قابل‌تفسیر نبودند</span><strong id="unparsed">—</strong></div>
       <div class="stat-row"><span>مسیرهای چندداراییِ مبهم</span><strong id="parse-ambiguous">—</strong></div>
       <div class="stat-row"><span>رویداد SWAP ناقص</span><strong id="parse-missing-event">—</strong></div>
@@ -154,7 +157,8 @@ footer{color:var(--muted);font-size:11px;margin-top:13px;line-height:1.9}
   var consecutiveFetchFailures = 0;
   var names = {"blind":"BLIND", "smart":"SMART", "consensus":"CONSENSUS"};
   var statuses = {
-    running:"داده‌های گزارش تازه‌اند",
+    running:"گزارش تازه است؛ دریافت تراکنش‌ها را جدا بررسی کن",
+    degraded:"اخطار: دریافت تراکنش‌های کیف پول سالم نیست",
     stale:"گزارش قدیمی است؛ اجرای ربات را بررسی کن",
     interrupted:"آزمایش متوقف شده",
     completed:"پنجره ۲۴ساعته پایان یافت",
@@ -234,6 +238,7 @@ footer{color:var(--muted);font-size:11px;margin-top:13px;line-height:1.9}
     e("live-dot").className="dot "+r.status;
     set("live-state",statuses[r.status]||r.status);
     set("headline",r.status==="running"?"پایش داده‌های Solana در جریان است":
+        r.status==="degraded"?"اخطار: دریافت تراکنش‌ها متوقف یا قدیمی شده":
         r.status==="completed"?"پنجره آزمایش به پایان رسیده":
         r.status==="stale"?"گزارش تازه‌ای دریافت نشده":"مانیتور آزمایش YATL");
     set("notice",r.notice);
@@ -245,6 +250,15 @@ footer{color:var(--muted);font-size:11px;margin-top:13px;line-height:1.9}
     set("progress-percent",r.progress_percent+"%");
     e("progress-bar").style.width=Math.max(0,Math.min(100,Number(r.progress_percent)))+"%";
     set("quality",r.feed_complete===true?"بدون شکاف ثبت‌شده":r.feed_complete===false?"نیازمند بررسی":"نامشخص");
+    var fh=r.feed_health||{};
+    var healthLabels={"healthy":"سالم", "warming_up":"شروع اولیه",
+      "polls_stale":"دریافت‌ها قدیمی شده‌اند","collector_stopped":"نخ دریافت‌کننده متوقف است",
+      "completed":"پایان یافته", "interrupted":"متوقف شده", "unknown":"نامشخص"};
+    set("collector-health",healthLabels[fh.state]||"نامشخص");
+    set("fresh-wallets",fh.state==="unknown"?"—":
+       num(fh.recent_wallets)+" / "+num(fh.expected_wallets));
+    set("oldest-poll-age",fh.oldest_poll_age_seconds==null?"—":
+       num(fh.oldest_poll_age_seconds)+" ثانیه");
     var skip=r.skips||{};
     set("unparsed",num(skip.unparsed_or_unsupported));
     set("parse-ambiguous",num(skip.parse_ambiguous_legs));
