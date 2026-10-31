@@ -131,23 +131,64 @@ Then add `--cutoff <unix-timestamp> --events path --quotes path` to
 the CLI invocation. Without a fixed cutoff and genuine historical as-of
 snapshots the tool deliberately refuses any profitability inference.
 
-## V3.1 and beyond (not implemented yet)
+## V3.1 prospective evidence journal (implemented in DRAFT; not deployed)
 
-- Record **independent prospectively collected** wallet transaction receipts and
-  contemporaneous market quotes with origin, observed_at, and explicit
-  price/liquidity freshness; preserve source timestamps, and audit completeness.
-- Freeze training wallets at a cutoff and record their immutable selection
-  metadata. Do not recompute eligibility with post-cutoff outcomes.
-- Build matched or genuinely randomized disjoint controls, with predefined
-  quality/activity/liquidity strata; avoid using the same wallet in both arms.
-- Replay held-out buy/sell round trips with inventory basis, asymmetric latency,
-  fees, slippage, liquidity caps, delists, adverse selection, and pessimistic
-  missing-quote treatment. Do not present hypothetical mid-price PnL as
-  executable.
-- Replace false 1/3/10s comparisons with actual end-to-end chain-to-observation
-  latency distributions and a realistic <=180s sampling policy.
-- Only consider a larger forward paper trial **after** both data-quality and
-  execution gates pass. Do not enable live funds/orders.
+The **opt-in** `--evidence-journal /absolute/private/evidence.jsonl` switch
+has been added to the experimental `observe` command on **this isolated V3
+branch only**. Its default is OFF; it does not change active V2.
+
+When eventually enabled in an independent, explicitly approved **future paper**
+observer, this switch records:
+
+- Forward parsed Helius SWAP receipts already delivered by that observer:
+  wallet, token, transaction signature, on-chain timestamp, receipt timestamp
+  and BUY/SELL. Historical and previously seen signatures are not re-recorded.
+- Indicative DexScreener quotes **already fetched** by that observer: token,
+  observed USD price, liquidity, and local receipt timestamp.
+- The stream as a bounded, 0600-permission, append-only JSONL journal with an
+  ordinal SHA-256 hash chain. Incomplete records, changed hashes, weak file
+  permissions, or symlinks are rejected on re-open.
+
+This feature never initiates an **additional** Helius or DexScreener request.
+**However, launching an observer itself WOULD make the same API requests as V2.
+Do not start it while V2 is active or share/reset its Helius budget.**
+
+Do not put the raw journal under `public_html`, in the Git repository, or in
+Hostinger exports. It contains actual wallet and transaction identifiers.
+The audit command returns only redacted aggregate statistics.
+
+Once a separately authorized future paper run has generated prospective
+records, the entirely **offline** audit command will be:
+
+```bash
+python3 -m research.smart_money_lab.prospective_evidence \
+  --journal /absolute/private/evidence.jsonl --cutoff YOUR_FROZEN_UNIX_CUTOFF
+```
+
+Do not execute this command unless the journal exists. It never backfills
+missing quotes or pretends the V2 existing state/report is a valid journal.
+
+**Provenance limitations:** a local hash chain is tamper-evident but not a
+trusted external timestamp or independent source attestation; DexScreener
+snapshots do not guarantee executable DEX quotes or MEV/slippage behavior;
+reference latency 134 seconds is a V2 indicative historical benchmark, not
+a verified network reaction time. The auditor computes quote coverage, NOT
+realized PnL or proof of alpha.
+
+## V3.2 and beyond (not implemented)
+
+- Freeze training cutoff and wallet-selection evidence **before** any held-out
+  data are inspected; never retrospectively fill missing V2 fields.
+- Establish matched or randomized disjoint control cohorts; publish selection
+  strata, wallet exclusivity, and bias/coverage attrition.
+- Validate chain-to-observation latency against all incoming eligible signals,
+  not only those with paper fills; current V2 unique-fill median is 117 seconds,
+  while the older all-ledger-fill median was 134 seconds.
+- Replay held-out buy/sell pairs with full cost basis, asymmetric latency,
+  observed liquidity/price age, route-specific costs and pessimistic missing data.
+  Mid-market values must never be called executable fills.
+- Require independently reviewed forward paper performance and sustainable free
+  request budget before considering any later trial. Never enable live orders.
 
 ## Operational/financial guardrails
 
