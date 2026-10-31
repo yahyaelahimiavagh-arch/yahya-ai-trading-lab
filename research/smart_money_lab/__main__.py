@@ -99,8 +99,26 @@ def screen(args):
         prices = sol_candles(args.days, now)
     except (RuntimeError, ValueError):
         prices = {}  # fail closed for SOL historical scoring
+    output_path = Path(args.output)
+    previous = {}
+    if getattr(args, "resume", False) and output_path.exists():
+        rows = read_json(output_path)
+        if not isinstance(rows, list):
+            raise ValueError("existing screening output must be a JSON array")
+        for row in rows:
+            if not isinstance(row, dict) or not isinstance(row.get("wallet"), str):
+                raise ValueError("malformed previous screening row")
+            if row["wallet"] in previous:
+                raise ValueError("duplicate previous wallet rows")
+            previous[row["wallet"]] = row
     scored = []
     for wallet in addresses:
+        existing = previous.get(wallet)
+        if existing is not None and not existing.get("error"):
+            # Reuse the locally saved result; it is a research snapshot.
+            # Wallet ranking remains fixed by the recorded cutoff.
+            scored.append(existing)
+            continue
         try:
             raw, complete = helius.history(
                 wallet, earliest_ts=now - args.days * 86400, max_pages=args.max_pages)
@@ -137,6 +155,8 @@ def screen(args):
     blind, smart = rank_wallets(scored)
     print(json.dumps({"screened": len(scored), "eligible": len(smart),
                       "blind": len(blind), "smart": len(smart),
+                      "previous_rows_reused": sum(1 for r in scored if
+                          previous.get(r.get("wallet")) is r),
                       "output": args.output}))
 
 
@@ -381,6 +401,8 @@ def main(argv=None):
     screen_parser.add_argument("--max-wallets", type=int, default=30)
     screen_parser.add_argument("--max-pages", type=int, default=20)
     screen_parser.add_argument("--days", type=int, default=30)
+    screen_parser.add_argument("--resume", action="store_true",
+                               help="retry previous error rows only; keep successful screening snapshots")
     live = commands.add_parser("observe", help="live observed PAPER LEDGERS, never trading")
     live.add_argument("--screened", default="data/smart_money/screened.json")
     live.add_argument("--state", default="data/smart_money/state.json")
