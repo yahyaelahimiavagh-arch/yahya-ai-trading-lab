@@ -251,7 +251,7 @@ footer{color:var(--muted);font-size:11px;margin-top:13px;line-height:1.9}
     e("progress-bar").style.width=Math.max(0,Math.min(100,Number(r.progress_percent)))+"%";
     set("quality",r.feed_complete===true?"بدون شکاف ثبت‌شده":r.feed_complete===false?"نیازمند بررسی":"نامشخص");
     var fh=r.feed_health||{};
-    var healthLabels={"healthy":"سالم", "warming_up":"شروع اولیه",
+    var healthLabels={"healthy":"سالم (نخ فعال)", "polls_recent":"دریافت‌ها تازه‌اند (وضعیت نخ نامشخص)", "warming_up":"شروع اولیه",
       "polls_stale":"دریافت‌ها قدیمی شده‌اند","collector_stopped":"نخ دریافت‌کننده متوقف است",
       "completed":"پایان یافته", "interrupted":"متوقف شده", "unknown":"نامشخص"};
     set("collector-health",healthLabels[fh.state]||"نامشخص");
