@@ -213,17 +213,22 @@ def observe(args):
         now = int(time.time())
         if now >= next_poll:
             new_mints = set()
+            try:
+                sol_price = market.sol_usd(now=now)
+            except (RuntimeError, ValueError):
+                sol_price = None
+                skips["sol_quote_unavailable"] = skips.get("sol_quote_unavailable", 0) + 1
             for wallet in sorted(lab.blind | lab.smart):
                 try:
                     batch = helius.transactions(wallet, limit=100)
                 except (RuntimeError, ValueError):
                     skips["provider_failure"] = skips.get("provider_failure", 0) + 1
                     continue
-                for tx in sorted(batch, key=lambda x: (x.get("timestamp", 0), x.get("signature", ""))):
+                for tx in sorted(batch, key=lambda x: (x.get("timestamp") or 0, x.get("signature") or ""))):
                     if tx.get("type") != "SWAP":
                         continue
                     t = parse_swap(tx, wallet=wallet, observed_at=now,
-                                   historical_sol_usd=market.sol_usd(now=now))
+                                   historical_sol_usd=sol_price)
                     if t is None:
                         skips["unparsed_or_unsupported"] = skips.get("unparsed_or_unsupported", 0) + 1
                         continue
@@ -251,7 +256,7 @@ def observe(args):
                 except (RuntimeError, ValueError):
                     skips["market_failure"] = skips.get("market_failure", 0) + 1
         lab.process(now, quotes)
-        if last_observed and now % 60 == 0:
+        if last_observed and now % 15 == 0:
             write_json(path, snapshot(lab, quotes, now, polls, skips))
             write_json(Path(args.report), {**lab.report(quotes, now), "polls": polls, "skips": skips})
         time.sleep(1)
