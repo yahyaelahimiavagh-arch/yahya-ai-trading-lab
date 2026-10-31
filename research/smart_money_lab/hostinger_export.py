@@ -21,12 +21,16 @@ def make_static_html(template: str) -> str:
     return template.replace(old, new)
 
 
-def export(*, data_dir: Path, output_dir: Path, include_html: bool = False) -> dict:
+def export(*, data_dir: Path, output_dir: Path, include_html: bool = False,
+           budget_file: Path | None = None) -> dict:
     # The publish directory must never be the raw observer data directory.
     if output_dir.resolve() == data_dir.resolve():
         raise ValueError("refusing to publish into source data directory")
     report = _read_json(data_dir / "report.json")
-    budget = _read_json(data_dir / "helius_budget.json")
+    # V2 reuses the V1 Helius quota file, outside V2 report directory.
+    # Read-only explicit override; NEVER restart or reset provider counters.
+    budget = _read_json(budget_file if budget_file is not None else
+                        data_dir / "helius_budget.json")
     status = build_status(report, budget)
     output_dir.mkdir(parents=True, exist_ok=True)
     payload = json.dumps(status, separators=(",", ":"), ensure_ascii=False)
@@ -49,9 +53,11 @@ def main():
                         default=Path("data/smart_money"))
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--include-html", action="store_true")
+    parser.add_argument("--budget-file", type=Path,
+                        help="Read-only existing shared Helius quota ledger")
     args = parser.parse_args()
     result = export(data_dir=args.data_dir, output_dir=args.output_dir,
-                    include_html=args.include_html)
+                    include_html=args.include_html, budget_file=args.budget_file)
     # A minimal success log with no addresses or secrets.
     print(json.dumps({"status": result["status"],
                       "updated_at": result["updated_at"],
