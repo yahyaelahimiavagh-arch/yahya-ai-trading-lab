@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import json
 import os
+import threading
+from pathlib import Path
 import re
 import time
 import urllib.error
@@ -52,11 +54,32 @@ class Helius:
         if not api_key or len(api_key) < 8 or any(x in api_key for x in "&/?# "):
             raise ValueError("HELIUS_API_KEY missing or malformed")
         self.key = api_key
+        self._budget_lock = threading.Lock()
+        self._budget_file = Path('data/smart_money/helius_budget.json')
+
+    def _reserve_request(self):
+        # One SML process only; persistent over restarts.
+        with self._budget_lock:
+            p = self._budget_file
+            try:
+                old = json.loads(p.read_text(encoding='utf-8')) if p.exists() else {'calls': 0}
+                count = old['calls']
+                if type(count) is not int or count < 0:
+                    raise ValueError('invalid counter')
+            except (ValueError, KeyError, TypeError) as exc:
+                raise RuntimeError('invalid persisted Helius budget state') from exc
+            if count >= 5000:
+                raise RuntimeError('Helius 5000-call safety cap reached')
+            p.parent.mkdir(parents=True, exist_ok=True)
+            temp = p.with_suffix('.tmp')
+            temp.write_text(json.dumps({'calls': count + 1, 'max_calls': 5000}), encoding='utf-8')
+            temp.replace(p)
 
     def transactions(self, address: str, *, before: str = "", limit: int = 100) -> list[dict]:
         valid_address(address)
         if not (1 <= limit <= 100):
             raise ValueError("invalid provider page size")
+        self._reserve_request()
         params = {"api-key": self.key, "limit": limit, "sort-order": "desc"}
         if before:
             params["before-signature"] = before
