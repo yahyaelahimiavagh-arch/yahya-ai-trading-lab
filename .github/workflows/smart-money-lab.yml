@@ -1,0 +1,47 @@
+name: Smart Money Lab — paper-only gates
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "research/smart_money_lab/**"
+      - "tests/test_smart_money_lab.py"
+      - "tests/test_smart_money_live_monitor.py"
+      - "tests/test_smart_money_hostinger.py"
+      - "ops/publish-sml-hostinger.sh"
+      - "ops/sml-v2-cutover.sh"
+      - "ops/run-smart-money-v2.sh"
+      - "ops/sml-v2-switch-dashboard.sh"
+      - "tests/test_smart_money_v2_cutover.py"
+      - "ops/start-smart-money-free-pilot.sh"
+      - ".github/workflows/smart-money-lab.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  sml-offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile every new module
+        run: python -m compileall -q research/smart_money_lab tests/test_smart_money_lab.py tests/test_smart_money_live_monitor.py tests/test_smart_money_hostinger.py tests/test_smart_money_v2_cutover.py
+      - name: Validate Linux pilot bootstrap syntax
+        run: bash -n ops/start-smart-money-free-pilot.sh ops/publish-sml-hostinger.sh ops/sml-v2-cutover.sh ops/run-smart-money-v2.sh ops/sml-v2-switch-dashboard.sh
+      - name: Focused offline tests — no private keys or internet
+        run: |
+          python -m unittest discover -s tests -p 'test_smart_money_lab.py' -v
+          python -m unittest discover -s tests -p 'test_smart_money_live_monitor.py' -v
+          python -m unittest discover -s tests -p 'test_smart_money_hostinger.py' -v
+          python -m unittest discover -s tests -p 'test_smart_money_v2_cutover.py' -v
+      - name: Verify no order submission path in new files
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          for path in Path("research/smart_money_lab").glob("*.py"):
+              content = path.read_text(encoding="utf-8")
+              for banned in ("sendTransaction(", "send_transaction(", "private_key", "secret_key", "place_order("):
+                  assert banned not in content, (str(path), banned)
+          PY

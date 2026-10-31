@@ -1,0 +1,505 @@
+"""Offline, deterministic safety and behavior gates for Smart Money Lab."""
+import unittest
+import tempfile
+import json
+import http.client
+from types import SimpleNamespace
+from pathlib import Path
+from unittest.mock import patch
+from decimal import Decimal as D
+
+from research.smart_money_lab.engine import (
+    PaperLab, Trade, Portfolio, score_wallet, rank_wallets,
+)
+from research.smart_money_lab.providers import (
+    USDC, USDT, SOL, Market, Helius, parse_swap, classify_swap,
+    discover_candidates, _token_amount, get_json,
+)
+from research.smart_money_lab.__main__ import snapshot, restore, screen, parse_history, observer_feed_health
+from research.smart_money_lab.dashboard import html_report
+from research.smart_money_lab.diagnostics import summarize
+from research.smart_money_lab.pilot import exploratory_watchlist
+
+
+W1 = "A" * 35
+W2 = "B" * 35
+MINT = "C" * 35
+
+
+def trade(wallet=W1, side="BUY", signature="sig1", t=110, qty="20", usd="20",
+          mint=MINT, quote="USDC"):
+    return Trade(wallet, mint, side, signature, t, t + 1, D(qty), D(usd), quote)
+
+
+def quote(price="1", now=113, liquidity="100000"):
+    return {MINT: {"price_usd": price, "liquidity_usd": liquidity, "ts": now}}
+
+
+class SelectionTests(unittest.TestCase):
+    def test_realized_profit_uses_cost_basis_and_excludes_open_positions(self):
+        series = [
+            trade(t=100, qty="20", usd="20"),
+            trade(side="SELL", signature="sig2", t=150, qty="10", usd="25"),
+        ]
+        r = score_wallet(W1, series, cutoff=200, min_closed=1, min_days=1)
+        self.assertEqual(r["closed"], 1)
+        self.assertGreater(D(r["net_realized_usd"]), D("14"))
+        self.assertFalse(r["eligible"])  # external provenance required
+
+    def test_no_pre_cutoff_leakage(self):
+        rows = [
+            trade(t=100),
+            trade(side="SELL", signature="sig2", t=300, usd="200"),
+        ]
+        r = score_wallet(W1, rows, cutoff=200, min_closed=1, min_days=1)
+        self.assertEqual(r["closed"], 0)
+
+    def test_incomplete_history_never_ranks(self):
+        base = dict(wallet=W1, net_realized_usd="999999",
+                    preliminary_score="60", copyability_score="25",
+                    min_liquidity_usd="900000", copyable=True,
+                    meets_activity_thresholds=True, unmatched_sells=0,
+                    history_complete=False)
+        self.assertEqual(rank_wallets([base]), ([], []))
+        base["history_complete"] = True
+        a, b = rank_wallets([base])
+        self.assertEqual(a, [W1])
+        self.assertEqual(b, [W1])
+
+
+class ProviderTests(unittest.TestCase):
+    def test_parse_usdc_buy(self):
+        raw = {
+            "type": "SWAP", "feePayer": W1, "signature": "chain-sig", "timestamp": 100,
+            "events": {"swap": {"tokenInputs": [
+                {"mint": USDC, "tokenAmount": 20}
+            ], "tokenOutputs": [{"mint": MINT, "tokenAmount": 1000}]}}
+        }
+        t = parse_swap(raw, wallet=W1, observed_at=105)
+        self.assertIsNotNone(t)
+        self.assertEqual(t.side, "BUY")
+        self.assertEqual(t.usd_notional, D("20"))
+        self.assertIsNone(parse_swap(raw, wallet=W2, observed_at=105))
+
+    def test_parse_sol_requires_asof_usd_price(self):
+        raw = {
+            "type": "SWAP", "feePayer": W1, "signature": "chain-sig", "timestamp": 100,
+            "events": {"swap": {"tokenInputs": [
+                {"mint": SOL, "tokenAmount": "1.5"}
+            ], "tokenOutputs": [{"mint": MINT, "tokenAmount": "1000"}]}}
+        }
+        self.assertIsNone(parse_swap(raw, wallet=W1, observed_at=105))
+        t = parse_swap(raw, wallet=W1, observed_at=105, historical_sol_usd=D("100"))
+        self.assertEqual(t.usd_notional, D("150"))
+
+    def test_raw_token_decimals(self):
+        self.assertEqual(_token_amount({"rawTokenAmount":
+            {"tokenAmount": "1000000", "decimals": 6}}), D("1"))
+        self.assertEqual(_token_amount({"rawTokenAmount":
+            {"tokenAmount": "-1000000", "decimals": 6}}), D("1"))
+
+    def test_negative_native_sol_input(self):
+        tx = {
+            "type": "SWAP", "feePayer": W1, "signature": "native-sig", "timestamp": 100,
+            "events": {"swap": {"nativeInput": {"account": W1, "amount": -1500000000},
+                                "tokenInputs": [], "tokenOutputs":
+                                [{"mint": MINT, "rawTokenAmount":
+                                  {"tokenAmount": "1000000", "decimals": 6}}]}}
+        }
+        result = parse_swap(tx, wallet=W1, observed_at=105, historical_sol_usd=D("100"))
+        self.assertIsNotNone(result)
+        self.assertEqual(result.usd_notional, D("150"))
+        self.assertEqual(result.amount, D("1"))
+
+    def test_helius_request_budget_survives_restart(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'helius_budget.json'
+            with patch('research.smart_money_lab.providers.get_json', return_value=[]):
+                first = Helius('key_for_testing_1234')
+                first._budget_file = path
+                first._reserve_request()
+                second = Helius('key_for_testing_1234')
+                second._budget_file = path
+                self.assertEqual(__import__('json').loads(path.read_text())['calls'], 1)
+                second._reserve_request()
+                self.assertEqual(__import__('json').loads(path.read_text())['calls'], 2)
+                path.write_text('{"calls":5000}')
+                with self.assertRaisesRegex(RuntimeError, 'safety cap reached'):
+                    second._reserve_request()
+
+    def test_bounded_429_retry_then_success(self):
+        helius = Helius("key_for_testing_1234")
+        with patch.object(helius, "_paced_request", side_effect=[
+            RuntimeError("read-only data provider HTTP 429"),
+            RuntimeError("read-only data provider HTTP 429"), []]) as fetch:
+            with patch("research.smart_money_lab.providers.time.sleep") as pause:
+                self.assertEqual(helius.transactions(W1), [])
+                self.assertEqual(fetch.call_count, 3)
+                self.assertEqual([x.args[0] for x in pause.call_args_list], [5, 12])
+
+    def test_non_429_never_retried(self):
+        helius = Helius("key_for_testing_1234")
+        with patch.object(helius, "_paced_request", side_effect=RuntimeError(
+                "read-only data provider HTTP 401")) as fetch:
+            with self.assertRaisesRegex(RuntimeError, "401"):
+                helius.transactions(W1)
+            self.assertEqual(fetch.call_count, 1)
+
+    def test_market_never_uses_quote_token_base_price(self):
+        pairs = [
+            {"chainId": "solana", "baseToken": {"address": MINT},
+             "quoteToken": {"address": SOL}, "priceUsd": "0.01",
+             "liquidity": {"usd": 1000000}},
+            {"chainId": "solana", "baseToken": {"address": SOL},
+             "quoteToken": {"address": USDC}, "priceUsd": "250",
+             "liquidity": {"usd": 100000}},
+        ]
+        with patch("research.smart_money_lab.providers.get_json", return_value=pairs):
+            q = Market().token(SOL, now=100)
+            self.assertEqual(q["price_usd"], "250")
+            batch = Market().tokens({MINT, SOL}, now=100)
+            self.assertEqual(batch[SOL]["price_usd"], "250")
+            self.assertEqual(batch[MINT]["price_usd"], "0.01")
+
+
+
+class DataQualityFixTests(unittest.TestCase):
+    def test_explain_unsupported_malformed_and_sol_missing_price(self):
+        base = {"type": "SWAP", "feePayer": W1, "signature": "abc",
+                "timestamp": 100}
+        missing, reason = classify_swap(base, wallet=W1, observed_at=110)
+        self.assertIsNone(missing)
+        self.assertEqual(reason, "missing_swap_event")
+        base["events"] = {"swap": {
+            "tokenInputs": [{"mint": SOL, "tokenAmount": "1"}],
+            "tokenOutputs": [{"mint": MINT, "tokenAmount": "2"}]}}
+        missing, reason = classify_swap(base, wallet=W1, observed_at=110)
+        self.assertIsNone(missing)
+        self.assertEqual(reason, "missing_sol_reference_price")
+        accepted, reason = classify_swap(base, wallet=W1, observed_at=110,
+                                         historical_sol_usd=D("100"))
+        self.assertEqual(reason, "ok")
+        self.assertEqual(accepted.usd_notional, D("100"))
+        base["events"]["swap"]["tokenInputs"].append(
+            {"mint": USDC, "tokenAmount": "20"})
+        missing, reason = classify_swap(base, wallet=W1, observed_at=110,
+                                        historical_sol_usd=D("100"))
+        self.assertIsNone(missing)
+        self.assertEqual(reason, "ambiguous_legs")
+
+    def test_history_reports_parse_failures_without_guessing_fills(self):
+        raw = [
+            {"type": "SWAP", "feePayer": W1, "signature": "bad",
+             "timestamp": 100, "events": {}},
+            {"type": "TRANSFER", "feePayer": W1, "timestamp": 102},
+        ]
+        trades, swaps, skipped, reasons = parse_history(raw, W1, 110, {})
+        self.assertEqual(trades, [])
+        self.assertEqual(swaps, 1)
+        self.assertEqual(skipped, 1)
+        self.assertEqual(reasons, {"missing_swap_event": 1})
+
+    def test_official_usdt_quote_parsed_nominally_with_no_sol_rate(self):
+        raw = {"type": "SWAP", "feePayer": W1, "signature": "usdt-buy",
+               "timestamp": 100, "events": {"swap": {
+                   "tokenInputs": [{"mint": USDT, "tokenAmount": "26"}],
+                   "tokenOutputs": [{"mint": MINT, "tokenAmount": "52"}]}}}
+        result, reason = classify_swap(raw, wallet=W1, observed_at=110)
+        self.assertEqual(reason, "ok")
+        self.assertEqual(result.quote_mint, "USDT")
+        self.assertEqual(result.usd_notional, D("26"))
+
+    def test_malformed_event_shape_does_not_crash(self):
+        raw = {"type": "SWAP", "feePayer": W1, "signature": "broken",
+               "timestamp": 100, "events": ["unsafe"]}
+        item, reason = classify_swap(raw, wallet=W1, observed_at=110)
+        self.assertIsNone(item)
+        self.assertEqual(reason, "missing_swap_event")
+        self.assertIsNone(parse_swap(raw, wallet=W1, observed_at=110))
+
+    def test_bounded_dex_fallback_recovers_only_correct_base_token(self):
+        good = {"chainId": "solana", "baseToken": {"address": MINT},
+                "quoteToken": {"address": SOL}, "priceUsd": "0.05",
+                "liquidity": {"usd": 65000}}
+        with patch("research.smart_money_lab.providers.get_json",
+                   side_effect=[[], [good]]) as api:
+            result = Market().tokens({MINT}, now=200, fallback_limit=1)
+            self.assertEqual(result[MINT]["price_usd"], "0.05")
+            self.assertEqual(api.call_count, 2)
+        reverse_only = {**good, "baseToken": {"address": SOL},
+                        "quoteToken": {"address": MINT},
+                        "priceUsd": "250"}
+        with patch("research.smart_money_lab.providers.get_json",
+                   side_effect=[[], [reverse_only]]):
+            self.assertEqual(Market().tokens({MINT}, now=200,
+                                             fallback_limit=1), {})
+        with self.assertRaises(ValueError):
+            Market().tokens({MINT}, now=200, fallback_limit=10)
+
+    def test_quality_first_discovery_spends_helius_only_on_old_liquid_pool(self):
+        now = 1_800_000_000
+        newer = "E" * 35
+        good_pool = "D" * 35
+        feed = [{"chainId": "solana", "tokenAddress": MINT},
+                {"chainId": "solana", "tokenAddress": newer}]
+        eligible_pair = {
+            "chainId": "solana", "pairAddress": good_pool,
+            "baseToken": {"address": MINT},
+            "liquidity": {"usd": 250000}, "volume": {"h24": 95000},
+            "pairCreatedAt": (now - 15*86400) * 1000,
+        }
+        bad_pair = {
+            "chainId": "solana", "pairAddress": "F"*35,
+            "liquidity": {"usd": 10000}, "volume": {"h24": 95000},
+            "pairCreatedAt": (now - 15*86400)*1000,
+        }
+        def fake_get(url):
+            if "token-profiles/latest" in url:
+                return feed
+            if url.endswith("/" + MINT):
+                return [eligible_pair]
+            if url.endswith("/" + newer):
+                return [bad_pair]
+            raise AssertionError(url)
+        with patch("research.smart_money_lab.providers.get_json",
+                   side_effect=fake_get), patch(
+                       "research.smart_money_lab.providers.time.time",
+                       return_value=now):
+            h = Helius("key_for_testing_1234")
+            with patch.object(h, "transactions", return_value=[
+                {"type": "SWAP", "feePayer": W1},
+                {"type": "TRANSFER", "feePayer": W2}
+            ]) as tx:
+                selected = discover_candidates(h, Market(), max_pools=4,
+                                               per_pool=30, source="profiles")
+                self.assertEqual(tx.call_count, 1)
+                self.assertEqual(selected[0]["wallet"], W1)
+                self.assertFalse(selected[0]["verified"])
+                self.assertEqual(selected[0]["source"],
+                                 "liquid_profile_pool_swap_payer")
+        self.assertEqual(len(selected), 1)
+
+
+
+class FeedResilienceTests(unittest.TestCase):
+    def test_remote_disconnected_is_normalized_and_never_leaks_token_url(self):
+        secret_url = ("https://api-mainnet.helius-rpc.com/v0/addresses/example/"
+                      "transactions?api-key=DO_NOT_PRINT_THIS_KEY")
+        with patch("research.smart_money_lab.providers.urllib.request.urlopen",
+                   side_effect=http.client.RemoteDisconnected("connection closed")):
+            with self.assertRaisesRegex(RuntimeError,
+                                        "^read-only data provider unavailable$") as cm:
+                get_json(secret_url)
+        self.assertNotIn("DO_NOT_PRINT_THIS_KEY", str(cm.exception))
+
+    def test_reset_and_truncated_http_response_fail_closed(self):
+        for exception in (ConnectionResetError("reset"),
+                          http.client.IncompleteRead(b"partial")):
+            with self.subTest(error=type(exception).__name__):
+                with patch("research.smart_money_lab.providers.urllib.request.urlopen",
+                           side_effect=exception):
+                    with self.assertRaisesRegex(RuntimeError, "provider unavailable"):
+                        get_json("https://invalid.invalid/never-sent")
+
+    def test_poll_heartbeat_requires_every_wallet_recent(self):
+        recent = {"wallet-secret-a": 990, "wallet-secret-b": 995}
+        ok = observer_feed_health(wallets={"wallet-secret-a", "wallet-secret-b"},
+                                  last_polls=recent, started_at=700, now=1000,
+                                  poll_seconds=180, collector_alive=True)
+        self.assertEqual(ok["state"], "healthy")
+        self.assertEqual(ok["recent_wallets"], 2)
+        self.assertNotIn("wallet-secret", str(ok))
+
+        stale = observer_feed_health(wallets={"wallet-secret-a", "wallet-secret-b"},
+                                     last_polls={"wallet-secret-a": 400,
+                                                 "wallet-secret-b": 995},
+                                     started_at=100, now=1000, poll_seconds=180,
+                                     collector_alive=True)
+        self.assertEqual(stale["state"], "polls_stale")
+        self.assertEqual(stale["recent_wallets"], 1)
+        self.assertEqual(stale["oldest_poll_age_seconds"], 600)
+        down = observer_feed_health(wallets={"wallet-secret-a", "wallet-secret-b"},
+                                    last_polls=recent, started_at=700, now=1000,
+                                    poll_seconds=180, collector_alive=False)
+        self.assertEqual(down["state"], "collector_stopped")
+
+    def test_startup_without_polls_is_not_reported_healthy(self):
+        state = observer_feed_health(wallets={"wallet-secret-a"},
+                                     last_polls={}, started_at=1000, now=1030,
+                                     poll_seconds=180, collector_alive=True)
+        self.assertEqual(state["state"], "warming_up")
+        self.assertEqual(state["recent_wallets"], 0)
+        with self.assertRaises(ValueError):
+            observer_feed_health(wallets=[], last_polls={}, started_at=0,
+                                 now=100, poll_seconds=0, collector_alive=True)
+
+
+class LedgerTests(unittest.TestCase):
+    def test_separate_paper_ledgers_and_no_lookback_execution(self):
+        lab = PaperLab(100, [W1], [W1, W2])
+        self.assertEqual(len(lab.portfolios), 9)
+        lab.ingest(trade(t=90, signature="old"))
+        self.assertEqual(len(lab.pending), 0)
+        lab.ingest(trade(t=110))
+        lab.ingest(trade(t=110))  # same signature is idempotent
+        self.assertEqual(len(lab.pending), 6)
+        lab.process(113, quote(now=113))
+        self.assertEqual(len(lab.portfolios["blind_1s"].fills), 1)
+        self.assertEqual(len(lab.portfolios["smart_1s"].fills), 1)
+        self.assertEqual(len(lab.portfolios["consensus_1s"].fills), 0)
+        self.assertLess(lab.portfolios["smart_1s"].cash, D("1000"))
+        self.assertEqual(lab.portfolios["smart_1s"].cash, D("970"))
+
+    def test_two_distinct_voters_required(self):
+        lab = PaperLab(100, [], [W1, W2])
+        lab.ingest(trade(W1, signature="one"))
+        lab.ingest(trade(W1, signature="another", t=111))
+        self.assertFalse(any(x[1].startswith("consensus") for x in lab.pending))
+        lab.ingest(trade(W2, signature="three", t=112))
+        self.assertEqual(
+            sum(x[1].startswith("consensus") for x in lab.pending), 3)
+
+    def test_costs_and_early_exit(self):
+        p = Portfolio("blind", 1)
+        t = trade()
+        self.assertTrue(p.apply(t, price=D("1"), liquidity_usd=D("100000"),
+                                quote_ts=112, now=112))
+        self.assertEqual(p.cash, D("970"))
+        self.assertTrue(p.apply(trade(side="SELL", signature="2", t=112),
+                                price=D("1"), liquidity_usd=D("100000"),
+                                quote_ts=114, now=114))
+        self.assertFalse(p.holdings)
+        self.assertLess(p.cash, D("1000"))  # cost drag after flat round-trip
+
+    def test_stale_quote_or_illiquidity_cannot_buy(self):
+        p = Portfolio("blind", 1)
+        self.assertFalse(p.apply(trade(), price=D("1"), liquidity_usd=D("100000"),
+                                 quote_ts=60, now=113))
+        self.assertFalse(p.apply(trade(), price=D("1"), liquidity_usd=D("2"),
+                                 quote_ts=113, now=113))
+        self.assertEqual(p.cash, D("1000"))
+
+    def test_stop_loss_closes_and_prevents_new_buys(self):
+        p = Portfolio("blind", 1)
+        p.apply(trade(), price=D("1"), liquidity_usd=D("100000"),
+                quote_ts=112, now=112)
+        p.peak_equity = D("1100")  # synthetic prior high-water mark
+        p.mark(quote(price="0.001", now=113), 113)
+        self.assertTrue(p.halted)
+        self.assertFalse(p.holdings)
+        self.assertEqual(p.fills[-1]["side"], "RISK_EXIT")
+        self.assertFalse(p.apply(trade(signature="new", t=114), price=D("1"),
+                                 liquidity_usd=D("100000"), quote_ts=115, now=115))
+
+    def test_dashboard_is_paper_only_and_escapes_untrusted_assets(self):
+        lab = PaperLab(100, [W1], [W1, W2])
+        report = lab.report({}, 113)
+        report["portfolios"][0]["id"] = "<script>alert('x')</script>"
+        page = html_report(report)
+        self.assertIn("PAPER ONLY", page)
+        self.assertNotIn("<script>", page)
+        self.assertIn("&lt;script&gt;", page)
+
+    def test_snapshot_restore(self):
+        lab = PaperLab(100, [W1], [W1, W2])
+        lab.ingest(trade())
+        lab.process(113, quote(now=113))
+        doc = snapshot(lab, quote(now=113), 113, 1, {})
+        restored = restore(doc)
+        self.assertEqual(
+            restored.portfolios["blind_1s"].cash,
+            lab.portfolios["blind_1s"].cash)
+        self.assertEqual(restored.seen, lab.seen)
+        self.assertEqual(restored.report(quote(now=113), 113)["kind"],
+                         "YATL_SMART_MONEY_PAPER_ONLY")
+
+
+
+class ResumableScreeningTests(unittest.TestCase):
+    def test_resume_retries_only_error_rows_no_api_calls_for_good_rows(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            candidates = root / "candidates.json"
+            screened = root / "screened.json"
+            candidates.write_text(json.dumps([W1, W2]), encoding="utf-8")
+            prior_good = {"wallet": W1, "eligible": False,
+                          "history_complete": True, "copyable": False}
+            screened.write_text(json.dumps([
+                prior_good, {"wallet": W2, "error": "read-only data provider HTTP 429"}
+            ]), encoding="utf-8")
+            opts = SimpleNamespace(candidates=str(candidates), output=str(screened),
+                                  max_wallets=2, max_pages=1, days=30, resume=True)
+            with patch("research.smart_money_lab.__main__.Helius") as mock_helius, \
+                 patch("research.smart_money_lab.__main__.Market") as mock_market, \
+                 patch("research.smart_money_lab.__main__.sol_candles", return_value={}):
+                mock_helius.return_value.history.return_value = ([], True)
+                screen(opts)
+                mock_helius.return_value.history.assert_called_once()
+                call_args = mock_helius.return_value.history.call_args
+                self.assertEqual(call_args.args[0], W2)
+                found = json.loads(screened.read_text(encoding="utf-8"))
+                self.assertEqual(found[0], prior_good)
+                self.assertEqual(len(found), 2)
+
+
+class ScreeningDiagnosticsTests(unittest.TestCase):
+    def test_screening_report_redacts_wallets_and_api_errors(self):
+        rows = [
+            {'wallet': W1, 'error': 'read-only data provider HTTP 429'},
+            {'wallet': W2, 'closed': 0, 'active_days': 2,
+             'history_complete': True, 'copyable': False,
+             'unmatched_sells': 1, 'unparsed_swaps': 3, 'total_swaps_observed': 8},
+        ]
+        result = summarize(rows, {'calls': 85})
+        self.assertEqual(result['screened_total'], 2)
+        self.assertEqual(result['rejection_reasons_overlapping']['provider_429_rate_limited'], 1)
+        self.assertEqual(result['helius_requests_reserved_so_far'], 85)
+        self.assertNotIn(W1, str(result))
+        self.assertNotIn(W2, str(result))
+
+    def test_diagnostics_does_not_depend_on_secret_or_network(self):
+        result = summarize([], {})
+        self.assertEqual(result['screened_total'], 0)
+        self.assertIsNone(result['helius_requests_reserved_so_far'])
+
+
+class ExploratoryPilotTests(unittest.TestCase):
+    def test_unvetted_watchlist_requires_history_and_real_activity(self):
+        data = [
+            {'wallet': W1, 'history_complete': True, 'closed': 12,
+             'total_swaps_observed': 30, 'active_days': 3,
+             'min_liquidity_usd': '0', 'eligible': False},
+            {'wallet': W2, 'history_complete': True, 'closed': 6,
+             'total_swaps_observed': 15, 'active_days': 4,
+             'min_liquidity_usd': '50000', 'eligible': False},
+            {'wallet': 'D'*35, 'history_complete': False, 'closed': 300,
+             'total_swaps_observed': 300, 'active_days': 20,
+             'min_liquidity_usd': '100000'},
+        ]
+        blind, smart = exploratory_watchlist(data)
+        self.assertEqual(blind, [W1, W2])
+        self.assertEqual(smart, [W2, W1])
+        self.assertNotIn('D'*35, blind + smart)
+
+    def test_exploratory_watchlist_refuses_single_valid_wallet(self):
+        with self.assertRaisesRegex(ValueError, 'fewer than two'):
+            exploratory_watchlist([
+                {'wallet': W1, 'history_complete': True, 'closed': 10,
+                 'total_swaps_observed': 15},
+                {'wallet': W2, 'error': 'HTTP 429', 'history_complete': True,
+                 'closed': 200, 'total_swaps_observed': 200},
+            ])
+
+    def test_selection_mode_survives_snapshot_and_is_clearly_reported(self):
+        lab = PaperLab(100, [W1], [W2], selection_mode='exploratory_unvetted')
+        saved = snapshot(lab, {}, 105, 0, {})
+        restored = restore(saved)
+        self.assertEqual(restored.selection_mode, 'exploratory_unvetted')
+        report = restored.report({}, 106)
+        self.assertEqual(report['selection_mode'], 'exploratory_unvetted')
+        self.assertIn('UNVETTED', html_report(report))
+        self.assertEqual(len(report['portfolios']), 9)
+        self.assertTrue(all(p['cash_usd'] == '1000' for p in report['portfolios']))
+
+if __name__ == "__main__":
+    unittest.main()
