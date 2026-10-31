@@ -40,6 +40,7 @@ class CutoverSafetyTests(unittest.TestCase):
         self.assertIn("V2 paper report is recent", s)
         self.assertIn('tmux kill-session -t yatl-sml-hostinger', s)
         self.assertIn('YATL_REPORT_DIR=', s)
+        self.assertIn('YATL_HELIUS_BUDGET_FILE=', s)
         self.assertIn('bash ops/publish-sml-hostinger.sh --init', s)
         self.assertNotIn('tmux kill-session -t yatl-sml-v2', s)
         self.assertNotIn('tmux kill-session -t yatl-sml-paper', s)
