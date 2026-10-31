@@ -1,5 +1,7 @@
 name: Smart Money Lab — paper-only gates
 on:
+  push:
+    branches: [research/smart-money-wallet-intelligence-v3]
   pull_request:
     branches: [main]
     paths:
