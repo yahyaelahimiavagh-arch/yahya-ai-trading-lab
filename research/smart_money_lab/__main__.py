@@ -456,6 +456,12 @@ def observe(args):
             wallets=watched, last_polls=last_polls, started_at=lab.start_at,
             now=now, poll_seconds=args.poll_seconds,
             collector_alive=False)
+        # A planned completion/operator interrupt is not an unexplained
+        # poller failure. Always preserve the separate feed completeness bit.
+        if interrupted:
+            final_health["state"] = "interrupted"
+        elif now >= finish:
+            final_health["state"] = "completed"
         report_data = {**lab.report(quotes, now), "polls": polls,
                        "skips": skips, "interrupted": interrupted,
                        "feed_health": final_health,
