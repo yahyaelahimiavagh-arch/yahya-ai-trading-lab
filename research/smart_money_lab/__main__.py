@@ -15,11 +15,12 @@ import time
 import urllib.parse
 from pathlib import Path
 from decimal import Decimal
+from collections import Counter
 
 from .engine import PaperLab, Trade, Holding, dec, score_wallet, rank_wallets, DELAYS
 from .pilot import exploratory_watchlist
 from .dashboard import save_html
-from .providers import Helius, Market, SOL, discover_candidates, get_json, parse_swap, valid_address
+from .providers import Helius, Market, SOL, discover_candidates, get_json, parse_swap, classify_swap, valid_address
 
 
 def write_json(path: Path, payload: dict | list):
@@ -69,18 +70,20 @@ def parse_history(raw: list[dict], wallet: str, now: int, prices: dict[int, Deci
     trades = []
     swaps = 0
     missed = 0
+    reasons = Counter()
     for tx in raw:
         if tx.get("type") != "SWAP" or tx.get("feePayer") != wallet:
             continue
         swaps += 1
         hour = int(tx.get("timestamp", 0)) // 3600 - 1
-        t = parse_swap(tx, wallet=wallet, observed_at=now,
-                       historical_sol_usd=prices.get(hour))
+        t, reason = classify_swap(tx, wallet=wallet, observed_at=now,
+                                  historical_sol_usd=prices.get(hour))
         if t is None:
             missed += 1
+            reasons[reason] += 1
         else:
             trades.append(t)
-    return trades, swaps, missed
+    return trades, swaps, missed, dict(reasons)
 
 
 def screen(args):
@@ -123,12 +126,13 @@ def screen(args):
         try:
             raw, complete = helius.history(
                 wallet, earliest_ts=now - args.days * 86400, max_pages=args.max_pages)
-            parsed, swaps, skipped = parse_history(raw, wallet, now, prices)
+            parsed, swaps, skipped, parse_reasons = parse_history(raw, wallet, now, prices)
             historical = [t for t in parsed if t.chain_time >= now - args.days * 86400]
             result = score_wallet(wallet, historical, cutoff=now, min_closed=50, min_days=15)
             result["history_complete"] = complete
             result["total_swaps_observed"] = swaps
             result["unparsed_swaps"] = skipped
+            result["unparsed_swap_reasons"] = parse_reasons
             # Require at least 80% swaps parsed to avoid biased ROI estimates.
             quality = swaps > 0 and (swaps - skipped) / swaps >= 0.8
             recent_mints = list(dict.fromkeys(t.mint for t in sorted(
@@ -299,7 +303,7 @@ def observe(args):
         if not mints:
             return
         try:
-            fetched = market.tokens(mints, now=int(time.time()))
+            fetched = market.tokens(mints, now=int(time.time()), fallback_limit=3)
             receipt = int(time.time())
             for mint, q in fetched.items():
                 quotes[mint] = {**q, "ts": receipt}
@@ -340,15 +344,28 @@ def observe(args):
                     sol_price_time = int(time.time())
                 for tx in sorted(batch, key=lambda x: (
                         x.get("timestamp") or 0, x.get("signature") or "")):
-                    if tx.get("type") != "SWAP":
+                    if tx.get("type") != "SWAP" or tx.get("feePayer") != wallet:
                         continue
-                    t = parse_swap(tx, wallet=wallet, observed_at=observed_at,
-                                   historical_sol_usd=sol_price)
+                    chain_ts = tx.get("timestamp")
+                    if not isinstance(chain_ts, int) or chain_ts < lab.start_at:
+                        # Helius sends old history again in every poll. This is
+                        # NOT a forward signal and must not create market API
+                        # requests or inflate new-signal counts.
+                        skips["historical_rows_ignored"] = skips.get("historical_rows_ignored", 0) + 1
+                        continue
+                    t, reason = classify_swap(tx, wallet=wallet,
+                                              observed_at=observed_at,
+                                              historical_sol_usd=sol_price)
                     if t is None:
+                        key = "parse_" + reason
+                        skips[key] = skips.get(key, 0) + 1
                         skips["unparsed_or_unsupported"] = skips.get("unparsed_or_unsupported", 0) + 1
                         continue
                     if t.key not in lab.seen:
-                        new_mints.add(t.mint)
+                        # Do not request quotes for pre-start history or
+                        # signals that are already too old to trade.
+                        if observed_at - chain_ts <= 300:
+                            new_mints.add(t.mint)
                         lab.ingest(t)
             refresh(new_mints)
             now = int(time.time())
@@ -410,6 +427,8 @@ def main(argv=None):
     discover.add_argument("--output", default="data/smart_money/candidates.json")
     discover.add_argument("--max-pools", type=int, default=5)
     discover.add_argument("--per-pool", type=int, default=30)
+    discover.add_argument("--source", choices=("boosts", "profiles"), default="boosts",
+                          help="Profiles mode screens mature liquid pools but does NOT vet their traders")
     screen_parser = commands.add_parser("screen", help="point-in-time history qualification")
     screen_parser.add_argument("--candidates", default="data/smart_money/candidates.json")
     screen_parser.add_argument("--output", default="data/smart_money/screened.json")
@@ -436,7 +455,8 @@ def main(argv=None):
         if not 1 <= args.max_pools <= 10 or not 1 <= args.per_pool <= 100:
             parser.error("discovery pool/page limit out of range")
         found = discover_candidates(Helius(os.getenv("HELIUS_API_KEY", "")), Market(),
-                                    max_pools=args.max_pools, per_pool=args.per_pool)
+                                    max_pools=args.max_pools, per_pool=args.per_pool,
+                                    source=args.source)
         write_json(Path(args.output), found)
         print(json.dumps({"discovered_unverified": len(found), "output": args.output}))
     elif args.command == "screen":
