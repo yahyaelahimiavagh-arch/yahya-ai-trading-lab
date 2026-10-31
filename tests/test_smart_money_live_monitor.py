@@ -65,6 +65,40 @@ class MonitorReportTests(unittest.TestCase):
         self.assertEqual(result["skips"]["historical_rows_ignored"], 120)
         self.assertNotIn("wallet-secret", json.dumps(result))
 
+    def test_feed_health_degrades_live_status_without_wallet_leak(self):
+        report = sample_report()
+        report["feed_health"] = {
+            "state": "collector_stopped", "collector_alive": False,
+            "expected_wallets": 6, "recent_wallets": 0,
+            "oldest_poll_age_seconds": 600,
+            "sensitive_wallet": "wallet-secret-AAA",
+            "last_polls": {"wallet-secret-AAA": 1793459999},
+        }
+        report["feed_complete"] = False
+        output = build_status(report, {"calls": 612}, now=1793466005)
+        self.assertEqual(output["status"], "degraded")
+        self.assertEqual(output["feed_health"]["state"], "collector_stopped")
+        self.assertEqual(output["feed_health"]["expected_wallets"], 6)
+        self.assertEqual(output["feed_health"]["oldest_poll_age_seconds"], 600)
+        self.assertNotIn("wallet-secret", json.dumps(output))
+        report["feed_health"]["state"] = "polls_stale"
+        self.assertEqual(build_status(report, {}, now=1793466005)["status"],
+                         "degraded")
+
+    def test_healthy_heartbeat_and_old_report_backward_compatibility(self):
+        report = sample_report()
+        output = build_status(report, {}, now=1793466005)
+        self.assertEqual(output["status"], "running")
+        self.assertEqual(output["feed_health"]["state"], "unknown")
+        report["feed_health"] = {
+            "state": "healthy", "collector_alive": True,
+            "expected_wallets": 6, "recent_wallets": 6,
+            "oldest_poll_age_seconds": 176,
+        }
+        output = build_status(report, {}, now=1793466005)
+        self.assertEqual(output["status"], "running")
+        self.assertEqual(output["feed_health"]["recent_wallets"], 6)
+
     def test_staleness_and_initialization(self):
         report = sample_report()
         self.assertEqual(build_status(report, None, now=1793466400)["status"], "stale")
