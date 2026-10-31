@@ -75,7 +75,8 @@ def parse_history(raw: list[dict], wallet: str, now: int, prices: dict[int, Deci
         if tx.get("type") != "SWAP" or tx.get("feePayer") != wallet:
             continue
         swaps += 1
-        hour = int(tx.get("timestamp", 0)) // 3600 - 1
+        chain_ts = tx.get("timestamp")
+        hour = chain_ts // 3600 - 1 if isinstance(chain_ts, int) else -1
         t, reason = classify_swap(tx, wallet=wallet, observed_at=now,
                                   historical_sol_usd=prices.get(hour))
         if t is None:
