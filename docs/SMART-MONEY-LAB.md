@@ -39,6 +39,8 @@ uv run --locked python -m research.smart_money_lab observe \
   --state data/smart_money/state.json --report data/smart_money/report.json
 \`\`\`
 
+The 24-hour observer writes `data/smart_money/report.json`, `state.json` and a static `data/smart_money/dashboard.html` every ~15 seconds. Open the HTML dashboard locally; it uses no external scripts or trackers.
+
 To resume an interrupted window **using the saved snapshot**:
 
 \`\`\`sh
@@ -50,7 +52,8 @@ uv run --locked python -m research.smart_money_lab observe --resume \
 Report the persisted snapshot at any time:
 
 \`\`\`sh
-uv run --locked python -m research.smart_money_lab report --state data/smart_money/state.json
+uv run --locked python -m research.smart_money_lab report --state data/smart_money/state.json \
+  --html data/smart_money/dashboard.html
 \`\`\`
 
 Focused offline deterministic suite:
