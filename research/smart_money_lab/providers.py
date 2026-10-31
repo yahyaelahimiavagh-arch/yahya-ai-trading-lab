@@ -214,15 +214,16 @@ class Market:
                     continue
                 if price <= 0 or liquidity <= 0:
                     continue
-                for mint in ((item.get("baseToken") or {}).get("address"),
-                             (item.get("quoteToken") or {}).get("address")):
-                    if mint not in subset:
-                        continue
-                    if mint not in result or liquidity > dec(result[mint]["liquidity_usd"]):
-                        result[mint] = {"price_usd": str(price) if mint == (item.get("baseToken") or {}).get("address")
-                                        else None, "liquidity_usd": str(liquidity), "ts": now}
-        # DEX pair priceUsd is for its base token, never the quote token.
-        return {m: q for m, q in result.items() if q["price_usd"] is not None}
+                mint = (item.get("baseToken") or {}).get("address")
+                # DEX pair priceUsd is for the base token, NEVER the quote.
+                # A high-liquidity quote-side pair must not mask a correct
+                # lower-liquidity base-side price for the requested mint.
+                if mint not in subset:
+                    continue
+                if mint not in result or liquidity > dec(result[mint]["liquidity_usd"]):
+                    result[mint] = {"price_usd": str(price),
+                                    "liquidity_usd": str(liquidity), "ts": now}
+        return result
 
     def sol_usd(self, *, now: int) -> Decimal | None:
         q = self.token(SOL, now=now)
