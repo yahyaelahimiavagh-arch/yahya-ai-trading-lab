@@ -55,6 +55,11 @@ class Helius:
             raise ValueError("HELIUS_API_KEY missing or malformed")
         self.key = api_key
         self._budget_lock = threading.Lock()
+        self._rate_lock = threading.Lock()
+        self._next_request_at = 0.0
+        # Enhanced endpoints have tighter limits than ordinary RPCs on Free.
+        # 1.2 sec spacing (<=0.84 RPS) leaves headroom below documented 2 RPS.
+        self._min_request_interval_seconds = 1.2
         self._budget_file = Path('data/smart_money/helius_budget.json')
 
     def _reserve_request(self):
@@ -75,19 +80,37 @@ class Helius:
             temp.write_text(json.dumps({'calls': count + 1, 'max_calls': 5000}), encoding='utf-8')
             temp.replace(p)
 
+    def _paced_request(self, url: str):
+        # Shared across this Helius instance, including concurrent wallet
+        # polling threads. Every attempt consumes a reserved budget entry.
+        with self._rate_lock:
+            delay = self._next_request_at - time.monotonic()
+            if delay > 0:
+                time.sleep(delay)
+            self._reserve_request()
+            self._next_request_at = time.monotonic() + self._min_request_interval_seconds
+        return get_json(url)
+
     def transactions(self, address: str, *, before: str = "", limit: int = 100) -> list[dict]:
         valid_address(address)
         if not (1 <= limit <= 100):
             raise ValueError("invalid provider page size")
-        self._reserve_request()
         params = {"api-key": self.key, "limit": limit, "sort-order": "desc"}
         if before:
             params["before-signature"] = before
         url = f"{HELIUS_BASE}/v0/addresses/{address}/transactions?" + urllib.parse.urlencode(params)
-        data = get_json(url)
-        if not isinstance(data, list):
-            raise ValueError("unexpected Helius history response")
-        return [x for x in data if isinstance(x, dict)]
+        for attempt in range(3):
+            try:
+                data = self._paced_request(url)
+                if not isinstance(data, list):
+                    raise ValueError("unexpected Helius history response")
+                return [x for x in data if isinstance(x, dict)]
+            except RuntimeError as exc:
+                # Do not repeat 400/401/403/500 or budget failures.
+                if "HTTP 429" not in str(exc) or attempt == 2:
+                    raise
+                time.sleep((5, 12)[attempt])
+        raise AssertionError("unreachable")
 
     def history(self, address: str, *, earliest_ts: int, max_pages: int = 20):
         """(transactions, complete_to_earliest): fail closed on page exhaustion."""
