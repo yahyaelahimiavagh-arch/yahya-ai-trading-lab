@@ -16,6 +16,7 @@ from research.smart_money_lab.providers import (
 from research.smart_money_lab.__main__ import snapshot, restore, screen
 from research.smart_money_lab.dashboard import html_report
 from research.smart_money_lab.diagnostics import summarize
+from research.smart_money_lab.pilot import exploratory_watchlist
 
 
 W1 = "A" * 35
@@ -286,6 +287,45 @@ class ScreeningDiagnosticsTests(unittest.TestCase):
         result = summarize([], {})
         self.assertEqual(result['screened_total'], 0)
         self.assertIsNone(result['helius_requests_reserved_so_far'])
+
+
+class ExploratoryPilotTests(unittest.TestCase):
+    def test_unvetted_watchlist_requires_history_and_real_activity(self):
+        data = [
+            {'wallet': W1, 'history_complete': True, 'closed': 12,
+             'total_swaps_observed': 30, 'active_days': 3,
+             'min_liquidity_usd': '0', 'eligible': False},
+            {'wallet': W2, 'history_complete': True, 'closed': 6,
+             'total_swaps_observed': 15, 'active_days': 4,
+             'min_liquidity_usd': '50000', 'eligible': False},
+            {'wallet': 'D'*35, 'history_complete': False, 'closed': 300,
+             'total_swaps_observed': 300, 'active_days': 20,
+             'min_liquidity_usd': '100000'},
+        ]
+        blind, smart = exploratory_watchlist(data)
+        self.assertEqual(blind, [W1, W2])
+        self.assertEqual(smart, [W2, W1])
+        self.assertNotIn('D'*35, blind + smart)
+
+    def test_exploratory_watchlist_refuses_single_valid_wallet(self):
+        with self.assertRaisesRegex(ValueError, 'fewer than two'):
+            exploratory_watchlist([
+                {'wallet': W1, 'history_complete': True, 'closed': 10,
+                 'total_swaps_observed': 15},
+                {'wallet': W2, 'error': 'HTTP 429', 'history_complete': True,
+                 'closed': 200, 'total_swaps_observed': 200},
+            ])
+
+    def test_selection_mode_survives_snapshot_and_is_clearly_reported(self):
+        lab = PaperLab(100, [W1], [W2], selection_mode='exploratory_unvetted')
+        saved = snapshot(lab, {}, 105, 0, {})
+        restored = restore(saved)
+        self.assertEqual(restored.selection_mode, 'exploratory_unvetted')
+        report = restored.report({}, 106)
+        self.assertEqual(report['selection_mode'], 'exploratory_unvetted')
+        self.assertIn('UNVETTED', html_report(report))
+        self.assertEqual(len(report['portfolios']), 9)
+        self.assertTrue(all(p['cash_usd'] == '1000' for p in report['portfolios']))
 
 if __name__ == "__main__":
     unittest.main()
