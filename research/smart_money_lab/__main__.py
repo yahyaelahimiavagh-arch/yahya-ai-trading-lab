@@ -5,6 +5,9 @@ No private key, sendTransaction, swap execution or broker integration exists.
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
+import queue
+import threading
 import json
 import os
 import sys
@@ -145,10 +148,11 @@ def restore_trade(data: dict) -> Trade:
                     "usd_notional": dec(data["usd_notional"])})
 
 
-def snapshot(lab: PaperLab, quotes: dict, now: int, polls: int, skips: dict):
+def snapshot(lab: PaperLab, quotes: dict, now: int, polls: int, skips: dict, last_polls=None):
     return {
         "start_at": lab.start_at, "blind": sorted(lab.blind), "smart": sorted(lab.smart),
         "seen": sorted(lab.seen), "polls": polls, "skips": skips, "quotes": quotes,
+        "last_polls": last_polls or {},
         "pending": [{"due": due, "portfolio": pid, "trade": trade_data(t), "owner": owner}
                     for due, pid, t, owner in lab.pending],
         "votes": {k: [trade_data(x) for x in v] for k, v in lab.vote_log.items()},
@@ -183,55 +187,120 @@ def restore(doc: dict) -> PaperLab:
 
 
 def observe(args):
+    """Concurrent READ acquisition; a single deterministic paper-account thread.
+
+    Each batch records the time it finished downloading. The ledger scheduler
+    keeps running while other wallet histories are still being fetched.
+    """
     helius = Helius(os.getenv("HELIUS_API_KEY", ""))
     market = Market()
     path = Path(args.state)
     if path.exists():
         if not args.resume:
-            raise ValueError("state file already exists; use --resume or a new path")
+            raise ValueError("state already exists; use --resume or a new path")
         saved = read_json(path)
         lab = restore(saved)
         quotes = saved.get("quotes", {})
         polls, skips = saved.get("polls", 0), saved.get("skips", {})
+        last_polls = saved.get("last_polls", {})
     else:
         screened = read_json(Path(args.screened))
         if not isinstance(screened, list):
-            raise ValueError("screened file must contain wallet records")
+            raise ValueError("screened must contain wallet records")
         blind, smart = rank_wallets(screened)
         if len(smart) < 2:
-            raise ValueError("need >=2 independently screened eligible wallets; no bypass")
+            raise ValueError("need >=2 independent qualified wallets; no bypass")
         lab = PaperLab(int(time.time()), blind, smart)
-        quotes, polls, skips = {}, 0, {}
-        write_json(path, snapshot(lab, quotes, lab.start_at, polls, skips))
+        quotes, polls, skips, last_polls = {}, 0, {}, {}
+        write_json(path, snapshot(lab, quotes, lab.start_at, polls, skips, last_polls))
     finish = lab.start_at + args.hours * 3600
     if time.time() >= finish:
-        raise ValueError("observation window already complete")
-    next_poll = 0
-    last_observed = 0
-    # No infinite web scraping: 24h max, <=15 wallets, >=15s poll.
-    while int(time.time()) < finish:
-        now = int(time.time())
-        if now >= next_poll:
+        raise ValueError("the original 24h window is already complete")
+
+    results = queue.Queue(maxsize=200)
+    stop = threading.Event()
+    watched = sorted(lab.blind | lab.smart)
+
+    def collector():
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as workers:
+            while not stop.is_set():
+                cycle_start = time.monotonic()
+                tasks = {
+                    workers.submit(helius.transactions, wallet, limit=100): wallet
+                    for wallet in watched
+                }
+                for future in concurrent.futures.as_completed(tasks):
+                    if stop.is_set():
+                        break
+                    wallet = tasks[future]
+                    observed_at = int(time.time())
+                    try:
+                        batch = future.result()
+                        record = ("batch", wallet, observed_at, batch)
+                    except (RuntimeError, ValueError) as exc:
+                        record = ("error", wallet, observed_at, str(exc)[:100])
+                    try:
+                        results.put(record, timeout=1)
+                    except queue.Full:
+                        # A saturated pipeline cannot be treated as complete.
+                        stop.set()
+                        return
+                elapsed = time.monotonic() - cycle_start
+                stop.wait(max(0, args.poll_seconds - elapsed))
+
+    worker = threading.Thread(target=collector, daemon=True, name="sml-read-only-poller")
+    worker.start()
+    next_save = time.monotonic() + 15
+    next_mark = 0
+    sol_price = None
+    sol_price_time = 0
+    interrupted = False
+
+    def refresh(mints: set[str]):
+        if not mints:
+            return
+        try:
+            fetched = market.tokens(mints, now=int(time.time()))
+            receipt = int(time.time())
+            for mint, q in fetched.items():
+                quotes[mint] = {**q, "ts": receipt}
+        except (ValueError, RuntimeError):
+            skips["market_failure"] = skips.get("market_failure", 0) + 1
+
+    try:
+        while int(time.time()) < finish and not stop.is_set():
             new_mints = set()
-            try:
-                sol_price = market.sol_usd(now=now)
-            except (RuntimeError, ValueError):
-                sol_price = None
-                skips["sol_quote_unavailable"] = skips.get("sol_quote_unavailable", 0) + 1
-            for wallet in sorted(lab.blind | lab.smart):
+            # Process ready wallet results without blocking on slower wallets.
+            for _ in range(200):
                 try:
-                    batch = helius.transactions(wallet, limit=100)
-                except (RuntimeError, ValueError):
+                    kind, wallet, observed_at, batch = results.get_nowait()
+                except queue.Empty:
+                    break
+                if kind == "error":
                     skips["provider_failure"] = skips.get("provider_failure", 0) + 1
                     continue
-                timestamps = [x["timestamp"] for x in batch if isinstance(x.get("timestamp"), int)]
-                if len(batch) == 100 and last_observed and timestamps and min(timestamps) >= last_observed:
+                polls += 1
+                raw_times = [x.get("timestamp") for x in batch
+                             if isinstance(x.get("timestamp"), int)]
+                prev = int(last_polls.get(wallet, 0))
+                if (len(batch) == 100 and prev and raw_times
+                        and min(raw_times) >= prev):
                     skips["unverifiable_history_gap"] = skips.get("unverifiable_history_gap", 0) + 1
+                    last_polls[wallet] = observed_at
                     continue
-                for tx in sorted(batch, key=lambda x: (x.get("timestamp") or 0, x.get("signature") or "")):
+                last_polls[wallet] = observed_at
+                if observed_at - sol_price_time > 30:
+                    try:
+                        sol_price = market.sol_usd(now=observed_at)
+                    except (RuntimeError, ValueError):
+                        sol_price = None
+                        skips["sol_quote_unavailable"] = skips.get("sol_quote_unavailable", 0) + 1
+                    sol_price_time = int(time.time())
+                for tx in sorted(batch, key=lambda x: (
+                        x.get("timestamp") or 0, x.get("signature") or "")):
                     if tx.get("type") != "SWAP":
                         continue
-                    t = parse_swap(tx, wallet=wallet, observed_at=now,
+                    t = parse_swap(tx, wallet=wallet, observed_at=observed_at,
                                    historical_sol_usd=sol_price)
                     if t is None:
                         skips["unparsed_or_unsupported"] = skips.get("unparsed_or_unsupported", 0) + 1
@@ -239,35 +308,44 @@ def observe(args):
                     if t.key not in lab.seen:
                         new_mints.add(t.mint)
                         lab.ingest(t)
-            polls += 1
-            last_observed = now
-            next_poll = now + args.poll_seconds
-            # First indication is observed at receipt, never backdated.
-            if new_mints:
-                try:
-                    quotes.update(market.tokens(new_mints, now=now))
-                except (ValueError, RuntimeError):
-                    skips["market_failure"] = skips.get("market_failure", 0) + 1
-        # Refresh holdings every ten seconds for risk marks; poll/network lag
-        # is included in real observed signal-to-fill time.
-        due_mints = {t.mint for due, _, t, _ in lab.pending if due <= now}
-        held_mints = ({h.mint for p in lab.portfolios.values() for h in p.holdings.values()}
-                      if now % 10 == 0 else set())
-        if due_mints or held_mints:
-            try:
-                quotes.update(market.tokens(due_mints | held_mints, now=now))
-            except (RuntimeError, ValueError):
-                skips["market_failure"] = skips.get("market_failure", 0) + 1
-        lab.process(now, quotes)
-        if last_observed and now % 15 == 0:
-            write_json(path, snapshot(lab, quotes, now, polls, skips))
-            write_json(Path(args.report), {**lab.report(quotes, now), "polls": polls, "skips": skips})
-        time.sleep(1)
-    now = int(time.time())
-    write_json(path, snapshot(lab, quotes, now, polls, skips))
-    write_json(Path(args.report), {**lab.report(quotes, now), "polls": polls, "skips": skips})
-    print(f"Paper-only observation finished: {args.report}")
-
+            refresh(new_mints)
+            now = int(time.time())
+            due_mints = {t.mint for due, _, t, _ in lab.pending if due <= now}
+            if now >= next_mark:
+                due_mints |= {h.mint for p in lab.portfolios.values() for h in p.holdings.values()}
+                next_mark = now + 10
+            refresh(due_mints)
+            now = int(time.time())  # provider receipt latency counts toward fill
+            lab.process(now, quotes)
+            if time.monotonic() >= next_save:
+                write_json(path, snapshot(lab, quotes, now, polls, skips, last_polls))
+                write_json(Path(args.report), {**lab.report(quotes, now),
+                           "polls": polls, "skips": skips, "feed_complete": not bool(
+                               skips.get("unverifiable_history_gap") or skips.get("provider_failure"))})
+                next_save = time.monotonic() + 15
+            time.sleep(0.25)
+    except KeyboardInterrupt:
+        interrupted = True
+    finally:
+        stop.set()
+        worker.join(timeout=15)
+        now = int(time.time())
+        # Final mark is never backdated and can remain unknown for illiquid mints.
+        refresh({h.mint for p in lab.portfolios.values() for h in p.holdings.values()})
+        lab.process(int(time.time()), quotes)
+        now = int(time.time())
+        write_json(path, snapshot(lab, quotes, now, polls, skips, last_polls))
+        write_json(Path(args.report), {**lab.report(quotes, now),
+                   "polls": polls, "skips": skips, "interrupted": interrupted,
+                   "feed_complete": not bool(skips.get("unverifiable_history_gap") or
+                                             skips.get("provider_failure") or
+                                             stop.is_set() and not interrupted and now < finish)})
+    if interrupted:
+        print(f"Paper observer stopped by operator; partial snapshot: {args.report}")
+    elif now < finish:
+        print(f"Paper observer halted on feed failure; partial snapshot: {args.report}")
+    else:
+        print(f"24h paper observer finished: {args.report}")
 
 def cmd_report(args):
     doc = read_json(Path(args.state))
