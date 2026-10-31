@@ -347,7 +347,7 @@ def discover_candidates(helius: Helius, market: Market, *,
     for token in promotions:
         if used >= max_pools:
             break
-        if token.get("chainId") != "solana":
+        if not isinstance(token, dict) or token.get("chainId") != "solana":
             continue
         address = token.get("tokenAddress", "")
         try:
