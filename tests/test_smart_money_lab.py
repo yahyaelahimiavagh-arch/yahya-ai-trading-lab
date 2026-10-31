@@ -11,9 +11,10 @@ from research.smart_money_lab.engine import (
     PaperLab, Trade, Portfolio, score_wallet, rank_wallets,
 )
 from research.smart_money_lab.providers import (
-    USDC, SOL, Market, Helius, parse_swap, _token_amount,
+    USDC, SOL, Market, Helius, parse_swap, classify_swap,
+    discover_candidates, _token_amount,
 )
-from research.smart_money_lab.__main__ import snapshot, restore, screen
+from research.smart_money_lab.__main__ import snapshot, restore, screen, parse_history
 from research.smart_money_lab.dashboard import html_report
 from research.smart_money_lab.diagnostics import summarize
 from research.smart_money_lab.pilot import exploratory_watchlist
@@ -158,6 +159,106 @@ class ProviderTests(unittest.TestCase):
             batch = Market().tokens({MINT, SOL}, now=100)
             self.assertEqual(batch[SOL]["price_usd"], "250")
             self.assertEqual(batch[MINT]["price_usd"], "0.01")
+
+
+
+class DataQualityFixTests(unittest.TestCase):
+    def test_explain_unsupported_malformed_and_sol_missing_price(self):
+        base = {"type": "SWAP", "feePayer": W1, "signature": "abc",
+                "timestamp": 100}
+        missing, reason = classify_swap(base, wallet=W1, observed_at=110)
+        self.assertIsNone(missing)
+        self.assertEqual(reason, "missing_swap_event")
+        base["events"] = {"swap": {
+            "tokenInputs": [{"mint": SOL, "tokenAmount": "1"}],
+            "tokenOutputs": [{"mint": MINT, "tokenAmount": "2"}]}}
+        missing, reason = classify_swap(base, wallet=W1, observed_at=110)
+        self.assertIsNone(missing)
+        self.assertEqual(reason, "missing_sol_reference_price")
+        accepted, reason = classify_swap(base, wallet=W1, observed_at=110,
+                                         historical_sol_usd=D("100"))
+        self.assertEqual(reason, "ok")
+        self.assertEqual(accepted.usd_notional, D("100"))
+        base["events"]["swap"]["tokenInputs"].append(
+            {"mint": USDC, "tokenAmount": "20"})
+        missing, reason = classify_swap(base, wallet=W1, observed_at=110,
+                                        historical_sol_usd=D("100"))
+        self.assertIsNone(missing)
+        self.assertEqual(reason, "ambiguous_legs")
+
+    def test_history_reports_parse_failures_without_guessing_fills(self):
+        raw = [
+            {"type": "SWAP", "feePayer": W1, "signature": "bad",
+             "timestamp": 100, "events": {}},
+            {"type": "TRANSFER", "feePayer": W1, "timestamp": 102},
+        ]
+        trades, swaps, skipped, reasons = parse_history(raw, W1, 110, {})
+        self.assertEqual(trades, [])
+        self.assertEqual(swaps, 1)
+        self.assertEqual(skipped, 1)
+        self.assertEqual(reasons, {"missing_swap_event": 1})
+
+    def test_bounded_dex_fallback_recovers_only_correct_base_token(self):
+        good = {"chainId": "solana", "baseToken": {"address": MINT},
+                "quoteToken": {"address": SOL}, "priceUsd": "0.05",
+                "liquidity": {"usd": 65000}}
+        with patch("research.smart_money_lab.providers.get_json",
+                   side_effect=[[], [good]]) as api:
+            result = Market().tokens({MINT}, now=200, fallback_limit=1)
+            self.assertEqual(result[MINT]["price_usd"], "0.05")
+            self.assertEqual(api.call_count, 2)
+        reverse_only = {**good, "baseToken": {"address": SOL},
+                        "quoteToken": {"address": MINT},
+                        "priceUsd": "250"}
+        with patch("research.smart_money_lab.providers.get_json",
+                   side_effect=[[], [reverse_only]]):
+            self.assertEqual(Market().tokens({MINT}, now=200,
+                                             fallback_limit=1), {})
+        with self.assertRaises(ValueError):
+            Market().tokens({MINT}, now=200, fallback_limit=10)
+
+    def test_quality_first_discovery_spends_helius_only_on_old_liquid_pool(self):
+        now = 1_800_000_000
+        newer = "E" * 35
+        good_pool = "D" * 35
+        feed = [{"chainId": "solana", "tokenAddress": MINT},
+                {"chainId": "solana", "tokenAddress": newer}]
+        eligible_pair = {
+            "chainId": "solana", "pairAddress": good_pool,
+            "baseToken": {"address": MINT},
+            "liquidity": {"usd": 250000}, "volume": {"h24": 95000},
+            "pairCreatedAt": (now - 15*86400) * 1000,
+        }
+        bad_pair = {
+            "chainId": "solana", "pairAddress": "F"*35,
+            "liquidity": {"usd": 10000}, "volume": {"h24": 95000},
+            "pairCreatedAt": (now - 15*86400)*1000,
+        }
+        def fake_get(url):
+            if "token-profiles/latest" in url:
+                return feed
+            if url.endswith("/" + MINT):
+                return [eligible_pair]
+            if url.endswith("/" + newer):
+                return [bad_pair]
+            raise AssertionError(url)
+        with patch("research.smart_money_lab.providers.get_json",
+                   side_effect=fake_get), patch(
+                       "research.smart_money_lab.providers.time.time",
+                       return_value=now):
+            h = Helius("key_for_testing_1234")
+            with patch.object(h, "transactions", return_value=[
+                {"type": "SWAP", "feePayer": W1},
+                {"type": "TRANSFER", "feePayer": W2}
+            ]) as tx:
+                selected = discover_candidates(h, Market(), max_pools=4,
+                                               per_pool=30, source="profiles")
+                self.assertEqual(tx.call_count, 1)
+                self.assertEqual(selected[0]["wallet"], W1)
+                self.assertFalse(selected[0]["verified"])
+                self.assertEqual(selected[0]["source"],
+                                 "liquid_profile_pool_swap_payer")
+        self.assertEqual(len(selected), 1)
 
 
 class LedgerTests(unittest.TestCase):
