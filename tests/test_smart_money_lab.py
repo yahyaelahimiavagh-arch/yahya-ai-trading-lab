@@ -86,6 +86,21 @@ class ProviderTests(unittest.TestCase):
     def test_raw_token_decimals(self):
         self.assertEqual(_token_amount({"rawTokenAmount":
             {"tokenAmount": "1000000", "decimals": 6}}), D("1"))
+        self.assertEqual(_token_amount({"rawTokenAmount":
+            {"tokenAmount": "-1000000", "decimals": 6}}), D("1"))
+
+    def test_negative_native_sol_input(self):
+        tx = {
+            "type": "SWAP", "feePayer": W1, "signature": "native-sig", "timestamp": 100,
+            "events": {"swap": {"nativeInput": {"account": W1, "amount": -1500000000},
+                                "tokenInputs": [], "tokenOutputs":
+                                [{"mint": MINT, "rawTokenAmount":
+                                  {"tokenAmount": "1000000", "decimals": 6}}]}}
+        }
+        result = parse_swap(tx, wallet=W1, observed_at=105, historical_sol_usd=D("100"))
+        self.assertIsNotNone(result)
+        self.assertEqual(result.usd_notional, D("150"))
+        self.assertEqual(result.amount, D("1"))
 
     def test_market_never_uses_quote_token_base_price(self):
         pairs = [
