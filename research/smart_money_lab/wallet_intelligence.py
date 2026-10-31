@@ -55,6 +55,8 @@ def _candidate_issues(row: dict, *, selection_at: int | None) -> list[str]:
     reasons = []
     if row.get("error"):
         reasons.append("provider_or_parser_error")
+    if row.get("eligible") is not True:
+        reasons.append("upstream_screening_not_eligible")
     if row.get("history_complete") is not True:
         reasons.append("incomplete_history")
     if row.get("meets_activity_thresholds") is not True:
@@ -76,7 +78,8 @@ def _candidate_issues(row: dict, *, selection_at: int | None) -> list[str]:
     liquidity = _nonnegative(row.get("min_liquidity_usd"))
     if liquidity is None or liquidity < MIN_LIQUIDITY_USD:
         reasons.append("liquidity_below_guard")
-    if _nonnegative(row.get("net_realized_usd")) is None:
+    training_pnl = _nonnegative(row.get("net_realized_usd"))
+    if training_pnl is None or training_pnl <= 0:
         reasons.append("positive_training_pnl_not_established")
     if selection_at is None:
         reasons.append("selection_cutoff_not_supplied")
