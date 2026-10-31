@@ -2,13 +2,21 @@
 # Independent read-only uploader. Neither restarts nor imports the YATL observer.
 set -Eeuo pipefail
 umask 077
-mode="$1"
+# User-owned file has connection metadata only (no private key contents).
+config="$HOME/.config/yatl-hostinger.env"
+if [[ -f "$config" ]]; then
+  source "$config"
+fi
+mode="${1:-}"
 if [[ "$mode" != "--init" && "$mode" != "--once" && "$mode" != "--loop" ]]; then
   echo "Usage: bash ops/publish-sml-hostinger.sh --init|--once|--loop" >&2
   exit 2
 fi
 
-: "$HOSTINGER_SFTP_HOST" "$HOSTINGER_SFTP_USER" "$HOSTINGER_SFTP_REMOTE_DIR" "$HOSTINGER_SFTP_KEY"
+: "${HOSTINGER_SFTP_HOST:?Hostinger SSH IP or hostname not configured}"
+: "${HOSTINGER_SFTP_USER:?Hostinger SSH username not configured}"
+: "${HOSTINGER_SFTP_REMOTE_DIR:?Dedicated protected directory not configured}"
+: "${HOSTINGER_SFTP_KEY:?Private key file path not configured}"
 HOSTINGER_SFTP_PORT="65002"
 HOSTINGER_KNOWN_HOSTS="$HOME/.ssh/known_hosts"
 YATL_REPORT_DIR="/home/ubuntu/yatl-smart-money/data/smart_money"
