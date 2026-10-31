@@ -22,7 +22,7 @@ fi
 : "${HOSTINGER_SFTP_KEY:?Private key file path not configured}"
 HOSTINGER_SFTP_PORT="65002"
 HOSTINGER_KNOWN_HOSTS="$HOME/.ssh/known_hosts"
-YATL_REPORT_DIR="/home/ubuntu/yatl-smart-money/data/smart_money"
+YATL_REPORT_DIR="${YATL_REPORT_DIR:-/home/ubuntu/yatl-smart-money/data/smart_money}"
 YATL_EXPORT_DIR="/home/ubuntu/yatl-smart-money-host-export"
 
 # No special characters, paths with .., or non-dedicated destinations.
