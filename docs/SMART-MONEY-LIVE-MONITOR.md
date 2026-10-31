@@ -16,15 +16,19 @@ Access) when needed.
 
 ## Start without touching the live experiment
 
-Run on the VPS **from a separate SSH shell** (not inside the observer's pane):
+Run on the VPS **from a separate SSH shell** (not inside the observer's pane).
+Use a second, **independent Git clone**, so the currently running observer's
+code directory never gets touched by a `git pull`:
 
 ```bash
-cd ~/yatl-smart-money
-git pull --ff-only
+git clone --depth 1 --branch research/smart-money-lab-paper-v1 --single-branch \
+  https://github.com/yahyaelahimiavagh-arch/yahya-ai-trading-lab.git \
+  ~/yatl-smart-money-monitor
+cd ~/yatl-smart-money-monitor
 python3 -m unittest discover -s tests -p 'test_smart_money_live_monitor.py' -v
 tmux has-session -t yatl-sml-monitor 2>/dev/null || \
   tmux new-session -d -s yatl-sml-monitor \
-    'cd /home/ubuntu/yatl-smart-money && exec .venv/bin/python -m research.smart_money_lab.live_monitor --port 8765'
+    'cd /home/ubuntu/yatl-smart-money-monitor && exec python3 -m research.smart_money_lab.live_monitor --port 8765 --data-dir /home/ubuntu/yatl-smart-money/data/smart_money'
 curl --fail --silent --show-error http://127.0.0.1:8765/api/status | python3 -m json.tool | head -n 26
 ```
 
