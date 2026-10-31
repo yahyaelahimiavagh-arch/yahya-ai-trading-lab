@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Independent read-only uploader. Neither restarts nor imports the YATL observer.
-# Remote 644 is REQUIRED: default umask 077 creates SFTP files as 600 and
-# Hostinger web server otherwise returns 403 after HTTP Basic auth.
+# Remote 644 is REQUIRED: chmod each temporary file BEFORE rename, avoiding
+# intermittent 403 during HTTP fetches while the static JSON is replaced.
 # The pre-configured yatllive directory must remain password-protected.
 set -Eeuo pipefail
 umask 077
@@ -24,6 +24,12 @@ HOSTINGER_SFTP_PORT="65002"
 HOSTINGER_KNOWN_HOSTS="$HOME/.ssh/known_hosts"
 YATL_REPORT_DIR="${YATL_REPORT_DIR:-/home/ubuntu/yatl-smart-money/data/smart_money}"
 YATL_EXPORT_DIR="/home/ubuntu/yatl-smart-money-host-export"
+# Optional explicit read-only budget path for V2; no counter reset.
+budget_args=()
+if [[ -n "${YATL_HELIUS_BUDGET_FILE:-}" ]]; then
+  [[ -f "$YATL_HELIUS_BUDGET_FILE" ]] || { echo "Budget file missing; refusing publish" >&2; exit 2; }
+  budget_args=(--budget-file "$YATL_HELIUS_BUDGET_FILE")
+fi
 
 # No special characters, paths with .., or non-dedicated destinations.
 [[ "$HOSTINGER_SFTP_HOST" =~ ^[a-zA-Z0-9.-]+$ ]] || exit 2
@@ -49,26 +55,29 @@ publish_once() {
   include_html="$1"
   if [[ "$include_html" == "yes" ]]; then
     python3 -m research.smart_money_lab.hostinger_export \
-      --data-dir "$YATL_REPORT_DIR" --output-dir "$YATL_EXPORT_DIR" --include-html
+      --data-dir "$YATL_REPORT_DIR" --output-dir "$YATL_EXPORT_DIR" --include-html "${budget_args[@]}"
     sftp -q -b - -oBatchMode=yes -oStrictHostKeyChecking=yes \
       -oUserKnownHostsFile="$HOSTINGER_KNOWN_HOSTS" \
       -i "$HOSTINGER_SFTP_KEY" -P "$HOSTINGER_SFTP_PORT" \
       "$HOSTINGER_SFTP_USER@$HOSTINGER_SFTP_HOST" <<EOF
 put "$YATL_EXPORT_DIR/index.html" "$HOSTINGER_SFTP_REMOTE_DIR/index.html.tmp"
+chmod 644 "$HOSTINGER_SFTP_REMOTE_DIR/index.html.tmp"
 rename "$HOSTINGER_SFTP_REMOTE_DIR/index.html.tmp" "$HOSTINGER_SFTP_REMOTE_DIR/index.html"
 chmod 644 "$HOSTINGER_SFTP_REMOTE_DIR/index.html"
 put "$YATL_EXPORT_DIR/status.json" "$HOSTINGER_SFTP_REMOTE_DIR/status.json.tmp"
+chmod 644 "$HOSTINGER_SFTP_REMOTE_DIR/status.json.tmp"
 rename "$HOSTINGER_SFTP_REMOTE_DIR/status.json.tmp" "$HOSTINGER_SFTP_REMOTE_DIR/status.json"
 chmod 644 "$HOSTINGER_SFTP_REMOTE_DIR/status.json"
 EOF
   else
     python3 -m research.smart_money_lab.hostinger_export \
-      --data-dir "$YATL_REPORT_DIR" --output-dir "$YATL_EXPORT_DIR"
+      --data-dir "$YATL_REPORT_DIR" --output-dir "$YATL_EXPORT_DIR" "${budget_args[@]}"
     sftp -q -b - -oBatchMode=yes -oStrictHostKeyChecking=yes \
       -oUserKnownHostsFile="$HOSTINGER_KNOWN_HOSTS" \
       -i "$HOSTINGER_SFTP_KEY" -P "$HOSTINGER_SFTP_PORT" \
       "$HOSTINGER_SFTP_USER@$HOSTINGER_SFTP_HOST" <<EOF
 put "$YATL_EXPORT_DIR/status.json" "$HOSTINGER_SFTP_REMOTE_DIR/status.json.tmp"
+chmod 644 "$HOSTINGER_SFTP_REMOTE_DIR/status.json.tmp"
 rename "$HOSTINGER_SFTP_REMOTE_DIR/status.json.tmp" "$HOSTINGER_SFTP_REMOTE_DIR/status.json"
 chmod 644 "$HOSTINGER_SFTP_REMOTE_DIR/status.json"
 EOF
