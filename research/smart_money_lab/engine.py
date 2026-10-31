@@ -21,7 +21,7 @@ MAX_DRAWDOWN = D("0.05")
 FEE_BPS = D("20")
 BASE_SLIP_BPS = D("50")
 MAX_PRICE_AGE_SECONDS = 30
-CONSENSUS_SECONDS = 120
+CONSENSUS_SECONDS = 300
 
 
 def dec(value: Any) -> Decimal:
@@ -184,7 +184,7 @@ class Portfolio:
         if now < signal.observed_at + self.delay:
             self.reject("not_due")
             return False
-        if now - signal.chain_time > 120:
+        if now - signal.chain_time > 300:
             self.reject("signal_too_old")
             return False
         if liquidity_usd < D("20000") or price <= 0:
