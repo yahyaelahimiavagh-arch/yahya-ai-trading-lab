@@ -20,6 +20,11 @@ SKIP_FIELDS = (
     "unparsed_or_unsupported", "provider_failure", "market_failure",
     "sol_quote_unavailable", "unverifiable_history_gap",
     "helius_budget_exhausted",
+    # Available on V0.2+ observer only; older reports return zeros.
+    "historical_rows_ignored",
+    "parse_missing_swap_event", "parse_ambiguous_legs",
+    "parse_unsupported_quote_pair", "parse_missing_sol_reference_price",
+    "parse_invalid_amount_or_timestamp",
 )
 
 
