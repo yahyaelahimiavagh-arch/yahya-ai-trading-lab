@@ -17,10 +17,12 @@ from .engine import Trade, dec
 HELIUS_BASE = "https://api-mainnet.helius-rpc.com"
 DEX_BASE = "https://api.dexscreener.com"
 USDC = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+# Verified by Solana official stablecoin mint documentation.
+USDT = "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"
 SOL = "So11111111111111111111111111111111111111112"
 # Safest starting scope: USDC and SOL settled Solana swaps. No sponsored
 # token leaderboard is treated as proof of trading skill.
-QUOTE_MINTS = {USDC: "USDC", SOL: "SOL"}
+QUOTE_MINTS = {USDC: "USDC", USDT: "USDT", SOL: "SOL"}
 ADDRESS = re.compile(r"^[1-9A-HJ-NP-Za-km-z]{32,44}$")
 
 
@@ -186,7 +188,8 @@ def parse_swap(tx: dict, *, wallet: str, observed_at: int,
     """Parse only simple direct swap event; refuse ambiguous multi-asset swaps."""
     if tx.get("type") != "SWAP" or tx.get("feePayer") != wallet:
         return None
-    swap = (tx.get("events") or {}).get("swap")
+    events = tx.get("events")
+    swap = events.get("swap") if isinstance(events, dict) else None
     if not isinstance(swap, dict):
         return None
     ins = _entries(swap, "tokenInputs")
@@ -208,7 +211,8 @@ def parse_swap(tx: dict, *, wallet: str, observed_at: int,
         return None
     if quote == SOL and historical_sol_usd is None:
         return None
-    usd = q_qty if quote == USDC else q_qty * dec(historical_sol_usd)
+    # Nominal USD stablecoin quote assumption (depegs are NOT modeled).
+    usd = q_qty if quote in (USDC, USDT) else q_qty * dec(historical_sol_usd)
     try:
         return Trade(wallet, mint, side, signature, chain_ts, observed_at,
                      qty, usd, QUOTE_MINTS[quote])
@@ -228,7 +232,8 @@ def classify_swap(tx: dict, *, wallet: str, observed_at: int,
         return None, "not_swap"
     if tx.get("feePayer") != wallet:
         return None, "other_fee_payer"
-    swap = (tx.get("events") or {}).get("swap")
+    events = tx.get("events")
+    swap = events.get("swap") if isinstance(events, dict) else None
     if not isinstance(swap, dict):
         return None, "missing_swap_event"
     ins, outs = _entries(swap, "tokenInputs"), _entries(swap, "tokenOutputs")
