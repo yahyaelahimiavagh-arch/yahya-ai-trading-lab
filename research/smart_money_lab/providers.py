@@ -202,12 +202,12 @@ class Market:
                     continue
                 if price <= 0 or liquidity <= 0:
                     continue
-                for mint in (item.get("baseToken", {}).get("address"),
-                             item.get("quoteToken", {}).get("address")):
+                for mint in ((item.get("baseToken") or {}).get("address"),
+                             (item.get("quoteToken") or {}).get("address")):
                     if mint not in subset:
                         continue
                     if mint not in result or liquidity > dec(result[mint]["liquidity_usd"]):
-                        result[mint] = {"price_usd": str(price) if mint == item.get("baseToken", {}).get("address")
+                        result[mint] = {"price_usd": str(price) if mint == (item.get("baseToken") or {}).get("address")
                                         else None, "liquidity_usd": str(liquidity), "ts": now}
         # DEX pair priceUsd is for its base token, never the quote token.
         return {m: q for m, q in result.items() if q["price_usd"] is not None}
@@ -242,9 +242,11 @@ def discover_candidates(helius: Helius, market: Market, *,
             continue
         if not isinstance(pairs, list):
             continue
-        pool = next((p.get("pairAddress") for p in sorted(
-            pairs, key=lambda x: float((x.get("liquidity") or {}).get("usd", 0)), reverse=True
-        ) if p.get("pairAddress")), None)
+        safe_pairs = [p for p in pairs if isinstance(p, dict) and p.get("pairAddress")]
+        pool = next((p["pairAddress"] for p in sorted(
+            safe_pairs, key=lambda x: float((x.get("liquidity") or {}).get("usd") or 0),
+            reverse=True
+        )), None)
         if not pool:
             continue
         try:
