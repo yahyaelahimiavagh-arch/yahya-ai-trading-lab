@@ -1,6 +1,8 @@
 """Offline, deterministic safety and behavior gates for Smart Money Lab."""
 import unittest
 import tempfile
+import json
+from types import SimpleNamespace
 from pathlib import Path
 from unittest.mock import patch
 from decimal import Decimal as D
@@ -11,7 +13,7 @@ from research.smart_money_lab.engine import (
 from research.smart_money_lab.providers import (
     USDC, SOL, Market, Helius, parse_swap, _token_amount,
 )
-from research.smart_money_lab.__main__ import snapshot, restore
+from research.smart_money_lab.__main__ import snapshot, restore, screen
 from research.smart_money_lab.dashboard import html_report
 from research.smart_money_lab.diagnostics import summarize
 
@@ -122,6 +124,24 @@ class ProviderTests(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError, 'safety cap reached'):
                     second._reserve_request()
 
+    def test_bounded_429_retry_then_success(self):
+        helius = Helius("key_for_testing_1234")
+        with patch.object(helius, "_paced_request", side_effect=[
+            RuntimeError("read-only data provider HTTP 429"),
+            RuntimeError("read-only data provider HTTP 429"), []]) as fetch:
+            with patch("research.smart_money_lab.providers.time.sleep") as pause:
+                self.assertEqual(helius.transactions(W1), [])
+                self.assertEqual(fetch.call_count, 3)
+                self.assertEqual([x.args[0] for x in pause.call_args_list], [5, 12])
+
+    def test_non_429_never_retried(self):
+        helius = Helius("key_for_testing_1234")
+        with patch.object(helius, "_paced_request", side_effect=RuntimeError(
+                "read-only data provider HTTP 401")) as fetch:
+            with self.assertRaisesRegex(RuntimeError, "401"):
+                helius.transactions(W1)
+            self.assertEqual(fetch.call_count, 1)
+
     def test_market_never_uses_quote_token_base_price(self):
         pairs = [
             {"chainId": "solana", "baseToken": {"address": MINT},
@@ -218,6 +238,33 @@ class LedgerTests(unittest.TestCase):
         self.assertEqual(restored.report(quote(now=113), 113)["kind"],
                          "YATL_SMART_MONEY_PAPER_ONLY")
 
+
+
+class ResumableScreeningTests(unittest.TestCase):
+    def test_resume_retries_only_error_rows_no_api_calls_for_good_rows(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            candidates = root / "candidates.json"
+            screened = root / "screened.json"
+            candidates.write_text(json.dumps([W1, W2]), encoding="utf-8")
+            prior_good = {"wallet": W1, "eligible": False,
+                          "history_complete": True, "copyable": False}
+            screened.write_text(json.dumps([
+                prior_good, {"wallet": W2, "error": "read-only data provider HTTP 429"}
+            ]), encoding="utf-8")
+            opts = SimpleNamespace(candidates=str(candidates), output=str(screened),
+                                  max_wallets=2, max_pages=1, days=30, resume=True)
+            with patch("research.smart_money_lab.__main__.Helius") as mock_helius, \
+                 patch("research.smart_money_lab.__main__.Market") as mock_market, \
+                 patch("research.smart_money_lab.__main__.sol_candles", return_value={}):
+                mock_helius.return_value.history.return_value = ([], True)
+                screen(opts)
+                mock_helius.return_value.history.assert_called_once()
+                call_args = mock_helius.return_value.history.call_args
+                self.assertEqual(call_args.args[0], W2)
+                found = json.loads(screened.read_text(encoding="utf-8"))
+                self.assertEqual(found[0], prior_good)
+                self.assertEqual(len(found), 2)
 
 
 class ScreeningDiagnosticsTests(unittest.TestCase):
