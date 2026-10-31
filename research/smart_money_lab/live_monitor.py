@@ -19,7 +19,7 @@ DATA_FILES = ("report.json", "helius_budget.json")
 SKIP_FIELDS = (
     "unparsed_or_unsupported", "provider_failure", "market_failure",
     "sol_quote_unavailable", "unverifiable_history_gap",
-    "helius_budget_exhausted",
+    "helius_budget_exhausted", "collector_stopped",
     # Available on V0.2+ observer only; older reports return zeros.
     "historical_rows_ignored",
     "parse_missing_swap_event", "parse_ambiguous_legs",
@@ -72,6 +72,9 @@ def build_status(report: dict | None, budget: dict | None, *, now: int | None = 
         "paper_fills": 0, "open_positions": 0, "feed_complete": None,
         "api_requests_reserved": calls, "api_safety_cap": 5000,
         "portfolios": [], "skips": {}, "recent_fills": [],
+        "feed_health": {"state": "unknown", "collector_alive": None,
+                        "expected_wallets": 0, "recent_wallets": 0,
+                        "oldest_poll_age_seconds": None},
         "notice": "No valid paper report yet. Observer is not controlled by this dashboard.",
     }
     if not isinstance(report, dict) or report.get("kind") != "YATL_SMART_MONEY_PAPER_ONLY":
@@ -89,6 +92,29 @@ def build_status(report: dict | None, budget: dict | None, *, now: int | None = 
         status = "completed"
     elif as_of > current + 45 or current - as_of > 120:
         status = "stale"
+
+    # Whitelist aggregate heartbeat fields. No addresses or raw wallet
+    # timestamps are published, even if the source report is malformed.
+    raw_health = report.get("feed_health")
+    raw_health = raw_health if isinstance(raw_health, dict) else {}
+    health_state = raw_health.get("state")
+    if health_state not in ("healthy", "warming_up", "polls_stale",
+                            "collector_stopped", "completed", "interrupted"):
+        health_state = "unknown"
+    collector_alive = raw_health.get("collector_alive")
+    if type(collector_alive) is not bool:
+        collector_alive = None
+    health = {
+        "state": health_state,
+        "collector_alive": collector_alive,
+        "expected_wallets": _integer(raw_health.get("expected_wallets")),
+        "recent_wallets": _integer(raw_health.get("recent_wallets")),
+        "oldest_poll_age_seconds": (
+            _integer(raw_health["oldest_poll_age_seconds"])
+            if raw_health.get("oldest_poll_age_seconds") is not None else None),
+    }
+    if status == "running" and health_state in ("polls_stale", "collector_stopped"):
+        status = "degraded"
 
     source = report.get("portfolios")
     safe_portfolios = []
@@ -165,6 +191,7 @@ def build_status(report: dict | None, budget: dict | None, *, now: int | None = 
         "signals_seen": _integer(report.get("unique_signals_seen")),
         "paper_fills": total_fills, "open_positions": open_positions,
         "feed_complete": report.get("feed_complete") is True,
+        "feed_health": health,
         "api_requests_reserved": calls, "api_safety_cap": 5000,
         "portfolios": safe_portfolios,
         "skips": {k: _integer(skips.get(k)) for k in SKIP_FIELDS},
