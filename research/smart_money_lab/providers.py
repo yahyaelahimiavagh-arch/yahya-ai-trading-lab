@@ -167,8 +167,10 @@ class Market:
             return None
         options = []
         for pair in pairs:
-            if not isinstance(pair, dict) or pair.get("chainId") != "solana":
+            if (not isinstance(pair, dict) or pair.get("chainId") != "solana"
+                    or (pair.get("baseToken") or {}).get("address") != mint):
                 continue
+            # DEX Screener priceUsd always prices the BASE asset, not the quote.
             try:
                 price = dec(pair.get("priceUsd"))
                 liquidity = dec((pair.get("liquidity") or {}).get("usd", 0))
