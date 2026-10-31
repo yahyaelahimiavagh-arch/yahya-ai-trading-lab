@@ -215,6 +215,43 @@ def restore(doc: dict) -> PaperLab:
     return lab
 
 
+
+def observer_feed_health(*, wallets, last_polls: dict, started_at: int,
+                         now: int, poll_seconds: int, collector_alive: bool) -> dict:
+    """Read-only aggregate heartbeat. Never publish monitored wallet addresses.
+
+    Fresh report files do not prove the collection thread is alive. All watched
+    wallets must have a recent successful receipt to call the feed healthy.
+    """
+    if poll_seconds <= 0:
+        raise ValueError("poll interval must be positive")
+    expected = len(set(wallets))
+    max_age = max(300, poll_seconds * 2 + 60)
+    ages = []
+    for wallet in set(wallets):
+        timestamp = last_polls.get(wallet)
+        if type(timestamp) is int and 0 < timestamp <= now:
+            ages.append(now - timestamp)
+    recent = sum(age <= max_age for age in ages)
+    oldest_age = max(ages) if ages else None
+    if not collector_alive:
+        state = "collector_stopped"
+    elif expected and recent == expected:
+        state = "healthy"
+    elif now - started_at <= max_age:
+        state = "warming_up"
+    else:
+        state = "polls_stale"
+    return {
+        "state": state,
+        "collector_alive": bool(collector_alive),
+        "expected_wallets": expected,
+        "recent_wallets": recent,
+        "oldest_poll_age_seconds": oldest_age,
+        "maximum_poll_age_seconds": max_age,
+    }
+
+
 def observe(args):
     """Concurrent READ acquisition; a single deterministic paper-account thread.
 
@@ -282,7 +319,12 @@ def observe(args):
                         batch = future.result()
                         record = ("batch", wallet, observed_at, batch)
                     except (RuntimeError, ValueError) as exc:
+                        # Sanitized provider errors contain no URLs or API keys.
                         record = ("error", wallet, observed_at, str(exc)[:100])
+                    except Exception:
+                        # A previously unclassified network/library exception
+                        # must not terminate this collector or leak secrets.
+                        record = ("error", wallet, observed_at, "unexpected provider exception")
                     try:
                         results.put(record, timeout=1)
                     except queue.Full:
@@ -313,6 +355,12 @@ def observe(args):
 
     try:
         while int(time.time()) < finish and not stop.is_set():
+            # The observer's report writer can outlive a crashed collector.
+            # Fail closed rather than continuing to advertise successful polling.
+            if not worker.is_alive():
+                skips["collector_stopped"] = skips.get("collector_stopped", 0) + 1
+                stop.set()
+                break
             new_mints = set()
             # Process ready wallet results without blocking on slower wallets.
             for _ in range(200):
@@ -379,9 +427,16 @@ def observe(args):
             lab.process(now, quotes)
             if time.monotonic() >= next_save:
                 write_json(path, snapshot(lab, quotes, now, polls, skips, last_polls))
+                health = observer_feed_health(
+                    wallets=watched, last_polls=last_polls, started_at=lab.start_at,
+                    now=now, poll_seconds=args.poll_seconds,
+                    collector_alive=worker.is_alive())
                 report_data = {**lab.report(quotes, now), "polls": polls, "skips": skips,
-                               "feed_complete": not bool(skips.get("unverifiable_history_gap") or
-                                                         skips.get("provider_failure"))}
+                               "feed_health": health,
+                               "feed_complete": (
+                                   health["state"] == "healthy" and not bool(
+                                       skips.get("unverifiable_history_gap") or
+                                       skips.get("provider_failure")))}
                 write_json(Path(args.report), report_data)
                 save_html(report_data, Path(args.html))
                 next_save = time.monotonic() + 15
@@ -397,10 +452,16 @@ def observe(args):
         lab.process(int(time.time()), quotes)
         now = int(time.time())
         write_json(path, snapshot(lab, quotes, now, polls, skips, last_polls))
+        final_health = observer_feed_health(
+            wallets=watched, last_polls=last_polls, started_at=lab.start_at,
+            now=now, poll_seconds=args.poll_seconds,
+            collector_alive=False)
         report_data = {**lab.report(quotes, now), "polls": polls,
                        "skips": skips, "interrupted": interrupted,
+                       "feed_health": final_health,
                        "feed_complete": not bool(skips.get("unverifiable_history_gap") or
                                                  skips.get("provider_failure") or
+                                                 skips.get("collector_stopped") or
                                                  (not interrupted and now < finish))}
         write_json(Path(args.report), report_data)
         save_html(report_data, Path(args.html))
