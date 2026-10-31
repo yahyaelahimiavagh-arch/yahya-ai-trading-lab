@@ -98,7 +98,7 @@ def build_status(report: dict | None, budget: dict | None, *, now: int | None = 
     raw_health = report.get("feed_health")
     raw_health = raw_health if isinstance(raw_health, dict) else {}
     health_state = raw_health.get("state")
-    if health_state not in ("healthy", "warming_up", "polls_stale",
+    if health_state not in ("healthy", "polls_recent", "warming_up", "polls_stale",
                             "collector_stopped", "completed", "interrupted"):
         health_state = "unknown"
     collector_alive = raw_health.get("collector_alive")
