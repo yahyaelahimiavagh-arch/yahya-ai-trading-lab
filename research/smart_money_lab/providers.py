@@ -62,7 +62,11 @@ class Helius:
         # Enhanced endpoints have tighter limits than ordinary RPCs on Free.
         # 1.2 sec spacing (<=0.84 RPS) leaves headroom below documented 2 RPS.
         self._min_request_interval_seconds = 1.2
-        self._budget_file = Path('data/smart_money/helius_budget.json')
+        # A second checkout can reuse the SAME cumulative quota ledger.
+        # Do not run separate processes concurrently: the reserve lock is
+        # thread-safe only, not an inter-process file lock.
+        self._budget_file = Path(os.getenv(
+            "YATL_SML_HELIUS_BUDGET_FILE", "data/smart_money/helius_budget.json"))
 
     def _reserve_request(self):
         # One SML process only; persistent over restarts.
