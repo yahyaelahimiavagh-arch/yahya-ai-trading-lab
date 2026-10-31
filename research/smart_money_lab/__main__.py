@@ -282,6 +282,9 @@ def observe(args):
                     break
                 if kind == "error":
                     skips["provider_failure"] = skips.get("provider_failure", 0) + 1
+                    if "safety cap reached" in batch:
+                        skips["helius_budget_exhausted"] = skips.get("helius_budget_exhausted", 0) + 1
+                        stop.set()
                     continue
                 polls += 1
                 raw_times = [x.get("timestamp") for x in batch
