@@ -216,6 +216,36 @@ def parse_swap(tx: dict, *, wallet: str, observed_at: int,
         return None
 
 
+
+def classify_swap(tx: dict, *, wallet: str, observed_at: int,
+                  historical_sol_usd: Decimal | None = None) -> tuple[Trade | None, str]:
+    """Explain why a candidate could not safely become a trade.
+
+    No heuristics, inferred token legs, third-party transfers or route guesses.
+    Reasons are aggregate-only diagnostics and contain no wallet/signature.
+    """
+    if tx.get("type") != "SWAP":
+        return None, "not_swap"
+    if tx.get("feePayer") != wallet:
+        return None, "other_fee_payer"
+    swap = (tx.get("events") or {}).get("swap")
+    if not isinstance(swap, dict):
+        return None, "missing_swap_event"
+    ins, outs = _entries(swap, "tokenInputs"), _entries(swap, "tokenOutputs")
+    if len(ins) != 1 or len(outs) != 1:
+        return None, "ambiguous_legs"
+    in_mint, _ = ins[0]
+    out_mint, _ = outs[0]
+    direct = ((in_mint in QUOTE_MINTS and out_mint not in QUOTE_MINTS)
+              or (out_mint in QUOTE_MINTS and in_mint not in QUOTE_MINTS))
+    if not direct:
+        return None, "unsupported_quote_pair"
+    if historical_sol_usd is None and (in_mint == SOL or out_mint == SOL):
+        return None, "missing_sol_reference_price"
+    parsed = parse_swap(tx, wallet=wallet, observed_at=observed_at,
+                        historical_sol_usd=historical_sol_usd)
+    return (parsed, "ok") if parsed is not None else (None, "invalid_amount_or_timestamp")
+
 class Market:
     def token(self, mint: str, *, now: int):
         valid_address(mint)
@@ -241,7 +271,7 @@ class Market:
         liquidity, price = max(options)
         return {"price_usd": str(price), "liquidity_usd": str(liquidity), "ts": now}
 
-    def tokens(self, mints: set[str], *, now: int):
+    def tokens(self, mints: set[str], *, now: int, fallback_limit: int = 0):
         """Batch indicative quotes: at most 30 token addresses per public call."""
         result = {}
         addresses = sorted(valid_address(m) for m in mints)
@@ -269,6 +299,19 @@ class Market:
                 if mint not in result or liquidity > dec(result[mint]["liquidity_usd"]):
                     result[mint] = {"price_usd": str(price),
                                     "liquidity_usd": str(liquidity), "ts": now}
+        # Batch lookup may omit thinly indexed tokens. Make at most three
+        # single-token DEX lookups, preserving the exact base-mint and
+        # $20k real-time fill guard. A missing quote is NEVER fabricated.
+        if not 0 <= fallback_limit <= 3:
+            raise ValueError("DEX quote fallback must be between zero and three")
+        misses = [mint for mint in addresses if mint not in result]
+        for mint in misses[:fallback_limit]:
+            try:
+                quote = self.token(mint, now=now)
+            except (ValueError, RuntimeError):
+                quote = None
+            if quote is not None:
+                result[mint] = quote
         return result
 
     def sol_usd(self, *, now: int) -> Decimal | None:
@@ -277,13 +320,17 @@ class Market:
 
 
 def discover_candidates(helius: Helius, market: Market, *,
-                        max_pools: int = 5, per_pool: int = 30) -> list[dict]:
+                        max_pools: int = 5, per_pool: int = 30,
+                        source: str = "boosts") -> list[dict]:
     """Find CANDIDATES, not vetted winners, via promoted tokens' swap payers.
 
     Promoted token sampling is heavily biased: candidates are never automatically
     eligible until sufficient independent transaction history passes screening.
     """
-    promotions = get_json(f"{DEX_BASE}/token-boosts/latest/v1")
+    if source not in ("boosts", "profiles"):
+        raise ValueError("unsupported candidate discovery feed")
+    feed = "token-profiles/latest/v1" if source == "profiles" else "token-boosts/latest/v1"
+    promotions = get_json(f"{DEX_BASE}/{feed}")
     if not isinstance(promotions, list):
         raise ValueError("invalid discovery feed")
     wallets: dict[str, dict] = {}
@@ -302,6 +349,22 @@ def discover_candidates(helius: Helius, market: Market, *,
         if not isinstance(pairs, list):
             continue
         safe_pairs = [p for p in pairs if isinstance(p, dict) and p.get("pairAddress")]
+        if source == "profiles":
+            # A quality-first *pool sample*, never verified trader selection.
+            # Reject new/illiquid/untraded pools before spending Helius calls.
+            cutoff_ms = int(time.time() * 1000) - 7 * 86400 * 1000
+            filtered = []
+            for p in safe_pairs:
+                try:
+                    liq = dec((p.get("liquidity") or {}).get("usd", 0))
+                    volume = dec((p.get("volume") or {}).get("h24", 0))
+                    created = int(p.get("pairCreatedAt") or 0)
+                    if (p.get("chainId") == "solana" and liq >= Decimal("200000")
+                            and volume >= Decimal("30000") and 0 < created < cutoff_ms):
+                        filtered.append(p)
+                except (ValueError, TypeError, OverflowError):
+                    continue
+            safe_pairs = filtered
         pool = next((p["pairAddress"] for p in sorted(
             safe_pairs, key=lambda x: float((x.get("liquidity") or {}).get("usd") or 0),
             reverse=True
@@ -316,6 +379,9 @@ def discover_candidates(helius: Helius, market: Market, *,
         for tx in transactions:
             payer = tx.get("feePayer")
             if tx.get("type") == "SWAP" and isinstance(payer, str) and ADDRESS.fullmatch(payer):
-                wallets[payer] = {"wallet": payer, "source": "promoted_pool_swap_payer",
+                wallets[payer] = {"wallet": payer,
+                                  "source": ("liquid_profile_pool_swap_payer"
+                                             if source == "profiles" else
+                                             "promoted_pool_swap_payer"),
                                   "verified": False}
     return list(wallets.values())
