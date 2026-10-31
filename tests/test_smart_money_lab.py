@@ -2,6 +2,7 @@
 import unittest
 import tempfile
 import json
+import http.client
 from types import SimpleNamespace
 from pathlib import Path
 from unittest.mock import patch
@@ -12,9 +13,9 @@ from research.smart_money_lab.engine import (
 )
 from research.smart_money_lab.providers import (
     USDC, USDT, SOL, Market, Helius, parse_swap, classify_swap,
-    discover_candidates, _token_amount,
+    discover_candidates, _token_amount, get_json,
 )
-from research.smart_money_lab.__main__ import snapshot, restore, screen, parse_history
+from research.smart_money_lab.__main__ import snapshot, restore, screen, parse_history, observer_feed_health
 from research.smart_money_lab.dashboard import html_report
 from research.smart_money_lab.diagnostics import summarize
 from research.smart_money_lab.pilot import exploratory_watchlist
@@ -277,6 +278,60 @@ class DataQualityFixTests(unittest.TestCase):
                 self.assertEqual(selected[0]["source"],
                                  "liquid_profile_pool_swap_payer")
         self.assertEqual(len(selected), 1)
+
+
+
+class FeedResilienceTests(unittest.TestCase):
+    def test_remote_disconnected_is_normalized_and_never_leaks_token_url(self):
+        secret_url = ("https://api-mainnet.helius-rpc.com/v0/addresses/example/"
+                      "transactions?api-key=DO_NOT_PRINT_THIS_KEY")
+        with patch("research.smart_money_lab.providers.urllib.request.urlopen",
+                   side_effect=http.client.RemoteDisconnected("connection closed")):
+            with self.assertRaisesRegex(RuntimeError,
+                                        "^read-only data provider unavailable$") as cm:
+                get_json(secret_url)
+        self.assertNotIn("DO_NOT_PRINT_THIS_KEY", str(cm.exception))
+
+    def test_reset_and_truncated_http_response_fail_closed(self):
+        for exception in (ConnectionResetError("reset"),
+                          http.client.IncompleteRead(b"partial")):
+            with self.subTest(error=type(exception).__name__):
+                with patch("research.smart_money_lab.providers.urllib.request.urlopen",
+                           side_effect=exception):
+                    with self.assertRaisesRegex(RuntimeError, "provider unavailable"):
+                        get_json("https://invalid.invalid/never-sent")
+
+    def test_poll_heartbeat_requires_every_wallet_recent(self):
+        recent = {"wallet-secret-a": 990, "wallet-secret-b": 995}
+        ok = observer_feed_health(wallets={"wallet-secret-a", "wallet-secret-b"},
+                                  last_polls=recent, started_at=700, now=1000,
+                                  poll_seconds=180, collector_alive=True)
+        self.assertEqual(ok["state"], "healthy")
+        self.assertEqual(ok["recent_wallets"], 2)
+        self.assertNotIn("wallet-secret", str(ok))
+
+        stale = observer_feed_health(wallets={"wallet-secret-a", "wallet-secret-b"},
+                                     last_polls={"wallet-secret-a": 400,
+                                                 "wallet-secret-b": 995},
+                                     started_at=100, now=1000, poll_seconds=180,
+                                     collector_alive=True)
+        self.assertEqual(stale["state"], "polls_stale")
+        self.assertEqual(stale["recent_wallets"], 1)
+        self.assertEqual(stale["oldest_poll_age_seconds"], 600)
+        down = observer_feed_health(wallets={"wallet-secret-a", "wallet-secret-b"},
+                                    last_polls=recent, started_at=700, now=1000,
+                                    poll_seconds=180, collector_alive=False)
+        self.assertEqual(down["state"], "collector_stopped")
+
+    def test_startup_without_polls_is_not_reported_healthy(self):
+        state = observer_feed_health(wallets={"wallet-secret-a"},
+                                     last_polls={}, started_at=1000, now=1030,
+                                     poll_seconds=180, collector_alive=True)
+        self.assertEqual(state["state"], "warming_up")
+        self.assertEqual(state["recent_wallets"], 0)
+        with self.assertRaises(ValueError):
+            observer_feed_health(wallets=[], last_polls={}, started_at=0,
+                                 now=100, poll_seconds=0, collector_alive=True)
 
 
 class LedgerTests(unittest.TestCase):
