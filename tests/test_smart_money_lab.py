@@ -1,5 +1,7 @@
 """Offline, deterministic safety and behavior gates for Smart Money Lab."""
 import unittest
+import tempfile
+from pathlib import Path
 from unittest.mock import patch
 from decimal import Decimal as D
 
@@ -7,7 +9,7 @@ from research.smart_money_lab.engine import (
     PaperLab, Trade, Portfolio, score_wallet, rank_wallets,
 )
 from research.smart_money_lab.providers import (
-    USDC, SOL, Market, parse_swap, _token_amount,
+    USDC, SOL, Market, Helius, parse_swap, _token_amount,
 )
 from research.smart_money_lab.__main__ import snapshot, restore
 from research.smart_money_lab.dashboard import html_report
@@ -102,6 +104,22 @@ class ProviderTests(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(result.usd_notional, D("150"))
         self.assertEqual(result.amount, D("1"))
+
+    def test_helius_request_budget_survives_restart(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'helius_budget.json'
+            with patch('research.smart_money_lab.providers.get_json', return_value=[]):
+                first = Helius('key_for_testing_1234')
+                first._budget_file = path
+                first._reserve_request()
+                second = Helius('key_for_testing_1234')
+                second._budget_file = path
+                self.assertEqual(__import__('json').loads(path.read_text())['calls'], 1)
+                second._reserve_request()
+                self.assertEqual(__import__('json').loads(path.read_text())['calls'], 2)
+                path.write_text('{"calls":5000}')
+                with self.assertRaisesRegex(RuntimeError, 'safety cap reached'):
+                    second._reserve_request()
 
     def test_market_never_uses_quote_token_base_price(self):
         pairs = [
