@@ -36,6 +36,15 @@ def html_report(report: dict) -> str:
     polls = int(report.get("polls", 0))
     quality = "DATA GAPS / INCOMPLETE" if report.get("feed_complete") is False else "Not independently audited"
     skips = safe(report.get("skips", {}))
+    mode = report.get("selection_mode", "qualified")
+    if mode not in ("qualified", "exploratory_unvetted"):
+        raise ValueError("unknown selection mode in report")
+    cohort_banner = ("""<div class="warning"><strong>UNVETTED EXPLORATORY COHORT</strong>
+<p>No wallet satisfied complete smart-money qualification. The BLIND and SMART
+labels are provisional activity/liquidity watchlists, NOT evidence of skill.
+No historical profitability claim is supported. Treat this as an
+observation/technical feasibility study only.</p></div>"""
+                     if mode == "exploratory_unvetted" else "")
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>YATL Smart Money Paper Dashboard</title>
@@ -57,6 +66,7 @@ th{{color:#d6c391}}.pos{{color:#8ed8b6}}.neg{{color:#f4a7a7}}.unknown{{color:#f3
 </style></head><body><main>
 <div class="top"><div><small>YAHYA AI TRADING LAB / EXPERIMENT</small>
 <h1>Smart Money Lab</h1></div><span class="flag">PAPER ONLY / ZERO REAL FUNDS</span></div>
+{cohort_banner}
 <p>Three strategies, three execution-delay arms per strategy.
 All USD profits are modeled, not independently executable.</p>
 <div class="metrics">
