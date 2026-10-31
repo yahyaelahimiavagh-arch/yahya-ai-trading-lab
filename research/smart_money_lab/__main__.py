@@ -17,6 +17,7 @@ from pathlib import Path
 from decimal import Decimal
 
 from .engine import PaperLab, Trade, Holding, dec, score_wallet, rank_wallets, DELAYS
+from .dashboard import save_html
 from .providers import Helius, Market, SOL, discover_candidates, get_json, parse_swap, valid_address
 
 
@@ -319,9 +320,11 @@ def observe(args):
             lab.process(now, quotes)
             if time.monotonic() >= next_save:
                 write_json(path, snapshot(lab, quotes, now, polls, skips, last_polls))
-                write_json(Path(args.report), {**lab.report(quotes, now),
-                           "polls": polls, "skips": skips, "feed_complete": not bool(
-                               skips.get("unverifiable_history_gap") or skips.get("provider_failure"))})
+                report_data = {**lab.report(quotes, now), "polls": polls, "skips": skips,
+                               "feed_complete": not bool(skips.get("unverifiable_history_gap") or
+                                                         skips.get("provider_failure"))}
+                write_json(Path(args.report), report_data)
+                save_html(report_data, Path(args.html))
                 next_save = time.monotonic() + 15
             time.sleep(0.25)
     except KeyboardInterrupt:
@@ -335,11 +338,13 @@ def observe(args):
         lab.process(int(time.time()), quotes)
         now = int(time.time())
         write_json(path, snapshot(lab, quotes, now, polls, skips, last_polls))
-        write_json(Path(args.report), {**lab.report(quotes, now),
-                   "polls": polls, "skips": skips, "interrupted": interrupted,
-                   "feed_complete": not bool(skips.get("unverifiable_history_gap") or
-                                             skips.get("provider_failure") or
-                                             stop.is_set() and not interrupted and now < finish)})
+        report_data = {**lab.report(quotes, now), "polls": polls,
+                       "skips": skips, "interrupted": interrupted,
+                       "feed_complete": not bool(skips.get("unverifiable_history_gap") or
+                                                 skips.get("provider_failure") or
+                                                 (not interrupted and now < finish))}
+        write_json(Path(args.report), report_data)
+        save_html(report_data, Path(args.html))
     if interrupted:
         print(f"Paper observer stopped by operator; partial snapshot: {args.report}")
     elif now < finish:
@@ -350,9 +355,11 @@ def observe(args):
 def cmd_report(args):
     doc = read_json(Path(args.state))
     lab = restore(doc)
-    print(json.dumps({**lab.report(doc.get("quotes", {}), int(time.time())),
-                      "polls": doc.get("polls", 0), "skips": doc.get("skips", {})},
-                     indent=2))
+    report_data = {**lab.report(doc.get("quotes", {}), int(time.time())),
+                   "polls": doc.get("polls", 0), "skips": doc.get("skips", {})}
+    if args.html:
+        save_html(report_data, Path(args.html))
+    print(json.dumps(report_data, indent=2))
 
 
 def main(argv=None):
@@ -372,11 +379,13 @@ def main(argv=None):
     live.add_argument("--screened", default="data/smart_money/screened.json")
     live.add_argument("--state", default="data/smart_money/state.json")
     live.add_argument("--report", default="data/smart_money/report.json")
+    live.add_argument("--html", default="data/smart_money/dashboard.html")
     live.add_argument("--hours", type=int, default=24)
     live.add_argument("--poll-seconds", type=int, default=30)
     live.add_argument("--resume", action="store_true")
     report = commands.add_parser("report", help="print saved paper snapshot")
     report.add_argument("--state", default="data/smart_money/state.json")
+    report.add_argument("--html", default=None)
     args = parser.parse_args(argv)
     if args.command == "discover":
         if not 1 <= args.max_pools <= 10 or not 1 <= args.per_pool <= 100:
