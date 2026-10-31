@@ -224,7 +224,11 @@ def observe(args):
                 except (RuntimeError, ValueError):
                     skips["provider_failure"] = skips.get("provider_failure", 0) + 1
                     continue
-                for tx in sorted(batch, key=lambda x: (x.get("timestamp") or 0, x.get("signature") or ""))):
+                timestamps = [x["timestamp"] for x in batch if isinstance(x.get("timestamp"), int)]
+                if len(batch) == 100 and last_observed and timestamps and min(timestamps) >= last_observed:
+                    skips["unverifiable_history_gap"] = skips.get("unverifiable_history_gap", 0) + 1
+                    continue
+                for tx in sorted(batch, key=lambda x: (x.get("timestamp") or 0, x.get("signature") or "")):
                     if tx.get("type") != "SWAP":
                         continue
                     t = parse_swap(tx, wallet=wallet, observed_at=now,
@@ -238,23 +242,22 @@ def observe(args):
             polls += 1
             last_observed = now
             next_poll = now + args.poll_seconds
-            # Query fresh quotes at observation, never at onchain transaction time.
-            for mint in new_mints:
+            # First indication is observed at receipt, never backdated.
+            if new_mints:
                 try:
-                    q = market.token(mint, now=now)
-                    if q:
-                        quotes[mint] = q
+                    quotes.update(market.tokens(new_mints, now=now))
                 except (ValueError, RuntimeError):
                     skips["market_failure"] = skips.get("market_failure", 0) + 1
-        # Quote at the scheduled fill instant; no using a future candle.
-        if any(due <= now for due, _, _, _ in lab.pending):
-            for mint in {t.mint for due, _, t, _ in lab.pending if due <= now}:
-                try:
-                    q = market.token(mint, now=now)
-                    if q:
-                        quotes[mint] = q
-                except (RuntimeError, ValueError):
-                    skips["market_failure"] = skips.get("market_failure", 0) + 1
+        # Refresh holdings every ten seconds for risk marks; poll/network lag
+        # is included in real observed signal-to-fill time.
+        due_mints = {t.mint for due, _, t, _ in lab.pending if due <= now}
+        held_mints = ({h.mint for p in lab.portfolios.values() for h in p.holdings.values()}
+                      if now % 10 == 0 else set())
+        if due_mints or held_mints:
+            try:
+                quotes.update(market.tokens(due_mints | held_mints, now=now))
+            except (RuntimeError, ValueError):
+                skips["market_failure"] = skips.get("market_failure", 0) + 1
         lab.process(now, quotes)
         if last_observed and now % 15 == 0:
             write_json(path, snapshot(lab, quotes, now, polls, skips))
