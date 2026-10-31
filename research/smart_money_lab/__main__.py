@@ -17,6 +17,7 @@ from pathlib import Path
 from decimal import Decimal
 
 from .engine import PaperLab, Trade, Holding, dec, score_wallet, rank_wallets, DELAYS
+from .pilot import exploratory_watchlist
 from .dashboard import save_html
 from .providers import Helius, Market, SOL, discover_candidates, get_json, parse_swap, valid_address
 
@@ -172,6 +173,7 @@ def restore_trade(data: dict) -> Trade:
 def snapshot(lab: PaperLab, quotes: dict, now: int, polls: int, skips: dict, last_polls=None):
     return {
         "start_at": lab.start_at, "blind": sorted(lab.blind), "smart": sorted(lab.smart),
+        "selection_mode": lab.selection_mode,
         "seen": sorted(lab.seen), "polls": polls, "skips": skips, "quotes": quotes,
         "last_polls": last_polls or {},
         "pending": [{"due": due, "portfolio": pid, "trade": trade_data(t), "owner": owner}
@@ -189,7 +191,8 @@ def snapshot(lab: PaperLab, quotes: dict, now: int, polls: int, skips: dict, las
 
 
 def restore(doc: dict) -> PaperLab:
-    lab = PaperLab(int(doc["start_at"]), list(doc["blind"]), list(doc["smart"]))
+    lab = PaperLab(int(doc["start_at"]), list(doc["blind"]), list(doc["smart"]),
+                   selection_mode=doc.get("selection_mode", "qualified"))
     lab.seen = set(doc["seen"])
     lab.pending = [(int(x["due"]), x["portfolio"], restore_trade(x["trade"]),
                     x["owner"]) for x in doc["pending"]]
@@ -228,13 +231,25 @@ def observe(args):
         screened = read_json(Path(args.screened))
         if not isinstance(screened, list):
             raise ValueError("screened must contain wallet records")
-        blind, smart = rank_wallets(screened)
-        if len(smart) < 2:
-            raise ValueError("need >=2 independent qualified wallets; no bypass")
-        # Free-tier pilot: at most four wallets per strategy, <=8 unique.
-        # The 1s/3s/10s arms are post-detection scheduling only, NOT full
-        # chain-to-trader execution latencies at 180-second polling.
-        lab = PaperLab(int(time.time()), blind[:4], smart[:4])
+        strict_blind, strict_smart = rank_wallets(screened)
+        if args.exploratory:
+            # Always prefer strict selection; unvetted cohort is an explicit,
+            # separate paper-only feed experiment when strict screening fails.
+            if len(strict_smart) >= 2:
+                raise ValueError("qualified wallets already available; omit --exploratory")
+            blind, smart = exploratory_watchlist(screened)
+            cohort = "exploratory_unvetted"
+            print("WARNING: exploratory UNVETTED wallet sample. This is telemetry, "
+                  "not a validated smart-money profitability experiment.", flush=True)
+        else:
+            if len(strict_smart) < 2:
+                raise ValueError("need >=2 independently qualified wallets; "
+                                 "only --exploratory can run an explicitly UNVETTED paper pilot")
+            blind, smart = strict_blind, strict_smart
+            cohort = "qualified"
+        # Free-tier pilot: <=4 per strategy, up to 8 distinct monitored.
+        # Extra 1/3/10-second delays are after observation, not end-to-end.
+        lab = PaperLab(int(time.time()), blind[:4], smart[:4], selection_mode=cohort)
         quotes, polls, skips, last_polls = {}, 0, {}, {}
         write_json(path, snapshot(lab, quotes, lab.start_at, polls, skips, last_polls))
     finish = lab.start_at + args.hours * 3600
@@ -411,6 +426,8 @@ def main(argv=None):
     live.add_argument("--hours", type=int, default=24)
     live.add_argument("--poll-seconds", type=int, default=180)
     live.add_argument("--resume", action="store_true")
+    live.add_argument("--exploratory", action="store_true",
+                      help="UNVETTED provisional wallet observation, paper only; no skill claim")
     report = commands.add_parser("report", help="print saved paper snapshot")
     report.add_argument("--state", default="data/smart_money/state.json")
     report.add_argument("--html", default=None)
