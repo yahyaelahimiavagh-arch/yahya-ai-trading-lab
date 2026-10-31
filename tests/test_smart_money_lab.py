@@ -13,6 +13,7 @@ from research.smart_money_lab.providers import (
 )
 from research.smart_money_lab.__main__ import snapshot, restore
 from research.smart_money_lab.dashboard import html_report
+from research.smart_money_lab.diagnostics import summarize
 
 
 W1 = "A" * 35
@@ -217,6 +218,27 @@ class LedgerTests(unittest.TestCase):
         self.assertEqual(restored.report(quote(now=113), 113)["kind"],
                          "YATL_SMART_MONEY_PAPER_ONLY")
 
+
+
+class ScreeningDiagnosticsTests(unittest.TestCase):
+    def test_screening_report_redacts_wallets_and_api_errors(self):
+        rows = [
+            {'wallet': W1, 'error': 'read-only data provider HTTP 429'},
+            {'wallet': W2, 'closed': 0, 'active_days': 2,
+             'history_complete': True, 'copyable': False,
+             'unmatched_sells': 1, 'unparsed_swaps': 3, 'total_swaps_observed': 8},
+        ]
+        result = summarize(rows, {'calls': 85})
+        self.assertEqual(result['screened_total'], 2)
+        self.assertEqual(result['rejection_reasons_overlapping']['provider_429_rate_limited'], 1)
+        self.assertEqual(result['helius_requests_reserved_so_far'], 85)
+        self.assertNotIn(W1, str(result))
+        self.assertNotIn(W2, str(result))
+
+    def test_diagnostics_does_not_depend_on_secret_or_network(self):
+        result = summarize([], {})
+        self.assertEqual(result['screened_total'], 0)
+        self.assertIsNone(result['helius_requests_reserved_so_far'])
 
 if __name__ == "__main__":
     unittest.main()
