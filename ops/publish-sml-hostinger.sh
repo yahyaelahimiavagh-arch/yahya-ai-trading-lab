@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 # Independent read-only uploader. Neither restarts nor imports the YATL observer.
+# Remote 644 is REQUIRED: default umask 077 creates SFTP files as 600 and
+# Hostinger web server otherwise returns 403 after HTTP Basic auth.
+# The pre-configured yatllive directory must remain password-protected.
 set -Eeuo pipefail
 umask 077
 # User-owned file has connection metadata only (no private key contents).
@@ -53,8 +56,10 @@ publish_once() {
       "$HOSTINGER_SFTP_USER@$HOSTINGER_SFTP_HOST" <<EOF
 put "$YATL_EXPORT_DIR/index.html" "$HOSTINGER_SFTP_REMOTE_DIR/index.html.tmp"
 rename "$HOSTINGER_SFTP_REMOTE_DIR/index.html.tmp" "$HOSTINGER_SFTP_REMOTE_DIR/index.html"
+chmod 644 "$HOSTINGER_SFTP_REMOTE_DIR/index.html"
 put "$YATL_EXPORT_DIR/status.json" "$HOSTINGER_SFTP_REMOTE_DIR/status.json.tmp"
 rename "$HOSTINGER_SFTP_REMOTE_DIR/status.json.tmp" "$HOSTINGER_SFTP_REMOTE_DIR/status.json"
+chmod 644 "$HOSTINGER_SFTP_REMOTE_DIR/status.json"
 EOF
   else
     python3 -m research.smart_money_lab.hostinger_export \
@@ -65,6 +70,7 @@ EOF
       "$HOSTINGER_SFTP_USER@$HOSTINGER_SFTP_HOST" <<EOF
 put "$YATL_EXPORT_DIR/status.json" "$HOSTINGER_SFTP_REMOTE_DIR/status.json.tmp"
 rename "$HOSTINGER_SFTP_REMOTE_DIR/status.json.tmp" "$HOSTINGER_SFTP_REMOTE_DIR/status.json"
+chmod 644 "$HOSTINGER_SFTP_REMOTE_DIR/status.json"
 EOF
   fi
   echo "Read-only redacted status published at $(date -u +%Y-%m-%dT%H:%M:%SZ)"
