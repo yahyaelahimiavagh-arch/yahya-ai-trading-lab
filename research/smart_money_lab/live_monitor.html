@@ -151,6 +151,7 @@ footer{color:var(--muted);font-size:11px;margin-top:13px;line-height:1.9}
 (function () {
   "use strict";
   var last = null;
+  var consecutiveFetchFailures = 0;
   var names = {"blind":"BLIND", "smart":"SMART", "consensus":"CONSENSUS"};
   var statuses = {
     running:"داده‌های گزارش تازه‌اند",
@@ -270,10 +271,23 @@ footer{color:var(--muted);font-size:11px;margin-top:13px;line-height:1.9}
       var res=await fetch("/api/status",{cache:"no-store"});
       if(!res.ok)throw new Error("Status HTTP "+res.status);
       render(await res.json());
+      consecutiveFetchFailures = 0;
     }catch(err){
+      // A single HTTP 401/403 during SFTP status replacement or a transient
+      // mobile-network outage does not prove the VPS observer has stopped.
+      consecutiveFetchFailures++;
       e("live-dot").className="dot stale";
-      set("live-state","ارتباط با مانیتور قطع است");
-      set("headline","عدم دسترسی به گزارش VPS");
+      if(!last){
+        set("live-state","داده‌ای از داشبورد دریافت نشده؛ بررسی اتصال");
+        set("headline","در انتظار نخستین گزارش");
+      }else{
+        var age=Math.max(0,Math.floor(Date.now()/1000)-Number(last.updated_at||0));
+        set("live-state",consecutiveFetchFailures<3 && age<=120 ?
+          "اختلال موقت دریافت داده؛ تلاش دوباره" :
+          "گزارش تازه دریافت نمی‌شود؛ بررسی دسترسی");
+        set("headline",age<=120 ? "آخرین گزارش معتبر نمایش داده شده" :
+          "گزارش جدید از سرور دریافت نشده");
+      }
     }
   }
   poll();setInterval(poll,10000);setInterval(refreshClock,1000);
