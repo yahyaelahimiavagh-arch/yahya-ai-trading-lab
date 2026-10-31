@@ -182,7 +182,33 @@ class Market:
         return {"price_usd": str(price), "liquidity_usd": str(liquidity), "ts": now}
 
     def tokens(self, mints: set[str], *, now: int):
-        return {m: q for m in sorted(mints) if (q := self.token(m, now=now))}
+        """Batch indicative quotes: at most 30 token addresses per public call."""
+        result = {}
+        addresses = sorted(valid_address(m) for m in mints)
+        for offset in range(0, len(addresses), 30):
+            subset = addresses[offset:offset + 30]
+            payload = get_json(f"{DEX_BASE}/tokens/v1/solana/" + ",".join(subset))
+            if not isinstance(payload, list):
+                continue
+            for item in payload:
+                if not isinstance(item, dict) or item.get("chainId") != "solana":
+                    continue
+                try:
+                    price = dec(item.get("priceUsd"))
+                    liquidity = dec((item.get("liquidity") or {}).get("usd", 0))
+                except ValueError:
+                    continue
+                if price <= 0 or liquidity <= 0:
+                    continue
+                for mint in (item.get("baseToken", {}).get("address"),
+                             item.get("quoteToken", {}).get("address")):
+                    if mint not in subset:
+                        continue
+                    if mint not in result or liquidity > dec(result[mint]["liquidity_usd"]):
+                        result[mint] = {"price_usd": str(price) if mint == item.get("baseToken", {}).get("address")
+                                        else None, "liquidity_usd": str(liquidity), "ts": now}
+        # DEX pair priceUsd is for its base token, never the quote token.
+        return {m: q for m, q in result.items() if q["price_usd"] is not None}
 
     def sol_usd(self, *, now: int) -> Decimal | None:
         q = self.token(SOL, now=now)
