@@ -49,6 +49,16 @@ class HostingerStaticExportTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "source data"):
                 export(data_dir=inp, output_dir=inp)
 
+    def test_sftp_publisher_keeps_remote_html_and_json_web_readable(self):
+        script = (Path(__file__).resolve().parents[1] /
+                  "ops/publish-sml-hostinger.sh").read_text(encoding="utf-8")
+        self.assertIn('chmod 644 "$HOSTINGER_SFTP_REMOTE_DIR/index.html"', script)
+        self.assertEqual(
+            script.count('chmod 644 "$HOSTINGER_SFTP_REMOTE_DIR/status.json"'), 2
+        )
+        self.assertIn("StrictHostKeyChecking=yes", script)
+        self.assertNotIn("0.0.0.0", script)
+
     def test_invalid_source_is_not_published_raw(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
