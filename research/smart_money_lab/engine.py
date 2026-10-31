@@ -274,9 +274,13 @@ class Portfolio:
 
 
 class PaperLab:
-    def __init__(self, start_at: int, blind: list[str], smart: list[str]):
+    def __init__(self, start_at: int, blind: list[str], smart: list[str], *,
+                 selection_mode: str = "qualified"):
         if start_at <= 0:
             raise ValueError("start time required")
+        if selection_mode not in ("qualified", "exploratory_unvetted"):
+            raise ValueError("invalid cohort selection mode")
+        self.selection_mode = selection_mode
         self.start_at = start_at
         self.blind = set(blind[:15])
         self.smart = set(smart[:15])
@@ -335,7 +339,11 @@ class PaperLab:
             "start_at": self.start_at, "as_of": now,
             "elapsed_seconds": max(0, now - self.start_at),
             "initial_usd_per_portfolio": "1000",
-            "note": "Nine independent ledgers: 3 strategies x 3 fill delays; no real orders.",
+            "note": ("Nine PAPER ledgers; UNVETTED exploratory wallet sample, NOT "
+                     "verified smart money or evidence of alpha." if
+                     self.selection_mode == "exploratory_unvetted" else
+                     "Nine independent ledgers: 3 strategies x 3 fill delays; no real orders."),
+            "selection_mode": self.selection_mode,
             "wallets_blind": sorted(self.blind), "wallets_smart": sorted(self.smart),
             "unique_signals_seen": len(self.seen), "pending": len(self.pending),
             "portfolios": [p.to_dict(quotes, now) for p in self.portfolios.values()],
