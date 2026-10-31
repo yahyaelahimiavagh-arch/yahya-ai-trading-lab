@@ -1,0 +1,28 @@
+# EXAMPLE ONLY. Do not install without replacing paths and provisioning
+# a restricted, readable /etc/yatl/smart-money-lab.env with HELIUS_API_KEY.
+# No reference to existing YATL P10 systemd services or live order endpoints.
+[Unit]
+Description=YATL Smart Money Lab (24h paper-only onchain observer)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=yatl
+Group=yatl
+WorkingDirectory=/opt/yatl/yahya-ai-trading-lab
+EnvironmentFile=/etc/yatl/smart-money-lab.env
+ExecStart=/usr/local/bin/uv run --locked python -m research.smart_money_lab observe --resume --hours 24 --screened data/smart_money/screened.json --state data/smart_money/state.json --report data/smart_money/report.json --html data/smart_money/dashboard.html
+Restart=no
+TimeoutStartSec=infinity
+KillSignal=SIGINT
+TimeoutStopSec=20
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/opt/yatl/yahya-ai-trading-lab/data/smart_money
+
+[Install]
+WantedBy=multi-user.target
