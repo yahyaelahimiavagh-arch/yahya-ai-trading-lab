@@ -1,12 +1,13 @@
 """Offline, deterministic safety and behavior gates for Smart Money Lab."""
 import unittest
+from unittest.mock import patch
 from decimal import Decimal as D
 
 from research.smart_money_lab.engine import (
     PaperLab, Trade, Portfolio, score_wallet, rank_wallets,
 )
 from research.smart_money_lab.providers import (
-    USDC, SOL, parse_swap, _token_amount,
+    USDC, SOL, Market, parse_swap, _token_amount,
 )
 from research.smart_money_lab.__main__ import snapshot, restore
 
@@ -85,6 +86,22 @@ class ProviderTests(unittest.TestCase):
     def test_raw_token_decimals(self):
         self.assertEqual(_token_amount({"rawTokenAmount":
             {"tokenAmount": "1000000", "decimals": 6}}), D("1"))
+
+    def test_market_never_uses_quote_token_base_price(self):
+        pairs = [
+            {"chainId": "solana", "baseToken": {"address": MINT},
+             "quoteToken": {"address": SOL}, "priceUsd": "0.01",
+             "liquidity": {"usd": 1000000}},
+            {"chainId": "solana", "baseToken": {"address": SOL},
+             "quoteToken": {"address": USDC}, "priceUsd": "250",
+             "liquidity": {"usd": 100000}},
+        ]
+        with patch("research.smart_money_lab.providers.get_json", return_value=pairs):
+            q = Market().token(SOL, now=100)
+            self.assertEqual(q["price_usd"], "250")
+            batch = Market().tokens({MINT, SOL}, now=100)
+            self.assertEqual(batch[SOL]["price_usd"], "250")
+            self.assertEqual(batch[MINT]["price_usd"], "0.01")
 
 
 class LedgerTests(unittest.TestCase):
