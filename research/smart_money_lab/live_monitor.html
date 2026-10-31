@@ -127,6 +127,11 @@ footer{color:var(--muted);font-size:11px;margin-top:13px;line-height:1.9}
     <section class="panel">
       <div class="panel-head"><h2>سلامت داده‌ها</h2><span class="small" id="quality">—</span></div>
       <div class="stat-row"><span>تراکنش‌های قابل‌تفسیر نبودند</span><strong id="unparsed">—</strong></div>
+      <div class="stat-row"><span>مسیرهای چندداراییِ مبهم</span><strong id="parse-ambiguous">—</strong></div>
+      <div class="stat-row"><span>رویداد SWAP ناقص</span><strong id="parse-missing-event">—</strong></div>
+      <div class="stat-row"><span>جفت توکن پشتیبانی‌نشده</span><strong id="parse-unsupported-pair">—</strong></div>
+      <div class="stat-row"><span>قیمت مرجع SOL موجود نبود</span><strong id="parse-sol-price">—</strong></div>
+      <div class="stat-row"><span>ردیف‌های تاریخیِ کنارگذاشته‌شده</span><strong id="historical-ignored">—</strong></div>
       <div class="stat-row"><span>خطاهای دریافت از ارائه‌دهنده</span><strong id="provider-errors">—</strong></div>
       <div class="stat-row"><span>خطای دریافت قیمت بازار</span><strong id="market-errors">—</strong></div>
       <div class="stat-row"><span>شکاف تأییدنشده در تاریخچه</span><strong id="gaps">—</strong></div>
@@ -241,6 +246,11 @@ footer{color:var(--muted);font-size:11px;margin-top:13px;line-height:1.9}
     set("quality",r.feed_complete===true?"بدون شکاف ثبت‌شده":r.feed_complete===false?"نیازمند بررسی":"نامشخص");
     var skip=r.skips||{};
     set("unparsed",num(skip.unparsed_or_unsupported));
+    set("parse-ambiguous",num(skip.parse_ambiguous_legs));
+    set("parse-missing-event",num(skip.parse_missing_swap_event));
+    set("parse-unsupported-pair",num(skip.parse_unsupported_quote_pair));
+    set("parse-sol-price",num(skip.parse_missing_sol_reference_price));
+    set("historical-ignored",num(skip.historical_rows_ignored));
     set("provider-errors",num(skip.provider_failure));
     set("market-errors",num(skip.market_failure));
     set("gaps",num(skip.unverifiable_history_gap));
