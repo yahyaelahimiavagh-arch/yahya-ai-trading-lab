@@ -11,7 +11,7 @@ from research.smart_money_lab.engine import (
     PaperLab, Trade, Portfolio, score_wallet, rank_wallets,
 )
 from research.smart_money_lab.providers import (
-    USDC, SOL, Market, Helius, parse_swap, classify_swap,
+    USDC, USDT, SOL, Market, Helius, parse_swap, classify_swap,
     discover_candidates, _token_amount,
 )
 from research.smart_money_lab.__main__ import snapshot, restore, screen, parse_history
@@ -197,6 +197,24 @@ class DataQualityFixTests(unittest.TestCase):
         self.assertEqual(swaps, 1)
         self.assertEqual(skipped, 1)
         self.assertEqual(reasons, {"missing_swap_event": 1})
+
+    def test_official_usdt_quote_parsed_nominally_with_no_sol_rate(self):
+        raw = {"type": "SWAP", "feePayer": W1, "signature": "usdt-buy",
+               "timestamp": 100, "events": {"swap": {
+                   "tokenInputs": [{"mint": USDT, "tokenAmount": "26"}],
+                   "tokenOutputs": [{"mint": MINT, "tokenAmount": "52"}]}}}
+        result, reason = classify_swap(raw, wallet=W1, observed_at=110)
+        self.assertEqual(reason, "ok")
+        self.assertEqual(result.quote_mint, "USDT")
+        self.assertEqual(result.usd_notional, D("26"))
+
+    def test_malformed_event_shape_does_not_crash(self):
+        raw = {"type": "SWAP", "feePayer": W1, "signature": "broken",
+               "timestamp": 100, "events": ["unsafe"]}
+        item, reason = classify_swap(raw, wallet=W1, observed_at=110)
+        self.assertIsNone(item)
+        self.assertEqual(reason, "missing_swap_event")
+        self.assertIsNone(parse_swap(raw, wallet=W1, observed_at=110))
 
     def test_bounded_dex_fallback_recovers_only_correct_base_token(self):
         good = {"chainId": "solana", "baseToken": {"address": MINT},
