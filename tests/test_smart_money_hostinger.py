@@ -2,6 +2,7 @@
 from __future__ import annotations
 import json
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from research.smart_money_lab.hostinger_export import export, make_static_html
@@ -68,6 +69,70 @@ class HostingerStaticExportTests(unittest.TestCase):
             self.assertEqual(result["api_requests_reserved"], 611)
             self.assertEqual(budget.read_text(), raw)
             self.assertFalse((source / "helius_budget.json").exists())
+
+    def test_old_running_v2_uses_state_polls_to_detect_a_stalled_feed(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            src, dst = root / "private", root / "public"
+            src.mkdir()
+            now = int(time.time())
+            report = {
+                "kind": "YATL_SMART_MONEY_PAPER_ONLY",
+                "selection_mode": "exploratory_unvetted",
+                "start_at": now - 3600, "as_of": now,
+                "feed_complete": True, "portfolios": [],
+                "wallets_blind": ["secret-wallet-a", "secret-wallet-b"],
+                "wallets_smart": ["secret-wallet-b"]
+            }
+            (src / "report.json").write_text(json.dumps(report))
+            (src / "state.json").write_text(json.dumps({
+                "last_polls": {"secret-wallet-a": now - 800,
+                               "secret-wallet-b": now - 10},
+                "seen": ["private-signature"],
+            }))
+            result = export(data_dir=src, output_dir=dst)
+            self.assertEqual(result["status"], "degraded")
+            self.assertEqual(result["feed_health"]["state"], "polls_stale")
+            self.assertIsNone(result["feed_health"]["collector_alive"])
+            self.assertEqual(result["feed_health"]["recent_wallets"], 1)
+            published = (dst / "status.json").read_text()
+            for secret in ("secret-wallet", "private-signature", "last_polls"):
+                self.assertNotIn(secret, published)
+            self.assertTrue(report["feed_complete"])
+            self.assertTrue(json.loads((src / "report.json").read_text())["feed_complete"])
+
+            (src / "state.json").write_text(json.dumps({
+                "last_polls": {"secret-wallet-a": now - 30,
+                               "secret-wallet-b": now - 10},
+            }))
+            fresh = export(data_dir=src, output_dir=dst)
+            self.assertEqual(fresh["status"], "running")
+            self.assertEqual(fresh["feed_health"]["state"], "polls_recent")
+            self.assertEqual(fresh["feed_health"]["recent_wallets"], 2)
+
+    def test_new_observer_heartbeat_overrides_derived_fallback(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            inp, out = root / "source", root / "public"
+            inp.mkdir()
+            now = int(time.time())
+            report = {
+                "kind": "YATL_SMART_MONEY_PAPER_ONLY",
+                "selection_mode": "exploratory_unvetted",
+                "start_at": now - 1800, "as_of": now,
+                "portfolios": [], "wallets_blind": ["secret-wallet-a"],
+                "feed_health": {
+                    "state": "collector_stopped", "collector_alive": False,
+                    "recent_wallets": 0, "expected_wallets": 1,
+                }
+            }
+            (inp / "report.json").write_text(json.dumps(report))
+            (inp / "state.json").write_text(json.dumps({
+                "last_polls": {"secret-wallet-a": now - 1}
+            }))
+            status = export(data_dir=inp, output_dir=out)
+            self.assertEqual(status["status"], "degraded")
+            self.assertEqual(status["feed_health"]["state"], "collector_stopped")
 
     def test_sftp_publisher_keeps_remote_html_and_json_web_readable(self):
         script = (Path(__file__).resolve().parents[1] /
