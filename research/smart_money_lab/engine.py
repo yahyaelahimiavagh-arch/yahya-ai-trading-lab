@@ -68,7 +68,7 @@ def score_wallet(wallet: str, trades: list[Trade], *, cutoff: int,
     history_complete=True separately; this function never asserts completeness.
     """
     selected = sorted((t for t in trades if t.wallet == wallet and
-                       t.chain_time < cutoff and t.quote_mint in ("USDC", "USDT")),
+                       t.chain_time < cutoff and t.quote_mint in ("USDC", "USDT", "SOL")),
                       key=lambda t: (t.chain_time, t.signature))
     lots: dict[str, list[list[Decimal]]] = defaultdict(list)
     pnl = D("0")
@@ -190,7 +190,7 @@ class Portfolio:
         if liquidity_usd < D("20000") or price <= 0:
             self.reject("illiquid")
             return False
-        if self.halted:
+        if self.halted and signal.side == "BUY":
             self.reject("risk_halted")
             return False
         owner = source or signal.wallet
@@ -221,19 +221,13 @@ class Portfolio:
             if h is None:
                 self.reject("no_matching_position")
                 return False
-            # Copy proportional exits, capped at 100%, not assuming full liquidation.
-            sell_fraction = min(D("1"), signal.usd_notional / max(D("0.01"), h.cost))
-            qty = h.qty * sell_fraction
-            if qty <= 0:
-                self.reject("zero_exit")
-                return False
+            # Exit-policy experiment: first matching leader sell fully closes
+            # our corresponding paper lot; not an exact proportional copy.
+            qty = h.qty
             slip = BASE_SLIP_BPS / D("10000") + (qty * price) / liquidity_usd
-            proceeds = qty * price * (D("1") - slip) * (D("1") - fee)
+            proceeds = qty * price * max(D("0"), D("1") - slip) * (D("1") - fee)
             self.cash += proceeds
-            h.cost *= (D("1") - sell_fraction)
-            h.qty -= qty
-            if h.qty < D("0.000000001"):
-                self.holdings.pop(key)
+            self.holdings.pop(key)
         self.fills.append({
             "time": now, "signature": signal.signature, "wallet": signal.wallet,
             "mint": signal.mint, "side": signal.side, "usd_price": str(price),
@@ -245,8 +239,25 @@ class Portfolio:
         equity = self.equity(quotes, now)
         if equity is not None:
             self.peak_equity = max(self.peak_equity, equity)
-            if self.peak_equity > 0 and equity / self.peak_equity <= D("0.95"):
+            if self.peak_equity > 0 and equity / self.peak_equity <= D("1") - MAX_DRAWDOWN:
                 self.halted = True
+                # Emergency exit uses the current observed quote and adverse
+                # friction; price gaps can exceed the 5% threshold.
+                for key, holding in list(self.holdings.items()):
+                    quote = quotes.get(holding.mint)
+                    if not quote or now - int(quote["ts"]) > MAX_PRICE_AGE_SECONDS:
+                        continue
+                    p = dec(quote["price_usd"])
+                    liq = dec(quote["liquidity_usd"])
+                    slip = BASE_SLIP_BPS / D("10000") + holding.qty * p / max(liq, D("1"))
+                    proceeds = holding.qty * p * max(D("0"), D("1") - slip) * (D("1") - FEE_BPS / D("10000"))
+                    self.cash += proceeds
+                    self.fills.append({"time": now, "signature": "RISK_EXIT",
+                                       "wallet": holding.wallet, "mint": holding.mint,
+                                       "side": "RISK_EXIT", "usd_price": str(p),
+                                       "cash_after": str(self.cash),
+                                       "signal_to_fill_seconds": None})
+                    del self.holdings[key]
 
     def to_dict(self, quotes: dict[str, dict], now: int) -> dict:
         equity = self.equity(quotes, now)
