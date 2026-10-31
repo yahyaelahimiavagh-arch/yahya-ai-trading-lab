@@ -19,6 +19,7 @@ from collections import Counter
 
 from .engine import PaperLab, Trade, Holding, dec, score_wallet, rank_wallets, DELAYS
 from .pilot import exploratory_watchlist
+from .prospective_evidence import EvidenceJournal
 from .dashboard import save_html
 from .providers import Helius, Market, SOL, discover_candidates, get_json, parse_swap, classify_swap, valid_address
 
@@ -298,6 +299,10 @@ def observe(args):
     if time.time() >= finish:
         raise ValueError("the original 24h window is already complete")
 
+    # Off by default: only records already-observed Helius events and already-
+    # fetched DEX quotes. Does not add provider requests or trade orders.
+    evidence = (EvidenceJournal(Path(args.evidence_journal))
+                if getattr(args, "evidence_journal", None) else None)
     results = queue.Queue(maxsize=200)
     stop = threading.Event()
     watched = sorted(lab.blind | lab.smart)
@@ -347,11 +352,17 @@ def observe(args):
             return
         try:
             fetched = market.tokens(mints, now=int(time.time()), fallback_limit=3)
-            receipt = int(time.time())
-            for mint, q in fetched.items():
-                quotes[mint] = {**q, "ts": receipt}
         except (ValueError, RuntimeError):
             skips["market_failure"] = skips.get("market_failure", 0) + 1
+            return
+        receipt = int(time.time())
+        for mint, q in fetched.items():
+            quotes[mint] = {**q, "ts": receipt}
+            if evidence is not None:
+                # A journal failure is not a market outage. Fail closed.
+                evidence.quote(mint=mint, captured_at=receipt,
+                               price_usd=q["price_usd"],
+                               liquidity_usd=q["liquidity_usd"])
 
     try:
         while int(time.time()) < finish and not stop.is_set():
@@ -411,6 +422,11 @@ def observe(args):
                         skips["unparsed_or_unsupported"] = skips.get("unparsed_or_unsupported", 0) + 1
                         continue
                     if t.key not in lab.seen:
+                        if evidence is not None:
+                            evidence.signal(wallet=t.wallet, mint=t.mint,
+                                            signature=t.signature, side=t.side,
+                                            chain_time=t.chain_time,
+                                            observed_at=t.observed_at)
                         # Do not request quotes for pre-start history or
                         # signals that are already too old to trade.
                         if observed_at - chain_ts <= 300:
@@ -471,6 +487,8 @@ def observe(args):
                                                  (not interrupted and now < finish))}
         write_json(Path(args.report), report_data)
         save_html(report_data, Path(args.html))
+        if evidence is not None:
+            evidence.close()
     if interrupted:
         print(f"Paper observer stopped by operator; partial snapshot: {args.report}")
     elif now < finish:
@@ -515,6 +533,8 @@ def main(argv=None):
     live.add_argument("--resume", action="store_true")
     live.add_argument("--exploratory", action="store_true",
                       help="UNVETTED provisional wallet observation, paper only; no skill claim")
+    live.add_argument("--evidence-journal", default=None,
+                      help="Optional V3.1 private absolute JSONL path; captures existing receipts, no extra APIs")
     report = commands.add_parser("report", help="print saved paper snapshot")
     report.add_argument("--state", default="data/smart_money/state.json")
     report.add_argument("--html", default=None)

@@ -1,5 +1,7 @@
 name: Smart Money Lab — paper-only gates
 on:
+  push:
+    branches: [research/smart-money-wallet-intelligence-v3]
   pull_request:
     branches: [main]
     paths:
@@ -12,6 +14,8 @@ on:
       - "ops/run-smart-money-v2.sh"
       - "ops/sml-v2-switch-dashboard.sh"
       - "tests/test_smart_money_v2_cutover.py"
+      - "tests/test_smart_money_wallet_intelligence.py"
+      - "tests/test_smart_money_prospective_evidence.py"
       - "ops/start-smart-money-free-pilot.sh"
       - ".github/workflows/smart-money-lab.yml"
   workflow_dispatch:
@@ -27,7 +31,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Compile every new module
-        run: python -m compileall -q research/smart_money_lab tests/test_smart_money_lab.py tests/test_smart_money_live_monitor.py tests/test_smart_money_hostinger.py tests/test_smart_money_v2_cutover.py
+        run: python -m compileall -q research/smart_money_lab tests/test_smart_money_lab.py tests/test_smart_money_live_monitor.py tests/test_smart_money_hostinger.py tests/test_smart_money_v2_cutover.py tests/test_smart_money_wallet_intelligence.py tests/test_smart_money_prospective_evidence.py
       - name: Validate Linux pilot bootstrap syntax
         run: bash -n ops/start-smart-money-free-pilot.sh ops/publish-sml-hostinger.sh ops/sml-v2-cutover.sh ops/run-smart-money-v2.sh ops/sml-v2-switch-dashboard.sh
       - name: Focused offline tests — no private keys or internet
@@ -36,6 +40,8 @@ jobs:
           python -m unittest discover -s tests -p 'test_smart_money_live_monitor.py' -v
           python -m unittest discover -s tests -p 'test_smart_money_hostinger.py' -v
           python -m unittest discover -s tests -p 'test_smart_money_v2_cutover.py' -v
+          python -m unittest discover -s tests -p 'test_smart_money_wallet_intelligence.py' -v
+          python -m unittest discover -s tests -p 'test_smart_money_prospective_evidence.py' -v
       - name: Verify no order submission path in new files
         run: |
           python - <<'PY'
