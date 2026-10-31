@@ -6,6 +6,8 @@ on:
       - "research/smart_money_lab/**"
       - "tests/test_smart_money_lab.py"
       - "tests/test_smart_money_live_monitor.py"
+      - "tests/test_smart_money_hostinger.py"
+      - "ops/publish-sml-hostinger.sh"
       - "ops/start-smart-money-free-pilot.sh"
       - ".github/workflows/smart-money-lab.yml"
   workflow_dispatch:
@@ -21,13 +23,14 @@ jobs:
         with:
           python-version: "3.12"
       - name: Compile every new module
-        run: python -m compileall -q research/smart_money_lab tests/test_smart_money_lab.py tests/test_smart_money_live_monitor.py
+        run: python -m compileall -q research/smart_money_lab tests/test_smart_money_lab.py tests/test_smart_money_live_monitor.py tests/test_smart_money_hostinger.py
       - name: Validate Linux pilot bootstrap syntax
-        run: bash -n ops/start-smart-money-free-pilot.sh
+        run: bash -n ops/start-smart-money-free-pilot.sh ops/publish-sml-hostinger.sh
       - name: Focused offline tests — no private keys or internet
         run: |
           python -m unittest discover -s tests -p 'test_smart_money_lab.py' -v
           python -m unittest discover -s tests -p 'test_smart_money_live_monitor.py' -v
+          python -m unittest discover -s tests -p 'test_smart_money_hostinger.py' -v
       - name: Verify no order submission path in new files
         run: |
           python - <<'PY'
