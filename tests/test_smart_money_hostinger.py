@@ -49,6 +49,26 @@ class HostingerStaticExportTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "source data"):
                 export(data_dir=inp, output_dir=inp)
 
+    def test_v2_can_read_shared_helius_budget_without_mutating_it(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            source, out = root / "v2", root / "public"
+            source.mkdir()
+            (source / "report.json").write_text(json.dumps({
+                "kind": "YATL_SMART_MONEY_PAPER_ONLY",
+                "selection_mode": "exploratory_unvetted",
+                "start_at": 1793465154, "as_of": 1793465500,
+                "polls": 6, "portfolios": [], "wallets_blind": [],
+                "wallets_smart": [],
+            }))
+            budget = root / "old-v1-budget.json"
+            raw = '{"calls":611,"max_calls":5000}'
+            budget.write_text(raw)
+            result = export(data_dir=source, output_dir=out, budget_file=budget)
+            self.assertEqual(result["api_requests_reserved"], 611)
+            self.assertEqual(budget.read_text(), raw)
+            self.assertFalse((source / "helius_budget.json").exists())
+
     def test_sftp_publisher_keeps_remote_html_and_json_web_readable(self):
         script = (Path(__file__).resolve().parents[1] /
                   "ops/publish-sml-hostinger.sh").read_text(encoding="utf-8")
@@ -56,6 +76,14 @@ class HostingerStaticExportTests(unittest.TestCase):
         self.assertEqual(
             script.count('chmod 644 "$HOSTINGER_SFTP_REMOTE_DIR/status.json"'), 2
         )
+        self.assertEqual(
+            script.count('chmod 644 "$HOSTINGER_SFTP_REMOTE_DIR/status.json.tmp"'), 2
+        )
+        self.assertLess(
+            script.index('chmod 644 "$HOSTINGER_SFTP_REMOTE_DIR/status.json.tmp"'),
+            script.index('rename "$HOSTINGER_SFTP_REMOTE_DIR/status.json.tmp"')
+        )
+        self.assertIn('budget_args=(--budget-file "$YATL_HELIUS_BUDGET_FILE")', script)
         self.assertIn("StrictHostKeyChecking=yes", script)
         self.assertNotIn("0.0.0.0", script)
 
