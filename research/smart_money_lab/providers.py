@@ -1,6 +1,7 @@
 """Bounded public market-data readers; observation only, never wallet keys/orders."""
 from __future__ import annotations
 
+import http.client
 import json
 import os
 import threading
@@ -41,7 +42,10 @@ def get_json(url: str, *, timeout: int = 12):
             raw = response.read(5_000_001)
     except urllib.error.HTTPError as e:
         raise RuntimeError(f"read-only data provider HTTP {e.code}") from None
-    except (urllib.error.URLError, TimeoutError):
+    except (urllib.error.URLError, OSError, http.client.HTTPException):
+        # http.client.RemoteDisconnected is not consistently wrapped in URLError.
+        # Convert all transport errors into sanitized, recoverable errors:
+        # never expose request URLs containing the Helius API key.
         raise RuntimeError("read-only data provider unavailable") from None
     if len(raw) > 5_000_000:
         raise ValueError("provider response too large")
