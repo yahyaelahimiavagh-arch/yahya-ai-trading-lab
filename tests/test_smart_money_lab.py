@@ -120,7 +120,7 @@ class LedgerTests(unittest.TestCase):
         self.assertEqual(p.cash, D("970"))
         self.assertTrue(p.apply(trade(side="SELL", signature="2", t=112),
                                 price=D("1"), liquidity_usd=D("100000"),
-                                quote_ts=113, now=113))
+                                quote_ts=114, now=114))
         self.assertFalse(p.holdings)
         self.assertLess(p.cash, D("1000"))  # cost drag after flat round-trip
 
@@ -136,6 +136,7 @@ class LedgerTests(unittest.TestCase):
         p = Portfolio("blind", 1)
         p.apply(trade(), price=D("1"), liquidity_usd=D("100000"),
                 quote_ts=112, now=112)
+        p.peak_equity = D("1100")  # synthetic prior high-water mark
         p.mark(quote(price="0.001", now=113), 113)
         self.assertTrue(p.halted)
         self.assertFalse(p.holdings)
