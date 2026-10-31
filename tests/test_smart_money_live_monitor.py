@@ -54,6 +54,17 @@ class MonitorReportTests(unittest.TestCase):
         self.assertEqual(status["portfolios"][0]["pnl_usd"], "1.2400")
         self.assertIsNone(status["portfolios"][1]["equity_usd"])
 
+    def test_monitor_exposes_aggregate_parse_reasons_only(self):
+        report = sample_report()
+        report["skips"]["parse_ambiguous_legs"] = 7
+        report["skips"]["parse_missing_swap_event"] = 11
+        report["skips"]["historical_rows_ignored"] = 120
+        result = build_status(report, {"calls": 500}, now=1793466005)
+        self.assertEqual(result["skips"]["parse_ambiguous_legs"], 7)
+        self.assertEqual(result["skips"]["parse_missing_swap_event"], 11)
+        self.assertEqual(result["skips"]["historical_rows_ignored"], 120)
+        self.assertNotIn("wallet-secret", json.dumps(result))
+
     def test_staleness_and_initialization(self):
         report = sample_report()
         self.assertEqual(build_status(report, None, now=1793466400)["status"], "stale")
