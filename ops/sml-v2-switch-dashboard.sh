@@ -37,8 +37,9 @@ if [[ ! -f "$backup" ]]; then
 fi
 tmp="$(mktemp "$CONFIG.XXXXXX")"
 chmod 600 "$tmp"
-grep -v '^YATL_REPORT_DIR=' "$CONFIG" > "$tmp" || true
+grep -Ev '^(YATL_REPORT_DIR|YATL_HELIUS_BUDGET_FILE)=' "$CONFIG" > "$tmp" || true
 printf '%s\n' 'YATL_REPORT_DIR="/home/ubuntu/yatl-smart-money-v2/data/smart_money"' >> "$tmp"
+printf '%s\n' 'YATL_HELIUS_BUDGET_FILE="/home/ubuntu/yatl-smart-money/data/smart_money/helius_budget.json"' >> "$tmp"
 mv -f "$tmp" "$CONFIG"
 chmod 600 "$CONFIG"
 
