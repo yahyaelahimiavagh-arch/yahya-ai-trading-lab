@@ -10,6 +10,7 @@ from research.smart_money_lab.providers import (
     USDC, SOL, Market, parse_swap, _token_amount,
 )
 from research.smart_money_lab.__main__ import snapshot, restore
+from research.smart_money_lab.dashboard import html_report
 
 
 W1 = "A" * 35
@@ -175,6 +176,15 @@ class LedgerTests(unittest.TestCase):
         self.assertEqual(p.fills[-1]["side"], "RISK_EXIT")
         self.assertFalse(p.apply(trade(signature="new", t=114), price=D("1"),
                                  liquidity_usd=D("100000"), quote_ts=115, now=115))
+
+    def test_dashboard_is_paper_only_and_escapes_untrusted_assets(self):
+        lab = PaperLab(100, [W1], [W1, W2])
+        report = lab.report({}, 113)
+        report["portfolios"][0]["id"] = "<script>alert('x')</script>"
+        page = html_report(report)
+        self.assertIn("PAPER ONLY", page)
+        self.assertNotIn("<script>", page)
+        self.assertIn("&lt;script&gt;", page)
 
     def test_snapshot_restore(self):
         lab = PaperLab(100, [W1], [W1, W2])
