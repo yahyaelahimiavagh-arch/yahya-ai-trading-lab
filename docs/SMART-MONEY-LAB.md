@@ -99,3 +99,43 @@ This first run deliberately prioritizes a completed observation over low latency
 - If requests exhaust the cap, monitoring stops with partial snapshots and marks data coverage as incomplete. No manual deposit, real wallet or trading API is used.
 
 The basic chronological procedure is `discover` → `screen` → confirm `eligible >= 2` → `observe` for 24h. All data is paper-only, and VPS deployment needs separate authorized host access and a securely stored API key. If `data/smart_money/state.json` already exists from a previous run, use `--resume` only to continue the **same** window, otherwise archive old output and start a new window.
+
+
+## 0-qualified-wallet fallback: EXPLORATORY paper-only observation
+
+If all strict wallet candidates fail screening, **do not describe them as smart money** and do not bypass checks in `rank_wallets`. To avoid spending more Helius credits before checking the pipeline, a deliberately distinct **unvetted** cohort is supported by `observe --exploratory`.
+
+- This cohort is selected only from locally screened rows with complete recorded history, at least one closed swap, and at least one observed swap. It remains **unqualified** due to weak parsing, unknown pre-window basis, liquidity or trading activity. These labels are explicit in the saved JSON snapshot/report and a prominent HTML warning. `blind` is activity-first sampling; `smart` is liquidity-first sampling. They are only experimental names, *not* skill classifications.
+- The strict 20,000 USD **current** token liquidity execution guard, 5% risk halt, fee/slippage assumptions, $30 max order, eight maximum wallets, 180-second polling, 5,000 API request cap, and lack of real-money paths are **unchanged**.
+- This first 24h run tests whether signals arrive, quotes can be priced, trading frictions behave, and enough virtual fills are recorded. It **cannot establish** profitable copy trading, validate the wallet skill heuristic, or distinguish true 1s/3s/10s execution speed.
+- When a qualified cohort does exist, `--exploratory` refuses to start; regular `observe` is the preferred study.
+- A 24h pilot starts once and persists `selection_mode=exploratory_unvetted`. Do **not** remove/recreate state to make results appear better, and never combine P/L from exploratory and strictly qualified experiments.
+- Stop if too few complete-history candidates; this is a valid zero-trade outcome.
+
+After the fully completed screening above, check selections **offline** before consuming any new Helius credits:
+
+```bash
+uv run --locked python - <<'PY'
+import json
+from pathlib import Path
+from research.smart_money_lab.pilot import exploratory_watchlist
+rows = json.loads(Path('data/smart_money/screened.json').read_text())
+blind, smart = exploratory_watchlist(rows)
+print({'mode':'exploratory_unvetted', 'activity_group':len(blind),
+       'liquidity_group':len(smart), 'distinct_wallets':len(set(blind)|set(smart))})
+PY
+```
+
+Then in a dedicated `tmux` session, enter the Helius API key privately with
+`read -rsp "Helius API Key: " HELIUS_API_KEY; echo; export HELIUS_API_KEY` and run:
+
+```bash
+uv run --locked python -m research.smart_money_lab observe --exploratory \
+  --screened data/smart_money/screened.json \
+  --state data/smart_money/state.json \
+  --report data/smart_money/report.json \
+  --html data/smart_money/dashboard.html \
+  --hours 24 --poll-seconds 180
+```
+
+There is no reason to rerun discovery or screening for this operational feasibility test.
