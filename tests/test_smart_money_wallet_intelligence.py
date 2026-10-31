@@ -78,6 +78,17 @@ class V3ScreeningTests(unittest.TestCase):
                        "poor_parse_coverage"):
             self.assertEqual(reasons[reason], 1)
 
+    def test_upstream_disqualification_and_zero_pnl_never_promoted(self):
+        bad = eligible("WALLET_PRIVATE_A")
+        bad["eligible"] = False
+        bad["net_realized_usd"] = "0"
+        result = audit_screening([bad], selection_at=1500)
+        self.assertEqual(result["training_candidates_with_point_in_time_proof"], 0)
+        self.assertEqual(result["overlapping_rejection_reasons"]
+                         ["upstream_screening_not_eligible"], 1)
+        self.assertEqual(result["overlapping_rejection_reasons"]
+                         ["positive_training_pnl_not_established"], 1)
+
     def test_duplicate_and_future_leaking_training_rejected(self):
         a = eligible("WALLET_PRIVATE_A", screened_at=2000, history_end_at=1990)
         result = audit_screening([a, a], selection_at=1500)
