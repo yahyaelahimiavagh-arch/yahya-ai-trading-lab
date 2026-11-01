@@ -1,0 +1,72 @@
+name: SML real public-wallet discovery (no RPC)
+on:
+  push:
+    branches: [research/sml-public-wallet-discovery]
+    paths:
+      - "research/smart_money_lab/public_wallet_discovery.py"
+      - "tests/test_sml_public_wallet_discovery.py"
+      - ".github/workflows/sml-public-wallet-run.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  public-wallet-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install free DuckDB parquet reader
+        run: python -m pip install duckdb==1.4.1 pytz
+      - name: Validate pipeline with synthetic leak-resistant fixtures
+        run: python -m unittest discover -s tests -p 'test_sml_public_wallet_discovery.py' -v
+      - name: Download full immutable public June 2026 Parquet snapshot
+        run: |
+          python - <<'PY'
+          import concurrent.futures, pathlib, urllib.request
+          names=("tokens.parquet","trades-000.parquet","trades-001.parquet",
+                 "trades-002.parquet","trades-003.parquet")
+          base="https://raw.githubusercontent.com/ian05012/solana-memecoin-dataset/7070d00e1e4492f8604d988549d91785cc5f43f7/data/"
+          root=pathlib.Path("public_june_data")
+          root.mkdir(exist_ok=True)
+          def grab(name):
+              path=root/name
+              urllib.request.urlretrieve(base+name,path)
+              if path.stat().st_size < 1000:
+                  raise ValueError("truncated public source: " + name)
+              return (name,path.stat().st_size)
+          with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
+              for name,size in pool.map(grab,names):
+                  print("downloaded",name,size,flush=True)
+          PY
+      - name: Identify top training wallet candidates and inspect future holdout
+        run: |
+          python -m research.smart_money_lab.public_wallet_discovery \
+            --data-dir public_june_data \
+            --output-dir public_wallet_results \
+            --min-liquidity 20000 \
+            --min-train-tokens 10 \
+            --min-train-days 3 \
+            --top-fraction 0.01
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path("public_wallet_results/public_wallet_candidates.json").read_text())
+          print("=== DATA-AUDITED RESULTS; NOT TRADE RECOMMENDATIONS ===")
+          for k in ("selection_cutoff_utc","thresholds","counts","baselines","status"):
+              print(k,json.dumps(r[k],ensure_ascii=False))
+          print("TOP TRAINING CANDIDATES (NOT VERIFIED PROFITABLE):")
+          for w in r["wallet_candidates"][:15]:
+              print(json.dumps(w,ensure_ascii=False))
+          print("CAVEAT: 2x future MAX price is NOT realized ROI or copyable follower PnL.")
+          PY
+      - name: Upload full public-wallet research results
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-wallet-discovery-june-2026
+          path: |
+            public_wallet_results/public_wallet_candidates.json
+            public_wallet_results/public_wallet_candidates.csv
+          retention-days: 14
