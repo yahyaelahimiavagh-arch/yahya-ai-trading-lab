@@ -103,7 +103,18 @@ def _another_paper_runner_running() -> bool:
 
 
 class UnverifiableHistoryGap(ValueError):
-    """History cannot be proven complete within the request budget."""
+    """Bounded gap diagnostic, with no wallet addresses or transaction signatures."""
+
+    REASONS = {"missing_signature", "repeated_signature",
+               "invalid_timestamp", "page_cap"}
+
+    def __init__(self, reason: str, pages_fetched: int):
+        if reason not in self.REASONS or not 1 <= pages_fetched <= MAX_HISTORY_PAGES:
+            raise ValueError("invalid history diagnostic")
+        self.reason = reason
+        self.pages_fetched = pages_fetched
+        super().__init__(reason)
+
 
 
 def _bounded_wallet_history(helius: Helius, wallet: str, *,
@@ -125,15 +136,17 @@ def _bounded_wallet_history(helius: Helius, wallet: str, *,
         page = helius.transactions(wallet, before=before, limit=100)
         for tx in page:
             signature = tx.get("signature")
-            if not isinstance(signature, str) or not signature or signature in seen:
-                raise UnverifiableHistoryGap("missing or repeated transaction signature")
+            if not isinstance(signature, str) or not signature:
+                raise UnverifiableHistoryGap("missing_signature", page_number)
+            if signature in seen:
+                raise UnverifiableHistoryGap("repeated_signature", page_number)
             seen.add(signature)
+        timestamps = [tx.get("timestamp") for tx in page]
+        if any(type(t) is not int for t in timestamps):
+            raise UnverifiableHistoryGap("invalid_timestamp", page_number)
         records.extend(page)
         if len(page) < 100:
             return records, page_number
-        timestamps = [tx.get("timestamp") for tx in page]
-        if any(type(t) is not int for t in timestamps):
-            raise UnverifiableHistoryGap("full history page has invalid timestamps")
         if min(timestamps) < cutoff:
             # Strictly older overlap is required; equality cannot establish
             # that every distinct signature in the boundary second was seen.
@@ -141,7 +154,7 @@ def _bounded_wallet_history(helius: Helius, wallet: str, *,
         if page_number == MAX_HISTORY_PAGES:
             break
         before = page[-1]["signature"]
-    raise UnverifiableHistoryGap("history overlap not proved within 3 pages")
+    raise UnverifiableHistoryGap("page_cap", MAX_HISTORY_PAGES)
 
 
 def _ensure_new_budget(polls: int,hours: int,wallet_count: int,remaining: int):
@@ -452,14 +465,17 @@ def start(args):
             fresh=[]
             sol_price=None
             sol_reference_attempted=False
-            for wallet in wallets:
+            for wallet_index,wallet in enumerate(wallets,1):
                 cutoff=max(state["started_at"],latest_chain.get(wallet,0))
                 try:
                     raw,pages=_bounded_wallet_history(helius,wallet,cutoff=cutoff)
                     if pages>1:
                         skips["extra_history_pages"]+=pages-1
-                except UnverifiableHistoryGap:
+                except UnverifiableHistoryGap as exc:
                     skips["unverifiable_100_tx_history_gap"]+=1
+                    skips["history_gap_reason_"+exc.reason]+=1
+                    skips["history_gap_wallet_index_"+str(wallet_index)]+=1
+                    skips["history_gap_failed_page_count"]=exc.pages_fetched
                     halt_reason="UNVERIFIABLE_TRANSACTION_HISTORY_GAP"
                     status="halted_history_gap"
                     shutdown=True
