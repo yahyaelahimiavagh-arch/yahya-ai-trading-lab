@@ -58,6 +58,7 @@ def _wallet_rows(report: dict, positions: list) -> list[dict]:
         risk = integer(metrics.get("paper_risk_exit_fills"))
         result.append({
             "alias": f"Wallet {index}",
+            "source_signals": integer(metrics.get("source_signals")),
             "buy_fills": buys,
             "leader_sell_fills": sells,
             "risk_exit_fills": risk,
