@@ -23,10 +23,11 @@ def audit(source: dict, rpc) -> dict:
     samples = source.get("samples")
     if not isinstance(samples, list) or not 1 <= len(samples) <= MAX_SIGNATURES:
         raise ValueError("expected a bounded public candidate sample")
-    evidence = []
+    # Validate the entire frozen snapshot BEFORE making a single network call.
     seen_signatures = set()
-    error = None
     for entry in samples:
+        if not isinstance(entry, dict):
+            raise ValueError("invalid public sample")
         wallet, sig, rank, kind, ts = (
             entry.get("wallet"),entry.get("signature"),entry.get("rank"),
             entry.get("kind"),entry.get("reported_timestamp"))
@@ -36,6 +37,12 @@ def audit(source: dict, rpc) -> dict:
                 or kind not in ("buy","sell") or type(ts) is not int):
             raise ValueError("invalid or duplicated public sample")
         seen_signatures.add(sig)
+    evidence = []
+    error = None
+    for entry in samples:
+        wallet, sig, rank, kind, ts = (
+            entry["wallet"],entry["signature"],entry["rank"],
+            entry["kind"],entry["reported_timestamp"])
         result = {
             "wallet": wallet, "rank_in_public_sample":rank,
             "market_indexer_kind":kind,
