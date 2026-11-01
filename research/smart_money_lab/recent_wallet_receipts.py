@@ -103,7 +103,7 @@ class PublicRpc:
             raise ValueError("invalid transaction signature")
         return self.call("getTransaction", [signature, {
             "commitment": "finalized", "encoding": "jsonParsed",
-            "maxSupportedTransactionVersion": 0,
+            "maxSupportedTransactionVersion": 1,
         }])
 
 
