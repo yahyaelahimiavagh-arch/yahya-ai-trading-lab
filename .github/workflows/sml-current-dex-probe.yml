@@ -1,0 +1,45 @@
+name: SML current Solana DEX public-data schema probe
+on:
+  push:
+    branches: [research/sml-current-dex-wallet-discovery]
+    paths: [".github/workflows/sml-current-dex-probe.yml"]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Probe 2 no-key GeckoTerminal calls; read-only
+        run: |
+          python3 - <<'PY'
+          import json, time, urllib.request, urllib.error
+          root="https://api.geckoterminal.com/api/v2"
+          header={"Accept":"application/json;version=20230203","User-Agent":"YATL-sml-public-research/1"}
+          def get(path):
+              req=urllib.request.Request(root+path,headers=header)
+              try:
+                  with urllib.request.urlopen(req,timeout=15) as r:
+                      return json.loads(r.read(2000000))
+              except urllib.error.HTTPError as e:
+                  print("HTTP",e.code,flush=True)
+                  raise
+          trending=get("/networks/solana/trending_pools?page=1")
+          poolrows=trending.get("data",[])
+          print("pools",len(poolrows),"pool_example_attr_keys",sorted(poolrows[0].get("attributes",{})) if poolrows else [],flush=True)
+          ranked=sorted(poolrows,key=lambda p:float(p.get("attributes",{}).get("reserve_in_usd") or 0),reverse=True)
+          if not ranked:
+              raise ValueError("no pool data")
+          p=ranked[0]
+          pool_id=p.get("attributes",{}).get("address")
+          print("selected_pool",pool_id,"reserve",p.get("attributes",{}).get("reserve_in_usd"),flush=True)
+          time.sleep(7)
+          trade=get("/networks/solana/pools/"+pool_id+"/trades?trade_volume_in_usd_greater_than=20")
+          rows=trade.get("data",[])
+          print("trades",len(rows),"top_keys",sorted(trade),"trade_attr_keys",sorted(rows[0].get("attributes",{})) if rows else [],flush=True)
+          for row in rows[:3]:
+              a=row.get("attributes",{})
+              print("sample_redacted",json.dumps({key:(str(a[key])[:14]+"..." if "address" in key or "hash" in key else a[key])
+                   for key in a if key in ("tx_from_address","tx_to_address","tx_hash","block_timestamp","kind",
+                                           "volume_in_usd","from_token_amount","to_token_amount","price_from_in_usd","price_to_in_usd")}),flush=True)
+          PY
