@@ -29,6 +29,7 @@ VERSION = "YATL_FORWARD_FIXED_NOTIONAL_PAPER_COPY_V1"
 MAX_WALLETS = 6
 MAX_CYCLES = 120
 MAX_SIGNAL_AGE = 300
+MAX_HISTORY_PAGES = 3  # Fixed upper bound: never page unboundedly
 
 
 def _atomic(path: Path, value: dict):
@@ -82,19 +83,63 @@ def _old_observer_running() -> bool:
     return False
 
 
+class UnverifiableHistoryGap(ValueError):
+    """History cannot be proven complete within the request budget."""
+
+
+def _bounded_wallet_history(helius: Helius, wallet: str, *,
+                            cutoff: int) -> tuple[list[dict], int]:
+    """Get a complete history overlap with strict timestamp boundary.
+
+    Pagination is allowed only to prove a historical overlap with the
+    experiment start/last successfully seen chain timestamp. If we cannot
+    prove overlap after MAX_HISTORY_PAGES, stop rather than silently trading
+    with missing leader sells. No page is carried over as a valid partial
+    observation when this guard fails.
+    """
+    if type(cutoff) is not int or cutoff <= 0:
+        raise ValueError("invalid history continuity cutoff")
+    records = []
+    seen = set()
+    before = ""
+    for page_number in range(1, MAX_HISTORY_PAGES + 1):
+        page = helius.transactions(wallet, before=before, limit=100)
+        for tx in page:
+            signature = tx.get("signature")
+            if not isinstance(signature, str) or not signature or signature in seen:
+                raise UnverifiableHistoryGap("missing or repeated transaction signature")
+            seen.add(signature)
+        records.extend(page)
+        if len(page) < 100:
+            return records, page_number
+        timestamps = [tx.get("timestamp") for tx in page]
+        if any(type(t) is not int for t in timestamps):
+            raise UnverifiableHistoryGap("full history page has invalid timestamps")
+        if min(timestamps) < cutoff:
+            # Strictly older overlap is required; equality cannot establish
+            # that every distinct signature in the boundary second was seen.
+            return records, page_number
+        if page_number == MAX_HISTORY_PAGES:
+            break
+        before = page[-1]["signature"]
+    raise UnverifiableHistoryGap("history overlap not proved within 3 pages")
+
+
 def _ensure_new_budget(polls: int,hours: int,wallet_count: int,remaining: int):
     if not (180<=polls<=600 and 1<=hours<=6 and wallet_count==MAX_WALLETS):
         raise ValueError("paper-pilot settings out of safe bounds")
     cycles=math.ceil(hours*3600/polls)
     expected=cycles*wallet_count
-    # Retries on rate limit also consume reserved requests. We do not start
-    # unless the old counter has headroom for a conservative 20% buffer.
-    required=math.ceil(expected*1.2)+2*wallet_count
+    worst_case=expected*MAX_HISTORY_PAGES
+    # Reserve for EVERY permitted history page, not just the happy path.
+    # Retries on Helius 429 also consume budget reservations.
+    required=math.ceil(worst_case*1.2)+2*wallet_count
     if remaining<required:
         raise ValueError(
             f"insufficient EXISTING Helius budget: need {required}, "
             f"available {remaining}; do not reset or buy credits")
     return {"planned_cycles":cycles,"estimated_calls":expected,
+            "worst_case_calls":worst_case,"max_pages_per_wallet":MAX_HISTORY_PAGES,
             "minimum_remaining_calls":required,"remaining_before_start":remaining}
 
 
@@ -380,10 +425,19 @@ def start(args):
             sol_price=None
             sol_reference_attempted=False
             for wallet in wallets:
+                cutoff=max(state["started_at"],latest_chain.get(wallet,0))
                 try:
-                    raw=helius.transactions(wallet,limit=100)
-                except (RuntimeError,ValueError) as exc:
-                    # Limit leakage: never print external URLs/keys or raw responses.
+                    raw,pages=_bounded_wallet_history(helius,wallet,cutoff=cutoff)
+                    if pages>1:
+                        skips["extra_history_pages"]+=pages-1
+                except UnverifiableHistoryGap:
+                    skips["unverifiable_100_tx_history_gap"]+=1
+                    halt_reason="UNVERIFIABLE_TRANSACTION_HISTORY_GAP"
+                    status="halted_history_gap"
+                    shutdown=True
+                    break
+                except (RuntimeError,ValueError):
+                    # Never print provider URLs or the API key.
                     skips["helius_poll_error"]+=1
                     halt_reason="HELIUS_POLL_FAILURE_OR_BUDGET_GUARD"
                     status="halted_provider"
@@ -392,13 +446,6 @@ def start(args):
                 observed=int(time.time())
                 times=[x.get("timestamp") for x in raw
                        if type(x.get("timestamp")) is int]
-                if (len(raw)>=100 and times and
-                    min(times)>=max(state["started_at"],latest_chain.get(wallet,0))):
-                    skips["unverifiable_100_tx_history_gap"]+=1
-                    halt_reason="UNVERIFIABLE_TRANSACTION_HISTORY_GAP"
-                    status="halted_history_gap"
-                    shutdown=True
-                    break
                 latest_poll[wallet]=observed
                 latest_chain[wallet]=max(times,default=latest_chain.get(wallet,0))
                 if not sol_reference_attempted:
