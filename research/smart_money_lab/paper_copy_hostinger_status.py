@@ -39,7 +39,8 @@ def _wallet_rows(report: dict, positions: list) -> list[dict]:
     Sort those private keys for stable numbered aliases without exporting them.
     """
     summary = report.get("per_wallet_modeled_realized_pnl")
-    if not isinstance(summary, dict) or len(summary) != 6:
+    if (not isinstance(summary, dict) or len(summary) != 6
+            or not all(isinstance(w, str) and bool(w) for w in summary)):
         return []
     raw_wallets = report.get("wallets")
     wallets = sorted(summary) if raw_wallets is None else raw_wallets
