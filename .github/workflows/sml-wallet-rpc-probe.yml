@@ -1,0 +1,54 @@
+name: SML one-shot public Solana wallet freshness probe
+on:
+  push:
+    branches: [research/sml-wallet-recent-verification]
+    paths: [".github/workflows/sml-wallet-rpc-probe.yml"]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check three previously discovered wallets, max 3 public RPC reads
+        run: |
+          python3 - <<'PY'
+          import datetime, json, time, urllib.request, urllib.error
+          wallets=[
+            ("group_1","4VKQr6DLKpP6DpEp8xbr6nTWRCUcTP6bXVGfEA6jxRYb"),
+            ("group_2","55C9XKGpi7d81MnKHvKVp9tKPvm2vHbEYgaCM7XQhLh1"),
+            ("group_3","7XCSydTBzEcz1M2PpvM6EauSEKpnDztxbDjAXxmdYdHU")
+          ]
+          endpoint="https://api.mainnet.solana.com"
+          for group,wallet in wallets:
+              body=json.dumps({"jsonrpc":"2.0","id":1,"method":"getSignaturesForAddress",
+                "params":[wallet,{"limit":12,"commitment":"finalized"}]}).encode()
+              req=urllib.request.Request(endpoint,data=body,headers={
+                "Content-Type":"application/json","User-Agent":"YATL-research-readonly/1"})
+              try:
+                  with urllib.request.urlopen(req,timeout=12) as response:
+                      result=json.load(response)
+                  if "error" in result:
+                      print(json.dumps({"group":group,"status":"rpc_error",
+                        "code":result["error"].get("code")}),flush=True)
+                  else:
+                      rows=result.get("result") or []
+                      print(json.dumps({"group":group,"status":"ok",
+                        "returned_recent_signatures":len(rows),
+                        "latest_block_time":rows[0].get("blockTime") if rows else None,
+                        "oldest_block_time":rows[-1].get("blockTime") if rows else None,
+                        "newer_than_june_30":sum(1 for row in rows if
+                          isinstance(row.get("blockTime"),int) and
+                          row["blockTime"]>1782864000)}),flush=True)
+              except urllib.error.HTTPError as e:
+                  print(json.dumps({"group":group,"status":"http_blocked",
+                    "code":e.code}),flush=True)
+                  if e.code in (403,429):
+                      print("PUBLIC RPC BLOCKED. STOP; do not rotate endpoints or retry.",flush=True)
+                      break
+              except Exception as e:
+                  print(json.dumps({"group":group,"status":"network_unavailable",
+                    "exception_type":type(e).__name__}),flush=True)
+                  break
+              time.sleep(2)
+          PY

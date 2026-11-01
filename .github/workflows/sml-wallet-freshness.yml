@@ -1,0 +1,37 @@
+name: SML scan 26 historical Solana wallets for recent on-chain activity
+on:
+  push:
+    branches: [research/sml-wallet-recent-verification]
+    paths:
+      - ".github/workflows/sml-wallet-freshness.yml"
+      - "research/smart_money_lab/candidate_freshness_scan.py"
+      - "research/smart_money_lab/data/june2026_wallet_candidates_frozen.json"
+      - "tests/test_sml_candidate_freshness.py"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify all public wallet scan tests with zero network calls
+        run: |
+          python -m compileall -q research/smart_money_lab/candidate_freshness_scan.py
+          python -m unittest discover -s tests -p 'test_sml_candidate_freshness.py' -v
+          python -m unittest discover -s tests -p 'test_sml_recent_wallet_receipts.py' -v
+      - name: Query 26 public wallets exactly once (2s spacing, no Helius)
+        run: |
+          python -m research.smart_money_lab.candidate_freshness_scan \
+            --candidates research/smart_money_lab/data/june2026_wallet_candidates_frozen.json \
+            --output research_results/candidate_recent_activity.json
+      - name: Publish audit as a temporary downloadable research artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sml-26-wallet-activity-snapshot-2026
+          path: research_results/candidate_recent_activity.json
+          retention-days: 14

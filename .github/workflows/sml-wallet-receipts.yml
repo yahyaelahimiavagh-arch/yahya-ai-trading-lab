@@ -1,0 +1,35 @@
+name: SML verify recent wallet transaction receipts (public RPC only)
+on:
+  push:
+    branches: [research/sml-wallet-recent-verification]
+    paths:
+      - ".github/workflows/sml-wallet-receipts.yml"
+      - "research/smart_money_lab/recent_wallet_receipts.py"
+      - "tests/test_sml_recent_wallet_receipts.py"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  receipts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile and execute fully mocked tests (zero calls)
+        run: |
+          python -m compileall -q research/smart_money_lab/recent_wallet_receipts.py
+          python -m unittest discover -s tests -p 'test_sml_recent_wallet_receipts.py' -v
+      - name: Inspect 3 groups, only newest 12 finalized signatures each
+        run: |
+          python -m research.smart_money_lab.recent_wallet_receipts \
+            --since 1782864000 \
+            --output research_results/recent_wallet_receipts.json
+      - name: Preserve validated read-only summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: sml-public-wallet-receipts-after-june-2026
+          path: research_results/recent_wallet_receipts.json
+          retention-days: 14

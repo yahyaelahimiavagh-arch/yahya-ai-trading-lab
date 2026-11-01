@@ -1,0 +1,34 @@
+name: SML compare public on-chain signer/fee-payer fingerprints
+on:
+  push:
+    branches: [research/sml-wallet-recent-verification]
+    paths:
+      - ".github/workflows/sml-wallet-fingerprints.yml"
+      - "research/smart_money_lab/group_chain_fingerprints.py"
+      - "tests/test_sml_group_chain_fingerprints.py"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fingerprint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Strict offline tests, no access to external services
+        run: |
+          python -m compileall -q research/smart_money_lab/group_chain_fingerprints.py
+          python -m unittest discover -s tests -p 'test_sml_group_chain_fingerprints.py' -v
+      - name: Verify six selected public signatures, signers and fee payers
+        run: |
+          python -m research.smart_money_lab.group_chain_fingerprints \
+            --output research_results/group_chain_fingerprints.json
+      - name: Save auditable evidence with explicit limitations
+        uses: actions/upload-artifact@v4
+        with:
+          name: sml-six-wallet-signature-fingerprints
+          path: research_results/group_chain_fingerprints.json
+          retention-days: 14

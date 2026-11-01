@@ -1,0 +1,137 @@
+{
+  "source": "PR-191 June 2026 public-wallet-discovery; historic token-2x model not trading skill",
+  "cutoff_unix": 1782202421,
+  "source_tokens_parquet_sha256": "b791b100d9605a4219dd62ecbe03c72abd059e2985ef926defee790748944e2b",
+  "candidates": [
+    {
+      "rank": 1,
+      "group": 1,
+      "address": "4VKQr6DLKpP6DpEp8xbr6nTWRCUcTP6bXVGfEA6jxRYb"
+    },
+    {
+      "rank": 2,
+      "group": 1,
+      "address": "8iehXxodAVfs1LQ3DHu2Ss5RK5ZtWKat9aTqzsMorjF6"
+    },
+    {
+      "rank": 3,
+      "group": 1,
+      "address": "DqJ2k8FAELhyBv21dQbaYbiuFahoWHL82vK21vhmkTKn"
+    },
+    {
+      "rank": 4,
+      "group": 1,
+      "address": "GetzpN6Yz5zvNDdU5rMCa9Sh6nbQbUy82SofChfwNgBr"
+    },
+    {
+      "rank": 5,
+      "group": 1,
+      "address": "8Q6TDUNeBL5UEgezAg1Qk8Na6rzTCNXzi1Tri7w2UrQo"
+    },
+    {
+      "rank": 6,
+      "group": 1,
+      "address": "6Jba5wTh1dgYGx9pCfX7qpEPbnyBvkpDXNfhfy6dEKnL"
+    },
+    {
+      "rank": 7,
+      "group": 1,
+      "address": "BAW6o8ZKThZ9saRSEEpGPyq3T11ABV4n9K1Aoa4Rgsn5"
+    },
+    {
+      "rank": 8,
+      "group": 1,
+      "address": "C9S2VnJnxeHuKkg3L5SLtBiMqru7f1ALgnndgLaQanbu"
+    },
+    {
+      "rank": 9,
+      "group": 1,
+      "address": "CvvZhers4GQfet3Ghtms35zKgqjbxsjWNcVBt4jg7tFW"
+    },
+    {
+      "rank": 10,
+      "group": 2,
+      "address": "55C9XKGpi7d81MnKHvKVp9tKPvm2vHbEYgaCM7XQhLh1"
+    },
+    {
+      "rank": 11,
+      "group": 1,
+      "address": "5eGhL2zuCw7pbFrKmP2ZhjqD3T3jcKsbtLF1oDNhDuon"
+    },
+    {
+      "rank": 12,
+      "group": 1,
+      "address": "77Kvkz2mgWBUEunnUkDGrL6J8MgqDyqA5ztiKFPeuzyX"
+    },
+    {
+      "rank": 13,
+      "group": 1,
+      "address": "7nFxuvK5qLDVEZCwVDjjTum3rHU4LQUwsVdDnfv8keW6"
+    },
+    {
+      "rank": 14,
+      "group": 1,
+      "address": "51q2Mf2cZ8PwrMUskiBNGZkpyAZBcRY6t9vtaWKa1ubo"
+    },
+    {
+      "rank": 15,
+      "group": 1,
+      "address": "CYVqWEMrZJhfkzQixQ4fCXGbRoKxdQ3M8PTCxqjqJdTZ"
+    },
+    {
+      "rank": 16,
+      "group": 1,
+      "address": "7gRDTMCfiJW7kxR9hJ2JexxQzuQXquCjcZc1o6VcGk29"
+    },
+    {
+      "rank": 17,
+      "group": 1,
+      "address": "38EtvxNP1RGmhKg6x4wL3gddaAd7ktunPehKD3eQiptv"
+    },
+    {
+      "rank": 18,
+      "group": 1,
+      "address": "4pYTStWZYPpPQaKcffT6g4Tve7WtWLYUcuDwKYRiMYjy"
+    },
+    {
+      "rank": 19,
+      "group": 1,
+      "address": "4qdTtR9Z39Bpu8bkW3GBUMvKRBo7ukesnA7JuZw3eSLg"
+    },
+    {
+      "rank": 20,
+      "group": 3,
+      "address": "7XCSydTBzEcz1M2PpvM6EauSEKpnDztxbDjAXxmdYdHU"
+    },
+    {
+      "rank": 21,
+      "group": 1,
+      "address": "6gfh7Exd8kFgfajGMBuchzVCNHsAq9gB1Xnv4WWTbgWk"
+    },
+    {
+      "rank": 22,
+      "group": 1,
+      "address": "7nfHow5L4yBu28w9XofFNJGpQFh95eWkyErMQbKvU9ne"
+    },
+    {
+      "rank": 23,
+      "group": 1,
+      "address": "8e8uTj2wQRDTAnjhkjLHxRD7WMCtjPLNRWDavmjUwkV1"
+    },
+    {
+      "rank": 24,
+      "group": 1,
+      "address": "AZYQXUcaadSk5Lm2eFGEDZTyf32SgdEcN3EhT2f9xv79"
+    },
+    {
+      "rank": 25,
+      "group": 1,
+      "address": "BZqQsRJWywvTpQ53XqEMydPp3C7dHYqX8MMBcdfoWjKU"
+    },
+    {
+      "rank": 26,
+      "group": 1,
+      "address": "KoNhM6nZv8AvknrbLM4a4VV6TiG3xcXpBHFmLGn4c8D"
+    }
+  ]
+}
