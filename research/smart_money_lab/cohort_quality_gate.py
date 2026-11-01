@@ -23,7 +23,7 @@ _ALLOWED_OUTCOMES = {
 
 
 def git_blob_sha1(content: bytes) -> str:
-    return hashlib.sha1(b"blob " + str(len(content)).encode() + b"\\0" + content).hexdigest()
+    return hashlib.sha1(b"blob " + str(len(content)).encode() + bytes([0]) + content).hexdigest()
 
 
 def audit(watch_bytes: bytes, evidence: dict) -> dict:
@@ -38,6 +38,8 @@ def audit(watch_bytes: bytes, evidence: dict) -> dict:
             or watchlist.get("allow_real_orders") is not False
             or not isinstance(wallets, list) or len(wallets) != 6):
         raise ValueError("expected original frozen six-wallet paper-only cohort")
+    if evidence.get("authorize_live_trading") is not False:
+        raise ValueError("evidence must explicitly disallow live trading")
     entries = evidence.get("wallets")
     if not (isinstance(entries, list) and len(entries) == 6
             and [x.get("index") if isinstance(x, dict) else None for x in entries] == list(range(1, 7))):
