@@ -101,6 +101,27 @@ class GuardTests(unittest.TestCase):
                 h.assert_not_called()
             self.assertFalse((out/"paper_copy_state.json").exists())
 
+    def test_preflight_is_allowed_while_old_observer_runs(self):
+        with tempfile.TemporaryDirectory() as folder:
+            folder=Path(folder)
+            w=folder/"watchlist.json"
+            w.write_text(json.dumps(watched()))
+            b=folder/"shared.json"
+            b.write_text('{"calls":1200}')
+            args=types.SimpleNamespace(watchlist=str(w),existing_budget_file=str(b),
+                                      output_dir=str(folder/"copy"),
+                                      hours=6,poll_seconds=300,
+                                      resume=False,start_paper=False)
+            with patch("research.smart_money_lab.paper_copy_next._old_observer_running",
+                       return_value=True):
+                with patch("research.smart_money_lab.paper_copy_next.Helius") as provider:
+                    with patch("builtins.print") as out:
+                        start(args)
+                    provider.assert_not_called()
+                    self.assertIn('"old_v2_observer_detected": true',
+                                  out.call_args.args[0].lower())
+            self.assertEqual(json.loads(b.read_text())["calls"],1200)
+
     def test_older_observer_running_is_hard_block(self):
         with tempfile.TemporaryDirectory() as folder:
             folder=Path(folder)
@@ -160,6 +181,16 @@ class PaperEventTests(unittest.TestCase):
             self.assertEqual(len(p.holdings),0)
             self.assertEqual([r["side"] for r in p.fills],["BUY","SELL"])
             self.assertLess(p.cash,Decimal("1000"))
+            state=_snapshot(p,started_at=NOW-20,finish_at=NOW+100,
+                watchlist_sha="b"*64,wallets=W,quotes=quote(),seen=seen,
+                latest_poll={},last_seen_chain={},latest_source_sell={},
+                skips=skips,source_signals=2,cycles=1,
+                status="completed",halt_reason=None)
+            report=_report(state,NOW)
+            pnl=Decimal(report["per_wallet_modeled_realized_pnl"][W[0]][
+                "modeled_realized_pnl_usd"])
+            self.assertLess(pnl,0)
+            self.assertEqual(report["real_orders_submitted"],0)
 
     def test_unknown_holding_valuation_blocks_new_paper_buy(self):
         p=Portfolio("forward_copy",0)
