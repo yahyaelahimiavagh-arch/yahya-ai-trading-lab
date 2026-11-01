@@ -12,6 +12,8 @@ V2DIR="$HOME/yatl-smart-money-v2/data/smart_money"
 BUDGET="$V2DIR/helius_budget.json"
 OUTPUT="$HOME/yatl-paper-copy-forward-20261101"
 WATCH="$ROOT/research/smart_money_lab/data/selected_forward_paper_wallets_20261101.json"
+HOURS="${YATL_PAPER_HOURS:-6}"
+POLL="${YATL_PAPER_POLL_SECONDS:-300}"
 if [[ ! -f "$BUDGET" ]]; then
   echo "Original V2 cumulative budget file is missing: $BUDGET" >&2
   echo "Never fabricate/reset a Helius request counter." >&2
@@ -20,7 +22,7 @@ fi
 cd "$ROOT"
 python3 -m research.smart_money_lab.paper_copy_next \
   --watchlist "$WATCH" --existing-budget-file "$BUDGET" \
-  --output-dir "$OUTPUT" --hours 6 --poll-seconds 300
+  --output-dir "$OUTPUT" --hours "$HOURS" --poll-seconds "$POLL"
 
 if [[ "$MODE" == "preflight" ]]; then
   echo "Preflight only: no API requests and NO process changes."
@@ -62,7 +64,7 @@ chmod 700 "$OUTPUT"
 # Python receives key from current environment, not command-line arguments.
 nohup python3 -u -m research.smart_money_lab.paper_copy_next \
   --watchlist "$WATCH" --existing-budget-file "$BUDGET" \
-  --output-dir "$OUTPUT" --hours 6 --poll-seconds 300 \
+  --output-dir "$OUTPUT" --hours "$HOURS" --poll-seconds "$POLL" \
   --start-paper > "$OUTPUT/console.log" 2>&1 < /dev/null &
 PID=$!
 printf '%s\n' "$PID" > "$OUTPUT/paper_copy.pid"
