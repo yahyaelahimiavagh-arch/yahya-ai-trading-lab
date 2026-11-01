@@ -1,0 +1,45 @@
+name: SML six-wallet forward PAPER copy safety gates
+on:
+  push:
+    branches: [research/sml-paper-copy-selected-wallets]
+    paths:
+      - ".github/workflows/sml-paper-copy-next.yml"
+      - "research/smart_money_lab/paper_copy_next.py"
+      - "research/smart_money_lab/data/selected_forward_paper_wallets_20261101.json"
+      - "tests/test_sml_paper_copy_next.py"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  paper-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile and run all new no-network safety regressions
+        run: |
+          python -m compileall -q research/smart_money_lab/paper_copy_next.py
+          python -m unittest discover -s tests -p 'test_sml_paper_copy_next.py' -v
+      - name: Run exact six-wallet paper preflight with synthetic CUMULATIVE budget file
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path("/tmp/yatl_copy_budget_existing.json")
+          p.write_text('{"calls":4000,"max_calls":5000}')
+          print("Existing shared budget test: used 4000, remaining 1000; no calls")
+          PY
+          python -m research.smart_money_lab.paper_copy_next \
+            --watchlist research/smart_money_lab/data/selected_forward_paper_wallets_20261101.json \
+            --existing-budget-file /tmp/yatl_copy_budget_existing.json \
+            --output-dir /tmp/yatl_paper_preflight \
+            --poll-seconds 300 --hours 6
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          assert not Path("/tmp/yatl_paper_preflight").exists()
+          assert json.loads(Path("/tmp/yatl_copy_budget_existing.json").read_text())["calls"]==4000
+          print("No Helius/API calls, no simulated portfolio until --start-paper")
+          PY
