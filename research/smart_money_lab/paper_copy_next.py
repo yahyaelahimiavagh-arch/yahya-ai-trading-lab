@@ -156,9 +156,33 @@ def _report(state: dict,now: int) -> dict:
                             for k,v in saved["holdings"].items()}
     data=portfolio.to_dict(state["quotes"],now)
     per_wallet=Counter()
+    cashflow=Counter()
+    previous_cash=dec("1000")
     for fill in portfolio.fills:
-        if fill.get("wallet"):
-            per_wallet[fill["wallet"]+"|"+fill["side"]]+=1
+        wallet=fill.get("wallet")
+        side=fill.get("side")
+        next_cash=dec(fill["cash_after"])
+        if wallet:
+            per_wallet[wallet+"|"+side]+=1
+            # Paper-only cashflow from actual modeled Portfolio cash changes.
+            # Existing open position cost must be added back when deriving
+            # realized contribution; its remaining value is still UNPRICED.
+            cashflow[wallet]+=next_cash-previous_cash
+        previous_cash=next_cash
+    open_cost=Counter()
+    for holding in portfolio.holdings.values():
+        open_cost[holding.wallet]+=holding.cost
+    attributed={}
+    for wallet in state["wallets"]:
+        pnl=cashflow[wallet]+open_cost[wallet]
+        attributed[wallet]={
+            "paper_buy_fills":per_wallet[wallet+"|BUY"],
+            "paper_leader_sell_fills":per_wallet[wallet+"|SELL"],
+            "paper_risk_exit_fills":per_wallet[wallet+"|RISK_EXIT"],
+            "open_paper_position_cost_usd":str(open_cost[wallet]),
+            "modeled_realized_pnl_usd":str(pnl),
+            "caution":"Paper indicative fills only; not source wallet realized PnL",
+        }
     return {
         "kind":"YATL_FORWARD_COPY_PAPER_REPORT",
         "note":"ONE portfolio; all orders are hypothetically modeled, NOT executable. These wallets are UNVETTED.",
@@ -173,6 +197,7 @@ def _report(state: dict,now: int) -> dict:
             (type(t) is int and now-t<=600)
             for t in state["latest_poll"].values()),
         "paper_account":data,"paper_fills_by_wallet_side":dict(per_wallet),
+        "per_wallet_modeled_realized_pnl":attributed,
         "skips":state["skips"],
         "equity_unknown":data["equity_usd"] is None,
         "realized_source_wallet_pnl":None,
@@ -347,6 +372,8 @@ def start(args):
         while int(time.time())<state["finish_at"] and not shutdown:
             start_mono=time.monotonic()
             fresh=[]
+            sol_price=None
+            sol_reference_attempted=False
             for wallet in wallets:
                 try:
                     raw=helius.transactions(wallet,limit=100)
@@ -369,11 +396,13 @@ def start(args):
                     break
                 latest_poll[wallet]=observed
                 latest_chain[wallet]=max(times,default=latest_chain.get(wallet,0))
-                try:
-                    sol_price=market.sol_usd(now=observed)
-                except (RuntimeError,ValueError):
-                    sol_price=None
-                    skips["sol_price_unavailable"]+=1
+                if not sol_reference_attempted:
+                    sol_reference_attempted=True
+                    try:
+                        sol_price=market.sol_usd(now=observed)
+                    except (RuntimeError,ValueError):
+                        sol_price=None
+                        skips["sol_price_unavailable"]+=1
                 parsed,reason,sells=_parse_batch(
                     raw,wallet,started_at=state["started_at"],
                     observed_at=observed,sol_price=sol_price)
