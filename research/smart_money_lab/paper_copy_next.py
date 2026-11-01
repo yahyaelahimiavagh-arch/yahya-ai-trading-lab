@@ -282,7 +282,8 @@ def start(args):
     directory=Path(args.output_dir).expanduser().resolve()
     state_path=directory/"paper_copy_state.json"
     report_path=directory/"paper_copy_report.json"
-    if _old_observer_running():
+    previous_observer_running=_old_observer_running()
+    if previous_observer_running and args.start_paper:
         raise RuntimeError("V2 observer is still running. Stop and archive V2 BEFORE shared-budget paper-copy")
     if state_path.exists():
         if not args.resume:
@@ -309,6 +310,8 @@ def start(args):
         "budget_calls_remaining":left,
         "preflight":preflight,
         "existing_state":state_path.exists(),
+        "old_v2_observer_detected":previous_observer_running,
+        "can_start_now":not previous_observer_running,
         "real_order_code_present":False,
         "output_dir":str(directory),
     }
