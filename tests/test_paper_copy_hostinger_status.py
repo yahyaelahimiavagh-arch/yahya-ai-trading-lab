@@ -85,6 +85,31 @@ class PaperCopyHostingerStatusTests(unittest.TestCase):
         self.assertNotIn("SENSITIVE_WALLET", json.dumps(result))
         self.assertNotIn("SENSITIVE_SIGNATURE", json.dumps(result))
 
+    def test_real_runner_report_without_top_level_wallet_list(self):
+        report = self.fixture()
+        report.pop("wallets", None)  # Production _report() intentionally omits this
+        wallet_keys = [f"SENSITIVE_WALLET_{i}" for i in (4, 1, 3, 6, 2, 5)]
+        report["per_wallet_modeled_realized_pnl"] = {
+            wallet: {
+                "source_signals": 0, "paper_buy_fills": 0,
+                "paper_leader_sell_fills": 0, "paper_risk_exit_fills": 0,
+                "open_paper_position_cost_usd": "0",
+                "modeled_realized_pnl_usd": "-2.50" if wallet.endswith("1") else "0",
+            }
+            for wallet in wallet_keys
+        }
+        report["paper_account"]["fills"] = []
+        report["paper_account"]["open_positions"] = []
+        status = build_paper_copy_status(report, None, now=10301)
+        cards = status["wallet_performance"]
+        self.assertEqual(len(cards), 6)
+        self.assertEqual([x["alias"] for x in cards],
+                         [f"Wallet {i}" for i in range(1, 7)])
+        self.assertEqual(cards[0]["modeled_realized_pnl_usd"], "-2.5000")
+        self.assertTrue(all(x["total_fills"] == 0 for x in cards))
+        encoded = json.dumps(status)
+        self.assertNotIn("SENSITIVE_WALLET", encoded)
+
     def test_missing_wallet_summary_does_not_invent_per_wallet_performance(self):
         report = self.fixture()
         report["wallets"] = [f"wallet_{i}" for i in range(6)]
