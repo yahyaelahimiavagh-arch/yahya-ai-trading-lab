@@ -240,6 +240,7 @@ footer{color:var(--muted);font-size:11px;margin-top:13px;line-height:1.9}
       row.append(node("span",null,label),node("strong",null,value));
       stats.append(row);
     }
+    add("سیگنال جدید",num(w.source_signals));
     add("خرید",num(w.buy_fills));
     add("فروش لیدر",num(w.leader_sell_fills));
     add("خروج ریسک",num(w.risk_exit_fills));
