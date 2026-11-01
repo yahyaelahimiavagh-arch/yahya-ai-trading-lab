@@ -1,5 +1,18 @@
 # P0 status — 2026-09-07
 
+> Current Director closeout — 2026-10-02: accepted main was directly verified at
+> `58b6c74a834d51f0d68e06fbe5f1885057e9df9a` (merged PR #178). PR #178 final-HEAD
+> CI run `37015968189` is completed/success. Director reports no-performance
+> refreeze/verify of 525 datasets with runner input
+> `74a00b855883b399fdb153e94e836fd310d3eab2cb14996e46609be38e65e07c`:
+> `RUNNER_INPUT_VERIFIED_NO_PERFORMANCE`. No new-runner diagnostic, benchmark-24
+> or full-6852 execution has started or is authorized. Historical OOM incidents
+> remain preserved; production capacity and economic acceptance are unproven.
+> This is documentation only; no VPS or performance evidence was accessed.
+> See [current Master Plan](MASTER-PLAN.md) and
+> [daily reconciliation](research/alpha-factory/YATL-DIRECTOR-DAILY-CLOSEOUT-2026-10-02.md).
+> This block supersedes conflicting historical current-status/next-action text.
+
 Scope: public market data plus authenticated read-only Spot Testnet account access.
 
 - Python target remains 3.12.14; standard library only; no new dependencies.

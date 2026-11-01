@@ -2,8 +2,60 @@
 
 نسخه بازیابی و supersede‌شده: 2026-09-09
 وضعیت جاری: **P0 تا P10 ENGINEERING / OPERATIONS ACCEPTED — REAL FORWARD EVIDENCE COLLECTING — P11 LOCKED**
-قدم جاری: **دو مسیر موازی: P10 جمع‌آوری شواهد آینده‌نگر + MCF-PROD-001 بستن جهان ماهانه قبل از اجرای عملکرد — P11 LOCKED**
+قدم جاری: **MCF-PROD-001 — RUNNER_INPUT_VERIFIED_NO_PERFORMANCE / STOP؛ diagnostic جدید، benchmark 24 و اجرای 6852 قفل‌اند — P10 مستقل و دست‌نخورده / P11 LOCKED**
 مسیر تحقیقاتی موازی از **2026-09-23**: **CRISIS & REGIME STRESS LAB — RESEARCH ONLY — P10 UNTOUCHED**
+
+## وضعیت جاری Director — ۲ اکتبر ۲۰۲۶
+
+این بخش، تمام نشانگرهای قدیمی «مرحله جاری» و ترتیب‌های پیشنهادی اجرای MCF را
+در صورت تعارض جایگزین می‌کند. ترتیب تاریخی مراحل مجوز اجرای خودکار نیست.
+گزارش تفصیلی امروز در
+[جمع‌بندی Director](research/alpha-factory/YATL-DIRECTOR-DAILY-CLOSEOUT-2026-10-02.md)
+ثبت شده است.
+
+- `main` مستقیماً از GitHub در این به‌روزرسانی روی
+  `58b6c74a834d51f0d68e06fbe5f1885057e9df9a` تأیید شد؛ PRهای #176، #177 و #178
+  همگی merged هستند. عبارت Draft در متن تاریخی PRها وضعیت زنده آن‌ها نیست.
+- CI نهایی PR #178 روی `0168492f514ed59aae2f38dccc4185eb0dd92709`، اجرای
+  `37015968189`، `completed/success` است؛ گزارش پذیرفته‌شده 2006/2006 تست و
+  223/223 تست متمرکز MCF را ثبت می‌کند.
+- Director پس از merge، refreeze بدون performance و verify همان کد را گزارش
+  کرده است: **525/525** دیتاست، وضعیت **RUNNER_INPUT_VERIFIED_NO_PERFORMANCE**،
+  ورودی رانر
+  `74a00b855883b399fdb153e94e836fd310d3eab2cb14996e46609be38e65e07c`.
+  این خروجی VPS گزارش Director است؛ در این به‌روزرسانی VPS خوانده یا اجرا نشد.
+- PR #177 حافظه مرحله feature-cache initialization را اصلاح کرد؛ diagnostic
+  تاریخی بعدی روی `37ed99d4…` از آن مرحله عبور کرد اما در
+  `feature_signal_compilation` با OOM خاتمه یافت. PR #178 همان مرحله دوم را
+  اصلاح می‌کند؛ پنج OOM تاریخی شواهد منفی محفوظ‌اند. آزمون مصنوعی و verify ورودی،
+  اثبات ظرفیت واقعی VPS یا سوددهی نیستند.
+- **برای رانر جدید:** `DIAGNOSTIC_STARTED=NO`، `DIAGNOSTIC_AUTHORIZATION=FALSE`،
+  `BENCHMARK_24_STARTED=NO`، `FULL_6852_STARTED=NO`،
+  `performance_authorized=false` و `performance_read=false`.
+  diagnosticها و benchmarkهای تاریخی با این وضعیت جدید اشتباه گرفته نشوند.
+- جمعیت تاریخی 9306/9306 با شکاف‌های محفوظ بسته است؛ 34 عضویت ماهانه، اجتماع
+  175 نماد و 525 دیتاست اجرایی برقرارند. ظرفیت، concurrency و اجرای 6852 هنوز
+  پذیرفته یا مجاز نشده‌اند.
+- اتصال شواهد Forward به نامزد دقیق روی شاخه
+  `research/mcf-forward-evidence-binding-001` در HEAD
+  `ef32288ddce8ad66762b0fd460c2ca29af770999` منتشر شده، **unmerged** است و در
+  بررسی امروز PR ندارد؛ هیچ شواهد Forward واقعی یا مجوز promotion ایجاد نمی‌کند.
+- آرشیو Hakoman/Orbit روی شاخه
+  `research/external-system-forensics-archive-20261002` در HEAD
+  `8e05ee561c70193ac6454c440c342099a4046c1b` ثبت شده و **unmerged** است.
+  تحقیقات در مرز شواهد موجود بسته‌اند؛ هیچ الگوریتم قابل‌اتکایی برای اقتباس
+  اثبات نشده است.
+- خروجی MR Crypto: شواهد ناقص، loss-deferral پشتیبانی‌شده، continuity بین
+  پلتفرم‌ها نامعلوم. ممیزی، طراحی کنترل و policy انجام شده‌اند؛ hard drawdown
+  عددی MCF حل نشده و بسته است. packet ریسک هنوز پیاده‌سازی مجاز/انجام‌شده نیست.
+
+**گیت بعدی مجاز نیست:** تنها تصمیم جداگانه Director می‌تواند metadata preflight
+و سپس احتمالاً یک diagnostic واحد را با هویت رانر/کد/نامزد دقیق مجاز کند.
+مجوز تاریخی به رانر جدید منتقل نمی‌شود؛ benchmark و batch تصمیم‌های مستقل‌اند.
+
+PAPER / RESEARCH ONLY؛ LIVE_MASTER_LOCK=OFF؛ NO LIVE / ORDER ENDPOINT /
+AI DIRECT EXECUTION / FUTURES / LEVERAGE / SHORT؛ Fresh OOS و recent reserve
+خوانده نمی‌شوند؛ P10 read/write=false در این مسیر؛ P11 LOCKED.
 
 ## منشأ و حدود سند
 
