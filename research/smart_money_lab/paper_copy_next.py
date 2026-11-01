@@ -83,6 +83,25 @@ def _old_observer_running() -> bool:
     return False
 
 
+def _another_paper_runner_running() -> bool:
+    """Fail closed if a separate paper pilot already polls Helius."""
+    proc = Path("/proc")
+    if not proc.is_dir():
+        return False
+    for cmdline in proc.glob("[0-9]*/cmdline"):
+        try:
+            if int(cmdline.parent.name) == os.getpid():
+                continue
+            argv = cmdline.read_bytes().replace(b"\\x00", b" ").decode(
+                "utf-8", "ignore")
+        except (PermissionError, FileNotFoundError, ProcessLookupError, ValueError):
+            continue
+        if ("research.smart_money_lab.paper_copy_next" in argv
+                and "--start-paper" in argv):
+            return True
+    return False
+
+
 class UnverifiableHistoryGap(ValueError):
     """History cannot be proven complete within the request budget."""
 
@@ -357,8 +376,11 @@ def start(args):
     state_path=directory/"paper_copy_state.json"
     report_path=directory/"paper_copy_report.json"
     previous_observer_running=_old_observer_running()
+    another_paper_running=_another_paper_runner_running()
     if previous_observer_running and args.start_paper:
         raise RuntimeError("V2 observer is still running. Stop and archive V2 BEFORE shared-budget paper-copy")
+    if another_paper_running and args.start_paper:
+        raise RuntimeError("another paper-copy Helius poller is already running; refusing duplicate")
     if state_path.exists():
         if not args.resume:
             raise ValueError("existing paper-copy state found: use --resume or an empty output folder")
@@ -385,7 +407,8 @@ def start(args):
         "preflight":preflight,
         "existing_state":state_path.exists(),
         "old_v2_observer_detected":previous_observer_running,
-        "can_start_now":not previous_observer_running,
+        "another_paper_poller_detected":another_paper_running,
+        "can_start_now":not (previous_observer_running or another_paper_running),
         "real_order_code_present":False,
         "output_dir":str(directory),
     }
