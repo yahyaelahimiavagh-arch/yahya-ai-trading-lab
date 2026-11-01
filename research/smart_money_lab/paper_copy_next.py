@@ -146,13 +146,14 @@ def _ensure_new_budget(polls: int,hours: int,wallet_count: int,remaining: int):
 def _snapshot(account: Portfolio, *, started_at: int, finish_at: int,
               watchlist_sha: str, wallets: list[str], quotes: dict, seen: set[str],
               latest_poll: dict, last_seen_chain: dict, latest_source_sell: dict,
-              skips: Counter, source_signals: int, cycles: int,
+              skips: Counter, source_signals: int, source_signal_wallets: dict, cycles: int,
               status: str, halt_reason: str | None) -> dict:
     return {
         "kind":VERSION,"started_at":started_at,"finish_at":finish_at,
         "watchlist_sha256":watchlist_sha,"wallets":wallets,
         "state_status":status,"halt_reason":halt_reason,
         "cycles":cycles,"source_signals":source_signals,
+        "source_signal_wallets":source_signal_wallets,
         "seen":sorted(seen),"quotes":quotes,
         "latest_poll":latest_poll,"last_seen_chain":last_seen_chain,
         "latest_source_sell":latest_source_sell,"skips":dict(skips),
@@ -221,6 +222,7 @@ def _report(state: dict,now: int) -> dict:
     for wallet in state["wallets"]:
         pnl=cashflow[wallet]+open_cost[wallet]
         attributed[wallet]={
+            "source_signals":int(state.get("source_signal_wallets",{}).get(wallet,0)),
             "paper_buy_fills":per_wallet[wallet+"|BUY"],
             "paper_leader_sell_fills":per_wallet[wallet+"|SELL"],
             "paper_risk_exit_fills":per_wallet[wallet+"|RISK_EXIT"],
@@ -302,7 +304,8 @@ def _parse_batch(raw, wallet, *, started_at: int, observed_at: int, sol_price):
     return filtered,skips,sells
 
 
-def _apply_cycle(account, fresh_trades, quotes, *, now, seen, latest_source_sell, skips):
+def _apply_cycle(account, fresh_trades, quotes, *, now, seen, latest_source_sell, skips,
+                 source_signal_wallets):
     """Paper fills only; no order interface is imported or exposed."""
     processed=0
     accepted=0
@@ -312,6 +315,7 @@ def _apply_cycle(account, fresh_trades, quotes, *, now, seen, latest_source_sell
             continue
         seen.add(t.key)
         processed+=1
+        source_signal_wallets[t.wallet]=source_signal_wallets.get(t.wallet,0)+1
         k=t.wallet+"|"+t.mint
         if t.side=="BUY" and latest_source_sell.get(k,0)>=t.chain_time:
             skips["leader_position_already_closed"]+=1
@@ -371,7 +375,7 @@ def start(args):
                         finish_at=start_at+args.hours*3600,
                         watchlist_sha=sha,wallets=wallets,quotes={},seen=set(),
                         latest_poll={},last_seen_chain={},latest_source_sell={},
-                        skips=Counter(),source_signals=0,cycles=0,
+                        skips=Counter(),source_signals=0,source_signal_wallets={},cycles=0,
                         status="not_started",halt_reason=None)
     ready={
         "mode":"paper_only","wallets":len(wallets),
@@ -401,6 +405,7 @@ def start(args):
     latest_sells=dict(state["latest_source_sell"])
     skips=Counter(state["skips"])
     source_signals=state["source_signals"]
+    source_signal_wallets=dict(state.get("source_signal_wallets",{}))
     cycles=state["cycles"]
     quotes=dict(state["quotes"])
     shutdown=False
@@ -480,7 +485,8 @@ def start(args):
                 break
             now=int(time.time())
             counts=_apply_cycle(account,fresh,quotes,now=now,seen=seen,
-                                latest_source_sell=latest_sells,skips=skips)
+                                latest_source_sell=latest_sells,skips=skips,
+                                source_signal_wallets=source_signal_wallets)
             source_signals+=counts[0]
             cycles+=1
             state=_snapshot(account,started_at=state["started_at"],
@@ -488,7 +494,8 @@ def start(args):
                             wallets=wallets,quotes=quotes,seen=seen,
                             latest_poll=latest_poll,last_seen_chain=latest_chain,
                             latest_source_sell=latest_sells,skips=skips,
-                            source_signals=source_signals,cycles=cycles,
+                            source_signals=source_signals,source_signal_wallets=source_signal_wallets,
+                            cycles=cycles,
                             status="running",halt_reason=None)
             _atomic(state_path,state)
             _atomic(report_path,_report(state,now))
@@ -527,7 +534,8 @@ def start(args):
                         wallets=wallets,quotes=quotes,seen=seen,
                         latest_poll=latest_poll,last_seen_chain=latest_chain,
                         latest_source_sell=latest_sells,skips=skips,
-                        source_signals=source_signals,cycles=cycles,
+                        source_signals=source_signals,source_signal_wallets=source_signal_wallets,
+                            cycles=cycles,
                         status=status,halt_reason=halt_reason)
         _atomic(state_path,state)
         _atomic(report_path,_report(state,now))
