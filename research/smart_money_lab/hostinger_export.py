@@ -12,6 +12,7 @@ import time
 from pathlib import Path
 
 from .live_monitor import _read_json, build_status
+from .paper_copy_hostinger_status import build_paper_copy_status
 
 
 def make_static_html(template: str) -> str:
@@ -81,7 +82,9 @@ def export(*, data_dir: Path, output_dir: Path, include_html: bool = False,
     # Read-only explicit override; NEVER restart or reset provider counters.
     budget = _read_json(budget_file if budget_file is not None else
                         data_dir / "helius_budget.json")
-    status = build_status(report, budget)
+    paper_report = _read_json(data_dir / "paper_copy_report.json")
+    status = (build_paper_copy_status(paper_report, budget)
+              if paper_report is not None else build_status(report, budget))
     output_dir.mkdir(parents=True, exist_ok=True)
     payload = json.dumps(status, separators=(",", ":"), ensure_ascii=False)
     tmp = output_dir / "status.json.tmp"

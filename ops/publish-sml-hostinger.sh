@@ -23,6 +23,14 @@ fi
 HOSTINGER_SFTP_PORT="65002"
 HOSTINGER_KNOWN_HOSTS="$HOME/.ssh/known_hosts"
 YATL_REPORT_DIR="${YATL_REPORT_DIR:-/home/ubuntu/yatl-smart-money/data/smart_money}"
+# Explicit cutover overrides are applied AFTER loading private SFTP config.
+# Existing Hostinger credentials and dedicated protected path remain untouched.
+if [[ -n "${YATL_PAPER_COPY_REPORT_DIR:-}" ]]; then
+  YATL_REPORT_DIR="$YATL_PAPER_COPY_REPORT_DIR"
+fi
+if [[ -n "${YATL_PAPER_COPY_BUDGET_FILE:-}" ]]; then
+  YATL_HELIUS_BUDGET_FILE="$YATL_PAPER_COPY_BUDGET_FILE"
+fi
 YATL_EXPORT_DIR="/home/ubuntu/yatl-smart-money-host-export"
 # Optional explicit read-only budget path for V2; no counter reset.
 budget_args=()

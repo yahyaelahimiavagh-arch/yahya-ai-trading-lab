@@ -42,6 +42,17 @@ h1{font-size:25px;line-height:1.4;margin-bottom:1px;letter-spacing:-.4px}
 .time-row{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:12px;margin-top:13px;flex-wrap:wrap}
 .time-row strong{color:var(--text);font-weight:600;direction:ltr}
 .portfolio-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.wallet-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.wallet-card{background:var(--surface2);border:1px solid #2b3d56;border-radius:14px;padding:15px;min-width:0}
+.wallet-head{display:flex;align-items:center;justify-content:space-between;gap:10px;direction:ltr}
+.wallet-head strong{font:700 15px "Segoe UI",sans-serif;color:#bfdbff}
+.wallet-head span{border:1px solid #375068;border-radius:8px;padding:2px 7px;font:600 10px "Segoe UI",sans-serif;color:var(--muted)}
+.wallet-pnl{direction:ltr;text-align:right;font:750 23px "Segoe UI",sans-serif;margin:12px 0 5px}
+.wallet-desc{font-size:10px;color:var(--muted);margin-bottom:10px}
+.wallet-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.wallet-stat{border-top:1px solid #30415b;padding-top:7px;display:flex;justify-content:space-between;gap:5px;font-size:11px}
+.wallet-stat span{color:var(--muted)}.wallet-stat strong{direction:ltr;font-family:"Segoe UI",sans-serif}
+.wallet-note{font-size:11px;color:var(--muted);line-height:1.9;margin:0 0 12px}
 .account{background:var(--surface2);border:1px solid #2b3d56;border-radius:14px;padding:16px;min-width:0}
 .account-header{display:flex;align-items:center;justify-content:space-between;gap:4px}
 .account-name{font-size:12px;font-weight:700;direction:ltr;text-align:right;color:#bfdbff}
@@ -69,9 +80,9 @@ h1{font-size:25px;line-height:1.4;margin-bottom:1px;letter-spacing:-.4px}
 .event-time{font-size:10px;color:var(--muted);white-space:nowrap}
 footer{color:var(--muted);font-size:11px;margin-top:13px;line-height:1.9}
 #loading{display:none}
-@media(max-width:1180px){.metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.layout{grid-template-columns:1fr}}
+@media(max-width:1180px){.metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.layout{grid-template-columns:1fr}.wallet-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){main{width:calc(100% - 20px);padding-top:16px}header{margin-bottom:15px}h1{font-size:19px}.hero{padding:19px}.hero strong{font-size:21px}.metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.metric{padding:15px 12px}.metric .value{font-size:21px}.portfolio-grid{grid-template-columns:1fr 1fr}.panel{padding:15px}.account{padding:12px}.account-equity{font-size:21px}}
-@media(max-width:370px){.portfolio-grid{grid-template-columns:1fr}}
+@media(max-width:370px){.portfolio-grid{grid-template-columns:1fr}}@media(max-width:620px){.wallet-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -96,19 +107,24 @@ footer{color:var(--muted);font-size:11px;margin-top:13px;line-height:1.9}
 
 <section class="metrics" aria-label="آمار کلی">
   <div class="metric"><div class="label">کیف پول‌های رصدشده</div><div class="value" id="wallets">—</div><div class="hint">بدون افشای آدرس‌ها</div></div>
-  <div class="metric"><div class="label">دریافت‌های موفق</div><div class="value" id="polls">—</div><div class="hint">کل دوره مشاهده</div></div>
+  <div class="metric"><div class="label">چرخه‌های پایش</div><div class="value" id="polls">—</div><div class="hint">هر چرخه حدود ۵ دقیقه</div></div>
   <div class="metric"><div class="label">رویدادهای یکتای دریافت‌شده</div><div class="value" id="signals">—</div><div class="hint">ممکن است شامل تاریخچه قبلی باشد</div></div>
-  <div class="metric"><div class="label">معاملات مجازی ثبت‌شده</div><div class="value" id="fills">—</div><div class="hint">در مجموع ۹ حساب؛ نه معاملات مستقل</div></div>
-  <div class="metric"><div class="label">موقعیت‌های باز</div><div class="value" id="positions">—</div><div class="hint">در تمامی حساب‌های مجازی</div></div>
+  <div class="metric"><div class="label">معاملات مجازی ثبت‌شده</div><div class="value" id="fills">—</div><div class="hint">در حساب آزمایشی واحد</div></div>
+  <div class="metric"><div class="label">موقعیت‌های باز</div><div class="value" id="positions">—</div><div class="hint">در حساب آزمایشی واحد</div></div>
   <div class="metric"><div class="label">درخواست‌های رزروشده Helius</div><div class="value" id="requests">—</div><div class="hint">سقف نرم‌افزاری ۵۰۰۰ درخواست</div></div>
 </section>
 
 <div class="layout">
   <div>
     <section class="panel">
-      <div class="panel-head"><h2>پرتفوی‌های آزمایشی</h2><span class="small">سرمایه اولیه هر حساب: $1,000</span></div>
+      <div class="panel-head"><h2>پرتفوی‌های آزمایشی</h2><span class="small">سرمایه حساب فرضی: $1,000</span></div>
       <div class="portfolio-grid" id="portfolio-grid"><div class="empty">در انتظار نخستین گزارش...</div></div>
       <div class="warning" id="unvetted-warning">این مطالعه با کیف پول‌های تأییدنشده آغاز شده است؛ نتیجه آن اثبات سودآوری یا مهارت معامله‌گران نیست.</div>
+    </section>
+    <section class="panel" id="wallet-performance-section" hidden>
+      <div class="panel-head"><h2>عملکرد شش کیف‌پول</h2><span class="small">۶ منبع سیگنال · فقط یک حساب مشترک</span></div>
+      <p class="wallet-note">سود و زیان این بخش فقط از معاملات بسته‌شده در حساب مجازی مشترک محاسبه می‌شود؛ موقعیت‌های باز و سود/زیان تحقق‌نیافته در آن لحاظ نشده‌اند. این ارقام عملکرد واقعی کیف‌پول‌های اصلی نیستند.</p>
+      <div class="wallet-grid" id="wallet-performance-grid"></div>
     </section>
     <section class="panel">
       <div class="panel-head"><h2>آخرین معاملات مجازی</h2><span class="small">بدون آدرس کامل کیف پول‌ها</span></div>
@@ -117,7 +133,7 @@ footer{color:var(--muted);font-size:11px;margin-top:13px;line-height:1.9}
   </div>
   <aside>
     <section class="panel">
-      <div class="panel-head"><h2>پیشرفت آزمایش ۲۴ساعته</h2><strong id="progress-percent" style="direction:ltr">—</strong></div>
+      <div class="panel-head"><h2>پیشرفت آزمایش Paper</h2><strong id="progress-percent" style="direction:ltr">—</strong></div>
       <div class="progress-track"><div class="progress-bar" id="progress-bar"></div></div>
       <div class="time-row"><span>شروع</span><strong id="started">—</strong></div>
       <div class="time-row"><span>پایان برنامه‌ریزی‌شده</span><strong id="ends">—</strong></div>
@@ -161,7 +177,7 @@ footer{color:var(--muted);font-size:11px;margin-top:13px;line-height:1.9}
     degraded:"اخطار: دریافت تراکنش‌های کیف پول سالم نیست",
     stale:"گزارش قدیمی است؛ اجرای ربات را بررسی کن",
     interrupted:"آزمایش متوقف شده",
-    completed:"پنجره ۲۴ساعته پایان یافت",
+    completed:"دوره آزمایش به پایان رسید",
     initializing:"هنوز گزارش معتبری وجود ندارد"
   };
   function e(id){return document.getElementById(id)}
@@ -205,6 +221,43 @@ footer{color:var(--muted);font-size:11px;margin-top:13px;line-height:1.9}
     foot.append(a,b,c);outer.append(foot);
     return outer;
   }
+  function walletCard(w){
+    var outer=node("div","wallet-card");
+    var head=node("div","wallet-head");
+    head.append(node("strong",null,w.alias));
+    head.append(node("span",null,"PAPER"));
+    outer.append(head);
+    var pnlValue=w.modeled_realized_pnl_usd;
+    var pnl=node("div","wallet-pnl",
+      pnlValue==null?"نامشخص":(Number(pnlValue)>0?"+":"")+
+      "$"+money(pnlValue));
+    if(pnlValue!=null)pnl.classList.add(Number(pnlValue)>0?"pos":Number(pnlValue)<0?"neg":"");
+    outer.append(pnl);
+    outer.append(node("div","wallet-desc","سود/زیان تحقق‌یافته مدل‌شده (USD)"));
+    var stats=node("div","wallet-stats");
+    function add(label,value){
+      var row=node("div","wallet-stat");
+      row.append(node("span",null,label),node("strong",null,value));
+      stats.append(row);
+    }
+    add("سیگنال جدید",num(w.source_signals));
+    add("خرید",num(w.buy_fills));
+    add("فروش لیدر",num(w.leader_sell_fills));
+    add("خروج ریسک",num(w.risk_exit_fills));
+    add("موقعیت باز",num(w.open_positions));
+    add("کل Fill",num(w.total_fills));
+    add("هزینه موقعیت باز",w.open_position_cost_usd==null?"—":"$"+money(w.open_position_cost_usd));
+    outer.append(stats);
+    return outer;
+  }
+  function renderWallets(wallets){
+    var section=e("wallet-performance-section");
+    var grid=e("wallet-performance-grid");
+    var items=Array.isArray(wallets)?wallets:[];
+    section.hidden=items.length===0;
+    grid.replaceChildren();
+    items.forEach(function(w){grid.append(walletCard(w))});
+  }
   function renderFills(fills){
     var target=e("recent-fills");target.replaceChildren();
     if(!fills.length){target.append(node("div","empty","هنوز معامله مجازی ثبت نشده؛ صرفاً دریافت سیگنال، معامله محسوب نمی‌شود."));return}
@@ -227,7 +280,7 @@ footer{color:var(--muted);font-size:11px;margin-top:13px;line-height:1.9}
     if(last.updated_at){
       var age=Math.max(0,Math.floor(Date.now()/1000)-Number(last.updated_at));
       set("last-update",age+" ثانیه پیش");
-      if(last.status==="running" && age>120){
+      if(last.status==="running" && age>660){
         e("live-dot").className="dot stale";
         set("live-state","گزارش به‌روزرسانی نشده است");
       }
@@ -277,6 +330,7 @@ footer{color:var(--muted);font-size:11px;margin-top:13px;line-height:1.9}
     var grid=e("portfolio-grid");grid.replaceChildren();
     if(!r.portfolios.length)grid.append(node("div","empty","منتظر شروع گزارش حساب‌های مجازی..."));
     else r.portfolios.forEach(function(p){grid.append(account(p))});
+    renderWallets(r.wallet_performance||[]);
     renderFills(r.recent_fills||[]);
     refreshClock();
   }
@@ -296,10 +350,10 @@ footer{color:var(--muted);font-size:11px;margin-top:13px;line-height:1.9}
         set("headline","در انتظار نخستین گزارش");
       }else{
         var age=Math.max(0,Math.floor(Date.now()/1000)-Number(last.updated_at||0));
-        set("live-state",consecutiveFetchFailures<3 && age<=120 ?
+        set("live-state",consecutiveFetchFailures<3 && age<=660 ?
           "اختلال موقت دریافت داده؛ تلاش دوباره" :
           "گزارش تازه دریافت نمی‌شود؛ بررسی دسترسی");
-        set("headline",age<=120 ? "آخرین گزارش معتبر نمایش داده شده" :
+        set("headline",age<=660 ? "آخرین گزارش معتبر نمایش داده شده" :
           "گزارش جدید از سرور دریافت نشده");
       }
     }

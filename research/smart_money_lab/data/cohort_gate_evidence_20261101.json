@@ -1,0 +1,29 @@
+{
+  "schema": "YATL_SML_COHORT_GATE_EVIDENCE_V1",
+  "watchlist_git_blob_sha1": "d78557ec35548f67c5f82240eb15eadb3ba62216",
+  "study_date_utc": "2026-11-01",
+  "frozen_sources": [
+    "docs/SML-CURRENT-DEX-WALLET-DISCOVERY.md",
+    "docs/SML-TRADE-HOLD-LATENCY-AUDIT.md",
+    "research/smart_money_lab/data/selected_forward_paper_wallets_20261101.json"
+  ],
+  "probe_source": "Operator-supplied stdout from 2026-11-01 capped 11-attempt probe; sample time after pilot halt, not reconstruction of the halt.",
+  "limitations": [
+    "Matched FIFO fragments are not independent closed profitable trades.",
+    "The public sample covers only four selected DEX pools, not full-wallet activity.",
+    "Source wallet realized net PnL, complete cost basis and executable follower prices are unverified.",
+    "Overlap verified in a single later diagnostic does not imply reliable continuous live data."
+  ],
+  "wallets": [
+    {"index": 1, "sampled_fifo_fragments": 11, "source_gross_sample": "negative", "recent_probe": "page_cap", "probe_pages": 3, "asof_prints_117s_30s": 3},
+    {"index": 2, "sampled_fifo_fragments": 7, "source_gross_sample": "negative", "recent_probe": "repeated_signature", "probe_pages": 2, "asof_prints_117s_30s": 0},
+    {"index": 3, "sampled_fifo_fragments": 3, "source_gross_sample": "unverified", "recent_probe": "overlap_verified", "probe_pages": 3, "asof_prints_117s_30s": null},
+    {"index": 4, "sampled_fifo_fragments": 2, "source_gross_sample": "unverified", "recent_probe": "overlap_verified", "probe_pages": 1, "asof_prints_117s_30s": null},
+    {"index": 5, "sampled_fifo_fragments": 1, "source_gross_sample": "unverified", "recent_probe": "overlap_verified", "probe_pages": 1, "asof_prints_117s_30s": null},
+    {"index": 6, "sampled_fifo_fragments": 1, "source_gross_sample": "unverified", "recent_probe": "overlap_verified", "probe_pages": 1, "asof_prints_117s_30s": null}
+  ],
+  "full_wallet_trade_history_verified": false,
+  "realized_source_net_pnl_verified": false,
+  "executable_follower_quote_verified": false,
+  "authorize_live_trading": false
+}
