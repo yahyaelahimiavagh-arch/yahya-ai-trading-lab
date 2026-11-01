@@ -18,6 +18,7 @@ import urllib.request
 
 ENDPOINT = "https://api.mainnet.solana.com"
 BASE58 = re.compile(r"^[1-9A-HJ-NP-Za-km-z]{32,44}$")
+SIGNATURE58 = re.compile(r"^[1-9A-HJ-NP-Za-km-z]{80,90}$")
 JUNE_END = 1782864000  # 2026-07-01T00:00:00Z
 MAX_SIGNATURES = 12
 MAX_TX_PER_WALLET = 12
@@ -98,7 +99,7 @@ class PublicRpc:
         return result
 
     def transaction(self, signature):
-        if not isinstance(signature, str) or not BASE58.fullmatch(signature):
+        if not isinstance(signature, str) or not SIGNATURE58.fullmatch(signature):
             raise ValueError("invalid transaction signature")
         return self.call("getTransaction", [signature, {
             "commitment": "finalized", "encoding": "jsonParsed",
@@ -255,7 +256,7 @@ def audit(wallets: dict[str, str], rpc: PublicRpc, *, since: int = JUNE_END) -> 
                 continue
             stamp, sig = record.get("blockTime"), record.get("signature")
             if (type(stamp) is int and stamp >= since and
-                    isinstance(sig, str) and BASE58.fullmatch(sig)):
+                    isinstance(sig, str) and SIGNATURE58.fullmatch(sig)):
                 recent.append(sig)
                 sig_to_group[sig].add(group)
         result["recent_signatures_after_cutoff"] = len(recent)
