@@ -21,6 +21,54 @@ def amount(value):
         return None
 
 
+def signed_amount(value):
+    """Decimal signed P/L; negative numbers are valid and must not disappear."""
+    try:
+        v = Decimal(str(value))
+        return f"{v:.4f}" if v.is_finite() else None
+    except (InvalidOperation, ValueError, TypeError):
+        return None
+
+
+def _wallet_rows(report: dict, positions: list) -> list[dict]:
+    """Expose fixed-order aliases, never raw wallet addresses or signatures.
+
+    Stats reflect fills of the ONE shared paper account, not independent P/L.
+    Signal counts per wallet are intentionally unavailable in this report.
+    """
+    wallets = report.get("wallets")
+    summary = report.get("per_wallet_modeled_realized_pnl")
+    if not (isinstance(wallets, list) and len(wallets) == 6
+            and len(set(w for w in wallets if isinstance(w, str))) == 6
+            and all(isinstance(w, str) and w for w in wallets)
+            and isinstance(summary, dict)):
+        return []
+    open_counts = {}
+    for p in positions:
+        if isinstance(p, dict) and isinstance(p.get("wallet"), str):
+            w = p["wallet"]
+            open_counts[w] = open_counts.get(w, 0) + 1
+    result = []
+    for index, wallet in enumerate(wallets, 1):
+        metrics = summary.get(wallet)
+        if not isinstance(metrics, dict):
+            return []
+        buys = integer(metrics.get("paper_buy_fills"))
+        sells = integer(metrics.get("paper_leader_sell_fills"))
+        risk = integer(metrics.get("paper_risk_exit_fills"))
+        result.append({
+            "alias": f"Wallet {index}",
+            "buy_fills": buys,
+            "leader_sell_fills": sells,
+            "risk_exit_fills": risk,
+            "total_fills": buys + sells + risk,
+            "open_positions": open_counts.get(wallet, 0),
+            "open_position_cost_usd": amount(metrics.get("open_paper_position_cost_usd")),
+            "modeled_realized_pnl_usd": signed_amount(metrics.get("modeled_realized_pnl_usd")),
+        })
+    return result
+
+
 def build_paper_copy_status(report: dict | None, budget: dict | None, *,
                             now: int | None = None) -> dict:
     now = int(time.time()) if now is None else int(now)
@@ -34,6 +82,7 @@ def build_paper_copy_status(report: dict | None, budget: dict | None, *,
         "paper_fills": 0, "open_positions": 0, "feed_complete": None,
         "api_requests_reserved": reserved, "api_safety_cap": 5000,
         "portfolios": [], "skips": {}, "recent_fills": [],
+        "wallet_performance": [],
         "feed_health": {"state": "unknown", "collector_alive": None,
                         "expected_wallets": 0, "recent_wallets": 0,
                         "oldest_poll_age_seconds": None},
@@ -85,6 +134,7 @@ def build_paper_copy_status(report: dict | None, budget: dict | None, *,
         "halted": account.get("halted") is True,
         "rejected": sum(integer(x) for x in rejected.values()),
     }
+    wallet_performance = _wallet_rows(report, positions)
     recent = []
     for fill in fills[-15:]:
         if not isinstance(fill, dict) or fill.get("side") not in ("BUY", "SELL", "RISK_EXIT"):
@@ -123,6 +173,7 @@ def build_paper_copy_status(report: dict | None, budget: dict | None, *,
         "signals_seen": integer(report.get("source_signals")),
         "paper_fills": len(fills), "open_positions": len(positions),
         "portfolios": [portfolio], "skips": safe_skips,
+        "wallet_performance": wallet_performance,
         "recent_fills": list(reversed(recent)),
         "feed_health": {
             "state": health_state, "collector_alive": None,
