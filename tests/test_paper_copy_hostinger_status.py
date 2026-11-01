@@ -60,6 +60,7 @@ class PaperCopyHostingerStatusTests(unittest.TestCase):
         report["paper_account"]["open_positions"] = [{"wallet": wallets[0]}]
         report["per_wallet_modeled_realized_pnl"] = {
             wallet: {
+                "source_signals": 2 if i == 0 else 0,
                 "paper_buy_fills": 1 if i == 0 else 0,
                 "paper_leader_sell_fills": 0,
                 "paper_risk_exit_fills": 1 if i == 1 else 0,
@@ -73,6 +74,7 @@ class PaperCopyHostingerStatusTests(unittest.TestCase):
         self.assertEqual(len(cards), 6)
         self.assertEqual([c["alias"] for c in cards],
                          [f"Wallet {i}" for i in range(1, 7)])
+        self.assertEqual(cards[0]["source_signals"], 2)
         self.assertEqual(cards[0]["buy_fills"], 1)
         self.assertEqual(cards[0]["open_positions"], 1)
         self.assertEqual(cards[0]["open_position_cost_usd"], "30.0000")
