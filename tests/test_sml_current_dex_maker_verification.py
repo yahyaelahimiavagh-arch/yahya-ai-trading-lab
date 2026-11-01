@@ -1,8 +1,11 @@
 """No-network verification tests for current DEX maker/signer checks."""
 from __future__ import annotations
+import io
+import json
 import unittest
+from unittest.mock import patch
 from research.smart_money_lab.current_dex_maker_verification import audit
-from research.smart_money_lab.recent_wallet_receipts import PublicRpcError
+from research.smart_money_lab.recent_wallet_receipts import PublicRpc, PublicRpcError
 
 A="A"*33
 B="B"*33
@@ -77,6 +80,16 @@ class Tests(unittest.TestCase):
         self.assertEqual(out["rpc_error"],"http_429")
         self.assertEqual(out["evidence"][1]["onchain_status"],
                          "not_checked_rpc_unavailable")
+
+    def test_solana_mainnet_transaction_v1_is_explicitly_supported(self):
+        with patch("urllib.request.urlopen") as urlopen:
+            urlopen.return_value.__enter__.return_value.read.return_value = (
+                b'{"jsonrpc":"2.0","result":null}')
+            result = PublicRpc().transaction(SIG1)
+            self.assertIsNone(result)
+            payload=json.loads(urlopen.call_args.args[0].data)
+            self.assertEqual(payload["method"],"getTransaction")
+            self.assertEqual(payload["params"][1]["maxSupportedTransactionVersion"],1)
 
     def test_invalid_input_prevents_any_network(self):
         source=inputs()
