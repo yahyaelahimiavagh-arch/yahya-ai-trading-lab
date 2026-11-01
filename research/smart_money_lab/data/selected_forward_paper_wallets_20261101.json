@@ -1,0 +1,35 @@
+{
+  "schema": "YATL_FORWARD_PAPER_COPY_WATCHLIST_V1",
+  "selection_frozen_from": "2026-11-01 GeckoTerminal four-pool observation plus chain-signer audit, PR 193-194",
+  "selected_at_utc": "2026-11-01",
+  "status": "UNVETTED_FOR_PAPER_ONLY",
+  "rationale": "Six current-market public maker signers selected for varied observable activity and holding periods; no assumed skill; no future PnL used",
+  "wallets": [
+    {
+      "wallet": "AgmLJBMDCqWynYnQiPCuj9ewsNNsBJXyzoUhD9LJzN51",
+      "reason": "11 matched fragments, median 3796s, historically negative gross sample"
+    },
+    {
+      "wallet": "FHpcNSe6tb2n15bAdq4BkeYWGyZKFD7yLYrH92ng7wCT",
+      "reason": "7 matched fragments, median 12161s, no reliable asof-price coverage"
+    },
+    {
+      "wallet": "BXEHNbKPGeUHaqpaiHR6hc9mQkTZ2WFCXh6kkHkhFnCY",
+      "reason": "3 matched fragments, median 718s, limited validation"
+    },
+    {
+      "wallet": "7KyEvScKGoBPdroVYAy6v47XWjuuQFtPLjpWgZgMWEi",
+      "reason": "2 matched fragments, median 2456s, tiny sample"
+    },
+    {
+      "wallet": "SHARKdrwEJCe5hLNNLMNkkxn7aV8sTnURUV4TWtNUZS",
+      "reason": "1 matched fragment, median 306s, tiny sample"
+    },
+    {
+      "wallet": "Jd97uyw9wb6PxV2jawAjS7aU6XUMHbcfn4En8xRP7Mg",
+      "reason": "1 matched fragment, median 788s, tiny sample"
+    }
+  ],
+  "investment_signal": false,
+  "allow_real_orders": false
+}
