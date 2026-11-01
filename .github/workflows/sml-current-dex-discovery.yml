@@ -1,0 +1,34 @@
+name: SML discover current active Solana DEX wallets (free public API)
+on:
+  push:
+    branches: [research/sml-current-dex-wallet-discovery]
+    paths:
+      - ".github/workflows/sml-current-dex-discovery.yml"
+      - "research/smart_money_lab/current_dex_discovery.py"
+      - "tests/test_sml_current_dex_discovery.py"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  current-public-trade-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate all offline unit tests; no RPC or paid API
+        run: |
+          python -m compileall -q research/smart_money_lab/current_dex_discovery.py
+          python -m unittest discover -s tests -p 'test_sml_current_dex_discovery.py' -v
+      - name: Read at most 16 liquid Solana pools + 2 discovery queries
+        run: |
+          python -m research.smart_money_lab.current_dex_discovery \
+            --max-pools 16 --output-dir research_results/current_sol_pool_scan
+      - name: Preserve timestamped raw observations and candidate metrics
+        uses: actions/upload-artifact@v4
+        with:
+          name: sml-current-solana-dex-wallets
+          path: research_results/current_sol_pool_scan/
+          retention-days: 14
