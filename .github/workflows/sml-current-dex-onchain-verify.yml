@@ -5,6 +5,7 @@ on:
     paths:
       - ".github/workflows/sml-current-dex-onchain-verify.yml"
       - "research/smart_money_lab/current_dex_maker_verification.py"
+      - "research/smart_money_lab/recent_wallet_receipts.py"
       - "research/smart_money_lab/data/current_dex_20261101_top10_tx_probes.json"
       - "tests/test_sml_current_dex_maker_verification.py"
   workflow_dispatch:
