@@ -8,15 +8,22 @@ if [[ "$MODE" != "preflight" && "$MODE" != "switch" ]]; then
   exit 2
 fi
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-V2DIR="$HOME/yatl-smart-money-v2/data/smart_money"
-BUDGET="$V2DIR/helius_budget.json"
+# Original V2 directories vary with Unix user and initial checkout.
+# Use an operator-verified absolute path; NEVER auto-select a budget ledger.
+V2DIR="${YATL_V2_DATA_DIR:-$HOME/yatl-smart-money-v2/data/smart_money}"
+BUDGET="${YATL_SML_HELIUS_BUDGET_FILE:-$V2DIR/helius_budget.json}"
 OUTPUT="$HOME/yatl-paper-copy-forward-20261101"
 WATCH="$ROOT/research/smart_money_lab/data/selected_forward_paper_wallets_20261101.json"
 HOURS="${YATL_PAPER_HOURS:-6}"
 POLL="${YATL_PAPER_POLL_SECONDS:-300}"
+if [[ "$BUDGET" != /* ]]; then
+  echo "Helius budget path must be absolute and refer to the ORIGINAL V2 file." >&2
+  exit 2
+fi
 if [[ ! -f "$BUDGET" ]]; then
   echo "Original V2 cumulative budget file is missing: $BUDGET" >&2
-  echo "Never fabricate/reset a Helius request counter." >&2
+  echo "Verify original V2 process working directory / env; do NOT create or reset the counter." >&2
+  echo "Use YATL_SML_HELIUS_BUDGET_FILE=/real/absolute/path to override only after verification." >&2
   exit 2
 fi
 cd "$ROOT"
@@ -41,9 +48,10 @@ fi
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 ARCHIVE="$HOME/yatl-v2-final-archive/$STAMP"
 mkdir -p "$ARCHIVE"
-for name in state.json report.json helius_budget.json; do
+for name in state.json report.json; do
   [[ ! -f "$V2DIR/$name" ]] || cp -p "$V2DIR/$name" "$ARCHIVE/$name.before"
 done
+cp -p "$BUDGET" "$ARCHIVE/helius_budget.json.before"
 
 # Stop only the known V2 observer pane; keep the dashboard publisher alone.
 if command -v tmux >/dev/null 2>&1 && tmux has-session -t yatl-sml-v2 2>/dev/null; then
@@ -55,9 +63,10 @@ if pgrep -af 'research[.]smart_money_lab observe' >/dev/null 2>&1; then
   echo "Archive: $ARCHIVE" >&2
   exit 3
 fi
-for name in state.json report.json helius_budget.json; do
+for name in state.json report.json; do
   [[ ! -f "$V2DIR/$name" ]] || cp -p "$V2DIR/$name" "$ARCHIVE/$name.final"
 done
+cp -p "$BUDGET" "$ARCHIVE/helius_budget.json.final"
 
 mkdir -p "$OUTPUT"
 chmod 700 "$OUTPUT"
