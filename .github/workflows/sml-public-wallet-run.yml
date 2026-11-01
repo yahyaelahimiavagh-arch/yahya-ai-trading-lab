@@ -28,7 +28,7 @@ jobs:
           import concurrent.futures, pathlib, urllib.request
           names=("tokens.parquet","trades-000.parquet","trades-001.parquet",
                  "trades-002.parquet","trades-003.parquet")
-          base="https://raw.githubusercontent.com/ian05012/solana-memecoin-dataset/main/data/"
+          base="https://raw.githubusercontent.com/ian05012/solana-memecoin-dataset/7070d00e1e4492f8604d988549d91785cc5f43f7/data/"
           root=pathlib.Path("public_june_data")
           root.mkdir(exist_ok=True)
           def grab(name):
