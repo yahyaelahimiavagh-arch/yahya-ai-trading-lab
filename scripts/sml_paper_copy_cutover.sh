@@ -12,7 +12,12 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # Use an operator-verified absolute path; NEVER auto-select a budget ledger.
 V2DIR="${YATL_V2_DATA_DIR:-$HOME/yatl-smart-money-v2/data/smart_money}"
 BUDGET="${YATL_SML_HELIUS_BUDGET_FILE:-$V2DIR/helius_budget.json}"
-OUTPUT="$HOME/yatl-paper-copy-forward-20261101"
+# A failed research run must remain immutable; a new run gets its own dir.
+OUTPUT="${YATL_PAPER_OUTPUT_DIR:-$HOME/yatl-paper-copy-forward-20261101}"
+if [[ "$OUTPUT" != "$HOME"/yatl-paper-copy-forward-* ]]; then
+  echo "Paper output must be a dedicated directory under HOME." >&2
+  exit 2
+fi
 WATCH="$ROOT/research/smart_money_lab/data/selected_forward_paper_wallets_20261101.json"
 HOURS="${YATL_PAPER_HOURS:-6}"
 POLL="${YATL_PAPER_POLL_SECONDS:-300}"
