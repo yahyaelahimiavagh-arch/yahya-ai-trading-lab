@@ -1,0 +1,77 @@
+{
+  "snapshot": "GeckoTerminal Solana 2026-11-01T09:38:33Z",
+  "source_commit": "403c1582c77a6547d07de839335c5d8fcc2d5176",
+  "kind": "TOP10_SAMPLE_SIGNATURES_NOT_PROFITABLE_TRADERS",
+  "samples": [
+    {
+      "rank": 1,
+      "wallet": "AgmLJBMDCqWynYnQiPCuj9ewsNNsBJXyzoUhD9LJzN51",
+      "signature": "231tPPpLXTAtHnW5CpNEX78d6gtv3GyCA3tnRdeZZV9FyrdFyA2sFr84cpjPyYZVekRLhBh24EmBAx1yV6QPGw1H",
+      "kind": "sell",
+      "reported_timestamp": 1793525672
+    },
+    {
+      "rank": 2,
+      "wallet": "FHpcNSe6tb2n15bAdq4BkeYWGyZKFD7yLYrH92ng7wCT",
+      "signature": "2A8kqTzxhDpCsjKKMzSkKYrK9Dayx5fJQN34YLD4NaWJwQrKvm9PbVZhRMrn8wqgUv8rtS6ZSC1TAJu9YWUyCcYx",
+      "kind": "sell",
+      "reported_timestamp": 1793525832
+    },
+    {
+      "rank": 3,
+      "wallet": "SHARKdrwEJCe5hLNNLMNkkxn7aV8sTnURUV4TWtNUZS",
+      "signature": "5csxX3jWr2z46PrZwKjPP5rodssAx1XdLBN29FHJyZJywUPxtKSkGRsqx5W5HGEsaTPXJ4K81ShKnc4KujDujxC3",
+      "kind": "buy",
+      "reported_timestamp": 1793525187
+    },
+    {
+      "rank": 4,
+      "wallet": "BXEHNbKPGeUHaqpaiHR6hc9mQkTZ2WFCXh6kkHkhFnCY",
+      "signature": "5QeYQ8C6iqEtRVrPumkVr8KDzY3kMynKPjkzK9cY5Xtd147chVNPQvM38FdHLe8WTPUp9vrdLc9FMSRGpwEQGxdz",
+      "kind": "sell",
+      "reported_timestamp": 1793525821
+    },
+    {
+      "rank": 5,
+      "wallet": "Fgej4SPuW282TdrQRfizRHAeRasNqCtAWZizL3jDqMdS",
+      "signature": "Xx6sspmYJDH7jfWJ7s4PjmFpjMgvfkWywjN6zfxnzPs4K5PncQKHiJXyTfGkALW16rCfFPVXEVZVnKTwMtxoJd2",
+      "kind": "buy",
+      "reported_timestamp": 1793518277
+    },
+    {
+      "rank": 6,
+      "wallet": "xK95GQnx3U4GcvXiShTjhxycJFhtBUz56PgZeoVWjR7",
+      "signature": "3hQszRo4pLPvPtD1dY4CxbYE7xoc5Cvo15s6HWmDceRJXfCseWYT81RenZN6uVg256X83skbh5ruGYUreBdBe5W",
+      "kind": "buy",
+      "reported_timestamp": 1793524617
+    },
+    {
+      "rank": 7,
+      "wallet": "7KyEvScKGoBPdroVYAy6v47XWjuuQFtPLjpWgZgMWEi",
+      "signature": "a9n3Dmx1ztVfkRK1TDT6UJS2BaUgc9J19J57Ypu2pCycoko86GNHX8jb2FnFguCy3mJHMxVjUKm9wUZbwoGzZR4",
+      "kind": "sell",
+      "reported_timestamp": 1793525155
+    },
+    {
+      "rank": 8,
+      "wallet": "CQwT1byuHgjKnL6vzmuNaAywKfDBVxDmFVgsQDBWxcWt",
+      "signature": "4GdBGeWc6fWqKhe2zDarEcD7jZEuEvyJdcFZ977nUJExddiCmRtAgYBKcR7vZRaUBMuUPrNwusH919SYzfCZt2EP",
+      "kind": "sell",
+      "reported_timestamp": 1793523696
+    },
+    {
+      "rank": 9,
+      "wallet": "HL2kH8yaDDQZxA35uc6TFTBoLpes731WKoPZUM2wUWVA",
+      "signature": "5HP2z2hSTN14QvEG5BBWV3vKwnAGWVRUV7yLZG5mqrVgXrGmWsX6wafUattqfp6XWBRzb5rK77sxz9K3MgykneQX",
+      "kind": "buy",
+      "reported_timestamp": 1793524851
+    },
+    {
+      "rank": 10,
+      "wallet": "Jd97uyw9wb6PxV2jawAjS7aU6XUMHbcfn4En8xRP7Mg",
+      "signature": "2UF6gpADLPbAHY13M5JmWkSKBfoU39ux4HwcLLhY75arPjYqRQfMmTqKa1Savio9rK8jfpKPhAmFFqhyfd48v5J7",
+      "kind": "sell",
+      "reported_timestamp": 1793525569
+    }
+  ]
+}
