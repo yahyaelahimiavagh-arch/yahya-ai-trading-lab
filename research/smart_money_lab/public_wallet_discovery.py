@@ -101,7 +101,7 @@ def run(folder: Path, *, cutoff: int | None = None,
         min_train_tokens: int = 10,
         min_train_days: int = 3,
         top_fraction: float = 0.01,
-        max_wallets: int = 50,
+        max_wallets: int = 100,
         max_memory: str = "1GB") -> dict:
     try:
         import duckdb
@@ -145,9 +145,10 @@ def run(folder: Path, *, cutoff: int | None = None,
         if token_n < 3:
             raise ValueError("insufficient labeled token snapshots; keep liquidity guard")
         if cutoff is None:
-            cutoff = int(c.execute("""
-                SELECT quantile_cont(epoch(captured_at), 0.68) FROM token_sample
-            """).fetchone()[0])
+            # Calendar-time split (not row-density quantile): ~2/3 training,
+            # ~1/3 future holdout. Avoid a 3-day test window just because
+            # the dataset is much denser during its final days.
+            cutoff = int(earliest + (latest - earliest) * 2 / 3)
         if type(cutoff) is not int or not earliest < cutoff < latest:
             raise ValueError("cutoff must be inside recorded snapshot interval")
         # Join all four trade shards; no wallet-score/profile fields are used.
@@ -225,12 +226,39 @@ def run(folder: Path, *, cutoff: int | None = None,
                 WHERE epoch(e.captured_at) >= ?
                 GROUP BY e.wallet
             """, [cutoff]))}
+        # Training-only behavior grouping, using token overlap instead of
+        # treating near-identical wallet strategies as independent discoveries.
+        # Similar overlap does not establish shared ownership or wash trading.
+        training_tokens_by_wallet = {r["wallet"]: set() for r in ranked}
+        if ranked:
+            for wallet, token in c.execute("""
+                SELECT e.wallet, e.token_address FROM evidence e
+                JOIN selected s USING(wallet)
+                WHERE epoch(e.captured_at) + ? < ?
+            """, [LABEL_HORIZON_SECONDS, cutoff]).fetchall():
+                training_tokens_by_wallet[wallet].add(token)
         rows = []
+        behavior_anchors = []
         for rank, r in enumerate(ranked, start=1):
             v = heldout.get(r["wallet"], {"n": 0, "hits": 0, "days": 0})
             observed = v["n"] > 0
+            tokens = training_tokens_by_wallet[r["wallet"]]
+            closest = 0.0
+            cluster = None
+            for group_id, previous in behavior_anchors:
+                union = len(tokens | previous)
+                overlap = len(tokens & previous) / union if union else 0.0
+                if overlap > closest:
+                    closest = overlap
+                if cluster is None and overlap >= .80:
+                    cluster = group_id
+            if cluster is None:
+                cluster = len(behavior_anchors) + 1
+                behavior_anchors.append((cluster, tokens))
             rows.append({
                 "rank_train_only": rank,
+                "training_behavior_group": cluster,
+                "max_token_overlap_with_group_anchors": round(closest, 5),
                 "wallet": r["wallet"],
                 "train_token_buys": int(r["train_tokens"]),
                 "train_active_days": int(r["train_days"]),
@@ -272,6 +300,7 @@ def run(folder: Path, *, cutoff: int | None = None,
                 "one_market_regime_and_gmgn_selection_bias": True,
                 "holdout_not_used_for_selection": True,
                 "concentration_and_coordinated_wallets_not_resolved": True,
+                "token_behavior_overlap_does_not_prove_shared_owner": True,
                 "no_real_money_or_alpha_claim": True,
             },
             "thresholds": {
@@ -291,6 +320,9 @@ def run(folder: Path, *, cutoff: int | None = None,
                 "distinct_matched_tokens": int(token_outcomes[0] or 0),
                 "qualified_training_wallets": qualified_n,
                 "selected_top_training_wallets": len(rows),
+                "distinct_training_behavior_groups_in_selection": len(behavior_anchors),
+                "selected_with_80pct_token_overlap": sum(
+                    x["max_token_overlap_with_group_anchors"] >= .80 for x in rows),
                 "selected_with_5plus_holdout_tokens": sum(
                     x["holdout_token_buys"] >= 5 for x in rows),
             },
@@ -343,7 +375,7 @@ def main(argv=None):
     p.add_argument("--data-dir", required=True, type=Path)
     p.add_argument("--output-dir", required=True, type=Path)
     p.add_argument("--cutoff", type=int, default=None,
-                   help="Unix UTC cutoff, default 68th percentile detection time")
+                   help="Unix UTC cutoff, default 2/3 of calendar observation window")
     p.add_argument("--min-liquidity", type=float, default=20000)
     p.add_argument("--min-train-tokens", type=int, default=10)
     p.add_argument("--min-train-days", type=int, default=3)
