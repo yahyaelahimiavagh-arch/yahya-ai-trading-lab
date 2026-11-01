@@ -142,7 +142,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(out["wallets"][0]["indicative_fifo_gross_spread_usd_unverified"],"2.0000")
         self.assertTrue(out["no_real_orders"])
         self.assertTrue(out["no_helius_calls"])
-        self.assertIn("actual fees", str(out["limitations"]))
+        self.assertIn("before fees", str(out["limitations"]))
 
     def test_one_sided_wallet_not_selected_as_skillful(self):
         records = [{
