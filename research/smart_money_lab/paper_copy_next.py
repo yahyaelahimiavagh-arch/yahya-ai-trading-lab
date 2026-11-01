@@ -368,6 +368,11 @@ def start(args):
     signal.signal(signal.SIGINT,request_stop)
     status="running"
     halt_reason=None
+    print(json.dumps({
+        "event":"paper_copy_started","paper_only":True,
+        "candidate_wallets":len(wallets),"poll_seconds":args.poll_seconds,
+        "duration_hours":args.hours,"old_shared_budget_remaining":left,
+        "per_order_max_usd":"30","real_orders":0},sort_keys=True),flush=True)
     try:
         while int(time.time())<state["finish_at"] and not shutdown:
             start_mono=time.monotonic()
@@ -440,10 +445,25 @@ def start(args):
                             status="running",halt_reason=None)
             _atomic(state_path,state)
             _atomic(report_path,_report(state,now))
+            equity=account.equity(quotes,now)
+            print(json.dumps({
+                "event":"paper_copy_cycle","cycle":cycles,
+                "source_signals":source_signals,
+                "paper_fills_total":len(account.fills),
+                "paper_cash_usd":str(account.cash),
+                "paper_equity_usd":str(equity) if equity is not None else None,
+                "paper_open_positions":len(account.holdings),
+                "entry_risk_halted":account.halted,
+                "real_orders":0
+            },sort_keys=True),flush=True)
             if account.halted:
                 # Risk stop means stop opening new paper positions. Continue
                 # to monitor SELL signals for remaining paper holdings.
                 skips["paper_entry_risk_halt_active"]+=1
+                if not account.holdings:
+                    status="halted_risk"
+                    halt_reason="PAPER_ACCOUNT_RISK_STOP"
+                    break
             rest=args.poll_seconds-(time.monotonic()-start_mono)
             if rest>0 and not shutdown:
                 # Signals terminate process safely while waiting.
