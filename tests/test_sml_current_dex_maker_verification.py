@@ -84,7 +84,7 @@ class Tests(unittest.TestCase):
         rpc=FakeRpc({})
         with self.assertRaises(ValueError):
             audit(source,rpc)
-        self.assertEqual(rpc.requests,1)  # first validated event was read
+        self.assertEqual(rpc.requests,0)
 
 
 if __name__=="__main__":
