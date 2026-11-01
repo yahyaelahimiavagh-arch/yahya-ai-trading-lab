@@ -57,8 +57,10 @@ class BoundedHistoryTests(unittest.TestCase):
 
     def test_hard_stop_when_more_than_three_pages_are_required(self):
         h = FakeHelius([rows(f"p{i}", 100, 1100) for i in range(3)])
-        with self.assertRaises(UnverifiableHistoryGap):
+        with self.assertRaises(UnverifiableHistoryGap) as caught:
             _bounded_wallet_history(h, "test_wallet", cutoff=1000)
+        self.assertEqual(caught.exception.reason, "page_cap")
+        self.assertEqual(caught.exception.pages_fetched, 3)
         self.assertEqual(h.calls, MAX_HISTORY_PAGES)
 
     def test_repeated_signature_across_pages_refused(self):
@@ -66,15 +68,37 @@ class BoundedHistoryTests(unittest.TestCase):
         second = rows("second", 15, 999)
         second[0]["signature"] = first[10]["signature"]
         h = FakeHelius([first, second])
-        with self.assertRaises(UnverifiableHistoryGap):
+        with self.assertRaises(UnverifiableHistoryGap) as caught:
             _bounded_wallet_history(h, "test_wallet", cutoff=1000)
+        self.assertEqual(caught.exception.reason, "repeated_signature")
+        self.assertEqual(caught.exception.pages_fetched, 2)
 
     def test_invalid_full_page_timestamp_refused(self):
         page = rows("first", 100, 1100)
         page[4]["timestamp"] = None
         h = FakeHelius([page])
-        with self.assertRaises(UnverifiableHistoryGap):
+        with self.assertRaises(UnverifiableHistoryGap) as caught:
             _bounded_wallet_history(h, "test_wallet", cutoff=1000)
+        self.assertEqual(caught.exception.reason, "invalid_timestamp")
+        self.assertEqual(caught.exception.pages_fetched, 1)
+
+    def test_short_page_invalid_timestamp_refused(self):
+        page = rows("short", 4, 1100)
+        page[1]["timestamp"] = None
+        h = FakeHelius([page])
+        with self.assertRaises(UnverifiableHistoryGap) as caught:
+            _bounded_wallet_history(h, "test_wallet", cutoff=1000)
+        self.assertEqual(caught.exception.reason, "invalid_timestamp")
+        self.assertEqual(caught.exception.pages_fetched, 1)
+
+    def test_missing_signature_is_diagnostic_without_exposure(self):
+        page = rows("first", 5, 1100)
+        page[1]["signature"] = None
+        h = FakeHelius([page])
+        with self.assertRaises(UnverifiableHistoryGap) as caught:
+            _bounded_wallet_history(h, "test_wallet", cutoff=1000)
+        self.assertEqual(caught.exception.reason, "missing_signature")
+        self.assertEqual(caught.exception.pages_fetched, 1)
 
     def test_budget_reserves_worst_case_and_retries(self):
         result = _ensure_new_budget(300, 6, 6, 2180)
