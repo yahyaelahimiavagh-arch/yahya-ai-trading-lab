@@ -7,6 +7,7 @@ on:
       - "research/smart_money_lab/paper_copy_next.py"
       - "research/smart_money_lab/data/selected_forward_paper_wallets_20261101.json"
       - "tests/test_sml_paper_copy_next.py"
+      - "scripts/sml_paper_copy_cutover.sh"
   workflow_dispatch:
 permissions:
   contents: read
@@ -23,6 +24,13 @@ jobs:
         run: |
           python -m compileall -q research/smart_money_lab/paper_copy_next.py
           python -m unittest discover -s tests -p 'test_sml_paper_copy_next.py' -v
+      - name: Validate shell cutover with syntax and no-network preflight
+        run: |
+          bash -n scripts/sml_paper_copy_cutover.sh
+          mkdir -p "$HOME/yatl-smart-money-v2/data/smart_money"
+          printf '%s\n' '{"calls":4000,"max_calls":5000}'             > "$HOME/yatl-smart-money-v2/data/smart_money/helius_budget.json"
+          bash scripts/sml_paper_copy_cutover.sh preflight
+          test ! -e "$HOME/yatl-paper-copy-forward-20261101/paper_copy_state.json"
       - name: Run exact six-wallet paper preflight with synthetic CUMULATIVE budget file
         run: |
           python - <<'PY'
