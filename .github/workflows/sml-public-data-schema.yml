@@ -41,4 +41,13 @@ jobs:
                   print("ohlcv time",con.execute("select ts, close from read_parquet(?) limit 4",[source]).fetchall(),flush=True)
           print("token 1h ratio quantiles",con.execute("select quantile_cont(close_return_1h,[0.01,0.1,0.5,0.9,0.99]) from read_parquet(?)",[str(root/"tokens.parquet")]).fetchone(),flush=True)
           print("token time range",con.execute("select min(captured_at),max(captured_at) from read_parquet(?)",[str(root/"tokens.parquet")]).fetchone(),flush=True)
+          print("trade min/max",con.execute("select min(ts), max(ts), count(*) from read_parquet(?)",[str(root/"trades-000.parquet")]).fetchone(),flush=True)
+          print("trade year counts",con.execute("select year(ts), count(*) from read_parquet(?) group by 1 order by 1",[str(root/"trades-000.parquet")]).fetchall(),flush=True)
+          print("eligible tokens",con.execute("select count(*) filter (where liquidity_usd>=20000 and close_return_1h is not null) from read_parquet(?)",[str(root/"tokens.parquet")]).fetchone(),flush=True)
+          print("snapshot matches recent buyers",con.execute("""
+          select count(*), count(distinct b.wallet),count(distinct t.token_address)
+          from read_parquet(?) t join read_parquet(?) b using(token_address)
+          where b.side='buy' and b.ts between t.captured_at - interval '15 minutes' and t.captured_at
+          and b.amount_usd>=10 and t.liquidity_usd>=20000 and t.close_return_1h is not null
+          """,[str(root/"tokens.parquet"), str(root/"trades-000.parquet")]).fetchone(),flush=True)
           PY
