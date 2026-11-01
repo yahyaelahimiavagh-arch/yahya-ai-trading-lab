@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 from datetime import datetime, timezone
 import json
 import math
@@ -68,7 +69,9 @@ def _required_files(folder: Path):
         p = folder / name
         if not p.is_file() or p.stat().st_size < 100:
             raise FileNotFoundError(f"missing or empty dataset file: {p}")
-        files[name] = p.stat().st_size
+        with p.open("rb") as fp:
+            digest = hashlib.file_digest(fp, "sha256").hexdigest()
+        files[name] = {"bytes": p.stat().st_size, "sha256": digest}
     return files
 
 
@@ -277,6 +280,15 @@ def run(folder: Path, *, cutoff: int | None = None,
                     "observed_not_proven" if v["n"] >= 5 else
                     "insufficient_holdout_activity"),
             })
+        selected_holdout_distinct_tokens = 0
+        selected_holdout_2x_distinct_tokens = 0
+        if ranked:
+            selected_holdout_distinct_tokens, selected_holdout_2x_distinct_tokens = c.execute("""
+                SELECT COUNT(DISTINCT e.token_address),
+                       COUNT(DISTINCT CASE WHEN e.hit THEN e.token_address END)
+                FROM evidence e JOIN selected s USING(wallet)
+                WHERE epoch(e.captured_at) >= ?
+            """, [cutoff]).fetchone()
         token_outcomes = c.execute("""
             SELECT COUNT(*) AS matched_tokens,
                    SUM(CAST(hit AS INT)) AS hits
@@ -325,6 +337,8 @@ def run(folder: Path, *, cutoff: int | None = None,
                     x["max_token_overlap_with_group_anchors"] >= .80 for x in rows),
                 "selected_with_5plus_holdout_tokens": sum(
                     x["holdout_token_buys"] >= 5 for x in rows),
+                "selected_distinct_holdout_tokens": int(selected_holdout_distinct_tokens),
+                "selected_distinct_holdout_2x_tokens": int(selected_holdout_2x_distinct_tokens),
             },
             "baselines": {
                 "train_unique_token_n": int(train_tokens),
