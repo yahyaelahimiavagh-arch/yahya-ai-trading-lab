@@ -80,6 +80,10 @@ class PublicWalletDiscoveryTests(unittest.TestCase):
         self.assertEqual(c["labeled_unique_token_snapshots"], 10)
         self.assertEqual(c["qualified_training_wallets"], 2)
         self.assertEqual(c["selected_top_training_wallets"], 2)
+        self.assertEqual(c["distinct_training_behavior_groups_in_selection"], 2)
+        self.assertEqual(c["selected_distinct_holdout_tokens"], 4)
+        self.assertEqual(c["selected_distinct_holdout_2x_tokens"], 2)
+        self.assertEqual(len(c["source_files"]["tokens.parquet"]["sha256"]), 64)
         selected = outcome["wallet_candidates"]
         self.assertEqual(selected[0]["wallet"], A)
         self.assertEqual(selected[1]["wallet"], B)
