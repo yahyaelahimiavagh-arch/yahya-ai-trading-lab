@@ -1,0 +1,42 @@
+name: SML public dataset schema probe
+on:
+  push:
+    branches: [research/sml-public-wallet-discovery]
+    paths: [".github/workflows/sml-public-data-schema.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install free analytics reader
+        run: python -m pip install duckdb==1.4.1
+      - name: Read public dataset parquet schema with no blockchain RPC
+        run: |
+          python - <<'PY'
+          import duckdb, urllib.request, pathlib
+          base="https://raw.githubusercontent.com/ian05012/solana-memecoin-dataset/main/data/"
+          root=pathlib.Path("/tmp/sml_public_probe")
+          root.mkdir()
+          for filename in ("tokens.parquet","trades-000.parquet","ohlcv.parquet","wallets.parquet"):
+              url=base+filename
+              print("downloading", filename, flush=True)
+              urllib.request.urlretrieve(url, root/filename)
+              print("bytes", (root/filename).stat().st_size,flush=True)
+          con=duckdb.connect()
+          for name in ("tokens","trades-000","ohlcv","wallets"):
+              source=str(root/(name+".parquet"))
+              print(name,con.execute("DESCRIBE SELECT * FROM read_parquet(?)",[source]).fetchall(),flush=True)
+              if name=="tokens":
+                  print("tokens time and return",con.execute("select captured_at, close_return_1h, liquidity_usd from read_parquet(?) limit 4",[source]).fetchall(),flush=True)
+              if name=="trades-000":
+                  print("trades time and amount",con.execute("select ts, side, amount_usd from read_parquet(?) limit 4",[source]).fetchall(),flush=True)
+              if name=="ohlcv":
+                  print("ohlcv time",con.execute("select ts, close from read_parquet(?) limit 4",[source]).fetchall(),flush=True)
+          PY
