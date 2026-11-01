@@ -92,7 +92,7 @@ def _another_paper_runner_running() -> bool:
         try:
             if int(cmdline.parent.name) == os.getpid():
                 continue
-            argv = cmdline.read_bytes().replace(b"\\x00", b" ").decode(
+            argv = cmdline.read_bytes().replace(bytes([0]), b" ").decode(
                 "utf-8", "ignore")
         except (PermissionError, FileNotFoundError, ProcessLookupError, ValueError):
             continue
