@@ -1,0 +1,87 @@
+name: SML offline 117s trade holding and follower print-coverage audit
+on:
+  push:
+    branches: [research/sml-trade-hold-latency-audit]
+    paths:
+      - ".github/workflows/sml-offline-hold-latency.yml"
+      - "research/smart_money_lab/trade_hold_latency_audit.py"
+      - "tests/test_sml_trade_hold_latency_audit.py"
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run no-network deterministic unit tests
+        run: |
+          python -m compileall -q research/smart_money_lab/trade_hold_latency_audit.py
+          python -m unittest discover -s tests -p 'test_sml_trade_hold_latency_audit.py' -v
+      - name: Reuse preserved November 1 public snapshot (no market API call)
+        uses: actions/download-artifact@v4
+        with:
+          name: sml-current-solana-dex-wallets
+          run-id: 41294005096
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: frozen_source
+      - name: Assemble original SHA256-validated source zip
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile, ZIP_DEFLATED
+          root=Path("frozen_source")
+          names=("wallet_candidates.json","normalized_trades.jsonl",
+                 "sha256_manifest.json")
+          with ZipFile("public_data_20261101.zip","w",ZIP_DEFLATED) as z:
+              for n in names:
+                  p=root/n
+                  assert p.is_file(), f"Missing original source artifact member {n}"
+                  z.write(p,n)
+          print("Using frozen source snapshot bytes, not downloading current prices.")
+          PY
+      - name: Compute all delays and check frozen-snapshot regression
+        run: |
+          python -m research.smart_money_lab.trade_hold_latency_audit \
+            --source-zip public_data_20261101.zip \
+            --output audited_results/hold_latency_audit.json
+          python - <<'PY'
+          import csv,json
+          from pathlib import Path
+          p=Path("audited_results/hold_latency_audit.json")
+          r=json.loads(p.read_text())
+          quality=r["matching_quality"]
+          base=r["scenarios"]["117s_delay_30s_max_print_age"]
+          assert quality["fifo_matched_fragments"]==177, quality
+          assert quality["median_fragment_holding_seconds"]==376, quality
+          assert base["covered_asof_print_fragments"]==61, base
+          assert base["classifications"]["leader_exited_before_copy_entry"]==61, base
+          assert len(r["selected_top_10"])==10
+          assert sum(x["fragments_with_117s_30s_asof_prints"]
+                     for x in r["selected_top_10"])==8
+          print("ALL REAL SNAPSHOT REGRESSION GATES PASSED")
+          print("top_10_candidate_observed_summary:")
+          for w in r["selected_top_10"]:
+              print(w["wallet"],"matched_fragments",w["matched_fifo_fragments"],
+                    "median_hold_s",w["median_holding_seconds"],
+                    "117s_30s_covered",w["fragments_with_117s_30s_asof_prints"])
+          fields=[k for k in r["selected_top_10"][0]
+                  if k!="follower_print_status_counts"]
+          with Path("audited_results/top10_holding_and_delay.csv").open(
+                  "w",newline="",encoding="utf-8") as f:
+              writer=csv.DictWriter(f,fieldnames=fields)
+              writer.writeheader()
+              writer.writerows({k:row[k] for k in fields}
+                               for row in r["selected_top_10"])
+          PY
+      - name: Publish offline audit results only
+        uses: actions/upload-artifact@v4
+        with:
+          name: sml-holding-delay-audit-20261101
+          path: audited_results/
+          retention-days: 14
