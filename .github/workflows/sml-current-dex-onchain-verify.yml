@@ -1,0 +1,36 @@
+name: SML verify current DEX maker addresses against Solana signatures
+on:
+  push:
+    branches: [research/sml-current-dex-wallet-discovery]
+    paths:
+      - ".github/workflows/sml-current-dex-onchain-verify.yml"
+      - "research/smart_money_lab/current_dex_maker_verification.py"
+      - "research/smart_money_lab/data/current_dex_20261101_top10_tx_probes.json"
+      - "tests/test_sml_current_dex_maker_verification.py"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run synthetic signer and fee-payer tests without network
+        run: |
+          python -m compileall -q research/smart_money_lab/current_dex_maker_verification.py
+          python -m unittest discover -s tests -p 'test_sml_current_dex_maker_verification.py' -v
+      - name: One-shot verification of ten public swap signatures (no Helius)
+        run: |
+          python -m research.smart_money_lab.current_dex_maker_verification \
+            --input research/smart_money_lab/data/current_dex_20261101_top10_tx_probes.json \
+            --output research_results/dex_current_maker_signatures.json
+      - name: Store on-chain signer and shared fee-payer evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: sml-current-dex-maker-signer-audit
+          path: research_results/dex_current_maker_signatures.json
+          retention-days: 14
