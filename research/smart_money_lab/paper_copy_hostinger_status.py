@@ -34,14 +34,19 @@ def _wallet_rows(report: dict, positions: list) -> list[dict]:
     """Expose fixed-order aliases, never raw wallet addresses or signatures.
 
     Stats reflect fills of the ONE shared paper account, not independent P/L.
-    Signal counts per wallet are intentionally unavailable in this report.
+    The runner intentionally omits a top-level wallet list from its report;
+    wallet identities appear solely as keys in per-wallet attribution.
+    Sort those private keys for stable numbered aliases without exporting them.
     """
-    wallets = report.get("wallets")
     summary = report.get("per_wallet_modeled_realized_pnl")
+    if not isinstance(summary, dict) or len(summary) != 6:
+        return []
+    raw_wallets = report.get("wallets")
+    wallets = sorted(summary) if raw_wallets is None else raw_wallets
     if not (isinstance(wallets, list) and len(wallets) == 6
-            and len(set(w for w in wallets if isinstance(w, str))) == 6
-            and all(isinstance(w, str) and w for w in wallets)
-            and isinstance(summary, dict)):
+            and all(isinstance(w, str) and bool(w) for w in wallets)
+            and len(set(wallets)) == 6
+            and set(wallets) == set(summary)):
         return []
     open_counts = {}
     for p in positions:
