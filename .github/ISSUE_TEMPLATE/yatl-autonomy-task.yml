@@ -1,0 +1,41 @@
+name: "YATL Agent task (review-first)"
+description: "Propose a bounded, offline-first autonomous-lab task. No deployment or orders."
+title: "[YATL-Agent] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: "V1 is **GitHub-only / dry-run**. Never include API keys, private wallet data, or VPS credentials."
+  - type: dropdown
+    id: agent_role
+    attributes:
+      label: Assigned agent role
+      options:
+        - Research
+        - Developer
+        - QA
+        - Ops (proposal only)
+        - Orchestrator
+    validations:
+      required: true
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective and acceptance criteria
+      placeholder: "Describe the smallest verifiable task and exact pass/fail conditions."
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Existing evidence and references
+      placeholder: "Public repo paths, previous CI, sanitized metrics. No secrets."
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety confirmation
+      options:
+        - label: "No VPS access, deployment, real orders, provider requests, spending, quota reset, or private keys."
+          required: true
+        - label: "Changes stay in the V1 allowed paths and ship via draft PR."
+          required: true
