@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "phase": "github_only",
+  "status": "dry_run",
+  "paper_only": true,
+  "vps_access_allowed": false,
+  "deployment_allowed": false,
+  "agent_external_network_allowed": false,
+  "secrets_access_allowed": false,
+  "real_orders_allowed": false,
+  "paid_api_calls_allowed": false,
+  "quota_reset_allowed": false,
+  "agent_spend_limit_usd": 0,
+  "roles": [
+    "orchestrator",
+    "research",
+    "developer",
+    "qa",
+    "ops"
+  ],
+  "allowed_exact_paths": [
+    "AGENTS.md",
+    "docs/YATL-AUTONOMY-V1.md",
+    ".github/workflows/yatl-autonomy-safety.yml",
+    ".github/ISSUE_TEMPLATE/yatl-autonomy-task.yml"
+  ],
+  "allowed_path_prefixes": [
+    "infra/autonomy/",
+    "tests/test_yatl_autonomy_"
+  ],
+  "human_approval_required_for": [
+    "vps_access",
+    "deployment",
+    "production_changes",
+    "paid_api_calls",
+    "risk_or_order_control_changes",
+    "quota_or_budget_change",
+    "experiment_state_mutation",
+    "merge",
+    "new_secrets"
+  ],
+  "never_touch": [
+    "ops/",
+    "research/",
+    "yatl/",
+    "data/",
+    "secrets/",
+    "manifests/",
+    ".github/workflows/p3-009.yml",
+    ".github/workflows/smart-money-lab.yml"
+  ]
+}
