@@ -1,0 +1,48 @@
+name: YATL Autonomy V1 — GitHub-only offline gate
+
+on:
+  push:
+    branches: [infra/yatl-autonomy-v1]
+    paths:
+      - "AGENTS.md"
+      - "docs/YATL-AUTONOMY-V1.md"
+      - "infra/autonomy/**"
+      - "tests/test_yatl_autonomy_*.py"
+      - ".github/workflows/yatl-autonomy-safety.yml"
+      - ".github/ISSUE_TEMPLATE/yatl-autonomy-task.yml"
+  pull_request:
+    branches: [research/sml-paper-copy-selected-wallets]
+    paths:
+      - "AGENTS.md"
+      - "docs/YATL-AUTONOMY-V1.md"
+      - "infra/autonomy/**"
+      - "tests/test_yatl_autonomy_*.py"
+      - ".github/workflows/yatl-autonomy-safety.yml"
+      - ".github/ISSUE_TEMPLATE/yatl-autonomy-task.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: yatl-autonomy-v1-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  offline-policy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout source without retained credentials
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Offline policy check and regression tests (no secrets)
+        run: |
+          python3 infra/autonomy/policy_gate.py --policy infra/autonomy/policy.json
+          python3 -m unittest discover -s tests -p 'test_yatl_autonomy_policy.py' -v
+      - name: Enforce autonomy-only changed paths
+        shell: bash
+        run: |
+          git diff --name-only --diff-filter=ACMRT origin/research/sml-paper-copy-selected-wallets...HEAD > "$RUNNER_TEMP/yatl-autonomy-changes.txt"
+          python3 infra/autonomy/policy_gate.py --policy infra/autonomy/policy.json --paths-file "$RUNNER_TEMP/yatl-autonomy-changes.txt"
