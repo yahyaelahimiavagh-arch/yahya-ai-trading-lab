@@ -24,7 +24,7 @@ Reviewers must receive exact commit/diff and independently accessible evidence. 
 2. Contributor submits narrowly scoped change, test plan, evidence and known limitations.
 3. Data/Quant reviewers challenge time semantics, preserved boundaries, cost assumptions and no-leakage claims, when relevant.
 4. Security checks all new capabilities and frozen boundaries. Reject unsafe paths.
-5. Reality Checker compares source/diff, relevant test code, CI and artifact identities. In an isolated context when feasible, reproduce *only* tests with permitted public/synthetic inputs. Missing environment -> INS UFFICIENT_EVIDENCE, not PASS.
+5. Reality Checker compares source/diff, relevant test code, CI and artifact identities. In an isolated context when feasible, reproduce *only* tests with permitted public/synthetic inputs. Missing environment -> INSUFFICIENT_EVIDENCE, not PASS.
 6. Record one audit using audit-report-template.md. Publish an engineering disposition independent of any research/economic disposition.
 7. Only an explicit Director decision can authorize merge or the next gated stage. Even a clean PR is not approval to run 6,852 candidates, P10/P11 or trade.
 
